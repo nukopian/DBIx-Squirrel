@@ -13,8 +13,8 @@
 -otr      # No break between comma and opening token
 -sot      # Stack opening tokens
 -pt=0     # Minimum parenthesis tightness
--bt=0     # Medium brace tightness
--sbt=0    # Medium square bracket tightness
+-bt=0     # Minimum brace tightness
+-sbt=0    # Minimum square bracket tightness
 -bbt=0    # Minimum block brace tightness
 -nsfs     # No space before semicolons
 -nolq     # Don't outdent long quoted strings
@@ -22,7 +22,7 @@
 -ole=unix # Unix line-ending
 -utf8     # UTF8 encoding
 -blbs=1   # Blank line before subs
--sbl      # Opening sub brace on new line
+-nsbl      # Opening sub brace on new line
 -nasbl    # Opening anonymous sub brace on same line
 -tqw      # Trim space around multiline qw
 -tso      # Tight secret operators
