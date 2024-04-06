@@ -4,7 +4,6 @@
 -ci=2     # Continuation indent is 2 cols
 -st       # Output to STDOUT
 -se       # Errors to STDERR
--lp       # Line up parentheses
 -vt=2     # Medium vertical tightness
 -vtc=0    # Minimum vertical closing tightness
 -cti=0    # No extra indentation for closing brackets
