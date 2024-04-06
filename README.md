@@ -250,14 +250,3 @@ the same arguments.
 - Some DBIx-Squirrel iterator method names (`reset`, `first`, `next`,
 `single`, `find`, `all`) may be familiar to other DBIx-Class
 programmers who use them for similar purposes.
-
-# AUTHOR
-
-Nukopia Software Services
-
-# COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2020 by Nukopia Software Services.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.

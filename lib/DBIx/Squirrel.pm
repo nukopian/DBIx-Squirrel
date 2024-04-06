@@ -336,13 +336,10 @@ programmers who use them for similar purposes.
 
 =head1 AUTHOR
 
-Nukopia Software Services
+(see .meta.json.enc)
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2020 by Nukopia Software Services.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+(see .meta.json.enc)
 
 =cut
