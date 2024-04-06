@@ -39,3 +39,4 @@ inc/
 .vstags
 .vscode/
 .gitattributes
+.meta.json
