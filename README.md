@@ -1,9 +1,3 @@
-# PROJECT STATUS
-
-**Code works, but this project is not yet finished**
-
-Documentation far from complete. Test coverage is ok but far from finished.
-
 # NAME
 
 DBIx::Squirrel - A module for working with databases
