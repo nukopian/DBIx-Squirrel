@@ -250,3 +250,5 @@ the same arguments.
 - Some DBIx-Squirrel iterator method names (`reset`, `first`, `next`,
 `single`, `find`, `all`) may be familiar to other DBIx-Class
 programmers who use them for similar purposes.
+
+![DBIx-Squirrel](resources/images/repository-social-card.png)
