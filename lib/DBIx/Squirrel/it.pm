@@ -17,7 +17,7 @@ use DBIx::Squirrel::util (
     'cbargs',
     'throw',
     'transform',
-    'whinge',
+    'whine',
 );
 
 {
@@ -241,7 +241,7 @@ sub single
 {
     $_[0]->reset if my $row = do {
         if ( my $count = $_[0]->execute( @_[ 1 .. $#_ ] ) ) {
-            whinge W_MORE_ROWS if $count > 1;
+            whine W_MORE_ROWS if $count > 1;
             $_[0]->_fetch_row;
         } else {
             undef;

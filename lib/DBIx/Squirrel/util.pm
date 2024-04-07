@@ -46,7 +46,7 @@ BEGIN {
             qw/
               Dumper
               throw
-              whinge
+              whine
               /
         ],
     );
@@ -89,7 +89,7 @@ sub throw {
     goto &Carp::confess;
 }
 
-sub whinge {
+sub whine {
     @_ = do {
         if ( @_ ) {
             my ( $f, @a ) = @_;
