@@ -382,17 +382,17 @@ subtest 'throw' => sub {
     like( $@, qr/\ARethrow this at/ );
 };
 
-subtest 'whinge' => sub {
-    $stderr = capture_stderr { whinge undef };
+subtest 'whine' => sub {
+    $stderr = capture_stderr { whine undef };
     like( $stderr, qr/\AWarning at / );
 
-    $stderr = capture_stderr { whinge 'Got a warning' };
+    $stderr = capture_stderr { whine 'Got a warning' };
     like( $stderr, qr/\AGot a warning at / );
 
-    $stderr = capture_stderr { whinge 'Warning %d, %d, %d', 1, 2, 3 };
+    $stderr = capture_stderr { whine 'Warning %d, %d, %d', 1, 2, 3 };
     like( $stderr, qr/\AWarning 1, 2, 3 at/ );
 
-    $stderr = capture_stderr { whinge };
+    $stderr = capture_stderr { whine };
     like( $stderr, qr/\AWarning at/ );
 };
 

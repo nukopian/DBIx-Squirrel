@@ -31,24 +31,24 @@ sub test_the_basics
     diag "Test the basics";
     diag "";
 
-    # Check that "whinge" emits warnings
+    # Check that "whine" emits warnings
 
     ( $exp, $got ) = (
         99,
         do {
             ($stderr) = capture_stderr {
-                whinge 'Got a warning';
+                whine 'Got a warning';
             };
             99;
         },
     );
-    is $got, $exp, 'whinge';
-    like $stderr, qr/Got a warning at/, 'whinge';
+    is $got, $exp, 'whine';
+    like $stderr, qr/Got a warning at/, 'whine';
 
     ($stderr) = capture_stderr {
-        whinge 'Got %s warning', 'another';
+        whine 'Got %s warning', 'another';
     };
-    like $stderr, qr/Got another warning at/, 'whinge';
+    like $stderr, qr/Got another warning at/, 'whine';
 
     # Check that "throw" triggers exceptions
 
@@ -230,50 +230,50 @@ sub test_the_basics
     is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
       or dump_val { exp => $exp, got => $got };
 
-    # Check that "DBIx::Squirrel::st::_only_positional_placeholders"
+    # Check that "DBIx::Squirrel::st::_has_positional_placeholders_only"
     # works properly
 
     ( $exp, $got ) = (
         undef,
-        DBIx::Squirrel::st::_only_positional_placeholders(undef),
+        DBIx::Squirrel::st::_has_positional_placeholders_only(undef),
     );
-    is_deeply $got, $exp, '_only_positional_placeholders'
+    is_deeply $got, $exp, '_has_positional_placeholders_only'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         undef,
-        DBIx::Squirrel::st::_only_positional_placeholders(
+        DBIx::Squirrel::st::_has_positional_placeholders_only(
             {
                 1 => ':name',
             }
         ),
     );
-    is_deeply $got, $exp, '_only_positional_placeholders'
+    is_deeply $got, $exp, '_has_positional_placeholders_only'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         undef,
-        DBIx::Squirrel::st::_only_positional_placeholders(
+        DBIx::Squirrel::st::_has_positional_placeholders_only(
             {
                 1 => ':name',
                 2 => ':2',
             }
         ),
     );
-    is_deeply $got, $exp, '_only_positional_placeholders'
+    is_deeply $got, $exp, '_has_positional_placeholders_only'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         {
             1 => ':1',
         },
-        DBIx::Squirrel::st::_only_positional_placeholders(
+        DBIx::Squirrel::st::_has_positional_placeholders_only(
             {
                 1 => ':1',
             }
         ),
     );
-    is_deeply $got, $exp, '_only_positional_placeholders'
+    is_deeply $got, $exp, '_has_positional_placeholders_only'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -281,27 +281,27 @@ sub test_the_basics
             1 => ':1',
             2 => ':2'
         },
-        DBIx::Squirrel::st::_only_positional_placeholders(
+        DBIx::Squirrel::st::_has_positional_placeholders_only(
             {
                 1 => ':1',
                 2 => ':2',
             }
         ),
     );
-    is_deeply $got, $exp, '_only_positional_placeholders'
+    is_deeply $got, $exp, '_has_positional_placeholders_only'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         {
             1 => ':1',
         },
-        DBIx::Squirrel::st::_only_positional_placeholders(
+        DBIx::Squirrel::st::_has_positional_placeholders_only(
             {
                 1 => ':1',
             }
         ),
     );
-    is_deeply $got, $exp, '_only_positional_placeholders'
+    is_deeply $got, $exp, '_has_positional_placeholders_only'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -309,14 +309,14 @@ sub test_the_basics
             1 => '$1',
             2 => '$2'
         },
-        DBIx::Squirrel::st::_only_positional_placeholders(
+        DBIx::Squirrel::st::_has_positional_placeholders_only(
             {
                 1 => '$1',
                 2 => '$2',
             }
         ),
     );
-    is_deeply $got, $exp, '_only_positional_placeholders'
+    is_deeply $got, $exp, '_has_positional_placeholders_only'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -324,14 +324,14 @@ sub test_the_basics
             1 => '?1',
             2 => '?2'
         },
-        DBIx::Squirrel::st::_only_positional_placeholders(
+        DBIx::Squirrel::st::_has_positional_placeholders_only(
             {
                 1 => '?1',
                 2 => '?2',
             }
         ),
     );
-    is_deeply $got, $exp, '_only_positional_placeholders'
+    is_deeply $got, $exp, '_has_positional_placeholders_only'
       or dump_val { exp => $exp, got => $got };
 
     # Check that "DBIx::Squirrel::st::_map_places_to_values" works

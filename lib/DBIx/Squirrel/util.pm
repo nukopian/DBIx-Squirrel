@@ -1,12 +1,11 @@
-package    # hide from PAUSE
+package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::util;
 use strict;
 use warnings;
 use constant E_EXP_STATEMENT => 'Expected a statement';
 use constant E_EXP_STH       => 'Expected a statement handle';
 use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
-use constant E_BAD_CB_LIST   => 'Expected a reference to a list of code-'
-  . 'references, a code-reference, or undefined';
+use constant E_BAD_CB_LIST   => 'Expected a reference to a list of code-references, a code-reference, or undefined';
 
 BEGIN {
     require Exporter;
@@ -47,15 +46,15 @@ BEGIN {
             qw/
               Dumper
               throw
-              whinge
+              whine
               /
         ],
     );
     our @EXPORT_OK = @{
-        $EXPORT_TAGS{'all'} = [
+        $EXPORT_TAGS{ 'all' } = [
             do {
                 my %seen;
-                grep { !$seen{$_}++ } map { @{ $EXPORT_TAGS{$_} } } (
+                grep { !$seen{ $_ }++ } map { @{ $EXPORT_TAGS{ $_ } } } (
                     'constants',
                     'hashing',
                     'sql',
@@ -72,34 +71,36 @@ use Data::Dumper::Concise;
 use Scalar::Util ();
 use Sub::Name    ();
 
-sub throw
-{
+sub throw {
     @_ = do {
-        if (@_) {
+        if ( @_ ) {
             my ( $f, @a ) = @_;
-            if (@a) {
+            if ( @a ) {
                 sprintf $f, @a;
-            } else {
+            }
+            else {
                 defined $f ? $f : 'Exception';
             }
-        } else {
+        } ## end if ( @_ )
+        else {
             defined $@ ? $@ : 'Exception';
         }
     };
     goto &Carp::confess;
 }
 
-sub whinge
-{
+sub whine {
     @_ = do {
-        if (@_) {
+        if ( @_ ) {
             my ( $f, @a ) = @_;
-            if (@a) {
+            if ( @a ) {
                 sprintf $f, @a;
-            } else {
+            }
+            else {
                 defined $f ? $f : 'Warning';
             }
-        } else {
+        } ## end if ( @_ )
+        else {
             'Warning';
         }
     };
@@ -118,54 +119,52 @@ our %_HASH_STRATEGIES;
 BEGIN {
     $_SHA256_B64 = eval {
         require Digest::SHA;
-        my $sha = Digest::SHA->new(256);
+        my $sha = Digest::SHA->new( 256 );
         sub {
-            return unless defined $_[0];
+            return unless defined $_[ 0 ];
             my ( $st, $bool ) = @_;
-            unless ( exists $_HASH_OF{$st} && !$bool ) {
-                chomp( $_HASH_OF{$st} = $sha->add($st)->b64digest );
-                $_HASH_WITH{ $_HASH_OF{$st} } = $st;
+            unless ( exists $_HASH_OF{ $st } && !$bool ) {
+                chomp( $_HASH_OF{ $st } = $sha->add( $st )->b64digest );
+                $_HASH_WITH{ $_HASH_OF{ $st } } = $st;
             }
-            return $_HASH_OF{$st};
+            return $_HASH_OF{ $st };
         };
     };
 
     $_MIME_B64 = eval {
         require MIME::Base64;
         sub {
-            return unless defined $_[0];
+            return unless defined $_[ 0 ];
             my ( $st, $bool ) = @_;
-            unless ( exists $_HASH_OF{$st} && !$bool ) {
-                chomp( $_HASH_OF{$st} = MIME::Base64::encode_base64($st) );
-                $_HASH_WITH{ $_HASH_OF{$st} } = $st;
+            unless ( exists $_HASH_OF{ $st } && !$bool ) {
+                chomp( $_HASH_OF{ $st } = MIME::Base64::encode_base64( $st ) );
+                $_HASH_WITH{ $_HASH_OF{ $st } } = $st;
             }
-            return $_HASH_OF{$st};
+            return $_HASH_OF{ $st };
         };
     };
 
-    %_HASH_STRATEGIES = map { $_->[0] => $_->[1] } (
-        @_HASH_STRATEGIES = grep { !!$_->[1] } (
+    %_HASH_STRATEGIES = map { $_->[ 0 ] => $_->[ 1 ] } (
+        @_HASH_STRATEGIES = grep { !!$_->[ 1 ] } (
             [ '_SHA256_B64', $_SHA256_B64 ],
             [ '_MIME_B64',   $_MIME_B64 ],
-            [ 'none',        sub { $_ = $_[0] } ],
+            [ 'none',        sub { $_ = $_[ 0 ] } ],
         )
     );
 
-    sub _select_hash_strategy
-    {
-        $_HASH_STRATEGY = $_HASH_STRATEGIES[0][0];
-        $HASH           = $_HASH_STRATEGIES[0][1];
+    sub _select_hash_strategy {
+        $_HASH_STRATEGY = $_HASH_STRATEGIES[ 0 ][ 0 ];
+        $HASH           = $_HASH_STRATEGIES[ 0 ][ 1 ];
         return $HASH;
     }
 
     &_select_hash_strategy;
 
-    sub hash { goto &{$HASH} }
+    sub hash { goto &{ $HASH } }
 
-    sub unhash
-    {
-        return undef unless defined $_[0];
-        return exists $_HASH_WITH{ $_[0] } ? $_HASH_WITH{ $_[0] } : $_[0];
+    sub unhash {
+        return undef unless defined $_[ 0 ];
+        return exists $_HASH_WITH{ $_[ 0 ] } ? $_HASH_WITH{ $_[ 0 ] } : $_[ 0 ];
     }
 }
 
@@ -194,8 +193,7 @@ BEGIN {
 #       ...
 #   }
 #
-sub cbargs
-{
+sub cbargs {
     return cbargs_using( [], @_ );
 }
 
@@ -231,23 +229,24 @@ sub cbargs
 #       ...
 #   }
 #
-sub cbargs_using
-{
+sub cbargs_using {
     my ( $c, @t ) = do {
-        if ( defined $_[0] ) {
-            if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
-                ( $_[0], @_[ 1 .. $#_ ] );
-            } else {
-                throw E_BAD_CB_LIST
-                  unless UNIVERSAL::isa( $_[0], 'CODE' );
-                ( [ $_[0] ], @_[ 1 .. $#_ ] );
+        if ( defined $_[ 0 ] ) {
+            if ( UNIVERSAL::isa( $_[ 0 ], 'ARRAY' ) ) {
+                ( $_[ 0 ], @_[ 1 .. $#_ ] );
             }
-        } else {
+            else {
+                throw E_BAD_CB_LIST
+                  unless UNIVERSAL::isa( $_[ 0 ], 'CODE' );
+                ( [ $_[ 0 ] ], @_[ 1 .. $#_ ] );
+            }
+        } ## end if ( defined $_[ 0 ] )
+        else {
             ( [], @_[ 1 .. $#_ ] );
         }
     };
-    while ( UNIVERSAL::isa( $t[$#t], 'CODE' ) ) {
-        unshift @{$c}, pop @t;
+    while ( UNIVERSAL::isa( $t[ $#t ], 'CODE' ) ) {
+        unshift @{ $c }, pop @t;
     }
     return ( $c, @t );
 }
@@ -279,20 +278,19 @@ sub cbargs_using
 #       return transform($callbacks, @res);
 #   }
 #
-sub transform
-{
+sub transform {
     return unless my @v = @_[ 1 .. $#_ ];
     my $c
-      = UNIVERSAL::isa( $_[0], 'ARRAY' ) ? $_[0]
-      : UNIVERSAL::isa( $_[0], 'CODE' )  ? [ $_[0] ]
-      :                                    undef;
-    if ( $c && @{$c} ) {
-        local ($_);
-        for my $t ( @{$c} ) {
-            last unless @v = do { ($_) = @v; $t->(@v) };
+      = UNIVERSAL::isa( $_[ 0 ], 'ARRAY' ) ? $_[ 0 ]
+      : UNIVERSAL::isa( $_[ 0 ], 'CODE' )  ? [ $_[ 0 ] ]
+      :                                      undef;
+    if ( $c && @{ $c } ) {
+        local ( $_ );
+        for my $t ( @{ $c } ) {
+            last unless @v = do { ( $_ ) = @v; $t->( @v ) };
         }
     }
-    return wantarray ? @v : @v == 1 ? $v[0] : @v;
+    return wantarray ? @v : @v == 1 ? $v[ 0 ] : @v;
 }
 
 1;
