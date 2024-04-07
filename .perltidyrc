@@ -12,10 +12,10 @@
 -boc      # Break at old comma breakpoints
 -otr      # No break between comma and opening token
 -sot      # Stack opening tokens
--pt=0     # Minimum parenthesis tightness
--bt=0     # Minimum brace tightness
--sbt=0    # Minimum square bracket tightness
--bbt=0    # Minimum block brace tightness
+-pt=1     # Medium parenthesis tightness
+-bt=1     # Medium brace tightness
+-sbt=1    # Medium square bracket tightness
+-bbt=1    # Medium block brace tightness
 -nsfs     # No space before semicolons
 -nolq     # Don't outdent long quoted strings
 -bbao     # Break before all operators
@@ -27,6 +27,7 @@
 -tqw      # Trim space around multiline qw
 -tso      # Tight secret operators
 -sfs      # Space "for" semicolons before and after
+-ce       # Cuddle else
 -bok
 -bot
 -boa
@@ -36,9 +37,4 @@
 --no-indent-spaced-block-comments
 --fixed-position-side-comment=132
 --ignore-side-comment-lengths
---closing-side-comments
---closing-side-comments-balanced
---closing-side-comment-list="if elsif else unless for while until"
---closing-side-comment-else-flag=2                                              # elsif and else, always
---closing-side-comment-interval=9                                               # closing side comments for blocks 9 lines or more
 --hanging-side-comments
