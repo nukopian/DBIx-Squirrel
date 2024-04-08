@@ -7,8 +7,7 @@ use constant E_UNKNOWN_PLACEHOLDER => 'Cannot bind unknown placeholder (%s)';
 use constant W_CHECK_BIND_VALS     => 'Check bind values match placeholder scheme';
 
 BEGIN {
-    require DBIx::Squirrel
-      unless defined $DBIx::Squirrel::VERSION;
+    require DBIx::Squirrel unless defined $DBIx::Squirrel::VERSION;
     our $VERSION = $DBIx::Squirrel::VERSION;
     our @ISA     = 'DBI::st';
 }
@@ -17,50 +16,47 @@ use namespace::autoclean;
 use DBIx::Squirrel::util 'throw', 'whine';
 
 {
-    my $r;
+     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
 
     sub ROOT_CLASS {
-        ( $r = __PACKAGE__ ) =~ s/::\w+$// unless defined $r;
         return wantarray ? ( RootClass => $r ) : $r;
     }
 }
 
 sub _id {
-    return          unless ref $_[0];
-    return 0+ $_[0] unless wantarray;
-    return ( 0+ $_[0], @_ );
+    my $self = shift;
+    return unless ref $self;
+    my $id = 0+ $self;
+    return $id unless wantarray;
+    return ( $id, $self, @_ );
 }
 
 sub _att {
-    return unless ref $_[0];
-    my ( $att, $id, $self, @t ) = (
-        do {
-            if ( defined $_[0]->{private_dbix_squirrel} ) {
-                $_[0]->{private_dbix_squirrel};
-            } else {
-                $_[0]->{private_dbix_squirrel} = {};
-            }
-        },
-        0+ $_[0],
-        @_,
-    );
-    return wantarray ? ( $att, $self ) : $att unless @t;
-    if ( @t == 1 && !defined $t[0] ) {
-        delete $self->{private_dbix_squirrel};
-        return;
+    my $self = shift;
+    return unless ref $self;
+    unless ( defined $self->{'private_dbix_squirrel'} ) {
+        $self->{'private_dbix_squirrel'} = {};
     }
-    $self->{private_dbix_squirrel} = {
-        %{$att},
-        do {
-            if ( UNIVERSAL::isa( $t[0], 'HASH' ) ) {
-                %{ $t[0] };
-            } elsif ( UNIVERSAL::isa( $t[0], 'ARRAY' ) ) {
-                @{ $t[0] };
-            } else {
-                @t;
-            }
-        },
-    };
+    unless (@_) {
+        return $self->{'private_dbix_squirrel'} unless wantarray;
+        return ( $self->{'private_dbix_squirrel'}, $self );
+    }
+    unless ( defined $_[0] ) {
+        delete $self->{'private_dbix_squirrel'};
+        shift;
+    }
+    if (@_) {
+        unless ( exists $self->{'private_dbix_squirrel'} ) {
+            $self->{'private_dbix_squirrel'} = {};
+        }
+        if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, %{ $_[0] } };
+        } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, @{ $_[0] } };
+        } else {
+            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, @_ };
+        }
+    }
     return $self;
 }
 
@@ -83,78 +79,60 @@ sub execute {
 sub bind {
     my $self = shift;
     return $self unless @_;
-    if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
-        $self->bind_param( $_, $_[0][$_] ) for 1 .. scalar @{ $_[0] };
-        return $self;
-    } else {
-        my $placeholders = $self->_att->{Placeholders};
-        if ( UNIVERSAL::isa( $_[0], 'HASH' ) || $placeholders ) {
-            if ( my %kv = @{ _map_places_to_values( $placeholders, @_ ) } ) {
-                while ( my ( $key, $val ) = each %kv ) {
-                    if ( $key =~ m/^[\:\$\?]?(?<bind_pos>\d+)$/ ) {
-                        unless ( $+{'bind_pos'} > 0 ) {
-                            throw E_INVALID_PLACEHOLDER, $key;
-                        }
-                        $self->bind_param( $+{'bind_pos'}, $val );
-                    } else {
-                        $self->bind_param( $key, $val );
+    my $placeholders = $self->_att->{'Placeholders'};
+    if ( $placeholders && not _all_placeholders_are_positional($placeholders) ) {
+        if ( my %kv = @{ _map_to_values( $placeholders, @_ ) } ) {
+            while ( my ( $key, $value ) = each %kv ) {
+                if ( $key =~ m/^[\:\$\?]?(?<bind_id>\d+)$/ ) {
+                    unless ( $+{'bind_id'} > 0 ) {
+                        throw E_INVALID_PLACEHOLDER, $key;
                     }
+                    $self->bind_param( $+{'bind_id'}, $value );
+                } else {
+                    $self->bind_param( $key, $value );
                 }
             }
+        }
+    } else {
+        if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+            for my $bind_id ( 1 .. scalar @{ $_[0] } ) {
+                $self->bind_param( $bind_id, $_[0][ $bind_id - 1 ] );
+            }
         } else {
-            $self->bind_param( $_, $_[ $_ - 1 ] ) for 1 .. scalar @_;
+            for my $bind_id ( 1 .. scalar @_ ) {
+                $self->bind_param( $bind_id, $_[ $bind_id - 1 ] );
+            }
         }
     }
     return $self;
 }
 
-sub bind_param {
-    my $self     = shift;
-    my %bindable = do {
-        if ( my $placeholders = $self->_att->{Placeholders} ) {
-            if ( $_[0] =~ m/^[\:\$\?]?(?<bind_pos>\d+)$/ ) {
-                ( $+{'bind_pos'} => $_[1] )
-            } else {
-                my $prefixed = do {
-                    if ( substr( $_[0], 0, 1 ) eq ':' ) {
-                        $_[0];
-                    } else {
-                        ':' . $_[0];
-                    }
-                };
-                map { ( $_ => $_[1] ) }
-                  grep { $placeholders->{$_} eq $prefixed }
-                  keys %{$placeholders};
-            }
-        } else {
-            ( $_[0] => $_[1] );
-        }
-    };
-    unless (%bindable) {
-        return if $DBIx::Squirrel::RELAXED_PARAM_CHECKS;
-        throw E_UNKNOWN_PLACEHOLDER, $_[0];
-    }
-    $self->SUPER::bind_param(%bindable);
-    return wantarray ? %bindable : \%bindable;
+sub _all_placeholders_are_positional {
+    my $placeholders = shift;
+    return unless UNIVERSAL::isa( $placeholders, 'HASH' );
+    my @placeholders     = values %{$placeholders};
+    my $total_count      = @placeholders;
+    my $positional_count = grep {m/^[\:\$\?]\d+$/} @placeholders;
+    return unless $positional_count == $total_count;
+    return $placeholders;
 }
 
-sub _map_places_to_values {
+sub _map_to_values {
     my $placeholders = shift;
     my $mappings     = do {
-        if ( _has_positional_placeholders_only($placeholders) ) {
+        if ( _all_placeholders_are_positional($placeholders) ) {
             [ map { ( $placeholders->{$_} => $_[ $_ - 1 ] ) } keys %{$placeholders} ];
         } else {
             my @mappings = do {
-                my $head = $_[0];
-                if ( UNIVERSAL::isa( $head, 'HASH' ) ) {
-                    %{$head};
-                } elsif ( UNIVERSAL::isa( $head, 'ARRAY' ) ) {
-                    @{$head};
+                if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                    @{ $_[0] };
+                } elsif ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+                    %{ $_[0] };
                 } else {
                     @_;
                 }
             };
-            if ( @mappings % 2 ) {
+            unless ( @mappings % 2 == 0 ) {
                 whine W_CHECK_BIND_VALS;
             }
             \@mappings;
@@ -163,14 +141,26 @@ sub _map_places_to_values {
     return wantarray ? @{$mappings} : $mappings;
 }
 
-sub _has_positional_placeholders_only {
-    my $placeholders = shift;
-    return unless UNIVERSAL::isa( $placeholders, 'HASH' );
-    my @placeholders     = values %{$placeholders};
-    my $total_count      = @placeholders;
-    my $positional_count = grep {m/^[\:\$\?]\d+$/} @placeholders;
-    return unless $positional_count == $total_count;
-    return $placeholders;
+sub bind_param {
+    my $self    = shift;
+    my %bindings = do {
+        if ( my $placeholders = $self->_att->{'Placeholders'} ) {
+            if ( $_[0] =~ m/^[\:\$\?]?(?<bind_id>\d+)$/ ) {
+                ( $+{'bind_id'} => $_[1] )
+            } else {
+                my $prefixed = $_[0] =~ m/^[\:\$\?]/ ? $_[0] : ":$_[0]";
+                map { ( $_ => $_[1] ) } grep { $placeholders->{$_} eq $prefixed } keys %{$placeholders};
+            }
+        } else {
+            ( $_[0] => $_[1] );
+        }
+    };
+    unless (%bindings) {
+        return if $DBIx::Squirrel::RELAXED_PARAM_CHECKS;
+        throw E_UNKNOWN_PLACEHOLDER, $_[0];
+    }
+    $self->SUPER::bind_param(%bindings);
+    return wantarray ? %bindings : \%bindings;
 }
 
 BEGIN {
