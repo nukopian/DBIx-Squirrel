@@ -127,15 +127,15 @@ sub _map_to_values {
             [ map { ( $placeholders->{$_} => $_[ $_ - 1 ] ) } keys %{$placeholders} ];
         } else {
             my @mappings = do {
-                if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
-                    %{ $_[0] };
-                } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
                     @{ $_[0] };
+                } elsif ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+                    %{ $_[0] };
                 } else {
                     @_;
                 }
             };
-            if ( @mappings % 2 ) {
+            unless ( @mappings % 2 == 0 ) {
                 whine W_CHECK_BIND_VALS;
             }
             \@mappings;
