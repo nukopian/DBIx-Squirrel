@@ -6,8 +6,7 @@ use constant E_BAD_SQL_ABSTRACT_METHOD => 'Unimplemented SQL::Abstract method';
 use constant E_BAD_SQL_ABSTRACT        => 'Bad or undefined SQL::Abstract global';
 
 BEGIN {
-    require DBIx::Squirrel
-      unless defined $DBIx::Squirrel::VERSION;
+    require DBIx::Squirrel unless defined $DBIx::Squirrel::VERSION;
     our $VERSION = $DBIx::Squirrel::VERSION;
     our @ISA     = 'DBI::db';
 }
@@ -40,80 +39,32 @@ BEGIN {
     }
 }
 
-our $NORMALISE_SQL = 1;
-
-sub _sqlnorm {
-    my ( $s, $h ) = &_sqltrim;
-    return wantarray ? ( $s, $s, $h ) : $s unless $NORMALISE_SQL;
-    ( my $n = $s ) =~ s{[\:\$\?]\w+\b}{?}g;
-    return wantarray ? ( $n, $s, $h ) : $n;
-}
-
-sub _sqltrim {
-    (   my $s = do {
-            if ( ref $_[0] ) {
-                if ( UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::st' ) ) {
-                    $_[0]->_att->{'OriginalStatement'};
-                } else {
-                    throw E_EXP_STH
-                      unless UNIVERSAL::isa( $_[0], 'DBI::st' );
-                    $_[0]->{Statement};
-                }
-            } else {
-                defined $_[0] ? $_[0] : '';
-            }
-        }
-    ) =~ s{\A[\s\t\n\r]+|[\s\t\n\r]+\z}{}gs;
-    return wantarray ? ( $s, $HASH ? hash($s) : $s ) : $s;
-}
-
-our %_CACHE;
-
-sub _study {
-    my ( $n, $s, $h ) = &_sqlnorm;
-    return ( undef, undef, undef, undef ) unless defined $s;
-    my $r = defined $_CACHE{$h} ? $_CACHE{$h} : (
-        $_CACHE{$h} = do {
-            if ( my @p = $s =~ m{[\:\$\?]\w+\b}g ) {
-                [ { map { 1 + $_ => $p[$_] } ( 0 .. @p - 1 ) }, $n, $s, $h ];
-            } else {
-                [ undef, $n, $s, $h ];
-            }
-        }
-    );
-    return @{$r};
-}
-
 sub _att {
-    return unless ref $_[0];
-    my ( $att, $id, $self, @t ) = (
-        do {
-            if ( defined $_[0]->{'private_dbix_squirrel'} ) {
-                $_[0]->{'private_dbix_squirrel'};
-            } else {
-                $_[0]->{'private_dbix_squirrel'} = {};
-            }
-        },
-        0+ $_[0],
-        @_
-    );
-    return wantarray ? ( $att, $self ) : $att unless @t;
-    if ( @t == 1 && !defined $t[0] ) {
-        delete $self->{'private_dbix_squirrel'};
-        return;
+    my $self = shift;
+    return unless ref $self;
+    unless ( defined $self->{'private_dbix_squirrel'} ) {
+        $self->{'private_dbix_squirrel'} = {};
     }
-    $self->{'private_dbix_squirrel'} = {
-        %{$att},
-        do {
-            if ( UNIVERSAL::isa( $t[0], 'HASH' ) ) {
-                %{ $t[0] };
-            } elsif ( UNIVERSAL::isa( $t[0], 'ARRAY' ) ) {
-                @{ $t[0] };
-            } else {
-                @t;
-            }
-        },
-    };
+    unless (@_) {
+        return $self->{'private_dbix_squirrel'} unless wantarray;
+        return ( $self->{'private_dbix_squirrel'}, $self );
+    }
+    unless ( defined $_[0] ) {
+        delete $self->{'private_dbix_squirrel'};
+        shift;
+    }
+    if (@_) {
+        unless ( exists $self->{'private_dbix_squirrel'} ) {
+            $self->{'private_dbix_squirrel'} = {};
+        }
+        if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, %{ $_[0] } };
+        } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, @{ $_[0] } };
+        } else {
+            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, @_ };
+        }
+    }
     return $self;
 }
 
@@ -144,6 +95,52 @@ sub prepare_cached {
             'CacheKey'            => join( '#', ( caller 0 )[ 1, 2 ] ),
         }
     );
+}
+
+our %_CACHE;
+
+sub _study {
+    my ( $n, $s, $h ) = &_sqlnorm;
+    return ( undef, undef, undef, undef ) unless defined $s;
+    my $r = defined $_CACHE{$h} ? $_CACHE{$h} : (
+        $_CACHE{$h} = do {
+            if ( my @p = $s =~ m{[\:\$\?]\w+\b}g ) {
+                [ { map { 1 + $_ => $p[$_] } ( 0 .. @p - 1 ) }, $n, $s, $h ];
+            } else {
+                [ undef, $n, $s, $h ];
+            }
+        }
+    );
+    return @{$r};
+}
+
+our $NORMALISE_SQL = 1;
+
+sub _sqlnorm {
+    my ( $s, $h ) = &_sqltrim;
+    if ( $NORMALISE_SQL ) {
+        ( my $n = $s ) =~ s{[\:\$\?]\w+\b}{?}g;
+        return wantarray ? ( $n, $s, $h ) : $n;
+    }
+    return wantarray ? ( $s, $s, $h ) : $s;
+}
+
+sub _sqltrim {
+    (   my $s = do {
+            if ( ref $_[0] ) {
+                if ( UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::st' ) ) {
+                    $_[0]->_att->{'OriginalStatement'};
+                } else {
+                    throw E_EXP_STH
+                      unless UNIVERSAL::isa( $_[0], 'DBI::st' );
+                    $_[0]->{Statement};
+                }
+            } else {
+                defined $_[0] ? $_[0] : '';
+            }
+        }
+    ) =~ s{\A[\s\t\n\r]+|[\s\t\n\r]+\z}{}gs;
+    return wantarray ? ( $s, $HASH ? hash($s) : $s ) : $s;
 }
 
 sub do {
