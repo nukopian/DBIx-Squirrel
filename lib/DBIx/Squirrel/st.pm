@@ -16,10 +16,9 @@ use namespace::autoclean;
 use DBIx::Squirrel::util 'throw', 'whine';
 
 {
-    my $r;
+     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
 
     sub ROOT_CLASS {
-        ( $r = __PACKAGE__ ) =~ s/::\w+$// unless defined $r;
         return wantarray ? ( RootClass => $r ) : $r;
     }
 }
