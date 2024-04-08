@@ -1,4 +1,4 @@
-package    # hide from PAUSE
+package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::db;
 use strict;
 use warnings;
@@ -13,17 +13,13 @@ BEGIN {
 }
 
 use namespace::autoclean;
-use DBIx::Squirrel::util (
-    ':constants',
-    ':hashing',
-    'throw',
-);
+use DBIx::Squirrel::util ':constants', ':hashing', 'throw';
+use Data::Dumper 'Dumper';
 
 BEGIN {
     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
 
-    sub ROOT_CLASS
-    {
+    sub ROOT_CLASS {
         return wantarray ? ( RootClass => $r ) : $r;
     }
 }
@@ -35,8 +31,7 @@ BEGIN {
         SQL::Abstract->new;
     };
 
-    sub abstract
-    {
+    sub abstract {
         throw E_BAD_SQL_ABSTRACT
           unless UNIVERSAL::isa( $SQL_ABSTRACT, 'SQL::Abstract' );
         throw E_BAD_SQL_ABSTRACT_METHOD
@@ -47,18 +42,15 @@ BEGIN {
 
 our $NORMALISE_SQL = 1;
 
-sub _sqlnorm
-{
+sub _sqlnorm {
     my ( $s, $h ) = &_sqltrim;
     return wantarray ? ( $s, $s, $h ) : $s unless $NORMALISE_SQL;
     ( my $n = $s ) =~ s{[\:\$\?]\w+\b}{?}g;
     return wantarray ? ( $n, $s, $h ) : $n;
 }
 
-sub _sqltrim
-{
-    (
-        my $s = do {
+sub _sqltrim {
+    (   my $s = do {
             if ( ref $_[0] ) {
                 if ( UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::st' ) ) {
                     $_[0]->_att->{'OriginalStatement'};
@@ -77,14 +69,13 @@ sub _sqltrim
 
 our %_CACHE;
 
-sub _study
-{
+sub _study {
     my ( $n, $s, $h ) = &_sqlnorm;
     return ( undef, undef, undef, undef ) unless defined $s;
     my $r = defined $_CACHE{$h} ? $_CACHE{$h} : (
         $_CACHE{$h} = do {
             if ( my @p = $s =~ m{[\:\$\?]\w+\b}g ) {
-                [ { map { 1 + $_ => $p[$_] } 0 .. @p - 1 }, $n, $s, $h ];
+                [ { map { 1 + $_ => $p[$_] } ( 0 .. @p - 1 ) }, $n, $s, $h ];
             } else {
                 [ undef, $n, $s, $h ];
             }
@@ -93,8 +84,7 @@ sub _study
     return @{$r};
 }
 
-sub _att
-{
+sub _att {
     return unless ref $_[0];
     my ( $att, $id, $self, @t ) = (
         do {
@@ -127,15 +117,13 @@ sub _att
     return $self;
 }
 
-sub prepare
-{
+sub prepare {
     my ( $self, $st, @args ) = @_;
     my ( $p, $n, $t, $h ) = _study($st);
     throw E_EXP_STATEMENT unless defined $n;
-    return unless my $sth = $self->SUPER::prepare( $n, @args );
+    return                unless my $sth = $self->SUPER::prepare( $n, @args );
     return bless( $sth, 'DBIx::Squirrel::st' )->_att(
-        {
-            'Placeholders'        => $p,
+        {   'Placeholders'        => $p,
             'NormalisedStatement' => $n,
             'OriginalStatement'   => $t,
             'Hash'                => $h,
@@ -143,15 +131,13 @@ sub prepare
     );
 }
 
-sub prepare_cached
-{
+sub prepare_cached {
     my ( $self, $st, @args ) = @_;
     my ( $p, $n, $t, $h ) = _study($st);
     throw E_EXP_STATEMENT unless defined $n;
-    return unless my $sth = $self->SUPER::prepare_cached( $n, @args );
+    return                unless my $sth = $self->SUPER::prepare_cached( $n, @args );
     return bless( $sth, 'DBIx::Squirrel::st' )->_att(
-        {
-            'Placeholders'        => $p,
+        {   'Placeholders'        => $p,
             'NormalisedStatement' => $n,
             'OriginalStatement'   => $t,
             'Hash'                => $h,
@@ -160,8 +146,7 @@ sub prepare_cached
     );
 }
 
-sub do
-{
+sub do {
     my ( $self, $st, @t ) = @_;
     my ( $res, $sth ) = do {
         if (@t) {
@@ -209,15 +194,14 @@ sub do
     return wantarray ? ( $res, $sth ) : $res;
 }
 
-sub execute
-{
+sub execute {
     my ( $res, $sth ) = $_[0]->do( $_[1], @_[ 2 .. $#_ ] );
     return wantarray ? ( $sth, $res ) : $sth;
 }
 
 BEGIN {
-    sub it
-    {
+
+    sub it {
         my ( $self, $st, @t ) = @_;
         if (@t) {
             if ( ref $t[0] ) {
@@ -261,8 +245,8 @@ BEGIN {
 }
 
 BEGIN {
-    sub rs
-    {
+
+    sub rs {
         my ( $self, $st, @t ) = @_;
         if (@t) {
             if ( ref $t[0] ) {
@@ -305,23 +289,19 @@ BEGIN {
     *resultset = *results = *rs;
 }
 
-sub delete
-{
+sub delete {
     return scalar $_[0]->abstract( 'delete', @_[ 1 .. $#_ ] );
 }
 
-sub insert
-{
+sub insert {
     return scalar $_[0]->abstract( 'insert', @_[ 1 .. $#_ ] );
 }
 
-sub update
-{
+sub update {
     return scalar $_[0]->abstract( 'update', @_[ 1 .. $#_ ] );
 }
 
-sub select
-{
+sub select {
     return ( $_[0]->abstract( 'select', @_[ 1 .. $#_ ] ) )[1];
 }
 
