@@ -98,10 +98,10 @@ sub _att
     return unless ref $_[0];
     my ( $att, $id, $self, @t ) = (
         do {
-            if ( defined $_[0]->{private_dbix_squirrel} ) {
-                $_[0]->{private_dbix_squirrel};
+            if ( defined $_[0]->{'private_dbix_squirrel'} ) {
+                $_[0]->{'private_dbix_squirrel'};
             } else {
-                $_[0]->{private_dbix_squirrel} = {};
+                $_[0]->{'private_dbix_squirrel'} = {};
             }
         },
         0+ $_[0],
@@ -109,10 +109,10 @@ sub _att
     );
     return wantarray ? ( $att, $self ) : $att unless @t;
     if ( @t == 1 && !defined $t[0] ) {
-        delete $self->{private_dbix_squirrel};
+        delete $self->{'private_dbix_squirrel'};
         return;
     }
-    $self->{private_dbix_squirrel} = {
+    $self->{'private_dbix_squirrel'} = {
         %{$att},
         do {
             if ( UNIVERSAL::isa( $t[0], 'HASH' ) ) {

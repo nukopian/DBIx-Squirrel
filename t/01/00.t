@@ -230,50 +230,50 @@ sub test_the_basics
     is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
       or dump_val { exp => $exp, got => $got };
 
-    # Check that "DBIx::Squirrel::st::_has_positional_placeholders_only"
+    # Check that "DBIx::Squirrel::st::_all_placeholders_are_positional"
     # works properly
 
     ( $exp, $got ) = (
         undef,
-        DBIx::Squirrel::st::_has_positional_placeholders_only(undef),
+        DBIx::Squirrel::st::_all_placeholders_are_positional(undef),
     );
-    is_deeply $got, $exp, '_has_positional_placeholders_only'
+    is_deeply $got, $exp, '_all_placeholders_are_positional'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         undef,
-        DBIx::Squirrel::st::_has_positional_placeholders_only(
+        DBIx::Squirrel::st::_all_placeholders_are_positional(
             {
                 1 => ':name',
             }
         ),
     );
-    is_deeply $got, $exp, '_has_positional_placeholders_only'
+    is_deeply $got, $exp, '_all_placeholders_are_positional'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         undef,
-        DBIx::Squirrel::st::_has_positional_placeholders_only(
+        DBIx::Squirrel::st::_all_placeholders_are_positional(
             {
                 1 => ':name',
                 2 => ':2',
             }
         ),
     );
-    is_deeply $got, $exp, '_has_positional_placeholders_only'
+    is_deeply $got, $exp, '_all_placeholders_are_positional'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         {
             1 => ':1',
         },
-        DBIx::Squirrel::st::_has_positional_placeholders_only(
+        DBIx::Squirrel::st::_all_placeholders_are_positional(
             {
                 1 => ':1',
             }
         ),
     );
-    is_deeply $got, $exp, '_has_positional_placeholders_only'
+    is_deeply $got, $exp, '_all_placeholders_are_positional'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -281,27 +281,27 @@ sub test_the_basics
             1 => ':1',
             2 => ':2'
         },
-        DBIx::Squirrel::st::_has_positional_placeholders_only(
+        DBIx::Squirrel::st::_all_placeholders_are_positional(
             {
                 1 => ':1',
                 2 => ':2',
             }
         ),
     );
-    is_deeply $got, $exp, '_has_positional_placeholders_only'
+    is_deeply $got, $exp, '_all_placeholders_are_positional'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         {
             1 => ':1',
         },
-        DBIx::Squirrel::st::_has_positional_placeholders_only(
+        DBIx::Squirrel::st::_all_placeholders_are_positional(
             {
                 1 => ':1',
             }
         ),
     );
-    is_deeply $got, $exp, '_has_positional_placeholders_only'
+    is_deeply $got, $exp, '_all_placeholders_are_positional'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -309,14 +309,14 @@ sub test_the_basics
             1 => '$1',
             2 => '$2'
         },
-        DBIx::Squirrel::st::_has_positional_placeholders_only(
+        DBIx::Squirrel::st::_all_placeholders_are_positional(
             {
                 1 => '$1',
                 2 => '$2',
             }
         ),
     );
-    is_deeply $got, $exp, '_has_positional_placeholders_only'
+    is_deeply $got, $exp, '_all_placeholders_are_positional'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -324,135 +324,135 @@ sub test_the_basics
             1 => '?1',
             2 => '?2'
         },
-        DBIx::Squirrel::st::_has_positional_placeholders_only(
+        DBIx::Squirrel::st::_all_placeholders_are_positional(
             {
                 1 => '?1',
                 2 => '?2',
             }
         ),
     );
-    is_deeply $got, $exp, '_has_positional_placeholders_only'
+    is_deeply $got, $exp, '_all_placeholders_are_positional'
       or dump_val { exp => $exp, got => $got };
 
-    # Check that "DBIx::Squirrel::st::_map_places_to_values" works
+    # Check that "DBIx::Squirrel::st::_map_to_values" works
 
     ( $exp, $got ) = (
         [],
-        [DBIx::Squirrel::st::_map_places_to_values(undef)],
+        [DBIx::Squirrel::st::_map_to_values(undef)],
     );
-    is_deeply $got, $exp, '_map_places_to_values'
+    is_deeply $got, $exp, '_map_to_values'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         [ 'a', 'b' ],
         [
             @{
-                DBIx::Squirrel::st::_map_places_to_values(
+                DBIx::Squirrel::st::_map_to_values(
                     undef,
                     ( 'a', 'b' ),
                 )
             }
         ],
     );
-    is_deeply $got, $exp, '_map_places_to_values'
+    is_deeply $got, $exp, '_map_to_values'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         { '?1' => 'a', '?2' => 'b' },
         {
             @{
-                DBIx::Squirrel::st::_map_places_to_values(
+                DBIx::Squirrel::st::_map_to_values(
                     { 1 => '?1', 2 => '?2' },
                     ( 'a', 'b' ),
                 )
             }
         },
     );
-    is_deeply $got, $exp, '_map_places_to_values'
+    is_deeply $got, $exp, '_map_to_values'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         { '$1' => 'a', '$2' => 'b' },
         {
             @{
-                DBIx::Squirrel::st::_map_places_to_values(
+                DBIx::Squirrel::st::_map_to_values(
                     { 1 => '$1', 2 => '$2' },
                     ( 'a', 'b' ),
                 )
             }
         },
     );
-    is_deeply $got, $exp, '_map_places_to_values'
+    is_deeply $got, $exp, '_map_to_values'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         { ':1' => 'a', ':2' => 'b' },
         {
             @{
-                DBIx::Squirrel::st::_map_places_to_values(
+                DBIx::Squirrel::st::_map_to_values(
                     { 1 => ':1', 2 => ':2' },
                     ( 'a', 'b' ),
                 )
             }
         },
     );
-    is_deeply $got, $exp, '_map_places_to_values'
+    is_deeply $got, $exp, '_map_to_values'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         { ':n1' => 'a', ':n2' => 'b' },
         {
             @{
-                DBIx::Squirrel::st::_map_places_to_values(
+                DBIx::Squirrel::st::_map_to_values(
                     { 1 => ':n1', 2 => ':n2' },
                     ( ':n1' => 'a', ':n2' => 'b' ),
                 )
             }
         },
     );
-    is_deeply $got, $exp, '_map_places_to_values'
+    is_deeply $got, $exp, '_map_to_values'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         { 'n1' => 'a', 'n2' => 'b' },
         {
             @{
-                DBIx::Squirrel::st::_map_places_to_values(
+                DBIx::Squirrel::st::_map_to_values(
                     { 1 => ':n1', 2 => ':n2' },
                     ( 'n1' => 'a', 'n2' => 'b' ),
                 )
             }
         },
     );
-    is_deeply $got, $exp, '_map_places_to_values'
+    is_deeply $got, $exp, '_map_to_values'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         { 'n1' => 'a', 'n2' => 'b' },
         {
             @{
-                DBIx::Squirrel::st::_map_places_to_values(
+                DBIx::Squirrel::st::_map_to_values(
                     { 1 => ':n1', 2 => ':n2' },
                     [ 'n1' => 'a', 'n2' => 'b' ],
                 )
             }
         },
     );
-    is_deeply $got, $exp, '_map_places_to_values'
+    is_deeply $got, $exp, '_map_to_values'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         { 'n1' => 'a', 'n2' => 'b' },
         {
             @{
-                DBIx::Squirrel::st::_map_places_to_values(
+                DBIx::Squirrel::st::_map_to_values(
                     { 1    => ':n1', 2    => ':n2' },
                     { 'n1' => 'a',   'n2' => 'b' },
                 )
             }
         },
     );
-    is_deeply $got, $exp, '_map_places_to_values'
+    is_deeply $got, $exp, '_map_to_values'
       or dump_val { exp => $exp, got => $got };
 
     # Check that "DBIx::Squirrel::st::bind_param" works properly
@@ -747,7 +747,7 @@ sub test_the_basics
             NormalisedStatement => "SELECT * FROM media_types WHERE Name = ?",
             Hash => hash("SELECT * FROM media_types WHERE Name = :name"),
         },
-        $sth->{private_dbix_squirrel},
+        $sth->{'private_dbix_squirrel'},
     );
     is_deeply $got, $exp, 'iterate'
       or dump_val { exp => $exp, got => $got };
