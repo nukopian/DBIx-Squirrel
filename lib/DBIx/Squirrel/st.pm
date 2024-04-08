@@ -7,15 +7,13 @@ use constant E_UNKNOWN_PLACEHOLDER => 'Cannot bind unknown placeholder (%s)';
 use constant W_CHECK_BIND_VALS     => 'Check bind values match placeholder scheme';
 
 BEGIN {
-    require DBIx::Squirrel
-      unless defined $DBIx::Squirrel::VERSION;
+    require DBIx::Squirrel unless defined $DBIx::Squirrel::VERSION;
     our $VERSION = $DBIx::Squirrel::VERSION;
     our @ISA     = 'DBI::st';
 }
 
 use namespace::autoclean;
 use DBIx::Squirrel::util 'throw', 'whine';
-use Data::Dumper 'Dumper';
 
 {
     my $r;
@@ -145,33 +143,25 @@ sub _map_to_values {
 }
 
 sub bind_param {
-    my $self     = shift;
-    my %bindable = do {
+    my $self    = shift;
+    my %bindings = do {
         if ( my $placeholders = $self->_att->{'Placeholders'} ) {
             if ( $_[0] =~ m/^[\:\$\?]?(?<bind_id>\d+)$/ ) {
                 ( $+{'bind_id'} => $_[1] )
             } else {
-                my $prefixed = do {
-                    if ( substr( $_[0], 0, 1 ) eq ':' ) {
-                        $_[0];
-                    } else {
-                        ':' . $_[0];
-                    }
-                };
-                map { ( $_ => $_[1] ) }
-                  grep { $placeholders->{$_} eq $prefixed }
-                  keys %{$placeholders};
+                my $prefixed = $_[0] =~ m/^[\:\$\?]/ ? $_[0] : ":$_[0]";
+                map { ( $_ => $_[1] ) } grep { $placeholders->{$_} eq $prefixed } keys %{$placeholders};
             }
         } else {
             ( $_[0] => $_[1] );
         }
     };
-    unless (%bindable) {
+    unless (%bindings) {
         return if $DBIx::Squirrel::RELAXED_PARAM_CHECKS;
         throw E_UNKNOWN_PLACEHOLDER, $_[0];
     }
-    $self->SUPER::bind_param(%bindable);
-    return wantarray ? %bindable : \%bindable;
+    $self->SUPER::bind_param(%bindings);
+    return wantarray ? %bindings : \%bindings;
 }
 
 BEGIN {
