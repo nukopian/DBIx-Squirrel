@@ -117,53 +117,31 @@ our %_HASH_STRATEGIES;
 
 BEGIN {
     $_SHA256_B64 = eval {
-        require Digest::SHA;
-        my $sha = Digest::SHA->new( 256 );
-        sub {
-            return unless defined $_[ 0 ];
+                sub {
+            return unless defined $_[0];
             my ( $st, $bool ) = @_;
-            unless ( exists $_HASH_OF{ $st } && !$bool ) {
-                chomp( $_HASH_OF{ $st } = $sha->add( $st )->b64digest );
-                $_HASH_WITH{ $_HASH_OF{ $st } } = $st;
+            unless ( exists $_HASH_OF{$st} && !$bool ) {
+                $_HASH_OF{$st} = sha256_base64($st);
+                $_HASH_WITH{ $_HASH_OF{$st} } = $st;
             }
-            return $_HASH_OF{ $st };
+            return $_HASH_OF{$st};
         };
     };
 
-    $_MIME_B64 = eval {
-        require MIME::Base64;
-        sub {
-            return unless defined $_[ 0 ];
-            my ( $st, $bool ) = @_;
-            unless ( exists $_HASH_OF{ $st } && !$bool ) {
-                chomp( $_HASH_OF{ $st } = MIME::Base64::encode_base64( $st ) );
-                $_HASH_WITH{ $_HASH_OF{ $st } } = $st;
-            }
-            return $_HASH_OF{ $st };
-        };
-    };
-
-    %_HASH_STRATEGIES = map { $_->[ 0 ] => $_->[ 1 ] } (
-        @_HASH_STRATEGIES = grep { !!$_->[ 1 ] } (
+    %_HASH_STRATEGIES = map { $_->[0] => $_->[1] } (
+        @_HASH_STRATEGIES = grep { !!$_->[1] } (
             [ '_SHA256_B64', $_SHA256_B64 ],
-            [ '_MIME_B64',   $_MIME_B64 ],
-            [ 'none',        sub { $_ = $_[ 0 ] } ],
-        )
+            )
     );
 
-    sub _select_hash_strategy {
-        $_HASH_STRATEGY = $_HASH_STRATEGIES[ 0 ][ 0 ];
-        $HASH           = $_HASH_STRATEGIES[ 0 ][ 1 ];
-        return $HASH;
-    }
-
-    &_select_hash_strategy;
-
-    sub hash { goto &{ $HASH } }
+    $_HASH_STRATEGY = $_HASH_STRATEGIES[0][0];
+        $HASH           = $_HASH_STRATEGIES[0][1];
+        
+    sub hash { goto &{$HASH} }
 
     sub unhash {
-        return undef unless defined $_[ 0 ];
-        return exists $_HASH_WITH{ $_[ 0 ] } ? $_HASH_WITH{ $_[ 0 ] } : $_[ 0 ];
+        return unless defined $_[0];
+        return exists $_HASH_WITH{ $_[0] } ? $_HASH_WITH{ $_[0] } : $_[0];
     }
 }
 
