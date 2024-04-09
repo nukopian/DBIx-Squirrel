@@ -6,15 +6,15 @@ use constant E_BAD_SQL_ABSTRACT_METHOD => 'Unimplemented SQL::Abstract method';
 use constant E_BAD_SQL_ABSTRACT        => 'Bad or undefined SQL::Abstract global';
 
 BEGIN {
-    require DBIx::Squirrel
-      unless defined $DBIx::Squirrel::VERSION;
+    require DBIx::Squirrel unless defined $DBIx::Squirrel::VERSION;
     our $VERSION = $DBIx::Squirrel::VERSION;
     our @ISA     = 'DBI::db';
 }
 
 use namespace::autoclean;
 use DBIx::Squirrel::util ':constants', ':hashing', 'throw';
-use Data::Dumper 'Dumper';
+use Data::Dumper::Concise;
+use Memoize;
 
 BEGIN {
     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
@@ -40,80 +40,32 @@ BEGIN {
     }
 }
 
-our $NORMALISE_SQL = 1;
-
-sub _sqlnorm {
-    my ( $s, $h ) = &_sqltrim;
-    return wantarray ? ( $s, $s, $h ) : $s unless $NORMALISE_SQL;
-    ( my $n = $s ) =~ s{[\:\$\?]\w+\b}{?}g;
-    return wantarray ? ( $n, $s, $h ) : $n;
-}
-
-sub _sqltrim {
-    (   my $s = do {
-            if ( ref $_[0] ) {
-                if ( UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::st' ) ) {
-                    $_[0]->_att->{'OriginalStatement'};
-                } else {
-                    throw E_EXP_STH
-                      unless UNIVERSAL::isa( $_[0], 'DBI::st' );
-                    $_[0]->{Statement};
-                }
-            } else {
-                defined $_[0] ? $_[0] : '';
-            }
-        }
-    ) =~ s{\A[\s\t\n\r]+|[\s\t\n\r]+\z}{}gs;
-    return wantarray ? ( $s, $HASH ? hash($s) : $s ) : $s;
-}
-
-our %_CACHE;
-
-sub _study {
-    my ( $n, $s, $h ) = &_sqlnorm;
-    return ( undef, undef, undef, undef ) unless defined $s;
-    my $r = defined $_CACHE{$h} ? $_CACHE{$h} : (
-        $_CACHE{$h} = do {
-            if ( my @p = $s =~ m{[\:\$\?]\w+\b}g ) {
-                [ { map { 1 + $_ => $p[$_] } ( 0 .. @p - 1 ) }, $n, $s, $h ];
-            } else {
-                [ undef, $n, $s, $h ];
-            }
-        }
-    );
-    return @{$r};
-}
-
 sub _att {
-    return unless ref $_[0];
-    my ( $att, $id, $self, @t ) = (
-        do {
-            if ( defined $_[0]->{'private_dbix_squirrel'} ) {
-                $_[0]->{'private_dbix_squirrel'};
-            } else {
-                $_[0]->{'private_dbix_squirrel'} = {};
-            }
-        },
-        0+ $_[0],
-        @_
-    );
-    return wantarray ? ( $att, $self ) : $att unless @t;
-    if ( @t == 1 && !defined $t[0] ) {
-        delete $self->{'private_dbix_squirrel'};
-        return;
+    my $self = shift;
+    return unless ref $self;
+    unless ( defined $self->{'private_dbix_squirrel'} ) {
+        $self->{'private_dbix_squirrel'} = {};
     }
-    $self->{'private_dbix_squirrel'} = {
-        %{$att},
-        do {
-            if ( UNIVERSAL::isa( $t[0], 'HASH' ) ) {
-                %{ $t[0] };
-            } elsif ( UNIVERSAL::isa( $t[0], 'ARRAY' ) ) {
-                @{ $t[0] };
-            } else {
-                @t;
-            }
-        },
-    };
+    unless (@_) {
+        return $self->{'private_dbix_squirrel'} unless wantarray;
+        return ( $self->{'private_dbix_squirrel'}, $self );
+    }
+    unless ( defined $_[0] ) {
+        delete $self->{'private_dbix_squirrel'};
+        shift;
+    }
+    if (@_) {
+        unless ( exists $self->{'private_dbix_squirrel'} ) {
+            $self->{'private_dbix_squirrel'} = {};
+        }
+        if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, %{ $_[0] } };
+        } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, @{ $_[0] } };
+        } else {
+            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, @_ };
+        }
+    }
     return $self;
 }
 
@@ -145,6 +97,78 @@ sub prepare_cached {
         }
     );
 }
+
+our %_CACHE;
+
+sub _study {
+    my ( $n, $s, $h ) = &_normalise_statement;
+    return ( undef, undef, undef, undef ) unless defined $s;
+    my $r = defined $_CACHE{$h} ? $_CACHE{$h} : (
+        $_CACHE{$h} = do {
+            if ( my @p = $s =~ m{[\:\$\?]\w+\b}g ) {
+                [ { map { 1 + $_ => $p[$_] } ( 0 .. @p - 1 ) }, $n, $s, $h ];
+            } else {
+                [ undef, $n, $s, $h ];
+            }
+        }
+    );
+    return @{$r};
+}
+
+our $NORMALISE_SQL = 1;
+
+sub _normalise_statement {
+    my ( $sql_string, $sql_digest ) = &_get_trimmed_sql_string_and_digest;
+    unless ($NORMALISE_SQL) {
+        return $sql_string unless wantarray;
+        return $sql_string, $sql_string, $sql_digest;
+    }
+    ( my $normalised_sql_string = $sql_string ) =~ s{[\:\$\?]\w+\b}{?}g;
+    return $normalised_sql_string unless wantarray;
+    return $normalised_sql_string, $sql_string, $sql_digest;
+}
+
+sub _get_trimmed_sql_string_and_digest {
+    my $sth_or_sql_string = shift;
+    my $sql_string        = do {
+        if ( ref $sth_or_sql_string ) {
+            if ( UNIVERSAL::isa( $sth_or_sql_string, 'DBIx::Squirrel::st' ) ) {
+                _trim_sql_string( $sth_or_sql_string->_att->{'OriginalStatement'} );
+            } elsif ( UNIVERSAL::isa( $sth_or_sql_string, 'DBI::st' ) ) {
+                _trim_sql_string( $sth_or_sql_string->{Statement} );
+            } else {
+                throw E_EXP_STH;
+            }
+        } else {
+            _trim_sql_string($sth_or_sql_string);
+        }
+    };
+    return $sql_string unless wantarray;
+    my $sql_digest = _hash_sql_string($sql_string);
+    return $sql_string, $sql_digest;
+}
+
+sub _hash_sql_string {
+    my $sql_string = shift;
+    return unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
+    return $HASH ? hash($sql_string) : $sql_string;
+}
+
+BEGIN { memoize('_hash_sql_string'); }
+
+sub _trim_sql_string {
+    my $sql_string = shift;
+    return '' unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
+    print STDERR "+++ (BEFORE)\n$sql_string\n";
+    (   s{\s+-{2}\s+.*$}{}gm,
+        s{^[[:blank:]\r\n]+}{}gm,
+        s{[[:blank:]\r\n]+$}{}gm,
+    ) for $sql_string;
+    print STDERR "+++ (AFTER)\n$sql_string\n";
+    return $sql_string;
+}
+
+BEGIN { memoize('_trim_sql_string'); }
 
 sub do {
     my ( $self, $st, @t ) = @_;

@@ -40,3 +40,4 @@ inc/
 .vscode/
 .gitattributes
 .meta.json
+.git/

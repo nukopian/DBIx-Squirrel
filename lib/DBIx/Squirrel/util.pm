@@ -29,9 +29,9 @@ BEGIN {
             qw/
               hash
               unhash
-              _sqlnorm
+              _normalise_statement
               _study
-              _sqltrim
+              _get_trimmed_sql_string_and_digest
               /
         ],
         'transform' => [
@@ -51,10 +51,10 @@ BEGIN {
         ],
     );
     our @EXPORT_OK = @{
-        $EXPORT_TAGS{ 'all' } = [
+        $EXPORT_TAGS{'all'} = [
             do {
                 my %seen;
-                grep { !$seen{ $_ }++ } map { @{ $EXPORT_TAGS{ $_ } } } (
+                grep { !$seen{$_}++ } map { @{ $EXPORT_TAGS{$_} } } (
                     'constants',
                     'hashing',
                     'sql',
@@ -68,17 +68,17 @@ BEGIN {
 
 use Carp ();
 use Data::Dumper::Concise;
+use Digest::SHA 'sha256_base64';
 use Scalar::Util ();
 use Sub::Name    ();
 
 sub throw {
     @_ = do {
-        if ( @_ ) {
+        if (@_) {
             my ( $f, @a ) = @_;
-            if ( @a ) {
+            if (@a) {
                 sprintf $f, @a;
-            }
-            else {
+            } else {
                 defined $f ? $f : 'Exception';
             }
         } ## end if ( @_ )
@@ -91,12 +91,11 @@ sub throw {
 
 sub whine {
     @_ = do {
-        if ( @_ ) {
+        if (@_) {
             my ( $f, @a ) = @_;
-            if ( @a ) {
+            if (@a) {
                 sprintf $f, @a;
-            }
-            else {
+            } else {
                 defined $f ? $f : 'Warning';
             }
         } ## end if ( @_ )
@@ -118,53 +117,31 @@ our %_HASH_STRATEGIES;
 
 BEGIN {
     $_SHA256_B64 = eval {
-        require Digest::SHA;
-        my $sha = Digest::SHA->new( 256 );
         sub {
-            return unless defined $_[ 0 ];
+            return unless defined $_[0];
             my ( $st, $bool ) = @_;
-            unless ( exists $_HASH_OF{ $st } && !$bool ) {
-                chomp( $_HASH_OF{ $st } = $sha->add( $st )->b64digest );
-                $_HASH_WITH{ $_HASH_OF{ $st } } = $st;
+            unless ( exists $_HASH_OF{$st} && !$bool ) {
+                $_HASH_OF{$st} = sha256_base64($st);
+                $_HASH_WITH{ $_HASH_OF{$st} } = $st;
             }
-            return $_HASH_OF{ $st };
+            return $_HASH_OF{$st};
         };
     };
 
-    $_MIME_B64 = eval {
-        require MIME::Base64;
-        sub {
-            return unless defined $_[ 0 ];
-            my ( $st, $bool ) = @_;
-            unless ( exists $_HASH_OF{ $st } && !$bool ) {
-                chomp( $_HASH_OF{ $st } = MIME::Base64::encode_base64( $st ) );
-                $_HASH_WITH{ $_HASH_OF{ $st } } = $st;
-            }
-            return $_HASH_OF{ $st };
-        };
-    };
-
-    %_HASH_STRATEGIES = map { $_->[ 0 ] => $_->[ 1 ] } (
-        @_HASH_STRATEGIES = grep { !!$_->[ 1 ] } (
+    %_HASH_STRATEGIES = map { $_->[0] => $_->[1] } (
+        @_HASH_STRATEGIES = grep { !!$_->[1] } (
             [ '_SHA256_B64', $_SHA256_B64 ],
-            [ '_MIME_B64',   $_MIME_B64 ],
-            [ 'none',        sub { $_ = $_[ 0 ] } ],
         )
     );
 
-    sub _select_hash_strategy {
-        $_HASH_STRATEGY = $_HASH_STRATEGIES[ 0 ][ 0 ];
-        $HASH           = $_HASH_STRATEGIES[ 0 ][ 1 ];
-        return $HASH;
-    }
+    $_HASH_STRATEGY = $_HASH_STRATEGIES[0][0];
+    $HASH           = $_HASH_STRATEGIES[0][1];
 
-    &_select_hash_strategy;
-
-    sub hash { goto &{ $HASH } }
+    sub hash { goto &{$HASH} }
 
     sub unhash {
-        return undef unless defined $_[ 0 ];
-        return exists $_HASH_WITH{ $_[ 0 ] } ? $_HASH_WITH{ $_[ 0 ] } : $_[ 0 ];
+        return unless defined $_[0];
+        return exists $_HASH_WITH{ $_[0] } ? $_HASH_WITH{ $_[0] } : $_[0];
     }
 }
 
@@ -231,22 +208,21 @@ sub cbargs {
 #
 sub cbargs_using {
     my ( $c, @t ) = do {
-        if ( defined $_[ 0 ] ) {
-            if ( UNIVERSAL::isa( $_[ 0 ], 'ARRAY' ) ) {
-                ( $_[ 0 ], @_[ 1 .. $#_ ] );
-            }
-            else {
+        if ( defined $_[0] ) {
+            if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                ( $_[0], @_[ 1 .. $#_ ] );
+            } else {
                 throw E_BAD_CB_LIST
-                  unless UNIVERSAL::isa( $_[ 0 ], 'CODE' );
-                ( [ $_[ 0 ] ], @_[ 1 .. $#_ ] );
+                  unless UNIVERSAL::isa( $_[0], 'CODE' );
+                ( [ $_[0] ], @_[ 1 .. $#_ ] );
             }
         } ## end if ( defined $_[ 0 ] )
         else {
             ( [], @_[ 1 .. $#_ ] );
         }
     };
-    while ( UNIVERSAL::isa( $t[ $#t ], 'CODE' ) ) {
-        unshift @{ $c }, pop @t;
+    while ( UNIVERSAL::isa( $t[$#t], 'CODE' ) ) {
+        unshift @{$c}, pop @t;
     }
     return ( $c, @t );
 }
@@ -281,16 +257,16 @@ sub cbargs_using {
 sub transform {
     return unless my @v = @_[ 1 .. $#_ ];
     my $c
-      = UNIVERSAL::isa( $_[ 0 ], 'ARRAY' ) ? $_[ 0 ]
-      : UNIVERSAL::isa( $_[ 0 ], 'CODE' )  ? [ $_[ 0 ] ]
-      :                                      undef;
-    if ( $c && @{ $c } ) {
-        local ( $_ );
-        for my $t ( @{ $c } ) {
-            last unless @v = do { ( $_ ) = @v; $t->( @v ) };
+      = UNIVERSAL::isa( $_[0], 'ARRAY' ) ? $_[0]
+      : UNIVERSAL::isa( $_[0], 'CODE' )  ? [ $_[0] ]
+      :                                    undef;
+    if ( $c && @{$c} ) {
+        local ($_);
+        for my $t ( @{$c} ) {
+            last unless @v = do { ($_) = @v; $t->(@v) };
         }
     }
-    return wantarray ? @v : @v == 1 ? $v[ 0 ] : @v;
+    return wantarray ? @v : @v == 1 ? $v[0] : @v;
 }
 
 1;
