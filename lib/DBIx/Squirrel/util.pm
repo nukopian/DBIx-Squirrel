@@ -30,7 +30,7 @@ BEGIN {
               hash
               unhash
               _normalise_statement
-              _study
+              _study_statement
               _get_trimmed_sql_string_and_digest
               /
         ],
