@@ -68,17 +68,17 @@ BEGIN {
 
 use Carp ();
 use Data::Dumper::Concise;
+use Digest::SHA 'sha256_base64';
 use Scalar::Util ();
 use Sub::Name    ();
 
 sub throw {
     @_ = do {
-        if ( @_ ) {
+        if (@_) {
             my ( $f, @a ) = @_;
-            if ( @a ) {
+            if (@a) {
                 sprintf $f, @a;
-            }
-            else {
+            } else {
                 defined $f ? $f : 'Exception';
             }
         } ## end if ( @_ )
@@ -91,12 +91,11 @@ sub throw {
 
 sub whine {
     @_ = do {
-        if ( @_ ) {
+        if (@_) {
             my ( $f, @a ) = @_;
-            if ( @a ) {
+            if (@a) {
                 sprintf $f, @a;
-            }
-            else {
+            } else {
                 defined $f ? $f : 'Warning';
             }
         } ## end if ( @_ )
