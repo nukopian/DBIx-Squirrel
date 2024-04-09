@@ -71,7 +71,7 @@ sub _att {
 
 sub prepare {
     my ( $self, $st, @args ) = @_;
-    my ( $p, $n, $t, $h ) = _study($st);
+    my ( $p, $n, $t, $h ) = _study_statement($st);
     throw E_EXP_STATEMENT unless defined $n;
     return                unless my $sth = $self->SUPER::prepare( $n, @args );
     return bless( $sth, 'DBIx::Squirrel::st' )->_att(
@@ -85,7 +85,7 @@ sub prepare {
 
 sub prepare_cached {
     my ( $self, $st, @args ) = @_;
-    my ( $p, $n, $t, $h ) = _study($st);
+    my ( $p, $n, $t, $h ) = _study_statement($st);
     throw E_EXP_STATEMENT unless defined $n;
     return                unless my $sth = $self->SUPER::prepare_cached( $n, @args );
     return bless( $sth, 'DBIx::Squirrel::st' )->_att(
@@ -100,19 +100,27 @@ sub prepare_cached {
 
 our %_CACHE;
 
-sub _study {
-    my ( $n, $s, $h ) = &_normalise_statement;
-    return ( undef, undef, undef, undef ) unless defined $s;
-    my $r = defined $_CACHE{$h} ? $_CACHE{$h} : (
-        $_CACHE{$h} = do {
-            if ( my @p = $s =~ m{[\:\$\?]\w+\b}g ) {
-                [ { map { 1 + $_ => $p[$_] } ( 0 .. @p - 1 ) }, $n, $s, $h ];
+sub _study_statement {
+    my ( $normalised_sql_string, $sql_string, $sql_digest ) = &_normalise_statement;
+    return unless defined $sql_string;
+    unless ( defined $_CACHE{$sql_digest} ) {
+        $_CACHE{$sql_digest} = do {
+            if ( my @placeholders = $sql_string =~ m{[\:\$\?]\w+\b}g ) {
+                [   +{ map { ( 1 + $_ => $placeholders[$_] ) } ( 0 .. @placeholders - 1 ) },
+                    $normalised_sql_string,
+                    $sql_string,
+                    $sql_digest,
+                ];
             } else {
-                [ undef, $n, $s, $h ];
+                [   undef,
+                    $normalised_sql_string,
+                    $sql_string,
+                    $sql_digest,
+                ];
             }
-        }
-    );
-    return @{$r};
+        };
+    }
+    return @{ $_CACHE{$sql_digest} };
 }
 
 our $NORMALISE_SQL = 1;

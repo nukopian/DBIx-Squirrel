@@ -76,7 +76,7 @@ sub test_the_basics
     $cached_ekorn_dbh = DBIx::Squirrel->connect_cached(@T_DB_CONNECT_ARGS);
     isa_ok $cached_ekorn_dbh, 'DBIx::Squirrel::db';
 
-    # Check that "DBIx::Squirrel::db::DBIx::Squirrel::db::_study" works properly
+    # Check that "DBIx::Squirrel::db::DBIx::Squirrel::db::_study_statement" works properly
 
     ( $exp, $got ) = (
         [
@@ -85,10 +85,10 @@ sub test_the_basics
             DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = ?'),
         ],
         do {
-            [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col = ? ') ];
+            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col = ? ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
+    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -98,10 +98,10 @@ sub test_the_basics
             DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = ? AND col2 = ?'),
         ],
         do {
-            [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col1 = ? AND col2 = ? ') ];
+            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col1 = ? AND col2 = ? ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
+    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -113,10 +113,10 @@ sub test_the_basics
             DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = $1')
         ],
         do {
-            [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col = $1 ') ];
+            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col = $1 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
+    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -129,10 +129,10 @@ sub test_the_basics
             DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = $1 AND col2 = $2')
         ],
         do {
-            [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col1 = $1 AND col2 = $2 ') ];
+            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col1 = $1 AND col2 = $2 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
+    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -144,10 +144,10 @@ sub test_the_basics
             DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = ?1')
         ],
         do {
-            [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col = ?1 ') ];
+            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col = ?1 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
+    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -160,10 +160,10 @@ sub test_the_basics
             DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = ?1 AND col2 = ?2')
         ],
         do {
-            [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col1 = ?1 AND col2 = ?2 ') ];
+            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col1 = ?1 AND col2 = ?2 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
+    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -175,10 +175,10 @@ sub test_the_basics
             DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = :1')
         ],
         do {
-            [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col = :1 ') ];
+            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col = :1 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
+    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -192,11 +192,11 @@ sub test_the_basics
         ],
         do {
             [
-                DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col1 = :1 AND col2 = :2 '),
+                DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col1 = :1 AND col2 = :2 '),
             ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
+    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -208,10 +208,10 @@ sub test_the_basics
             DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = :n'),
         ],
         do {
-            [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col = :n ') ];
+            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col = :n ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
+    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -224,10 +224,10 @@ sub test_the_basics
             DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = :n1 AND col2 = :n2')
         ],
         do {
-            [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col1 = :n1 AND col2 = :n2 ') ];
+            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col1 = :n1 AND col2 = :n2 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study'
+    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
       or dump_val { exp => $exp, got => $got };
 
     # Check that "DBIx::Squirrel::st::_all_placeholders_are_positional"
