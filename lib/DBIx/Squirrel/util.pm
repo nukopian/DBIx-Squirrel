@@ -29,9 +29,9 @@ BEGIN {
             qw/
               hash
               unhash
-              _sqlnorm
+              _normalise_statement
               _study
-              _sqltrim
+              _get_trimmed_sql_string_and_digest
               /
         ],
         'transform' => [
@@ -51,10 +51,10 @@ BEGIN {
         ],
     );
     our @EXPORT_OK = @{
-        $EXPORT_TAGS{ 'all' } = [
+        $EXPORT_TAGS{'all'} = [
             do {
                 my %seen;
-                grep { !$seen{ $_ }++ } map { @{ $EXPORT_TAGS{ $_ } } } (
+                grep { !$seen{$_}++ } map { @{ $EXPORT_TAGS{$_} } } (
                     'constants',
                     'hashing',
                     'sql',
@@ -117,7 +117,7 @@ our %_HASH_STRATEGIES;
 
 BEGIN {
     $_SHA256_B64 = eval {
-                sub {
+        sub {
             return unless defined $_[0];
             my ( $st, $bool ) = @_;
             unless ( exists $_HASH_OF{$st} && !$bool ) {
@@ -131,12 +131,12 @@ BEGIN {
     %_HASH_STRATEGIES = map { $_->[0] => $_->[1] } (
         @_HASH_STRATEGIES = grep { !!$_->[1] } (
             [ '_SHA256_B64', $_SHA256_B64 ],
-            )
+        )
     );
 
     $_HASH_STRATEGY = $_HASH_STRATEGIES[0][0];
-        $HASH           = $_HASH_STRATEGIES[0][1];
-        
+    $HASH           = $_HASH_STRATEGIES[0][1];
+
     sub hash { goto &{$HASH} }
 
     sub unhash {

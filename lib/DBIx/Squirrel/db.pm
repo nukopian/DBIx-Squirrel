@@ -13,7 +13,8 @@ BEGIN {
 
 use namespace::autoclean;
 use DBIx::Squirrel::util ':constants', ':hashing', 'throw';
-use Data::Dumper 'Dumper';
+use Data::Dumper::Concise;
+use Memoize;
 
 BEGIN {
     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
@@ -100,7 +101,7 @@ sub prepare_cached {
 our %_CACHE;
 
 sub _study {
-    my ( $n, $s, $h ) = &_sqlnorm;
+    my ( $n, $s, $h ) = &_normalise_statement;
     return ( undef, undef, undef, undef ) unless defined $s;
     my $r = defined $_CACHE{$h} ? $_CACHE{$h} : (
         $_CACHE{$h} = do {
@@ -116,32 +117,54 @@ sub _study {
 
 our $NORMALISE_SQL = 1;
 
-sub _sqlnorm {
-    my ( $s, $h ) = &_sqltrim;
-    if ( $NORMALISE_SQL ) {
-        ( my $n = $s ) =~ s{[\:\$\?]\w+\b}{?}g;
-        return wantarray ? ( $n, $s, $h ) : $n;
+sub _normalise_statement {
+    my ( $sql_string, $sql_digest ) = &_get_trimmed_sql_string_and_digest;
+    unless ($NORMALISE_SQL) {
+        return $sql_string unless wantarray;
+        return $sql_string, $sql_string, $sql_digest;
     }
-    return wantarray ? ( $s, $s, $h ) : $s;
+    ( my $normalised_sql_string = $sql_string ) =~ s{[\:\$\?]\w+\b}{?}g;
+    return $normalised_sql_string unless wantarray;
+    return $normalised_sql_string, $sql_string, $sql_digest;
 }
 
-sub _sqltrim {
-    (   my $s = do {
-            if ( ref $_[0] ) {
-                if ( UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::st' ) ) {
-                    $_[0]->_att->{'OriginalStatement'};
-                } else {
-                    throw E_EXP_STH
-                      unless UNIVERSAL::isa( $_[0], 'DBI::st' );
-                    $_[0]->{Statement};
-                }
+sub _get_trimmed_sql_string_and_digest {
+    my $sth_or_sql_string = shift;
+    my $sql_string        = do {
+        if ( ref $sth_or_sql_string ) {
+            if ( UNIVERSAL::isa( $sth_or_sql_string, 'DBIx::Squirrel::st' ) ) {
+                _trim_sql_string( $sth_or_sql_string->_att->{'OriginalStatement'} );
+            } elsif ( UNIVERSAL::isa( $sth_or_sql_string, 'DBI::st' ) ) {
+                _trim_sql_string( $sth_or_sql_string->{Statement} );
             } else {
-                defined $_[0] ? $_[0] : '';
+                throw E_EXP_STH;
             }
+        } else {
+            _trim_sql_string($sth_or_sql_string);
         }
-    ) =~ s{\A[\s\t\n\r]+|[\s\t\n\r]+\z}{}gs;
-    return wantarray ? ( $s, $HASH ? hash($s) : $s ) : $s;
+    };
+    return $sql_string unless wantarray;
+    my $sql_digest = _hash_sql_string($sql_string);
+    return $sql_string, $sql_digest;
 }
+
+sub _hash_sql_string {
+    my $sql_string = shift;
+    return unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
+    return $HASH ? hash($sql_string) : $sql_string;
+}
+
+BEGIN { memoize('_hash_sql_string'); }
+
+sub _trim_sql_string {
+    my $sql_string = shift;
+    return '' unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
+    s{\A[\s\t\n\r]+}{}s,
+      s{[\s\t\n\r]+\z}{}s for $sql_string;
+    return $sql_string;
+}
+
+BEGIN { memoize('_trim_sql_string'); }
 
 sub do {
     my ( $self, $st, @t ) = @_;

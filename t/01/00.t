@@ -82,7 +82,7 @@ sub test_the_basics
         [
             undef,
             'SELECT * FROM table WHERE col = ?',
-            DBIx::Squirrel::db::_sqltrim('SELECT * FROM table WHERE col = ?'),
+            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = ?'),
         ],
         do {
             [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col = ? ') ];
@@ -95,7 +95,7 @@ sub test_the_basics
         [
             undef,
             'SELECT * FROM table WHERE col1 = ? AND col2 = ?',
-            DBIx::Squirrel::db::_sqltrim('SELECT * FROM table WHERE col1 = ? AND col2 = ?'),
+            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = ? AND col2 = ?'),
         ],
         do {
             [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col1 = ? AND col2 = ? ') ];
@@ -110,7 +110,7 @@ sub test_the_basics
                 1 => '$1',
             },
             'SELECT * FROM table WHERE col = ?',
-            DBIx::Squirrel::db::_sqltrim('SELECT * FROM table WHERE col = $1')
+            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = $1')
         ],
         do {
             [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col = $1 ') ];
@@ -126,7 +126,7 @@ sub test_the_basics
                 2 => '$2',
             },
             'SELECT * FROM table WHERE col1 = ? AND col2 = ?',
-            DBIx::Squirrel::db::_sqltrim('SELECT * FROM table WHERE col1 = $1 AND col2 = $2')
+            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = $1 AND col2 = $2')
         ],
         do {
             [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col1 = $1 AND col2 = $2 ') ];
@@ -141,7 +141,7 @@ sub test_the_basics
                 1 => '?1',
             },
             'SELECT * FROM table WHERE col = ?',
-            DBIx::Squirrel::db::_sqltrim('SELECT * FROM table WHERE col = ?1')
+            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = ?1')
         ],
         do {
             [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col = ?1 ') ];
@@ -157,7 +157,7 @@ sub test_the_basics
                 2 => '?2',
             },
             'SELECT * FROM table WHERE col1 = ? AND col2 = ?',
-            DBIx::Squirrel::db::_sqltrim('SELECT * FROM table WHERE col1 = ?1 AND col2 = ?2')
+            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = ?1 AND col2 = ?2')
         ],
         do {
             [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col1 = ?1 AND col2 = ?2 ') ];
@@ -172,7 +172,7 @@ sub test_the_basics
                 1 => ':1',
             },
             'SELECT * FROM table WHERE col = ?',
-            DBIx::Squirrel::db::_sqltrim('SELECT * FROM table WHERE col = :1')
+            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = :1')
         ],
         do {
             [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col = :1 ') ];
@@ -188,7 +188,7 @@ sub test_the_basics
                 2 => ':2',
             },
             'SELECT * FROM table WHERE col1 = ? AND col2 = ?',
-            DBIx::Squirrel::db::_sqltrim('SELECT * FROM table WHERE col1 = :1 AND col2 = :2'),
+            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = :1 AND col2 = :2'),
         ],
         do {
             [
@@ -205,7 +205,7 @@ sub test_the_basics
                 1 => ':n',
             },
             'SELECT * FROM table WHERE col = ?',
-            DBIx::Squirrel::db::_sqltrim('SELECT * FROM table WHERE col = :n'),
+            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = :n'),
         ],
         do {
             [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col = :n ') ];
@@ -221,7 +221,7 @@ sub test_the_basics
                 2 => ':n2',
             },
             'SELECT * FROM table WHERE col1 = ? AND col2 = ?',
-            DBIx::Squirrel::db::_sqltrim('SELECT * FROM table WHERE col1 = :n1 AND col2 = :n2')
+            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = :n1 AND col2 = :n2')
         ],
         do {
             [ DBIx::Squirrel::db::_study(' SELECT * FROM table WHERE col1 = :n1 AND col2 = :n2 ') ];
