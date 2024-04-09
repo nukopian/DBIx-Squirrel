@@ -231,22 +231,21 @@ sub cbargs {
 #
 sub cbargs_using {
     my ( $c, @t ) = do {
-        if ( defined $_[ 0 ] ) {
-            if ( UNIVERSAL::isa( $_[ 0 ], 'ARRAY' ) ) {
-                ( $_[ 0 ], @_[ 1 .. $#_ ] );
-            }
-            else {
+        if ( defined $_[0] ) {
+            if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                ( $_[0], @_[ 1 .. $#_ ] );
+            } else {
                 throw E_BAD_CB_LIST
-                  unless UNIVERSAL::isa( $_[ 0 ], 'CODE' );
-                ( [ $_[ 0 ] ], @_[ 1 .. $#_ ] );
+                  unless UNIVERSAL::isa( $_[0], 'CODE' );
+                ( [ $_[0] ], @_[ 1 .. $#_ ] );
             }
         } ## end if ( defined $_[ 0 ] )
         else {
             ( [], @_[ 1 .. $#_ ] );
         }
     };
-    while ( UNIVERSAL::isa( $t[ $#t ], 'CODE' ) ) {
-        unshift @{ $c }, pop @t;
+    while ( UNIVERSAL::isa( $t[$#t], 'CODE' ) ) {
+        unshift @{$c}, pop @t;
     }
     return ( $c, @t );
 }
@@ -281,16 +280,16 @@ sub cbargs_using {
 sub transform {
     return unless my @v = @_[ 1 .. $#_ ];
     my $c
-      = UNIVERSAL::isa( $_[ 0 ], 'ARRAY' ) ? $_[ 0 ]
-      : UNIVERSAL::isa( $_[ 0 ], 'CODE' )  ? [ $_[ 0 ] ]
-      :                                      undef;
-    if ( $c && @{ $c } ) {
-        local ( $_ );
-        for my $t ( @{ $c } ) {
-            last unless @v = do { ( $_ ) = @v; $t->( @v ) };
+      = UNIVERSAL::isa( $_[0], 'ARRAY' ) ? $_[0]
+      : UNIVERSAL::isa( $_[0], 'CODE' )  ? [ $_[0] ]
+      :                                    undef;
+    if ( $c && @{$c} ) {
+        local ($_);
+        for my $t ( @{$c} ) {
+            last unless @v = do { ($_) = @v; $t->(@v) };
         }
     }
-    return wantarray ? @v : @v == 1 ? $v[ 0 ] : @v;
+    return wantarray ? @v : @v == 1 ? $v[0] : @v;
 }
 
 1;
