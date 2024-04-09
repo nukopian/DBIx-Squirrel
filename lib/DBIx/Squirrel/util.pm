@@ -106,43 +106,22 @@ sub whine {
     goto &Carp::cluck;
 }
 
-our $HASH;
-our $_SHA256_B64;
-our $_MIME_B64;
 our %_HASH_OF;
 our %_HASH_WITH;
-our $_HASH_STRATEGY;
-our @_HASH_STRATEGIES;
-our %_HASH_STRATEGIES;
 
-BEGIN {
-    $_SHA256_B64 = eval {
-        sub {
-            return unless defined $_[0];
-            my ( $st, $bool ) = @_;
-            unless ( exists $_HASH_OF{$st} && !$bool ) {
-                $_HASH_OF{$st} = sha256_base64($st);
-                $_HASH_WITH{ $_HASH_OF{$st} } = $st;
-            }
-            return $_HASH_OF{$st};
-        };
-    };
-
-    %_HASH_STRATEGIES = map { $_->[0] => $_->[1] } (
-        @_HASH_STRATEGIES = grep { !!$_->[1] } (
-            [ '_SHA256_B64', $_SHA256_B64 ],
-        )
-    );
-
-    $_HASH_STRATEGY = $_HASH_STRATEGIES[0][0];
-    $HASH           = $_HASH_STRATEGIES[0][1];
-
-    sub hash { goto &{$HASH} }
-
-    sub unhash {
-        return unless defined $_[0];
-        return exists $_HASH_WITH{ $_[0] } ? $_HASH_WITH{ $_[0] } : $_[0];
+sub hash {
+    return unless defined $_[0];
+    my ( $st, $bool ) = @_;
+    unless ( exists $_HASH_OF{$st} && !$bool ) {
+        $_HASH_OF{$st} = sha256_base64($st);
+        $_HASH_WITH{ $_HASH_OF{$st} } = $st;
     }
+    return $_HASH_OF{$st};
+}
+
+sub unhash {
+    return unless defined $_[0];
+    return exists $_HASH_WITH{ $_[0] } ? $_HASH_WITH{ $_[0] } : $_[0];
 }
 
 # Separates any trailing code-references ("callbacks") from other arguments,

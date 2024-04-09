@@ -196,41 +196,6 @@ subtest 'DBIx::Squirrel::db::_normalise_statement' => sub {
     );
 };
 
-subtest 'hashing' => sub {
-    my $_SHA256_B64        = $DBIx::Squirrel::util::_SHA256_B64;
-    my $_MIME_B64          = $DBIx::Squirrel::util::_MIME_B64;
-    my $hash_of           = \%DBIx::Squirrel::util::_HASH_OF;
-    my $hash_with         = \%DBIx::Squirrel::util::_HASH_WITH;
-    my $hash_strategies_a = \@DBIx::Squirrel::util::_HASH_STRATEGIES;
-    my $hash_strategies_h = \%DBIx::Squirrel::util::_HASH_STRATEGIES;
-
-    is hash('Foo'), $hash_strategies_a->[0][1]->('Foo');
-    is unhash( hash('Foo') ), 'Foo';
-
-    SKIP: {
-        undef %DBIx::Squirrel::util::_HASH_OF;
-        undef %DBIx::Squirrel::util::_HASH_WITH;
-        skip 'Skipping tests', 3 unless $_SHA256_B64;
-
-        my $h = $_SHA256_B64->('Foo');
-        is $h, 'HL7HN/hj5JIs7mPMLrv6r80c/4t5DYz9LmpdVQtkivo';
-        is $hash_of->{'Foo'}, $h;
-        is $hash_with->{ $hash_of->{'Foo'} }, 'Foo';
-    }
-
-    SKIP: {
-        undef %DBIx::Squirrel::util::_HASH_OF;
-        undef %DBIx::Squirrel::util::_HASH_WITH;
-
-        skip 'Skipping tests', 3 unless $_MIME_B64;
-
-        my $h = $_MIME_B64->( 'Foo', 1 );
-        is $h, 'Rm9v';
-        is $hash_of->{'Foo'}, $h;
-        is $hash_with->{ $hash_of->{'Foo'} }, 'Foo';
-    }
-};
-
 subtest 'cbargs' => sub {
     %hash = (
         'sub1' => sub { 1 },

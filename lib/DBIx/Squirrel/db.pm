@@ -151,7 +151,7 @@ sub _get_trimmed_sql_string_and_digest {
 sub _hash_sql_string {
     my $sql_string = shift;
     return unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
-    return $HASH ? hash($sql_string) : $sql_string;
+    return hash($sql_string);
 }
 
 BEGIN { memoize('_hash_sql_string'); }
