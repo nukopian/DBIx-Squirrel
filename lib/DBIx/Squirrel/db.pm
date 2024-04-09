@@ -159,8 +159,12 @@ BEGIN { memoize('_hash_sql_string'); }
 sub _trim_sql_string {
     my $sql_string = shift;
     return '' unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
-    s{\A[\s\t\n\r]+}{}s,
-      s{[\s\t\n\r]+\z}{}s for $sql_string;
+    print STDERR "+++ (BEFORE)\n$sql_string\n";
+    (   s{\s+-{2}\s+.*$}{}gm,
+        s{^[[:blank:]\r\n]+}{}gm,
+        s{[[:blank:]\r\n]+$}{}gm,
+    ) for $sql_string;
+    print STDERR "+++ (AFTER)\n$sql_string\n";
     return $sql_string;
 }
 

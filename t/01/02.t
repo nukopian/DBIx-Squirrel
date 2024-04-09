@@ -63,10 +63,14 @@ sub test_prepare_execute_fetch_multiple_rows
     diag "Result contains multiple rows";
     diag "";
 
-    $sql = << '';
+    $sql = << 'EOF';
     SELECT *
-    FROM media_types
+
+    FROM media_types -- comment
+
+    -- comment
     ORDER BY MediaTypeId
+EOF
 
     @arrayrefs = (
         [ 1, "MPEG audio file", ],
