@@ -30,176 +30,57 @@ our ( $aref,   $href );
 our ( $cref,   $crefs );
 our (@args);
 
-subtest 'DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest' => sub {
-    my $hash_of = \%DBIx::Squirrel::util::_HASH_OF;
-
-    is( DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest("  \n\t  SELECT * FROM t  \n  "), 'SELECT * FROM t' );
-    is_deeply(
-        [ DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest("  \n\t  SELECT * FROM t  \n  ") ],
-        [
-            'SELECT * FROM t',
-            $hash_of->{'SELECT * FROM t'}
-        ]
-    );
+subtest 'get_trimmed_sql_and_digest' => sub {
+    is( get_trimmed_sql_and_digest("  \n\t  SELECT * FROM t  \n  "), 'SELECT * FROM t' );
 
     my $dbi_dbh = DBI->connect(@T_DB_CONNECT_ARGS);
     my $dbi_sth = $dbi_dbh->prepare("  SELECT * FROM media_types  ");
-    is_deeply(
-        [ DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest($dbi_sth) ],
-        [
-            'SELECT * FROM media_types',
-            $hash_of->{'SELECT * FROM media_types'}
-        ]
-    );
     $dbi_dbh->disconnect;
 
     my $ekorn_dbh = DBIx::Squirrel->connect(@T_DB_CONNECT_ARGS);
     my $ekorn_sth = $ekorn_dbh->prepare("  SELECT COUNT(*) FROM media_types  ");
-    is_deeply(
-        [ DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest($ekorn_sth) ],
-        [
-            'SELECT COUNT(*) FROM media_types',
-            $hash_of->{'SELECT COUNT(*) FROM media_types'}
-        ]
-    );
     $ekorn_dbh->disconnect;
 };
 
-subtest 'DBIx::Squirrel::db::_normalise_statement' => sub {
-    my $hash_of = \%DBIx::Squirrel::util::_HASH_OF;
+subtest 'normalise_statement' => sub {
+    undef $DBIx::Squirrel::NORMALISE_SQL;
 
-    undef $DBIx::Squirrel::db::NORMALISE_SQL;
-
-    is(
-        DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ?   '),
+    is( normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ?   '),
         'SELECT * FROM media_types WHERE MediatypeId = ?',
     );
-    is(
-        DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ?1   '),
+    is( normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ?1   '),
         'SELECT * FROM media_types WHERE MediatypeId = ?1',
     );
-    is(
-        DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = $1   '),
+    is( normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = $1   '),
         'SELECT * FROM media_types WHERE MediatypeId = $1',
     );
-    is(
-        DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :1   '),
+    is( normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :1   '),
         'SELECT * FROM media_types WHERE MediatypeId = :1',
     );
-    is(
-        DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :id   '),
+    is( normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :id   '),
         'SELECT * FROM media_types WHERE MediatypeId = :id',
     );
-    is_deeply(
-        [ DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ?   ') ],
-        [
-            'SELECT * FROM media_types WHERE MediatypeId = ?',
-            'SELECT * FROM media_types WHERE MediatypeId = ?',
-            $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = ?'},
-        ]
-    );
-    is_deeply(
-        [ DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ?1   ') ],
-        [
-            'SELECT * FROM media_types WHERE MediatypeId = ?1',
-            'SELECT * FROM media_types WHERE MediatypeId = ?1',
-            $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = ?1'},
-        ]
-    );
-    is_deeply(
-        [ DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = $1   ') ],
-        [
-            'SELECT * FROM media_types WHERE MediatypeId = $1',
-            'SELECT * FROM media_types WHERE MediatypeId = $1',
-            $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = $1'},
-        ]
-    );
-    is_deeply(
-        [ DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :1   ') ],
-        [
-            'SELECT * FROM media_types WHERE MediatypeId = :1',
-            'SELECT * FROM media_types WHERE MediatypeId = :1',
-            $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = :1'},
-        ]
-    );
-    is_deeply(
-        [ DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :id   ') ],
-        [
-            'SELECT * FROM media_types WHERE MediatypeId = :id',
-            'SELECT * FROM media_types WHERE MediatypeId = :id',
-            $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = :id'},
-        ]
-    );
 
-    $DBIx::Squirrel::db::NORMALISE_SQL = 1;
+    $DBIx::Squirrel::NORMALISE_SQL = 1;
 
-    is(
-        DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?   '),
+    is( normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?   '),
         'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
     );
-    is(
-        DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ?1 AND Name = ?2   '),
+    is( normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ?1 AND Name = ?2   '),
         'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
     );
-    is(
-        DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = $1 AND Name = $2   '),
+    is( normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = $1 AND Name = $2   '),
         'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
     );
-    is(
-        DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :1 AND Name = :2   '),
+    is( normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :1 AND Name = :2   '),
         'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
-    );
-    is(
-        DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :id AND Name = :name   '),
-        'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
-        $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?'},
-    );
-    is_deeply(
-        [ DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?   ') ],
-        [
-            'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
-            'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
-            $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?'},
-        ]
-    );
-    is_deeply(
-        [ DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = ?1 AND Name = ?2   ') ],
-        [
-            'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
-            'SELECT * FROM media_types WHERE MediatypeId = ?1 AND Name = ?2',
-            $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = ?1 AND Name = ?2'},
-        ]
-    );
-    is_deeply(
-        [ DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = $1 AND Name = $2   ') ],
-        [
-            'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
-            'SELECT * FROM media_types WHERE MediatypeId = $1 AND Name = $2',
-            $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = $1 AND Name = $2'},
-        ]
-    );
-    is_deeply(
-        [ DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :1 AND Name = :2   ') ],
-        [
-            'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
-            'SELECT * FROM media_types WHERE MediatypeId = :1 AND Name = :2',
-            $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = :1 AND Name = :2'},
-        ]
-    );
-    is_deeply(
-        [ DBIx::Squirrel::db::_normalise_statement('   SELECT * FROM media_types WHERE MediatypeId = :id AND Name = :name   ') ],
-        [
-            'SELECT * FROM media_types WHERE MediatypeId = ? AND Name = ?',
-            'SELECT * FROM media_types WHERE MediatypeId = :id AND Name = :name',
-            $hash_of->{'SELECT * FROM media_types WHERE MediatypeId = :id AND Name = :name'},
-        ]
     );
 };
 
 subtest 'cbargs' => sub {
     %hash = (
-        'sub1' => sub { 1 },
-        'sub2' => sub { 2 },
+        'sub1' => sub {1},
+        'sub2' => sub {2},
     );
 
     is_deeply( [ cbargs( 1 .. 5 ) ], [ [], 1 .. 5 ] );
@@ -217,8 +98,8 @@ subtest 'cbargs' => sub {
 
 subtest 'cbargs_using' => sub {
     %hash = (
-        'sub1' => sub { 1 },
-        'sub2' => sub { 2 },
+        'sub1' => sub {1},
+        'sub2' => sub {2},
     );
 
     is_deeply( [ cbargs_using( undef, 1 .. 5 ) ], [ [], 1 .. 5 ] );
@@ -271,10 +152,8 @@ subtest 'transform' => sub {
     );
 
     is_deeply(
-        [
-            transform(
-                [
-                    sub {
+        [   transform(
+                [   sub {
                         map { $_ + 1 } @_;
                     }
                 ],
@@ -286,10 +165,8 @@ subtest 'transform' => sub {
     );
 
     is_deeply(
-        [
-            transform(
-                [
-                    sub { $_ + 1 },
+        [   transform(
+                [   sub { $_ + 1 },
                     sub { $_ - 2 }
                 ],
                 99
@@ -299,10 +176,8 @@ subtest 'transform' => sub {
     );
 
     is_deeply(
-        [
-            transform(
-                [
-                    sub { $_[0] + 1 },
+        [   transform(
+                [   sub { $_[0] + 1 },
                     sub { $_[0] - 2 }
                 ],
                 99
@@ -312,10 +187,8 @@ subtest 'transform' => sub {
     );
 
     is_deeply(
-        [
-            transform(
-                [
-                    sub {
+        [   transform(
+                [   sub {
                         map { $_ + 1 } @_;
                     },
                     sub {
@@ -357,7 +230,7 @@ subtest 'whine' => sub {
     $stderr = capture_stderr { whine 'Warning %d, %d, %d', 1, 2, 3 };
     like( $stderr, qr/\AWarning 1, 2, 3 at/ );
 
-    $stderr = capture_stderr { whine };
+    $stderr = capture_stderr {whine};
     like( $stderr, qr/\AWarning at/ );
 };
 
