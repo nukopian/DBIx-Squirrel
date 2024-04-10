@@ -19,7 +19,8 @@ BEGIN {
     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
 
     sub ROOT_CLASS {
-        return wantarray ? ( RootClass => $r ) : $r;
+        return $r unless wantarray;
+        return RootClass => $r;
     }
 }
 
