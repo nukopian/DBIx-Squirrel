@@ -31,7 +31,7 @@ sub _id {
     return ( $id, $self, @_ );
 }
 
-sub _att {
+sub _attr {
     my $self = shift;
     return unless ref $self;
     unless ( defined $self->{'private_dbix_squirrel'} ) {
@@ -79,7 +79,7 @@ sub execute {
 sub bind {
     my $self = shift;
     return $self unless @_;
-    my $placeholders = $self->_att->{'Placeholders'};
+    my $placeholders = $self->_attr->{'Placeholders'};
     if ( $placeholders && not _all_placeholders_are_positional($placeholders) ) {
         if ( my %kv = @{ _map_to_values( $placeholders, @_ ) } ) {
             while ( my ( $key, $value ) = each %kv ) {
@@ -144,7 +144,7 @@ sub _map_to_values {
 sub bind_param {
     my $self    = shift;
     my %bindings = do {
-        if ( my $placeholders = $self->_att->{'Placeholders'} ) {
+        if ( my $placeholders = $self->_attr->{'Placeholders'} ) {
             if ( $_[0] =~ m/^[\:\$\?]?(?<bind_id>\d+)$/ ) {
                 ( $+{'bind_id'} => $_[1] )
             } else {
@@ -173,7 +173,7 @@ BEGIN {
     };
 
     *iterator = *itor = sub {
-        return $_[0]->_att->{'Iterator'};
+        return $_[0]->_attr->{'Iterator'};
     };
 }
 

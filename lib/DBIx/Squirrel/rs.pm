@@ -27,7 +27,7 @@ use Sub::Name 'subname';
 sub _fetch_row
 {
     return if $_[0]->_no_more_rows;
-    my ( $att, $self ) = $_[0]->_att;
+    my ( $att, $self ) = $_[0]->_attr;
     if ( $self->_is_empty ) {
         return unless $self->_fetch;
     }
@@ -99,7 +99,7 @@ sub _fetch_row
 
     sub set_slice
     {
-        my ( $att, $self, $slice ) = ( $_[0]->_att, @_[ 1 .. $#_ ] );
+        my ( $att, $self, $slice ) = ( $_[0]->_attr, @_[ 1 .. $#_ ] );
         my $old = defined $att->{'sl'} ? $att->{'sl'} : '';
         $self->SUPER::set_slice($slice);
         if ( my $new = defined $att->{'sl'} ? $att->{'sl'} : '' ) {

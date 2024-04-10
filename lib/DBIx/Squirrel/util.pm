@@ -118,7 +118,7 @@ sub get_trimmed_sql_and_digest {
     my $sql_string        = do {
         if ( ref $sth_or_sql_string ) {
             if ( UNIVERSAL::isa( $sth_or_sql_string, 'DBIx::Squirrel::st' ) ) {
-                trim_sql_string( $sth_or_sql_string->_att->{'OriginalStatement'} );
+                trim_sql_string( $sth_or_sql_string->_attr->{'OriginalStatement'} );
             } elsif ( UNIVERSAL::isa( $sth_or_sql_string, 'DBI::st' ) ) {
                 trim_sql_string( $sth_or_sql_string->{Statement} );
             } else {

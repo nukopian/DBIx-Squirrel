@@ -62,7 +62,7 @@ BEGIN {
     }
 }
 
-sub _att {
+sub _attr {
     my $self = shift;
     return unless ref $self;
     unless ( defined $self->{'private_dbix_squirrel'} ) {
