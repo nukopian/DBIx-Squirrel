@@ -9,7 +9,7 @@ BEGIN {
     our $AUTO_FINISH_ON_ACTIVE = 1;
 }
 
-use DBI ();
+use DBI                ();
 use DBIx::Squirrel::dr ();
 use DBIx::Squirrel::db ();
 use DBIx::Squirrel::st ();
@@ -18,6 +18,8 @@ use DBIx::Squirrel::rs ();
 use DBIx::Squirrel::rc ();
 
 BEGIN {
+    our $NORMALISE_SQL = 1;
+
     *err             = *DBI::err;
     *errstr          = *DBI::errstr;
     *rows            = *DBI::rows;
@@ -31,9 +33,7 @@ BEGIN {
     *DEFAULT_MAXROWS = *DBIx::Squirrel::it::DEFAULT_MAXROWS;
     *BUF_MULT        = *DBIx::Squirrel::it::BUF_MULT;
     *BUF_MAXROWS     = *DBIx::Squirrel::it::BUF_MAXROWS;
-    *NORMALISE_SQL   = *DBIx::Squirrel::db::NORMALISE_SQL;
-    *NORMALIZE_SQL   = *DBIx::Squirrel::db::NORMALISE_SQL;
-    *HASH            = *DBIx::Squirrel::util::HASH;
+    *NORMALIZE_SQL   = *NORMALISE_SQL;
 }
 
 1;
