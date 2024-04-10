@@ -61,7 +61,7 @@ sub BUF_MAXROWS
 BEGIN {
     my %att;
 
-    sub _att
+    sub _attr
     {
         return unless ref $_[0];
         my ( $att, $id, $self, @t ) = (
@@ -105,7 +105,7 @@ BEGIN {
 sub _fetch_row
 {
     return if $_[0]->_no_more_rows;
-    my ( $att, $self ) = $_[0]->_att;
+    my ( $att, $self ) = $_[0]->_attr;
     return if $self->_is_empty && !$self->_fetch;
     my ( $row, @t ) = @{ $att->{'bu'} };
     $att->{'bu'} = \@t;
@@ -115,19 +115,19 @@ sub _fetch_row
 
 sub _no_more_rows
 {
-    my ( $att, $self ) = $_[0]->_att;
+    my ( $att, $self ) = $_[0]->_attr;
     $self->execute unless $att->{'ex'};
     return !!$att->{'fi'};
 }
 
 sub _is_empty
 {
-    return $_[0]->_att->{'bu'} ? !@{ $_[0]->_att->{'bu'} } : 1;
+    return $_[0]->_attr->{'bu'} ? !@{ $_[0]->_attr->{'bu'} } : 1;
 }
 
 sub _fetch
 {
-    my ( $att, $self ) = $_[0]->_att;
+    my ( $att, $self ) = $_[0]->_attr;
     my ( $sth, $sl, $mr, $bl ) = @{$att}{qw/st sl mr bl/};
     unless ( $sth && $sth->{'Active'} ) {
         $att->{'fi'} = 1;
@@ -148,7 +148,7 @@ sub _fetch
 
 sub _auto_manage_maxrows
 {
-    my $att = $_[0]->_att;
+    my $att = $_[0]->_attr;
     return undef unless my $limit = $att->{'bl'};
     my $dirty;
     my $mr     = $att->{'mr'};
@@ -176,14 +176,14 @@ sub _auto_manage_maxrows
 
 sub _transform
 {
-    return transform( $_[0]->_att->{'cb'}, @_[ 1 .. $#_ ] );
+    return transform( $_[0]->_attr->{'cb'}, @_[ 1 .. $#_ ] );
 }
 
 sub DESTROY
 {
     return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
     local ( $., $@, $!, $^E, $?, $_ );
-    $_[0]->finish->_att(undef);
+    $_[0]->finish->_attr(undef);
     return;
 }
 
@@ -192,21 +192,21 @@ sub new
     my ( $callbacks, $class, $sth, @bindvals ) = cbargs(@_);
     return unless UNIVERSAL::isa( $sth, 'DBI::st' );
     my ( $id, $self ) = ( bless {}, ref $class || $class )->_id;
-    return $_ = $self->finish->_att(
+    return $_ = $self->finish->_attr(
         {
             'id' => $id,
             'bv' => \@bindvals,
             'cb' => $callbacks,
             'sl' => $self->set_slice->{'Slice'},
             'mr' => $self->set_maxrows->{'MaxRows'},
-            'st' => $sth->_att( { 'Iterator' => $self } ),
+            'st' => $sth->_attr( { 'Iterator' => $self } ),
         }
     );
 }
 
 sub execute
 {
-    my $att = $_[0]->_att;
+    my $att = $_[0]->_attr;
     return unless my $sth = $att->{'st'};
     $_[0]->reset if $att->{'ex'} || $att->{'fi'};
     return $_ = do {
@@ -253,7 +253,7 @@ sub single
 BEGIN {
     sub head
     {
-        my $att = $_[0]->_att;
+        my $att = $_[0]->_attr;
         $_[0]->reset( @_[ 1 .. $#_ ] )
           if @_ > 1 || $att->{'ex'} || $att->{'st'}{'Active'};
         return $_ = $_[0]->_fetch_row;
@@ -271,7 +271,7 @@ sub all
 sub tail
 {
     return if $_[0]->_no_more_rows;
-    my $att = $_[0]->_att;
+    my $att = $_[0]->_attr;
     $_[0]->reset if my $rows = do {
         my @rows;
         push @rows, $_[0]->_fetch_row until $att->{'fi'};
@@ -300,7 +300,7 @@ sub reset
 
 sub finish
 {
-    my ( $att, $self ) = $_[0]->_att;
+    my ( $att, $self ) = $_[0]->_attr;
     $att->{'st'}->finish if $att->{'st'} && $att->{'st'}{'Active'};
     $att->{'fi'} = undef;
     $att->{'ex'} = undef;
@@ -331,7 +331,7 @@ sub set_slice
           unless UNIVERSAL::isa( $_[1], 'ARRAY' )
           || UNIVERSAL::isa( $_[1], 'HASH' );
     }
-    return $_[0]->_att(
+    return $_[0]->_attr(
         {
             'sl' => ( $_[0]->{'Slice'} = ( $_[1] // $DEFAULT_SLICE ) ),
         }
@@ -346,7 +346,7 @@ sub set_maxrows
           && !ref $_[1]
           && int $_[1];
     }
-    return $_[0]->_att(
+    return $_[0]->_attr(
         {
             'mr' => ( $_[0]->{'MaxRows'} = int( $_[1] // $DEFAULT_MAXROWS ) ),
         }
@@ -365,7 +365,7 @@ BEGIN {
 BEGIN {
     sub sth
     {
-        return $_[0]->_att->{'st'};
+        return $_[0]->_attr->{'st'};
     }
 
     *statement_handle = *sth;
@@ -374,7 +374,7 @@ BEGIN {
 BEGIN {
     sub finished
     {
-        return !!$_[0]->_att->{'fi'};
+        return !!$_[0]->_attr->{'fi'};
     }
 
     *done = *finished;
@@ -383,7 +383,7 @@ BEGIN {
 BEGIN {
     sub not_finished
     {
-        return !$_[0]->_att->{'fi'};
+        return !$_[0]->_attr->{'fi'};
     }
 
     *not_done = *not_finished;
@@ -392,7 +392,7 @@ BEGIN {
 BEGIN {
     sub executed
     {
-        return !!$_[0]->_att->{'ex'};
+        return !!$_[0]->_attr->{'ex'};
     }
 
     *not_pending = *executed;
@@ -401,7 +401,7 @@ BEGIN {
 BEGIN {
     sub not_executed
     {
-        return !$_[0]->_att->{'ex'};
+        return !$_[0]->_attr->{'ex'};
     }
 
     *pending = *not_executed;
