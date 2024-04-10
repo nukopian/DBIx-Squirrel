@@ -176,8 +176,11 @@ sub do {
 }
 
 sub execute {
-    my ( $res, $sth ) = $_[0]->do( $_[1], @_[ 2 .. $#_ ] );
-    return wantarray ? ( $sth, $res ) : $sth;
+    my $self = shift;
+    my $statement = shift;
+    my ( $res, $sth ) = $self->do( $statement, @_ );
+    return $sth unless wantarray;
+    return $sth, $res;
 }
 
 BEGIN {
