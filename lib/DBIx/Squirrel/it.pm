@@ -1,4 +1,4 @@
-package    # hide from PAUSE
+package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::it;
 use strict;
 use warnings;
@@ -23,8 +23,7 @@ use DBIx::Squirrel::util (
 {
     my $r;
 
-    sub ROOT_CLASS
-    {
+    sub ROOT_CLASS {
         ( $r = __PACKAGE__ ) =~ s/::\w+$// unless defined $r;
         return wantarray ? ( RootClass => $r ) : $r;
     }
@@ -32,37 +31,32 @@ use DBIx::Squirrel::util (
 
 our $DEFAULT_SLICE = [];
 
-sub DEFAULT_SLICE
-{
+sub DEFAULT_SLICE {
     return $DEFAULT_SLICE;
 }
 
-our $DEFAULT_MAXROWS = 1;    # Initial buffer size and autoscaling increment
+our $DEFAULT_MAXROWS = 1;                                                                                                          # Initial buffer size and autoscaling increment
 
-sub DEFAULT_MAXROWS
-{
+sub DEFAULT_MAXROWS {
     return $DEFAULT_MAXROWS;
 }
 
-our $BUF_MULT = 2;           # Autoscaling factor, 0 to disable autoscaling together
+our $BUF_MULT = 2;                                                                                                                 # Autoscaling factor, 0 to disable autoscaling together
 
-sub BUF_MULT
-{
+sub BUF_MULT {
     return $BUF_MULT;
 }
 
-our $BUF_MAXROWS = 8;        # Absolute maximum buffersize
+our $BUF_MAXROWS = 8;                                                                                                              # Absolute maximum buffersize
 
-sub BUF_MAXROWS
-{
+sub BUF_MAXROWS {
     return $BUF_MAXROWS;
 }
 
 BEGIN {
     my %att;
 
-    sub _attr
-    {
+    sub _attr {
         return unless ref $_[0];
         my ( $att, $id, $self, @t ) = (
             do {
@@ -95,15 +89,13 @@ BEGIN {
         return $self;
     }
 
-    sub _id
-    {
+    sub _id {
         return unless ref $_[0];
         return wantarray ? ( 0+ $_[0], @_ ) : 0+ $_[0];
     }
 }
 
-sub _fetch_row
-{
+sub _fetch_row {
     return if $_[0]->_no_more_rows;
     my ( $att, $self ) = $_[0]->_attr;
     return if $self->_is_empty && !$self->_fetch;
@@ -113,20 +105,17 @@ sub _fetch_row
     return @{ $att->{'cb'} } ? $self->_transform($row) : $row;
 }
 
-sub _no_more_rows
-{
+sub _no_more_rows {
     my ( $att, $self ) = $_[0]->_attr;
     $self->execute unless $att->{'ex'};
     return !!$att->{'fi'};
 }
 
-sub _is_empty
-{
+sub _is_empty {
     return $_[0]->_attr->{'bu'} ? !@{ $_[0]->_attr->{'bu'} } : 1;
 }
 
-sub _fetch
-{
+sub _fetch {
     my ( $att, $self ) = $_[0]->_attr;
     my ( $sth, $sl, $mr, $bl ) = @{$att}{qw/st sl mr bl/};
     unless ( $sth && $sth->{'Active'} ) {
@@ -146,8 +135,7 @@ sub _fetch
     return $att->{'rf'} += $c;
 }
 
-sub _auto_manage_maxrows
-{
+sub _auto_manage_maxrows {
     my $att = $_[0]->_attr;
     return undef unless my $limit = $att->{'bl'};
     my $dirty;
@@ -174,27 +162,23 @@ sub _auto_manage_maxrows
     return !!$dirty;
 }
 
-sub _transform
-{
+sub _transform {
     return transform( $_[0]->_attr->{'cb'}, @_[ 1 .. $#_ ] );
 }
 
-sub DESTROY
-{
+sub DESTROY {
     return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
     local ( $., $@, $!, $^E, $?, $_ );
     $_[0]->finish->_attr(undef);
     return;
 }
 
-sub new
-{
+sub new {
     my ( $callbacks, $class, $sth, @bindvals ) = cbargs(@_);
     return unless UNIVERSAL::isa( $sth, 'DBI::st' );
     my ( $id, $self ) = ( bless {}, ref $class || $class )->_id;
     return $_ = $self->finish->_attr(
-        {
-            'id' => $id,
+        {   'id' => $id,
             'bv' => \@bindvals,
             'cb' => $callbacks,
             'sl' => $self->set_slice->{'Slice'},
@@ -204,8 +188,7 @@ sub new
     );
 }
 
-sub execute
-{
+sub execute {
     my $att = $_[0]->_attr;
     return unless my $sth = $att->{'st'};
     $_[0]->reset if $att->{'ex'} || $att->{'fi'};
@@ -229,16 +212,14 @@ sub execute
     };
 }
 
-sub find
-{
+sub find {
     $_[0]->reset if my $row = do {
         $_[0]->execute( @_[ 1 .. $#_ ] ) ? $_[0]->_fetch_row : undef;
     };
     return $_ = $row;
 }
 
-sub single
-{
+sub single {
     $_[0]->reset if my $row = do {
         if ( my $count = $_[0]->execute( @_[ 1 .. $#_ ] ) ) {
             whine W_MORE_ROWS if $count > 1;
@@ -251,8 +232,8 @@ sub single
 }
 
 BEGIN {
-    sub head
-    {
+
+    sub head {
         my $att = $_[0]->_attr;
         $_[0]->reset( @_[ 1 .. $#_ ] )
           if @_ > 1 || $att->{'ex'} || $att->{'st'}{'Active'};
@@ -262,14 +243,12 @@ BEGIN {
     *first = *head;
 }
 
-sub all
-{
+sub all {
     my $rows = $_[0]->execute( @_[ 1 .. $#_ ] ) ? $_[0]->tail : [];
     return wantarray ? @{$rows} : $rows;
 }
 
-sub tail
-{
+sub tail {
     return if $_[0]->_no_more_rows;
     my $att = $_[0]->_attr;
     $_[0]->reset if my $rows = do {
@@ -281,25 +260,21 @@ sub tail
     return wantarray ? @{$rows} : $rows;
 }
 
-sub next
-{
+sub next {
     $_[0]->set_slice_maxrows( @_[ 1 .. $#_ ] ) if @_ > 1;
     return $_ = $_[0]->_fetch_row;
 }
 
-sub count
-{
+sub count {
     return $_ = scalar @{ $_[0]->all( @_[ 1 .. $#_ ] ) };
 }
 
-sub reset
-{
+sub reset {
     $_[0]->set_slice_maxrows( @_[ 1 .. $#_ ] ) if @_ > 1;
     return $_[0]->finish;
 }
 
-sub finish
-{
+sub finish {
     my ( $att, $self ) = $_[0]->_attr;
     $att->{'st'}->finish if $att->{'st'} && $att->{'st'}{'Active'};
     $att->{'fi'} = undef;
@@ -313,8 +288,8 @@ sub finish
 }
 
 BEGIN {
-    sub set_slice_maxrows
-    {
+
+    sub set_slice_maxrows {
         return $_[0] unless @_ > 1;
         return ref $_[1]
           ? $_[0]->set_slice( $_[1] )->set_maxrows( $_[2] )
@@ -324,38 +299,28 @@ BEGIN {
     *set_maxrows_slice = *set_slice_maxrows;
 }
 
-sub set_slice
-{
+sub set_slice {
     if ( defined $_[1] ) {
         throw E_BAD_SLICE
           unless UNIVERSAL::isa( $_[1], 'ARRAY' )
           || UNIVERSAL::isa( $_[1], 'HASH' );
     }
-    return $_[0]->_attr(
-        {
-            'sl' => ( $_[0]->{'Slice'} = ( $_[1] // $DEFAULT_SLICE ) ),
-        }
-    );
+    return $_[0]->_attr( { 'sl' => ( $_[0]->{'Slice'} = ( $_[1] // $DEFAULT_SLICE ) ) } );
 }
 
-sub set_maxrows
-{
+sub set_maxrows {
     if ( defined $_[1] ) {
         throw E_BAD_MAXROWS
           unless defined $_[1]
           && !ref $_[1]
           && int $_[1];
     }
-    return $_[0]->_attr(
-        {
-            'mr' => ( $_[0]->{'MaxRows'} = int( $_[1] // $DEFAULT_MAXROWS ) ),
-        }
-    );
+    return $_[0]->_attr( { 'mr' => ( $_[0]->{'MaxRows'} = int( $_[1] // $DEFAULT_MAXROWS ) ) } );
 }
 
 BEGIN {
-    sub rs
-    {
+
+    sub rs {
         return $_[0]->sth->rs( @_[ 1 .. $#_ ] );
     }
 
@@ -363,8 +328,8 @@ BEGIN {
 }
 
 BEGIN {
-    sub sth
-    {
+
+    sub sth {
         return $_[0]->_attr->{'st'};
     }
 
@@ -372,8 +337,8 @@ BEGIN {
 }
 
 BEGIN {
-    sub finished
-    {
+
+    sub finished {
         return !!$_[0]->_attr->{'fi'};
     }
 
@@ -381,8 +346,8 @@ BEGIN {
 }
 
 BEGIN {
-    sub not_finished
-    {
+
+    sub not_finished {
         return !$_[0]->_attr->{'fi'};
     }
 
@@ -390,8 +355,8 @@ BEGIN {
 }
 
 BEGIN {
-    sub executed
-    {
+
+    sub executed {
         return !!$_[0]->_attr->{'ex'};
     }
 
@@ -399,8 +364,8 @@ BEGIN {
 }
 
 BEGIN {
-    sub not_executed
-    {
+
+    sub not_executed {
         return !$_[0]->_attr->{'ex'};
     }
 

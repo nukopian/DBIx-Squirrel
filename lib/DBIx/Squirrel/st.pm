@@ -19,7 +19,8 @@ use DBIx::Squirrel::util 'throw', 'whine';
      ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
 
     sub ROOT_CLASS {
-        return wantarray ? ( RootClass => $r ) : $r;
+        return $r unless wantarray;
+        return RootClass => $r;
     }
 }
 
@@ -28,7 +29,7 @@ sub _id {
     return unless ref $self;
     my $id = 0+ $self;
     return $id unless wantarray;
-    return ( $id, $self, @_ );
+    return $id, $self, @_;
 }
 
 sub _attr {
@@ -138,7 +139,8 @@ sub _map_to_values {
             \@mappings;
         }
     };
-    return wantarray ? @{$mappings} : $mappings;
+    return $mappings unless wantarray;
+    return @{$mappings};
 }
 
 sub bind_param {
@@ -160,7 +162,8 @@ sub bind_param {
         throw E_UNKNOWN_PLACEHOLDER, $_[0];
     }
     $self->SUPER::bind_param(%bindings);
-    return wantarray ? %bindings : \%bindings;
+    return \%bindings unless wantarray;
+    return %bindings;
 }
 
 BEGIN {
