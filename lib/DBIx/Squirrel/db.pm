@@ -33,9 +33,32 @@ BEGIN {
     sub abstract {
         throw E_BAD_SQL_ABSTRACT
           unless UNIVERSAL::isa( $SQL_ABSTRACT, 'SQL::Abstract' );
-        throw E_BAD_SQL_ABSTRACT_METHOD
-          unless my $method = $SQL_ABSTRACT->can( $_[1] );
-        $_[0]->do( $method->( $SQL_ABSTRACT, @_[ 2 .. $#_ ] ) );
+        my $self   = shift;
+        my $method_name = shift;
+        my $method = $SQL_ABSTRACT->can($method_name);
+        throw E_BAD_SQL_ABSTRACT_METHOD unless $method;
+        $self->do( $method->( $SQL_ABSTRACT, @_ ) );
+    }
+
+    sub delete {
+        my $self = shift;
+        return scalar $self->abstract( 'delete', @_ );
+    }
+
+    sub insert {
+        my $self = shift;
+        return scalar $self->abstract( 'insert', @_ );
+    }
+
+    sub update {
+        my $self = shift;
+        return scalar $self->abstract( 'update', @_ );
+    }
+
+    sub select {
+        my $self = shift;
+        my ( undef, $result, ) = $self->abstract( 'select', @_ );
+        return $result;
     }
 }
 
@@ -151,8 +174,7 @@ sub execute {
 }
 
 BEGIN {
-
-    sub it {
+    *iterate = *it = sub {
         my ( $self, $st, @t ) = @_;
         if (@t) {
             if ( ref $t[0] ) {
@@ -190,14 +212,9 @@ BEGIN {
             }
         }
         return;
-    }
+    };
 
-    *iterate = *it;
-}
-
-BEGIN {
-
-    sub rs {
+    *resultset = *results = *rs = sub {
         my ( $self, $st, @t ) = @_;
         if (@t) {
             if ( ref $t[0] ) {
@@ -235,25 +252,7 @@ BEGIN {
             }
         }
         return;
-    }
-
-    *resultset = *results = *rs;
-}
-
-sub delete {
-    return scalar $_[0]->abstract( 'delete', @_[ 1 .. $#_ ] );
-}
-
-sub insert {
-    return scalar $_[0]->abstract( 'insert', @_[ 1 .. $#_ ] );
-}
-
-sub update {
-    return scalar $_[0]->abstract( 'update', @_[ 1 .. $#_ ] );
-}
-
-sub select {
-    return ( $_[0]->abstract( 'select', @_[ 1 .. $#_ ] ) )[1];
+    };
 }
 
 1;
