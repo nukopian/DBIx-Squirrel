@@ -110,13 +110,11 @@ our %_HASH_OF;
 our %_HASH_WITH;
 
 sub hash {
-    return unless defined $_[0];
-    my ( $st, $bool ) = @_;
-    unless ( exists $_HASH_OF{$st} && !$bool ) {
-        $_HASH_OF{$st} = sha256_base64($st);
-        $_HASH_WITH{ $_HASH_OF{$st} } = $st;
-    }
-    return $_HASH_OF{$st};
+    my $sql_string = shift;
+    return unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
+    my $hash = $_HASH_OF{$sql_string} = sha256_base64($sql_string);
+    $_HASH_WITH{ $hash } = $sql_string;
+    return $hash;
 }
 
 sub unhash {
