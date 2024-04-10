@@ -76,32 +76,32 @@ sub test_the_basics
     $cached_ekorn_dbh = DBIx::Squirrel->connect_cached(@T_DB_CONNECT_ARGS);
     isa_ok $cached_ekorn_dbh, 'DBIx::Squirrel::db';
 
-    # Check that "DBIx::Squirrel::db::DBIx::Squirrel::db::_study_statement" works properly
+    # Check that "DBIx::Squirrel::db::study_statement" works properly
 
     ( $exp, $got ) = (
         [
             undef,
             'SELECT * FROM table WHERE col = ?',
-            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = ?'),
+            get_trimmed_sql_and_digest('SELECT * FROM table WHERE col = ?'),
         ],
         do {
-            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col = ? ') ];
+            [ study_statement(' SELECT * FROM table WHERE col = ? ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
+    is_deeply $got, $exp, 'study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
         [
             undef,
             'SELECT * FROM table WHERE col1 = ? AND col2 = ?',
-            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = ? AND col2 = ?'),
+            get_trimmed_sql_and_digest('SELECT * FROM table WHERE col1 = ? AND col2 = ?'),
         ],
         do {
-            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col1 = ? AND col2 = ? ') ];
+            [ study_statement(' SELECT * FROM table WHERE col1 = ? AND col2 = ? ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
+    is_deeply $got, $exp, 'study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -110,13 +110,13 @@ sub test_the_basics
                 1 => '$1',
             },
             'SELECT * FROM table WHERE col = ?',
-            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = $1')
+            get_trimmed_sql_and_digest('SELECT * FROM table WHERE col = $1')
         ],
         do {
-            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col = $1 ') ];
+            [ study_statement(' SELECT * FROM table WHERE col = $1 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
+    is_deeply $got, $exp, 'study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -126,13 +126,13 @@ sub test_the_basics
                 2 => '$2',
             },
             'SELECT * FROM table WHERE col1 = ? AND col2 = ?',
-            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = $1 AND col2 = $2')
+            get_trimmed_sql_and_digest('SELECT * FROM table WHERE col1 = $1 AND col2 = $2')
         ],
         do {
-            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col1 = $1 AND col2 = $2 ') ];
+            [ study_statement(' SELECT * FROM table WHERE col1 = $1 AND col2 = $2 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
+    is_deeply $got, $exp, 'study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -141,13 +141,13 @@ sub test_the_basics
                 1 => '?1',
             },
             'SELECT * FROM table WHERE col = ?',
-            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = ?1')
+            get_trimmed_sql_and_digest('SELECT * FROM table WHERE col = ?1')
         ],
         do {
-            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col = ?1 ') ];
+            [ study_statement(' SELECT * FROM table WHERE col = ?1 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
+    is_deeply $got, $exp, 'study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -157,13 +157,13 @@ sub test_the_basics
                 2 => '?2',
             },
             'SELECT * FROM table WHERE col1 = ? AND col2 = ?',
-            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = ?1 AND col2 = ?2')
+            get_trimmed_sql_and_digest('SELECT * FROM table WHERE col1 = ?1 AND col2 = ?2')
         ],
         do {
-            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col1 = ?1 AND col2 = ?2 ') ];
+            [ study_statement(' SELECT * FROM table WHERE col1 = ?1 AND col2 = ?2 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
+    is_deeply $got, $exp, 'study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -172,13 +172,13 @@ sub test_the_basics
                 1 => ':1',
             },
             'SELECT * FROM table WHERE col = ?',
-            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = :1')
+            get_trimmed_sql_and_digest('SELECT * FROM table WHERE col = :1')
         ],
         do {
-            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col = :1 ') ];
+            [ study_statement(' SELECT * FROM table WHERE col = :1 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
+    is_deeply $got, $exp, 'study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -188,15 +188,15 @@ sub test_the_basics
                 2 => ':2',
             },
             'SELECT * FROM table WHERE col1 = ? AND col2 = ?',
-            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = :1 AND col2 = :2'),
+            get_trimmed_sql_and_digest('SELECT * FROM table WHERE col1 = :1 AND col2 = :2'),
         ],
         do {
             [
-                DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col1 = :1 AND col2 = :2 '),
+                study_statement(' SELECT * FROM table WHERE col1 = :1 AND col2 = :2 '),
             ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
+    is_deeply $got, $exp, 'study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -205,13 +205,13 @@ sub test_the_basics
                 1 => ':n',
             },
             'SELECT * FROM table WHERE col = ?',
-            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col = :n'),
+            get_trimmed_sql_and_digest('SELECT * FROM table WHERE col = :n'),
         ],
         do {
-            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col = :n ') ];
+            [ study_statement(' SELECT * FROM table WHERE col = :n ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
+    is_deeply $got, $exp, 'study_statement'
       or dump_val { exp => $exp, got => $got };
 
     ( $exp, $got ) = (
@@ -221,13 +221,13 @@ sub test_the_basics
                 2 => ':n2',
             },
             'SELECT * FROM table WHERE col1 = ? AND col2 = ?',
-            DBIx::Squirrel::db::_get_trimmed_sql_string_and_digest('SELECT * FROM table WHERE col1 = :n1 AND col2 = :n2')
+            get_trimmed_sql_and_digest('SELECT * FROM table WHERE col1 = :n1 AND col2 = :n2')
         ],
         do {
-            [ DBIx::Squirrel::db::_study_statement(' SELECT * FROM table WHERE col1 = :n1 AND col2 = :n2 ') ];
+            [ study_statement(' SELECT * FROM table WHERE col1 = :n1 AND col2 = :n2 ') ];
         },
     );
-    is_deeply $got, $exp, 'DBIx::Squirrel::db::_study_statement'
+    is_deeply $got, $exp, 'study_statement'
       or dump_val { exp => $exp, got => $got };
 
     # Check that "DBIx::Squirrel::st::_all_placeholders_are_positional"
@@ -745,7 +745,7 @@ sub test_the_basics
             },
             OriginalStatement   => "SELECT * FROM media_types WHERE Name = :name",
             NormalisedStatement => "SELECT * FROM media_types WHERE Name = ?",
-            Hash => hash("SELECT * FROM media_types WHERE Name = :name"),
+            Hash => DBIx::Squirrel::util::hash_sql_string("SELECT * FROM media_types WHERE Name = :name"),
         },
         $sth->{'private_dbix_squirrel'},
     );

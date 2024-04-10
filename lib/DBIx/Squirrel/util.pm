@@ -12,43 +12,28 @@ BEGIN {
     our @ISA         = 'Exporter';
     our %EXPORT_TAGS = (
         'constants' => [
-            qw/
-              E_EXP_STATEMENT
-              E_EXP_STH
-              E_EXP_REF
-              /
-        ],
-        'hashing' => [
-            qw/
-              hash
-              unhash
-              $HASH
-              /
-        ],
-        'sql' => [
-            qw/
-              hash
-              unhash
-              _normalise_statement
-              _study_statement
-              _get_trimmed_sql_string_and_digest
-              /
-        ],
-        'transform' => [
-            qw/
-              cbargs
-              cbargs_using
-              cbargs_using_nr
-              transform
-              /
+            'E_EXP_STATEMENT',
+            'E_EXP_STH',
+            'E_EXP_REF',
         ],
         'diagnostics' => [
-            qw/
-              Dumper
-              throw
-              whine
-              /
+            'Dumper',
+            'throw',
+            'whine',
         ],
+        'transform' => [
+            'cbargs',
+            'cbargs_using',
+            'cbargs_using_nr',
+            'transform',
+        ],
+        'sql' => [
+            'get_trimmed_sql_and_digest',
+            'normalise_statement',
+            'study_statement',
+            'trim_sql_string',
+            'hash_sql_string',
+        ]
     );
     our @EXPORT_OK = @{
         $EXPORT_TAGS{'all'} = [
@@ -56,10 +41,9 @@ BEGIN {
                 my %seen;
                 grep { !$seen{$_}++ } map { @{ $EXPORT_TAGS{$_} } } (
                     'constants',
-                    'hashing',
+                    'diagnostics',
                     'sql',
                     'transform',
-                    'diagnostics',
                 );
             }
         ]
@@ -69,6 +53,7 @@ BEGIN {
 use Carp ();
 use Data::Dumper::Concise;
 use Digest::SHA 'sha256_base64';
+use Memoize;
 use Scalar::Util ();
 use Sub::Name    ();
 
@@ -106,23 +91,67 @@ sub whine {
     goto &Carp::cluck;
 }
 
-our %_HASH_OF;
-our %_HASH_WITH;
+sub study_statement {
+    my ( $normalised_sql_string, $sql_string, $sql_digest ) = &normalise_statement;
+    return unless defined $sql_string;
+    my @placeholders = $sql_string =~ m{[\:\$\?]\w+\b}g;
+    return undef, $normalised_sql_string, $sql_string, $sql_digest unless @placeholders;
+    my %placeholder_position_mappings = map { ( 1 + $_ => $placeholders[$_] ) } ( 0 .. @placeholders - 1 );
+    return \%placeholder_position_mappings, $normalised_sql_string, $sql_string, $sql_digest;
+}
 
-sub hash {
-    return unless defined $_[0];
-    my ( $st, $bool ) = @_;
-    unless ( exists $_HASH_OF{$st} && !$bool ) {
-        $_HASH_OF{$st} = sha256_base64($st);
-        $_HASH_WITH{ $_HASH_OF{$st} } = $st;
+BEGIN { memoize('study_statement'); }
+
+sub normalise_statement {
+    my ( $sql_string, $sql_digest ) = &get_trimmed_sql_and_digest;
+    my $normalised_sql_string = $sql_string;
+    if ($DBIx::Squirrel::NORMALISE_SQL) {
+        $normalised_sql_string =~ s{[\:\$\?]\w+\b}{?}g;
     }
-    return $_HASH_OF{$st};
+    return $normalised_sql_string unless wantarray;
+    return $normalised_sql_string, $sql_string, $sql_digest;
+
 }
 
-sub unhash {
-    return unless defined $_[0];
-    return exists $_HASH_WITH{ $_[0] } ? $_HASH_WITH{ $_[0] } : $_[0];
+sub get_trimmed_sql_and_digest {
+    my $sth_or_sql_string = shift;
+    my $sql_string        = do {
+        if ( ref $sth_or_sql_string ) {
+            if ( UNIVERSAL::isa( $sth_or_sql_string, 'DBIx::Squirrel::st' ) ) {
+                trim_sql_string( $sth_or_sql_string->_att->{'OriginalStatement'} );
+            } elsif ( UNIVERSAL::isa( $sth_or_sql_string, 'DBI::st' ) ) {
+                trim_sql_string( $sth_or_sql_string->{Statement} );
+            } else {
+                throw E_EXP_STH;
+            }
+        } else {
+            trim_sql_string($sth_or_sql_string);
+        }
+    };
+    return $sql_string unless wantarray;
+    my $sql_digest = hash_sql_string($sql_string);
+    return $sql_string, $sql_digest;
 }
+
+sub trim_sql_string {
+    my $sql_string = shift;
+    return '' unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
+    (   s{\s+-{2}\s+.*$}{}gm,
+        s{^[[:blank:]\r\n]+}{}gm,
+        s{[[:blank:]\r\n]+$}{}gm,
+    ) for $sql_string;
+    return $sql_string;
+}
+
+BEGIN { memoize('trim_sql_string'); }
+
+sub hash_sql_string {
+    my $sql_string = shift;
+    return unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
+    return sha256_base64($sql_string);
+}
+
+BEGIN { memoize('hash_sql_string'); }
 
 # Separates any trailing code-references ("callbacks") from other arguments,
 # partitioning each type into its own distinct collection.
