@@ -30,35 +30,15 @@ BEGIN {
         SQL::Abstract->new;
     };
 
-    sub abstract {
-        throw E_BAD_SQL_ABSTRACT
-          unless UNIVERSAL::isa( $SQL_ABSTRACT, 'SQL::Abstract' );
-        my $self   = shift;
-        my $method_name = shift;
-        my $method = $SQL_ABSTRACT->can($method_name);
-        throw E_BAD_SQL_ABSTRACT_METHOD unless $method;
-        $self->do( $method->( $SQL_ABSTRACT, @_ ) );
-    }
-
-    sub delete {
-        my $self = shift;
-        return scalar $self->abstract( 'delete', @_ );
-    }
-
-    sub insert {
-        my $self = shift;
-        return scalar $self->abstract( 'insert', @_ );
-    }
-
-    sub update {
-        my $self = shift;
-        return scalar $self->abstract( 'update', @_ );
-    }
-
-    sub select {
-        my $self = shift;
-        my ( undef, $result, ) = $self->abstract( 'select', @_ );
-        return $result;
+    if ($SQL_ABSTRACT) {
+        *abstract = sub {
+            throw E_BAD_SQL_ABSTRACT unless UNIVERSAL::isa( $SQL_ABSTRACT, 'SQL::Abstract' );
+            my $self        = shift;
+            my $method_name = shift;
+            my $method      = $SQL_ABSTRACT->can($method_name);
+            throw E_BAD_SQL_ABSTRACT_METHOD unless $method;
+            $self->do( $method->( $SQL_ABSTRACT, @_ ) );
+        };
     }
 }
 
@@ -91,50 +71,76 @@ sub _attr {
     return $self;
 }
 
+sub delete {
+    my $self = shift;
+    return scalar $self->abstract( 'delete', @_ );
+}
+
+sub insert {
+    my $self = shift;
+    return scalar $self->abstract( 'insert', @_ );
+}
+
+sub update {
+    my $self = shift;
+    return scalar $self->abstract( 'update', @_ );
+}
+
+sub select {
+    my $self = shift;
+    my ( undef, $result, ) = $self->abstract( 'select', @_ );
+    return $result;
+}
+
 sub prepare {
-    my ( $self, $st, @args ) = @_;
-    my ( $p, $n, $t, $h ) = study_statement($st);
-    throw E_EXP_STATEMENT unless defined $n;
-    return                unless my $sth = $self->SUPER::prepare( $n, @args );
-    return bless( $sth, 'DBIx::Squirrel::st' )->_att(
-        {   'Placeholders'        => $p,
-            'NormalisedStatement' => $n,
-            'OriginalStatement'   => $t,
-            'Hash'                => $h,
+    my $self      = shift;
+    my $statement = shift;
+    my ( $placeholders, $normalised_statement, $original_statement, $digest ) = study_statement($statement);
+    throw E_EXP_STATEMENT unless defined $normalised_statement;
+    my $sth = $self->SUPER::prepare( $normalised_statement, @_ );
+    return unless defined $sth;
+    return bless( $sth, 'DBIx::Squirrel::st' )->_attr(
+        {   'Placeholders'        => $placeholders,
+            'NormalisedStatement' => $normalised_statement,
+            'OriginalStatement'   => $original_statement,
+            'Hash'                => $digest,
         }
     );
 }
 
 sub prepare_cached {
-    my ( $self, $st, @args ) = @_;
-    my ( $p, $n, $t, $h ) = study_statement($st);
-    throw E_EXP_STATEMENT unless defined $n;
-    return                unless my $sth = $self->SUPER::prepare_cached( $n, @args );
-    return bless( $sth, 'DBIx::Squirrel::st' )->_att(
-        {   'Placeholders'        => $p,
-            'NormalisedStatement' => $n,
-            'OriginalStatement'   => $t,
-            'Hash'                => $h,
+    my $self      = shift;
+    my $statement = shift;
+    my ( $placeholders, $normalised_statement, $original_statement, $digest ) = study_statement($statement);
+    throw E_EXP_STATEMENT unless defined $normalised_statement;
+    my $sth = $self->SUPER::prepare_cached( $normalised_statement, @_ );
+    return unless defined $sth;
+    return bless( $sth, 'DBIx::Squirrel::st' )->_attr(
+        {   'Placeholders'        => $placeholders,
+            'NormalisedStatement' => $normalised_statement,
+            'OriginalStatement'   => $original_statement,
+            'Hash'                => $digest,
             'CacheKey'            => join( '#', ( caller 0 )[ 1, 2 ] ),
         }
     );
 }
 
 sub do {
-    my ( $self, $st, @t ) = @_;
+    my $self      = shift;
+    my $statement = shift;
     my ( $res, $sth ) = do {
-        if (@t) {
-            if ( ref $t[0] ) {
-                if ( UNIVERSAL::isa( $t[0], 'HASH' ) ) {
-                    my ( $sattr, @values ) = @t;
-                    if ( my $sth = $self->prepare( $st, $sattr ) ) {
-                        ( $sth->execute(@values), $sth );
+        if (@_) {
+            if ( ref $_[0] ) {
+                if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+                    my $statement_attrs = shift;
+                    if ( my $sth = $self->prepare( $statement, $statement_attrs ) ) {
+                        ( $sth->execute(@_), $sth );
                     } else {
                         ();
                     }
-                } elsif ( UNIVERSAL::isa( $t[0], 'ARRAY' ) ) {
-                    if ( my $sth = $self->prepare($st) ) {
-                        ( $sth->execute(@t), $sth );
+                } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                    if ( my $sth = $self->prepare($statement) ) {
+                        ( $sth->execute(@_), $sth );
                     } else {
                         ();
                     }
@@ -142,30 +148,31 @@ sub do {
                     throw E_EXP_REF;
                 }
             } else {
-                if ( defined $t[0] ) {
-                    if ( my $sth = $self->prepare($st) ) {
-                        ( $sth->execute(@t), $sth );
+                if ( defined $_[0] ) {
+                    if ( my $sth = $self->prepare($statement) ) {
+                        ( $sth->execute(@_), $sth );
                     } else {
                         ();
                     }
                 } else {
-                    my ( undef, @values ) = @t;
-                    if ( my $sth = $self->prepare( $st, undef ) ) {
-                        ( $sth->execute(@values), $sth );
+                    shift;
+                    if ( my $sth = $self->prepare( $statement, undef ) ) {
+                        ( $sth->execute(@_), $sth );
                     } else {
                         ();
                     }
                 }
             }
         } else {
-            if ( my $sth = $self->prepare($st) ) {
+            if ( my $sth = $self->prepare($statement) ) {
                 ( $sth->execute, $sth );
             } else {
                 ();
             }
         }
     };
-    return wantarray ? ( $res, $sth ) : $res;
+    return $res unless wantarray;
+    return $res, $sth;
 }
 
 sub execute {
