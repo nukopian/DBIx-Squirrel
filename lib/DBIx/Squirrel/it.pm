@@ -57,7 +57,7 @@ BEGIN {
         my $self = shift;
         return unless ref $self;
         my $id  = 0+ $self;
-        my $att = do {
+        my $attrs = do {
             if ( defined $attrs_by_id{$id} ) {
                 $attrs_by_id{$id};
             } else {
@@ -65,8 +65,8 @@ BEGIN {
             }
         };
         unless (@_) {
-            return $att unless wantarray;
-            return $att, $self;
+            return $attrs unless wantarray;
+            return $attrs, $self;
         }
         unless ( defined $_[0] ) {
             delete $attrs_by_id{$id};
@@ -77,11 +77,11 @@ BEGIN {
                 $attrs_by_id{$id} = {};
             }
             if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
-                $attrs_by_id{$id} = { %{$att}, %{ $_[0] } };
+                $attrs_by_id{$id} = { %{$attrs}, %{ $_[0] } };
             } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
-                $attrs_by_id{$id} = { %{$att}, @{ $_[0] } };
+                $attrs_by_id{$id} = { %{$attrs}, @{ $_[0] } };
             } else {
-                $attrs_by_id{$id} = { %{$att}, @_ };
+                $attrs_by_id{$id} = { %{$attrs}, @_ };
             }
         }
         return $self;
