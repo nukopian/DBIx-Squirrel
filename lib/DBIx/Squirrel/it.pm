@@ -16,7 +16,7 @@ use namespace::autoclean;
 use DBIx::Squirrel::util 'cbargs', 'throw', 'transform', 'whine';
 
 {
-     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
+    ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
 
     sub ROOT_CLASS {
         return $r unless wantarray;
@@ -50,47 +50,40 @@ sub BUF_MAXROWS {
 }
 
 BEGIN {
-    my %att;
+    my %attrs_by_id;
 
     sub _attr {
-        return unless ref $_[0];
-        my ( $att, $id, $self, @t ) = (
-            do {
-                if ( defined $att{ 0+ $_[0] } ) {
-                    $att{ 0+ $_[0] };
-                } else {
-                    $att{ 0+ $_[0] } = {};
-                }
-            },
-            0+ $_[0],
-            @_
-        );
-        return wantarray ? ( $att, $self ) : $att unless @t;
-        if ( @t == 1 && !defined $t[0] ) {
-            delete $att{$id};
-            return;
-        }
-        $att{$id} = {
-            %{$att},
-            do {
-                if ( UNIVERSAL::isa( $t[0], 'HASH' ) ) {
-                    %{ $t[0] };
-                } elsif ( UNIVERSAL::isa( $t[0], 'ARRAY' ) ) {
-                    @{ $t[0] };
-                } else {
-                    @t;
-                }
-            },
-        };
-        return $self;
-    }
-
-    sub _id {
         my $self = shift;
         return unless ref $self;
-        my $id = 0+ $self;
-        return $id unless wantarray;
-        return $id, $self, @_;
+        my $id  = 0+ $self;
+        my $att = do {
+            if ( defined $attrs_by_id{$id} ) {
+                $attrs_by_id{$id};
+            } else {
+                $attrs_by_id{$id} = {};
+            }
+        };
+        unless (@_) {
+            return $att unless wantarray;
+            return $att, $self;
+        }
+        if ( defined $_[0] ) {
+            delete $attrs_by_id{$id};
+            shift;
+        }
+        if (@_) {
+            unless ( exists $attrs_by_id{$id} ) {
+                $attrs_by_id{$id} = {};
+            }
+            if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+                $attrs_by_id{$id} = { %{$att}, %{ $_[0] } };
+            } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                $attrs_by_id{$id} = { %{$att}, @{ $_[0] } };
+            } else {
+                $attrs_by_id{$id} = { %{$att}, @_ };
+            }
+        }
+        return $self;
     }
 }
 
