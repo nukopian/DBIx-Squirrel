@@ -3,7 +3,6 @@ package                                                                         
 use strict;
 use warnings;
 use constant E_BAD_SQL_ABSTRACT_METHOD => 'Unimplemented SQL::Abstract method';
-use constant E_BAD_SQL_ABSTRACT        => 'Bad or undefined SQL::Abstract global';
 
 BEGIN {
     require DBIx::Squirrel unless defined $DBIx::Squirrel::VERSION;
