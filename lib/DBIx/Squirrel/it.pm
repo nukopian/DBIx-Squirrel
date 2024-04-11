@@ -312,12 +312,9 @@ sub set_maxrows {
 }
 
 BEGIN {
-
-    sub rs {
+    *resultset = *rs = sub {
         return $_[0]->sth->rs( @_[ 1 .. $#_ ] );
-    }
-
-    *resultset = *results = *rs;
+    };
 }
 
 BEGIN {
