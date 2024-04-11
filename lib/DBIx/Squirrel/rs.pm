@@ -1,4 +1,4 @@
-package    # hide from PAUSE
+package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::rs;
 use strict;
 use warnings;
@@ -17,15 +17,13 @@ use Sub::Name 'subname';
 {
     my $r;
 
-    sub ROOT_CLASS
-    {
+    sub ROOT_CLASS {
         ( $r = __PACKAGE__ ) =~ s/::\w+$// unless defined $r;
         return wantarray ? ( RootClass => $r ) : $r;
     }
 }
 
-sub _fetch_row
-{
+sub _fetch_row {
     return if $_[0]->_no_more_rows;
     my ( $att, $self ) = $_[0]->_attr;
     if ( $self->_is_empty ) {
@@ -42,8 +40,7 @@ sub _fetch_row
 {
     no strict 'refs';
 
-    sub _bless
-    {
+    sub _bless {
         return unless ref $_[0];
         my ( $row_class, $self, $row ) = ( $_[0]->row_class, @_ );
         my $result_class = $self->result_class;
@@ -54,7 +51,7 @@ sub _fetch_row
             undef &{$resultset_fn};
             *{$resultset_fn} = *{$rs_fn} = do {
                 weaken( my $rs = $self );
-                subname( $rs_fn, sub { $rs } );
+                subname( $rs_fn, sub {$rs} );
             };
             @{ $row_class . '::ISA' } = $result_class;
         }
@@ -65,8 +62,7 @@ sub _fetch_row
 {
     no strict 'refs';
 
-    sub _undef_autoloaded_accessors
-    {
+    sub _undef_autoloaded_accessors {
         undef &{$_} for @{ $_[0]->row_class . '::AUTOLOAD_ACCESSORS' };
         return $_[0];
     }
@@ -75,8 +71,7 @@ sub _fetch_row
 {
     no strict 'refs';
 
-    sub DESTROY
-    {
+    sub DESTROY {
         return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
         local ( $., $@, $!, $^E, $?, $_ );
         my $self      = $_[0];
@@ -94,8 +89,7 @@ sub _fetch_row
 {
     no strict 'refs';
 
-    sub set_slice
-    {
+    sub set_slice {
         my ( $att, $self, $slice ) = ( $_[0]->_attr, @_[ 1 .. $#_ ] );
         my $old = defined $att->{'sl'} ? $att->{'sl'} : '';
         $self->SUPER::set_slice($slice);
@@ -107,14 +101,13 @@ sub _fetch_row
     }
 }
 
-sub row_class
-{
+sub row_class {
     return sprintf 'DBIx::Squirrel::rs_0x%x', 0+ $_[0];
 }
 
 BEGIN {
-    sub result_class
-    {
+
+    sub result_class {
         return 'DBIx::Squirrel::rc';
     }
 

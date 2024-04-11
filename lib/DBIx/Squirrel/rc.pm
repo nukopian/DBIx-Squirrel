@@ -1,5 +1,5 @@
 
-package    # hide from PAUSE
+package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::rc;
 use strict;
 use warnings;
@@ -19,21 +19,19 @@ use DBIx::Squirrel::util 'throw';
 our $AUTOLOAD;
 
 BEGIN {
-    sub result_class
-    {
+
+    sub result_class {
         return $_[0]->rs->result_class;
     }
 
     *row_base_class = *result_class;
 }
 
-sub row_class
-{
+sub row_class {
     return $_[0]->rs->row_class;
 }
 
-sub get_column
-{
+sub get_column {
     return undef unless defined $_[1];
     if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
         if ( my $sth = $_[0]->rs->sth ) {
@@ -56,8 +54,7 @@ sub get_column
     }
 }
 
-sub new
-{
+sub new {
     return bless( $_[1], ref $_[0] || $_[0] );
 }
 
@@ -73,8 +70,7 @@ sub new
 {
     no strict 'refs';
 
-    sub AUTOLOAD
-    {
+    sub AUTOLOAD {
         return if substr( $AUTOLOAD, -7 ) eq 'DESTROY';
         ( my $name = $AUTOLOAD ) =~ s/.*:://;
         my $symbol = $_[0]->row_class . '::' . $name;
