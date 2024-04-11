@@ -13,20 +13,16 @@ BEGIN {
 }
 
 use namespace::autoclean;
-use DBIx::Squirrel::util (
-    'cbargs',
-    'throw',
-    'transform',
-    'whine',
-);
+use DBIx::Squirrel::util 'cbargs', 'throw', 'transform', 'whine';
 
 {
-    my $r;
+     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
 
     sub ROOT_CLASS {
-        ( $r = __PACKAGE__ ) =~ s/::\w+$// unless defined $r;
-        return wantarray ? ( RootClass => $r ) : $r;
+        return $r unless wantarray;
+        return RootClass => $r;
     }
+
 }
 
 our $DEFAULT_SLICE = [];

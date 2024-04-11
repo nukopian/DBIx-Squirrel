@@ -15,11 +15,11 @@ use Scalar::Util 'weaken';
 use Sub::Name 'subname';
 
 {
-    my $r;
+     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
 
     sub ROOT_CLASS {
-        ( $r = __PACKAGE__ ) =~ s/::\w+$// unless defined $r;
-        return wantarray ? ( RootClass => $r ) : $r;
+        return $r unless wantarray;
+        return RootClass => $r;
     }
 }
 
