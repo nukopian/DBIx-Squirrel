@@ -24,14 +24,6 @@ use DBIx::Squirrel::util 'throw', 'whine';
     }
 }
 
-sub _id {
-    my $self = shift;
-    return unless ref $self;
-    my $id = 0+ $self;
-    return $id unless wantarray;
-    return $id, $self, @_;
-}
-
 sub _attr {
     my $self = shift;
     return unless ref $self;
@@ -40,7 +32,7 @@ sub _attr {
     }
     unless (@_) {
         return $self->{'private_dbix_squirrel'} unless wantarray;
-        return ( $self->{'private_dbix_squirrel'}, $self );
+        return $self->{'private_dbix_squirrel'}, $self;
     }
     unless ( defined $_[0] ) {
         delete $self->{'private_dbix_squirrel'};

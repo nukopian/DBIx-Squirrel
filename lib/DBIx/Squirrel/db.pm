@@ -3,7 +3,6 @@ package                                                                         
 use strict;
 use warnings;
 use constant E_BAD_SQL_ABSTRACT_METHOD => 'Unimplemented SQL::Abstract method';
-use constant E_BAD_SQL_ABSTRACT        => 'Bad or undefined SQL::Abstract global';
 
 BEGIN {
     require DBIx::Squirrel unless defined $DBIx::Squirrel::VERSION;
@@ -14,6 +13,7 @@ BEGIN {
 use namespace::autoclean;
 use Data::Dumper::Concise;
 use DBIx::Squirrel::util ':constants', ':sql', 'throw';
+use SQL::Abstract;
 
 BEGIN {
     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
@@ -21,25 +21,6 @@ BEGIN {
     sub ROOT_CLASS {
         return $r unless wantarray;
         return RootClass => $r;
-    }
-}
-
-BEGIN {
-    our $SQL_ABSTRACT = eval {
-        require SQL::Abstract;
-        SQL::Abstract->import;
-        SQL::Abstract->new;
-    };
-
-    if ($SQL_ABSTRACT) {
-        *abstract = sub {
-            throw E_BAD_SQL_ABSTRACT unless UNIVERSAL::isa( $SQL_ABSTRACT, 'SQL::Abstract' );
-            my $self        = shift;
-            my $method_name = shift;
-            my $method      = $SQL_ABSTRACT->can($method_name);
-            throw E_BAD_SQL_ABSTRACT_METHOD unless $method;
-            $self->do( $method->( $SQL_ABSTRACT, @_ ) );
-        };
     }
 }
 
@@ -70,6 +51,16 @@ sub _attr {
         }
     }
     return $self;
+}
+
+our $SQL_ABSTRACT = SQL::Abstract->new;
+
+sub abstract {
+    my $self        = shift;
+    my $method_name = shift;
+    my $method      = $SQL_ABSTRACT->can($method_name);
+    throw E_BAD_SQL_ABSTRACT_METHOD unless $method;
+    $self->do( $method->( $SQL_ABSTRACT, @_ ) );
 }
 
 sub delete {
@@ -137,7 +128,7 @@ sub execute {
 sub do {
     my $self      = shift;
     my $statement = shift;
-    my $sth = do {
+    my $sth       = do {
         if (@_) {
             if ( ref $_[0] ) {
                 if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
