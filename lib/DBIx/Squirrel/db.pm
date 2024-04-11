@@ -126,62 +126,43 @@ sub prepare_cached {
     );
 }
 
-sub do {
-    my $self      = shift;
-    my $statement = shift;
-    my ( $res, $sth ) = do {
-        if (@_) {
-            if ( ref $_[0] ) {
-                if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
-                    my $statement_attrs = shift;
-                    if ( my $sth = $self->prepare( $statement, $statement_attrs ) ) {
-                        ( $sth->execute(@_), $sth );
-                    } else {
-                        ();
-                    }
-                } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
-                    if ( my $sth = $self->prepare($statement) ) {
-                        ( $sth->execute(@_), $sth );
-                    } else {
-                        ();
-                    }
-                } else {
-                    throw E_EXP_REF;
-                }
-            } else {
-                if ( defined $_[0] ) {
-                    if ( my $sth = $self->prepare($statement) ) {
-                        ( $sth->execute(@_), $sth );
-                    } else {
-                        ();
-                    }
-                } else {
-                    shift;
-                    if ( my $sth = $self->prepare( $statement, undef ) ) {
-                        ( $sth->execute(@_), $sth );
-                    } else {
-                        ();
-                    }
-                }
-            }
-        } else {
-            if ( my $sth = $self->prepare($statement) ) {
-                ( $sth->execute, $sth );
-            } else {
-                ();
-            }
-        }
-    };
-    return $res unless wantarray;
-    return $res, $sth;
-}
-
 sub execute {
     my $self      = shift;
     my $statement = shift;
     my ( $res, $sth ) = $self->do( $statement, @_ );
     return $sth unless wantarray;
     return $sth, $res;
+}
+
+sub do {
+    my $self      = shift;
+    my $statement = shift;
+    my $sth = do {
+        if (@_) {
+            if ( ref $_[0] ) {
+                if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+                    my $statement_attrs = shift;
+                    $self->prepare( $statement, $statement_attrs );
+                } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                    $self->prepare($statement);
+                } else {
+                    throw E_EXP_REF;
+                }
+            } else {
+                if ( defined $_[0] ) {
+                    $self->prepare($statement);
+                } else {
+                    shift;
+                    $self->prepare( $statement, undef );
+                }
+            }
+        } else {
+            $self->prepare($statement);
+        }
+    };
+    my $res = $sth->execute(@_);
+    return $res unless wantarray;
+    return $res, $sth;
 }
 
 BEGIN {
