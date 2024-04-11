@@ -90,8 +90,11 @@ BEGIN {
     }
 
     sub _id {
-        return unless ref $_[0];
-        return wantarray ? ( 0+ $_[0], @_ ) : 0+ $_[0];
+        my $self = shift;
+        return unless ref $self;
+        my $id = 0+ $self;
+        return $id unless wantarray;
+        return $id, $self, @_;
     }
 }
 
