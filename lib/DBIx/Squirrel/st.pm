@@ -32,7 +32,7 @@ sub _attr {
     }
     unless (@_) {
         return $self->{'private_dbix_squirrel'} unless wantarray;
-        return ( $self->{'private_dbix_squirrel'}, $self );
+        return $self->{'private_dbix_squirrel'}, $self;
     }
     unless ( defined $_[0] ) {
         delete $self->{'private_dbix_squirrel'};
