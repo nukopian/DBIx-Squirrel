@@ -48,13 +48,11 @@ sub _fetch_row
         my ( $row_class, $self, $row ) = ( $_[0]->row_class, @_ );
         my $result_class = $self->result_class;
         my $resultset_fn = $row_class . '::resultset';
-        my $results_fn   = $row_class . '::results';
         my $rs_fn        = $row_class . '::rs';
         unless ( defined &{$rs_fn} ) {
             undef &{$rs_fn};
-            undef &{results_fn};
             undef &{$resultset_fn};
-            *{$resultset_fn} = *{$results_fn} = *{$rs_fn} = do {
+            *{$resultset_fn} = *{$rs_fn} = do {
                 weaken( my $rs = $self );
                 subname( $rs_fn, sub { $rs } );
             };
@@ -87,7 +85,6 @@ sub _fetch_row
             $self->_undef_autoloaded_accessors;
         }
         undef &{ $row_class . '::rs' };
-        undef &{ $row_class . '::results' };
         undef &{ $row_class . '::resultset' };
         undef *{$row_class};
         return $self->SUPER::DESTROY;

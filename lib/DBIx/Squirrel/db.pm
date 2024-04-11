@@ -177,7 +177,7 @@ sub do {
 }
 
 sub execute {
-    my $self = shift;
+    my $self      = shift;
     my $statement = shift;
     my ( $res, $sth ) = $self->do( $statement, @_ );
     return $sth unless wantarray;
@@ -186,83 +186,65 @@ sub execute {
 
 BEGIN {
     *iterate = *it = sub {
-        my ( $self, $st, @t ) = @_;
-        if (@t) {
-            if ( ref $t[0] ) {
-                if ( UNIVERSAL::isa( $t[0], 'HASH' ) ) {
-                    my ( $sattr, @values ) = @t;
-                    if ( my $sth = $self->prepare( $st, $sattr ) ) {
-                        return $sth->it(@values);
-                    }
-                } elsif ( UNIVERSAL::isa( $t[0], 'ARRAY' ) ) {
-                    if ( my $sth = $self->prepare($st) ) {
-                        return $sth->it(@t);
-                    }
-                } elsif ( UNIVERSAL::isa( $t[0], 'CODE' ) ) {
-                    if ( my $sth = $self->prepare($st) ) {
-                        return $sth->it(@t);
+        my $self      = shift;
+        my $statement = shift;
+        my $sth       = do {
+            if (@_) {
+                if ( ref $_[0] ) {
+                    if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+                        my $statement_attrs = shift;
+                        $self->prepare( $statement, $statement_attrs );
+                    } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                        $self->prepare($statement);
+                    } elsif ( UNIVERSAL::isa( $_[0], 'CODE' ) ) {
+                        $self->prepare($statement);
+                    } else {
+                        throw E_EXP_REF;
                     }
                 } else {
-                    throw E_EXP_REF;
+                    if ( defined $_[0] ) {
+                        $self->prepare($statement);
+                    } else {
+                        shift;
+                        $self->prepare( $statement, undef );
+                    }
                 }
             } else {
-                if ( defined $t[0] ) {
-                    if ( my $sth = $self->prepare($st) ) {
-                        return $sth->it(@t);
-                    }
-                } else {
-                    my ( undef, @values ) = @t;
-                    if ( my $sth = $self->prepare( $st, undef ) ) {
-                        return $sth->it(@values);
-                    }
-                }
+                $self->prepare($statement);
             }
-        } else {
-            if ( my $sth = $self->prepare($st) ) {
-                return $sth->it;
-            }
-        }
-        return;
+        };
+        return $sth->iterate(@_);
     };
 
     *resultset = *results = *rs = sub {
-        my ( $self, $st, @t ) = @_;
-        if (@t) {
-            if ( ref $t[0] ) {
-                if ( UNIVERSAL::isa( $t[0], 'HASH' ) ) {
-                    my ( $sattr, @values ) = @t;
-                    if ( my $sth = $self->prepare( $st, $sattr ) ) {
-                        return $sth->rs(@t);
-                    }
-                } elsif ( UNIVERSAL::isa( $t[0], 'ARRAY' ) ) {
-                    if ( my $sth = $self->prepare($st) ) {
-                        return $sth->rs(@t);
-                    }
-                } elsif ( UNIVERSAL::isa( $t[0], 'CODE' ) ) {
-                    if ( my $sth = $self->prepare($st) ) {
-                        return $sth->rs(@t);
+        my $self      = shift;
+        my $statement = shift;
+        my $sth       = do {
+            if (@_) {
+                if ( ref $_[0] ) {
+                    if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+                        my $statement_attrs = shift;
+                        $self->prepare( $statement, $statement_attrs );
+                    } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                        $self->prepare($statement);
+                    } elsif ( UNIVERSAL::isa( $_[0], 'CODE' ) ) {
+                        $self->prepare($statement);
+                    } else {
+                        throw E_EXP_REF;
                     }
                 } else {
-                    throw E_EXP_REF;
+                    if ( defined $_[0] ) {
+                        $self->prepare($statement);
+                    } else {
+                        shift;
+                        $self->prepare( $statement, undef );
+                    }
                 }
             } else {
-                if ( defined $t[0] ) {
-                    if ( my $sth = $self->prepare($st) ) {
-                        return $sth->rs(@t);
-                    }
-                } else {
-                    my ( undef, @values ) = @t;
-                    if ( my $sth = $self->prepare( $st, undef ) ) {
-                        return $sth->rs(@values);
-                    }
-                }
+                $self->prepare($statement);
             }
-        } else {
-            if ( my $sth = $self->prepare($st) ) {
-                return $sth->rs;
-            }
-        }
-        return;
+        };
+        return $sth->resultset(@_);
     };
 }
 
