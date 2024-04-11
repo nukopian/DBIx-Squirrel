@@ -13,6 +13,7 @@ BEGIN {
 }
 
 use namespace::autoclean;
+use Data::Dumper::Concise;
 use DBIx::Squirrel::util 'cbargs', 'throw', 'transform', 'whine';
 
 {
@@ -67,7 +68,7 @@ BEGIN {
             return $att unless wantarray;
             return $att, $self;
         }
-        if ( defined $_[0] ) {
+        unless ( defined $_[0] ) {
             delete $attrs_by_id{$id};
             shift;
         }
@@ -168,9 +169,9 @@ sub DESTROY {
 sub new {
     my ( $callbacks, $class, $sth, @bindvals ) = cbargs(@_);
     return unless UNIVERSAL::isa( $sth, 'DBI::st' );
-    my ( $id, $self ) = ( bless {}, ref $class || $class )->_id;
+    my $self = bless {}, ref $class || $class;
     return $_ = $self->finish->_attr(
-        {   'id' => $id,
+        {   'id' => 0+ $self,
             'bv' => \@bindvals,
             'cb' => $callbacks,
             'sl' => $self->set_slice->{'Slice'},
