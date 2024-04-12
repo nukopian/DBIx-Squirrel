@@ -25,14 +25,14 @@ use Sub::Name 'subname';
 
 sub _fetch_row {
     return if $_[0]->_no_more_rows;
-    my ( $att, $self ) = $_[0]->_attr;
+    my ( $attr, $self ) = $_[0]->_attr;
     if ( $self->_is_empty ) {
         return unless $self->_fetch;
     }
-    my ( $row, @t ) = @{ $att->{'bu'} };
-    $att->{'bu'} = \@t;
-    $att->{'row_count'} += 1;
-    return @{ $att->{'cb'} }
+    my ( $row, @t ) = @{ $attr->{'bu'} };
+    $attr->{'bu'} = \@t;
+    $attr->{'row_count'} += 1;
+    return @{ $attr->{'cb'} }
       ? $self->_transform( $self->_bless($row) )
       : $self->_bless($row);
 }
@@ -90,10 +90,10 @@ sub _fetch_row {
     no strict 'refs';
 
     sub set_slice {
-        my ( $att, $self, $slice ) = ( $_[0]->_attr, @_[ 1 .. $#_ ] );
-        my $old = defined $att->{'sl'} ? $att->{'sl'} : '';
+        my ( $attr, $self, $slice ) = ( $_[0]->_attr, @_[ 1 .. $#_ ] );
+        my $old = defined $attr->{'sl'} ? $attr->{'sl'} : '';
         $self->SUPER::set_slice($slice);
-        if ( my $new = defined $att->{'sl'} ? $att->{'sl'} : '' ) {
+        if ( my $new = defined $attr->{'sl'} ? $attr->{'sl'} : '' ) {
             $self->_undef_autoloaded_accessors
               if ref $new ne ref $old && %{ $self->row_class . '::' };
         }

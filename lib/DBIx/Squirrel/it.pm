@@ -90,18 +90,18 @@ BEGIN {
 
 sub _fetch_row {
     return if $_[0]->_no_more_rows;
-    my ( $att, $self ) = $_[0]->_attr;
+    my ( $attr, $self ) = $_[0]->_attr;
     return if $self->_is_empty && !$self->_fetch;
-    my ( $row, @t ) = @{ $att->{'bu'} };
-    $att->{'bu'} = \@t;
-    $att->{'row_count'} += 1;
-    return @{ $att->{'cb'} } ? $self->_transform($row) : $row;
+    my ( $row, @t ) = @{ $attr->{'bu'} };
+    $attr->{'bu'} = \@t;
+    $attr->{'row_count'} += 1;
+    return @{ $attr->{'cb'} } ? $self->_transform($row) : $row;
 }
 
 sub _no_more_rows {
-    my ( $att, $self ) = $_[0]->_attr;
-    $self->execute unless $att->{'ex'};
-    return !!$att->{'fi'};
+    my ( $attr, $self ) = $_[0]->_attr;
+    $self->execute unless $attr->{'ex'};
+    return !!$attr->{'fi'};
 }
 
 sub _is_empty {
@@ -109,49 +109,49 @@ sub _is_empty {
 }
 
 sub _fetch {
-    my ( $att, $self ) = $_[0]->_attr;
-    my ( $sth, $sl, $mr, $bl ) = @{$att}{qw/st sl mr bl/};
+    my ( $attr, $self ) = $_[0]->_attr;
+    my ( $sth, $sl, $mr, $bl ) = @{$attr}{qw/st sl mr bl/};
     unless ( $sth && $sth->{'Active'} ) {
-        $att->{'fi'} = 1;
+        $attr->{'fi'} = 1;
         return undef;
     }
     my $r = $sth->fetchall_arrayref( $sl, $mr || 1 );
     my $c = $r ? @{$r} : 0;
     unless ( $r && $c ) {
-        $att->{'fi'} = 1;
+        $attr->{'fi'} = 1;
         return 0;
     }
-    $att->{'bu'} = ( $_ = $att->{'bu'} ) ? [ @{$_}, @{$r} ] : $r;
+    $attr->{'bu'} = ( $_ = $attr->{'bu'} ) ? [ @{$_}, @{$r} ] : $r;
     if ( $c == $mr && $mr < $bl ) {
-        ( $mr, $bl ) = @{$att}{qw/mr bl/} if $self->_auto_manage_maxrows;
+        ( $mr, $bl ) = @{$attr}{qw/mr bl/} if $self->_auto_manage_maxrows;
     }
-    return $att->{'rf'} += $c;
+    return $attr->{'rf'} += $c;
 }
 
 sub _auto_manage_maxrows {
-    my $att = $_[0]->_attr;
-    return undef unless my $limit = $att->{'bl'};
+    my $attr = $_[0]->_attr;
+    return undef unless my $limit = $attr->{'bl'};
     my $dirty;
-    my $mr     = $att->{'mr'};
+    my $mr     = $attr->{'mr'};
     my $new_mr = do {
-        if ( my $mul = $att->{'bm'} ) {
+        if ( my $mul = $attr->{'bm'} ) {
             if ( $mul > 1 ) {
                 $dirty = 1;
                 $mr * $mul;
             } else {
-                if ( my $inc = $att->{'bi'} ) {
+                if ( my $inc = $attr->{'bi'} ) {
                     $dirty = 1;
                     $mr + $inc;
                 }
             }
         } else {
-            if ( my $inc = $att->{'bi'} ) {
+            if ( my $inc = $attr->{'bi'} ) {
                 $dirty = 1;
                 $mr + $inc;
             }
         }
     };
-    $att->{'mr'} = $new_mr if $dirty && $new_mr <= $limit;
+    $attr->{'mr'} = $new_mr if $dirty && $new_mr <= $limit;
     return !!$dirty;
 }
 
@@ -183,24 +183,24 @@ sub new {
 }
 
 sub execute {
-    my $att = $_[0]->_attr;
-    return unless my $sth = $att->{'st'};
-    $_[0]->reset if $att->{'ex'} || $att->{'fi'};
+    my $attr = $_[0]->_attr;
+    return unless my $sth = $attr->{'st'};
+    $_[0]->reset if $attr->{'ex'} || $attr->{'fi'};
     return $_ = do {
-        if ( $sth->execute( @_ > 1 ? @_[ 1 .. $#_ ] : @{ $att->{'bv'} } ) ) {
-            $att->{'ex'}        = 1;
-            $att->{'row_count'} = 0;
+        if ( $sth->execute( @_ > 1 ? @_[ 1 .. $#_ ] : @{ $attr->{'bv'} } ) ) {
+            $attr->{'ex'}        = 1;
+            $attr->{'row_count'} = 0;
             if ( $sth->{NUM_OF_FIELDS} ) {
                 my $count = $_[0]->_fetch;
-                $att->{'fi'} = $count ? 0 : 1;
+                $attr->{'fi'} = $count ? 0 : 1;
                 $count || '0E0';
             } else {
-                $att->{'fi'} = 1;
+                $attr->{'fi'} = 1;
                 '0E0';
             }
         } else {
-            $att->{'ex'} = 1;
-            $att->{'fi'} = 1;
+            $attr->{'ex'} = 1;
+            $attr->{'fi'} = 1;
             undef;
         }
     };
