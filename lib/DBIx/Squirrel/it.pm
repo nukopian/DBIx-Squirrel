@@ -28,27 +28,19 @@ use DBIx::Squirrel::util 'cbargs', 'throw', 'transform', 'whine';
 
 our $DEFAULT_SLICE = [];
 
-sub DEFAULT_SLICE {
-    return $DEFAULT_SLICE;
-}
+sub DEFAULT_SLICE () { $DEFAULT_SLICE; }
 
 our $DEFAULT_MAXROWS = 1;                                                                                                          # Initial buffer size and autoscaling increment
 
-sub DEFAULT_MAXROWS {
-    return $DEFAULT_MAXROWS;
-}
+sub DEFAULT_MAXROWS () { $DEFAULT_MAXROWS; }
 
 our $BUF_MULT = 2;                                                                                                                 # Autoscaling factor, 0 to disable autoscaling together
 
-sub BUF_MULT {
-    return $BUF_MULT;
-}
+sub BUF_MULT () { $BUF_MULT; }
 
 our $BUF_MAXROWS = 8;                                                                                                              # Absolute maximum buffersize
 
-sub BUF_MAXROWS {
-    return $BUF_MAXROWS;
-}
+sub BUF_MAXROWS () { $BUF_MAXROWS; }
 
 BEGIN {
     my %attr_by_id;
@@ -88,49 +80,22 @@ BEGIN {
     }
 }
 
-sub _fetch_row {
-    return if $_[0]->_no_more_rows;
-    my ( $attr, $self ) = $_[0]->_attr;
-    return if $self->_is_empty && !$self->_fetch;
-    my ( $row, @t ) = @{ $attr->{'bu'} };
-    $attr->{'bu'} = \@t;
-    $attr->{'row_count'} += 1;
-    return @{ $attr->{'cb'} } ? $self->_transform($row) : $row;
-}
-
 sub _no_more_rows {
-    my ( $attr, $self ) = $_[0]->_attr;
+    my ( $attr, $self ) = shift->_attr;
     $self->execute unless $attr->{'ex'};
-    return !!$attr->{'fi'};
+    return 1 if $attr->{'fi'};
+    return 0;
 }
 
 sub _is_empty {
-    return $_[0]->_attr->{'bu'} ? !@{ $_[0]->_attr->{'bu'} } : 1;
-}
-
-sub _fetch {
-    my ( $attr, $self ) = $_[0]->_attr;
-    my ( $sth, $sl, $mr, $bl ) = @{$attr}{qw/st sl mr bl/};
-    unless ( $sth && $sth->{'Active'} ) {
-        $attr->{'fi'} = 1;
-        return undef;
-    }
-    my $r = $sth->fetchall_arrayref( $sl, $mr || 1 );
-    my $c = $r ? @{$r} : 0;
-    unless ( $r && $c ) {
-        $attr->{'fi'} = 1;
-        return 0;
-    }
-    $attr->{'bu'} = ( $_ = $attr->{'bu'} ) ? [ @{$_}, @{$r} ] : $r;
-    if ( $c == $mr && $mr < $bl ) {
-        ( $mr, $bl ) = @{$attr}{qw/mr bl/} if $self->_auto_manage_maxrows;
-    }
-    return $attr->{'rf'} += $c;
+    my $attr = shift->_attr;
+    return 0 if @{ $attr->{'bu'} };
+    return 1;
 }
 
 sub _auto_manage_maxrows {
-    my $attr = $_[0]->_attr;
-    return undef unless my $limit = $attr->{'bl'};
+    my ( $attr, $self ) = shift->_attr;
+    return unless my $limit = $attr->{'bl'};
     my $dirty;
     my $mr     = $attr->{'mr'};
     my $new_mr = do {
@@ -155,22 +120,45 @@ sub _auto_manage_maxrows {
     return !!$dirty;
 }
 
+sub _fetch {
+    my ( $attr, $self ) = shift->_attr;
+    my ( $sth, $sl, $mr, $bl ) = @{$attr}{qw/st sl mr bl/};
+    unless ( $sth && $sth->{'Active'} ) {
+        $attr->{'fi'} = 1;
+        return;
+    }
+    my $r = $sth->fetchall_arrayref( $sl, $mr || 1 );
+    my $c = $r ? @{$r} : 0;
+    unless ( $r && $c ) {
+        $attr->{'fi'} = 1;
+        return 0;
+    }
+    $attr->{'bu'} = ( $_ = $attr->{'bu'} ) ? [ @{$_}, @{$r} ] : $r;
+    if ( $c == $mr && $mr < $bl ) {
+        ( $mr, $bl ) = @{$attr}{qw/mr bl/} if $self->_auto_manage_maxrows;
+    }
+    return $attr->{'rf'} += $c;
+}
+
 sub _transform {
     my $self = shift;
     return transform( $self->_attr->{'cb'}, @_ );
 }
 
-sub DESTROY {
-    return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
-    local ( $., $@, $!, $^E, $?, $_ );
-    $_[0]->finish->_attr(undef);
-    return;
+sub _fetch_row {
+    my ( $attr, $self ) = shift->_attr;
+    return if $self->_no_more_rows;
+    return if $self->_is_empty && !$self->_fetch;
+    my ( $head, @tail ) = @{ $attr->{'bu'} };
+    $attr->{'bu'} = \@tail;
+    $attr->{'row_count'} += 1;
+    return @{ $attr->{'cb'} } ? $self->_transform($head) : $head;
 }
 
 sub new {
-    my ( $callbacks, $class, $sth, @bindvals ) = cbargs(@_);
+    my ( $callbacks, $class_or_self, $sth, @bindvals ) = cbargs(@_);
     return unless UNIVERSAL::isa( $sth, 'DBI::st' );
-    my $self = bless {}, ref $class || $class;
+    my $self = bless {}, ref $class_or_self || $class_or_self;
     return $_ = $self->finish->_attr(
         {   'id' => 0+ $self,
             'bv' => \@bindvals,
@@ -182,28 +170,31 @@ sub new {
     );
 }
 
+sub DESTROY {
+    return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
+    local ( $., $@, $!, $^E, $?, $_ );
+    shift->finish->_attr(undef);
+    return;
+}
+
 sub execute {
-    my $attr = $_[0]->_attr;
+    my ( $attr, $self ) = shift->_attr;
     return unless my $sth = $attr->{'st'};
-    $_[0]->reset if $attr->{'ex'} || $attr->{'fi'};
-    return $_ = do {
-        if ( $sth->execute( @_ > 1 ? @_[ 1 .. $#_ ] : @{ $attr->{'bv'} } ) ) {
-            $attr->{'ex'}        = 1;
-            $attr->{'row_count'} = 0;
-            if ( $sth->{NUM_OF_FIELDS} ) {
-                my $count = $_[0]->_fetch;
-                $attr->{'fi'} = $count ? 0 : 1;
-                $count || '0E0';
-            } else {
-                $attr->{'fi'} = 1;
-                '0E0';
-            }
-        } else {
-            $attr->{'ex'} = 1;
-            $attr->{'fi'} = 1;
-            undef;
+    $self->reset if $attr->{'ex'} || $attr->{'fi'};
+    if ( $sth->execute( @_ ? @_ : @{ $attr->{'bv'} } ) ) {
+        $attr->{'ex'}        = 1;
+        $attr->{'row_count'} = 0;
+        if ( $sth->{NUM_OF_FIELDS} ) {
+            my $count = $self->_fetch;
+            $attr->{'fi'} = $count ? 0 : 1;
+            return $_ = $count || '0E0';
         }
-    };
+        $attr->{'fi'} = 1;
+        return $_ = '0E0';
+    }
+    $attr->{'ex'} = 1;
+    $attr->{'fi'} = 1;
+    return $_ = undef;
 }
 
 sub count {
@@ -269,8 +260,7 @@ sub find {
     my ( $attr, $self ) = shift->_attr;
     my $row;
     if ( $self->execute(@_) ) {
-        $row = $self->_fetch_row;
-        if ( defined $row ) {
+        if ( $row = $self->_fetch_row ) {
             $attr->{'row_count'} = 1;
             $self->reset;
         } else {
@@ -286,11 +276,7 @@ sub first {
         $self->reset(@_);
     }
     my $row = $self->_fetch_row;
-    if ( defined $row ) {
-        $attr->{'row_count'} = 1;
-    } else {
-        $attr->{'row_count'} = 0;
-    }
+    $attr->{'row_count'} = 1 if $row;
     return $_ = $row;
 }
 
@@ -303,8 +289,6 @@ sub single {
         if ( $row = $self->_fetch_row ) {
             $attr->{'row_count'} = 1;
             $self->reset;
-        } else {
-            $attr->{'row_count'} = 0;
         }
     }
     return $_ = $row;
