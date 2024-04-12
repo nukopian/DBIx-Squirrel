@@ -19,16 +19,11 @@ use DBIx::Squirrel::util 'throw';
 our $AUTOLOAD;
 
 BEGIN {
-
-    sub result_class {
-        return $_[0]->rs->result_class;
-    }
-
-    *row_base_class = *result_class;
+    *row_base_class = *result_class = sub { shift->rs->result_class; }
 }
 
 sub row_class {
-    return $_[0]->rs->row_class;
+    return shift->rs->row_class;
 }
 
 sub get_column {
