@@ -32,7 +32,7 @@ sub _fetch_row {
     my ( $row, @t ) = @{ $attr->{'bu'} };
     $attr->{'bu'} = \@t;
     $attr->{'row_count'} += 1;
-    return @{ $attr->{'cb'} }
+    return @{ $attr->{'callbacks'} }
       ? $self->_transform( $self->_bless($row) )
       : $self->_bless($row);
 }
@@ -91,9 +91,9 @@ sub _fetch_row {
 
     sub set_slice {
         my ( $attr, $self, $slice ) = ( $_[0]->_attr, @_[ 1 .. $#_ ] );
-        my $old = defined $attr->{'sl'} ? $attr->{'sl'} : '';
+        my $old = defined $attr->{'slice'} ? $attr->{'slice'} : '';
         $self->SUPER::set_slice($slice);
-        if ( my $new = defined $attr->{'sl'} ? $attr->{'sl'} : '' ) {
+        if ( my $new = defined $attr->{'slice'} ? $attr->{'slice'} : '' ) {
             $self->_undef_autoloaded_accessors
               if ref $new ne ref $old && %{ $self->row_class . '::' };
         }

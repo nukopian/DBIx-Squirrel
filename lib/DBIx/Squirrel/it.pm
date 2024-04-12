@@ -82,8 +82,8 @@ BEGIN {
 
 sub _no_more_rows {
     my ( $attr, $self ) = shift->_attr;
-    $self->execute unless $attr->{'ex'};
-    return 1 if $attr->{'fi'};
+    $self->execute unless $attr->{'executed'};
+    return 1 if $attr->{'finished'};
     return 0;
 }
 
@@ -97,52 +97,52 @@ sub _auto_manage_maxrows {
     my ( $attr, $self ) = shift->_attr;
     return unless my $limit = $attr->{'bl'};
     my $dirty;
-    my $mr     = $attr->{'mr'};
-    my $new_mr = do {
+    my $maxrows = $attr->{'maxrows'};
+    my $new_mr  = do {
         if ( my $mul = $attr->{'bm'} ) {
             if ( $mul > 1 ) {
                 $dirty = 1;
-                $mr * $mul;
+                $maxrows * $mul;
             } else {
                 if ( my $inc = $attr->{'bi'} ) {
                     $dirty = 1;
-                    $mr + $inc;
+                    $maxrows + $inc;
                 }
             }
         } else {
             if ( my $inc = $attr->{'bi'} ) {
                 $dirty = 1;
-                $mr + $inc;
+                $maxrows + $inc;
             }
         }
     };
-    $attr->{'mr'} = $new_mr if $dirty && $new_mr <= $limit;
+    $attr->{'maxrows'} = $new_mr if $dirty && $new_mr <= $limit;
     return !!$dirty;
 }
 
 sub _fetch {
     my ( $attr, $self ) = shift->_attr;
-    my ( $sth, $sl, $mr, $bl ) = @{$attr}{qw/st sl mr bl/};
+    my ( $sth, $slice, $maxrows, $bl ) = @{$attr}{qw/st slice maxrows bl/};
     unless ( $sth && $sth->{'Active'} ) {
-        $attr->{'fi'} = 1;
+        $attr->{'finished'} = 1;
         return;
     }
-    my $r = $sth->fetchall_arrayref( $sl, $mr || 1 );
+    my $r = $sth->fetchall_arrayref( $slice, $maxrows || 1 );
     my $c = $r ? @{$r} : 0;
     unless ( $r && $c ) {
-        $attr->{'fi'} = 1;
+        $attr->{'finished'} = 1;
         return 0;
     }
     $attr->{'bu'} = ( $_ = $attr->{'bu'} ) ? [ @{$_}, @{$r} ] : $r;
-    if ( $c == $mr && $mr < $bl ) {
-        ( $mr, $bl ) = @{$attr}{qw/mr bl/} if $self->_auto_manage_maxrows;
+    if ( $c == $maxrows && $maxrows < $bl ) {
+        ( $maxrows, $bl ) = @{$attr}{qw/maxrows bl/} if $self->_auto_manage_maxrows;
     }
     return $attr->{'rf'} += $c;
 }
 
 sub _transform {
     my $self = shift;
-    return transform( $self->_attr->{'cb'}, @_ );
+    return transform( $self->_attr->{'callbacks'}, @_ );
 }
 
 sub _fetch_row {
@@ -152,7 +152,7 @@ sub _fetch_row {
     my ( $head, @tail ) = @{ $attr->{'bu'} };
     $attr->{'bu'} = \@tail;
     $attr->{'row_count'} += 1;
-    return @{ $attr->{'cb'} } ? $self->_transform($head) : $head;
+    return @{ $attr->{'callbacks'} } ? $self->_transform($head) : $head;
 }
 
 sub new {
@@ -160,12 +160,12 @@ sub new {
     return unless UNIVERSAL::isa( $sth, 'DBI::st' );
     my $self = bless {}, ref $class_or_self || $class_or_self;
     return $_ = $self->finish->_attr(
-        {   'id' => 0+ $self,
-            'bv' => \@bindvals,
-            'cb' => $callbacks,
-            'sl' => $self->set_slice->{'Slice'},
-            'mr' => $self->set_maxrows->{'MaxRows'},
-            'st' => $sth->_attr( { 'Iterator' => $self } ),
+        {   'id'        => 0+ $self,
+            'st'        => $sth->_attr( { 'Iterator' => $self } ),
+            'bindvals'  => \@bindvals,
+            'callbacks' => $callbacks,
+            'slice'     => $self->set_slice->{'Slice'},
+            'maxrows'   => $self->set_maxrows->{'MaxRows'},
         }
     );
 }
@@ -179,21 +179,24 @@ sub DESTROY {
 
 sub execute {
     my ( $attr, $self ) = shift->_attr;
-    return unless my $sth = $attr->{'st'};
-    $self->reset if $attr->{'ex'} || $attr->{'fi'};
-    if ( $sth->execute( @_ ? @_ : @{ $attr->{'bv'} } ) ) {
-        $attr->{'ex'}        = 1;
+    my $sth = $attr->{'st'};
+    return unless $sth;
+    if ( $attr->{'executed'} || $attr->{'finished'} ) {
+        $self->reset;
+    }
+    $attr->{'executed'} = 1;
+    if ( $sth->execute( @_ ? @_ : @{ $attr->{'bindvals'} } ) ) {
+        $attr->{'executed'}  = 1;
         $attr->{'row_count'} = 0;
         if ( $sth->{NUM_OF_FIELDS} ) {
             my $count = $self->_fetch;
-            $attr->{'fi'} = $count ? 0 : 1;
+            $attr->{'finished'} = $count ? 0 : 1;
             return $_ = $count || '0E0';
         }
-        $attr->{'fi'} = 1;
+        $attr->{'finished'} = 1;
         return $_ = '0E0';
     }
-    $attr->{'ex'} = 1;
-    $attr->{'fi'} = 1;
+    $attr->{'finished'} = 1;
     return $_ = undef;
 }
 
@@ -210,14 +213,14 @@ sub set_slice {
         }
     }
     $self->{'Slice'} = ( shift // $DEFAULT_SLICE );
-    return $self->_attr( { 'sl' => $self->{'Slice'} } );
+    return $self->_attr( { 'slice' => $self->{'Slice'} } );
 }
 
 sub set_maxrows {
     my $self = shift;
     throw E_BAD_MAXROWS if ref $_[0];
     $self->{'MaxRows'} = int( shift // $DEFAULT_MAXROWS );
-    return $self->_attr( { 'mr' => $self->{'MaxRows'} } );
+    return $self->_attr( { 'maxrows' => $self->{'MaxRows'} } );
 }
 
 sub set_slice_maxrows {
@@ -240,13 +243,13 @@ sub finish {
     if ( $attr->{'st'} && $attr->{'st'}{'Active'} ) {
         $attr->{'st'}->finish;
     }
-    $attr->{'fi'} = undef;
-    $attr->{'ex'} = undef;
-    $attr->{'bu'} = undef;
-    $attr->{'rf'} = 0;
-    $attr->{'bi'} = $DEFAULT_MAXROWS;
-    $attr->{'bm'} = $BUF_MULT && $BUF_MULT < 11 ? $BUF_MULT : 0;
-    $attr->{'bl'} = $BUF_MAXROWS || $attr->{'bi'};
+    $attr->{'finished'} = undef;
+    $attr->{'executed'} = undef;
+    $attr->{'bu'}       = undef;
+    $attr->{'rf'}       = 0;
+    $attr->{'bi'}       = $DEFAULT_MAXROWS;
+    $attr->{'bm'}       = $BUF_MULT && $BUF_MULT < 11 ? $BUF_MULT : 0;
+    $attr->{'bl'}       = $BUF_MAXROWS || $attr->{'bi'};
     return $self;
 }
 
@@ -272,7 +275,7 @@ sub find {
 
 sub first {
     my ( $attr, $self ) = shift->_attr;
-    if ( @_ || $attr->{'ex'} || $attr->{'st'}{'Active'} ) {
+    if ( @_ || $attr->{'executed'} || $attr->{'st'}{'Active'} ) {
         $self->reset(@_);
     }
     my $row = $self->_fetch_row;
@@ -298,7 +301,7 @@ sub remaining {
     my ( $attr, $self ) = shift->_attr;
     my @rows;
     unless ( $self->_no_more_rows ) {
-        until ( $attr->{'fi'} ) {
+        until ( $attr->{'finished'} ) {
             push @rows, $self->_fetch_row;
         }
         $attr->{'row_count'} += scalar @rows;
@@ -321,10 +324,10 @@ sub all {
 BEGIN {
     *resultset        = *rs           = sub { shift->sth->rs(@_) };
     *statement_handle = *sth          = sub { shift->_attr->{'st'} };
-    *done             = *finished     = sub { !!shift->_attr->{'fi'} };
-    *not_done         = *not_finished = sub { !shift->_attr->{'fi'} };
-    *not_pending      = *executed     = sub { !!shift->_attr->{'ex'} };
-    *pending          = *not_executed = sub { !shift->_attr->{'ex'} };
+    *done             = *finished     = sub { !!shift->_attr->{'finished'} };
+    *not_done         = *not_finished = sub { !shift->_attr->{'finished'} };
+    *not_pending      = *executed     = sub { !!shift->_attr->{'executed'} };
+    *pending          = *not_executed = sub { !shift->_attr->{'executed'} };
 }
 
 1;
