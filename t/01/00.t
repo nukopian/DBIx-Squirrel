@@ -775,7 +775,7 @@ sub test_the_basics
 
     ( $exp, $got ) = (
         [ 1, 'MPEG audio file' ],
-        $it->head,
+        $it->first,
     );
     is_deeply $got, $exp, 'first'
       or dump_val { exp => $exp, got => $got };
@@ -784,7 +784,7 @@ sub test_the_basics
         { MediaTypeId => 1, Name => "MPEG audio file" },
         do {
             $it->reset( {} );
-            $it->head;
+            $it->first;
         },
     );
     is_deeply $got, $exp, 'first'
@@ -792,7 +792,7 @@ sub test_the_basics
 
     ( $exp, $got ) = (
         { MediaTypeId => 1, Name => "MPEG audio file" },
-        $it->head( {} ),
+        $it->first( {} ),
     );
     is_deeply $got, $exp, 'first'
       or dump_val { exp => $exp, got => $got };
@@ -883,7 +883,7 @@ sub test_the_basics
 
     ( $exp, $got ) = (
         bless( [ 1, "MPEG audio file" ], 'DBIx::Squirrel::rs' ),
-        $sth->rs->head,
+        $sth->rs->first,
     );
     is_deeply $got, $exp, 'first'
       or dump_val { exp => $exp, got => $got };

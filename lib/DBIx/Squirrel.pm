@@ -176,11 +176,11 @@ DBIx::Squirrel - A module for working with databases
         push @ary, $next;
     }
 
-    @ary = $itr->head;
+    @ary = $itr->first;
     push @ary, $_ while $itr->next;
 
-    @ary = $itr->head;
-    push @ary, $itr->tail;
+    @ary = $itr->first;
+    push @ary, $itr->remaining;
 
     @ary = $itr->all;
 

@@ -51,37 +51,37 @@ sub BUF_MAXROWS {
 }
 
 BEGIN {
-    my %attrs_by_id;
+    my %attr_by_id;
 
     sub _attr {
         my $self = shift;
         return unless ref $self;
-        my $id    = 0+ $self;
-        my $attrs = do {
-            if ( defined $attrs_by_id{$id} ) {
-                $attrs_by_id{$id};
+        my $id   = 0+ $self;
+        my $attr = do {
+            if ( defined $attr_by_id{$id} ) {
+                $attr_by_id{$id};
             } else {
-                $attrs_by_id{$id} = {};
+                $attr_by_id{$id} = {};
             }
         };
         unless (@_) {
-            return $attrs unless wantarray;
-            return $attrs, $self;
+            return $attr unless wantarray;
+            return $attr, $self;
         }
         unless ( defined $_[0] ) {
-            delete $attrs_by_id{$id};
+            delete $attr_by_id{$id};
             shift;
         }
         if (@_) {
-            unless ( exists $attrs_by_id{$id} ) {
-                $attrs_by_id{$id} = {};
+            unless ( exists $attr_by_id{$id} ) {
+                $attr_by_id{$id} = {};
             }
             if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
-                $attrs_by_id{$id} = { %{$attrs}, %{ $_[0] } };
+                $attr_by_id{$id} = { %{$attr}, %{ $_[0] } };
             } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
-                $attrs_by_id{$id} = { %{$attrs}, @{ $_[0] } };
+                $attr_by_id{$id} = { %{$attr}, @{ $_[0] } };
             } else {
-                $attrs_by_id{$id} = { %{$attrs}, @_ };
+                $attr_by_id{$id} = { %{$attr}, @_ };
             }
         }
         return $self;
@@ -94,7 +94,7 @@ sub _fetch_row {
     return if $self->_is_empty && !$self->_fetch;
     my ( $row, @t ) = @{ $att->{'bu'} };
     $att->{'bu'} = \@t;
-    $att->{'rc'} += 1;
+    $att->{'row_count'} += 1;
     return @{ $att->{'cb'} } ? $self->_transform($row) : $row;
 }
 
@@ -156,7 +156,8 @@ sub _auto_manage_maxrows {
 }
 
 sub _transform {
-    return transform( $_[0]->_attr->{'cb'}, @_[ 1 .. $#_ ] );
+    my $self = shift;
+    return transform( $self->_attr->{'cb'}, @_ );
 }
 
 sub DESTROY {
@@ -187,8 +188,8 @@ sub execute {
     $_[0]->reset if $att->{'ex'} || $att->{'fi'};
     return $_ = do {
         if ( $sth->execute( @_ > 1 ? @_[ 1 .. $#_ ] : @{ $att->{'bv'} } ) ) {
-            $att->{'ex'} = 1;
-            $att->{'rc'} = 0;
+            $att->{'ex'}        = 1;
+            $att->{'row_count'} = 0;
             if ( $sth->{NUM_OF_FIELDS} ) {
                 my $count = $_[0]->_fetch;
                 $att->{'fi'} = $count ? 0 : 1;
@@ -205,62 +206,39 @@ sub execute {
     };
 }
 
-sub find {
-    $_[0]->reset if my $row = do {
-        $_[0]->execute( @_[ 1 .. $#_ ] ) ? $_[0]->_fetch_row : undef;
-    };
-    return $_ = $row;
-}
+sub count { $_ = scalar @{ shift->all(@_) } }
 
-sub single {
-    $_[0]->reset if my $row = do {
-        if ( my $count = $_[0]->execute( @_[ 1 .. $#_ ] ) ) {
-            whine W_MORE_ROWS if $count > 1;
-            $_[0]->_fetch_row;
-        } else {
-            undef;
+sub set_slice {
+    my $self = shift;
+    if ( defined $_[0] ) {
+        unless ( UNIVERSAL::isa( $_[0], 'ARRAY' ) || UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+            throw E_BAD_SLICE;
         }
-    };
-    return $_ = $row;
-}
-
-sub all {
-    my $self = shift;
-    my $rows = $self->execute(@_) ? $self->tail : [];
-    return $rows unless wantarray;
-    return @{$rows};
-}
-
-sub tail {
-    my $self = shift;
-    return if $self->_no_more_rows;
-    my $attr = $self->_attr;
-    my @rows;
-    push @rows, $self->_fetch_row until $attr->{'fi'};
-    $attr->{'rc'} = @rows;
-    if (@rows) {
-        $self->reset;
     }
-    return \@rows unless wantarray;
-    return @rows;
+    $self->{'Slice'} = ( shift // $DEFAULT_SLICE );
+    return $self->_attr( { 'sl' => $self->{'Slice'} } );
 }
+
+sub set_maxrows {
+    my $self = shift;
+    throw E_BAD_MAXROWS if ref $_[0];
+    $self->{'MaxRows'} = int( shift // $DEFAULT_MAXROWS );
+    return $self->_attr( { 'mr' => $self->{'MaxRows'} } );
+}
+
+sub set_slice_maxrows {
+    my $self = shift;
+    return $self unless @_;
+    return $self->set_slice(shift)->set_maxrows(shift) if ref $_[0];
+    return $self->set_maxrows(shift)->set_slice(shift);
+}
+
+BEGIN { *set_maxrows_slice = *set_slice_maxrows }
 
 sub next {
     my $self = shift;
-    if (@_) {
-        $self->set_slice_maxrows(@_);
-    }
+    $self->set_slice_maxrows(@_) if @_;
     return $_ = $self->_fetch_row;
-}
-
-sub count { $_ = scalar @{ shift->all(@_) } }
-
-sub reset {
-    my $self = shift;
-    if (@_) {
-        $self->set_slice_maxrows(@_);
-    }
-    return $self->finish;
 }
 
 sub finish {
@@ -278,47 +256,82 @@ sub finish {
     return $self;
 }
 
-sub set_slice {
-    my $self  = shift;
-    my $slice = shift;
-    if ( defined $slice ) {
-        throw E_BAD_SLICE
-          unless UNIVERSAL::isa( $slice, 'ARRAY' ) || UNIVERSAL::isa( $slice, 'HASH' );
-    }
-    $self->{'Slice'} = ( $slice // $DEFAULT_SLICE );
-    return $self->_attr( { 'sl' => $self->{'Slice'} } );
+sub reset {
+    my $self = shift;
+    $self->set_slice_maxrows(@_) if @_;
+    return $self->finish;
 }
 
-sub set_maxrows {
-    my $self  = shift;
-    my $count = shift;
-    if ( defined $count ) {
-        throw E_BAD_MAXROWS unless !ref $count && int $count;
+sub find {
+    my $self = shift;
+    my $row;
+    if ( $self->execute(@_) ) {
+        my $attr = $self->_attr;
+        $row = $self->_fetch_row;
+        if ( defined $row ) {
+            $attr->{'row_count'} = 1;
+            $self->reset;
+        } else {
+            $attr->{'row_count'} = 0;
+        }
     }
-    $self->{'MaxRows'} = int( $count // $DEFAULT_MAXROWS );
-    return $self->_attr( { 'mr' => $self->{'MaxRows'} } );
+    return $_ = $row;
+}
+
+sub first {
+    my ( $attr, $self ) = shift->_attr;
+    if ( @_ || $attr->{'ex'} || $attr->{'st'}{'Active'} ) {
+        $self->reset(@_);
+    }
+    my $row = $self->_fetch_row;
+    if ( defined $row ) {
+        $attr->{'row_count'} = 1;
+    } else {
+        $attr->{'row_count'} = 0;
+    }
+    return $_ = $row;
+}
+
+sub single {
+    my ( $attr, $self ) = shift->_attr;
+    my $count = $self->execute(@_);
+    my $row;
+    if ($count) {
+        whine W_MORE_ROWS if $count > 1;
+        if ( $row = $self->_fetch_row ) {
+            $attr->{'row_count'} = 1;
+            $self->reset;
+        } else {
+            $attr->{'row_count'} = 0;
+        }
+    }
+    return $_ = $row;
+}
+
+sub remaining {
+    my $self = shift;
+    my @rows;
+    unless ( $self->_no_more_rows ) {
+        my $attr = $self->_attr;
+        push @rows, $self->_fetch_row until $attr->{'fi'};
+        $attr->{'row_count'} += scalar @rows;
+        $self->reset if $attr->{'row_count'};
+    }
+    return \@rows unless wantarray;
+    return @rows;
+}
+
+sub all {
+    my $self = shift;
+    my @rows;
+    if ( $self->execute(@_) ) {
+        push @rows, $self->remaining;
+    }
+    return \@rows unless wantarray;
+    return @rows;
 }
 
 BEGIN {
-    *first = *head = sub {
-        my $self = shift;
-        my $attr = $self->_attr;
-        if ( @_ || $attr->{'ex'} || $attr->{'st'}{'Active'} ) {
-            $self->reset(@_);
-        }
-        return $_ = $self->_fetch_row;
-    };
-
-    *set_maxrows_slice = *set_slice_maxrows = sub {
-        my $self = shift;
-        return $self unless @_;
-        if ( ref $_[0] ) {
-            return $self->set_slice(shift)->set_maxrows(shift);
-        } else {
-            return $self->set_maxrows(shift)->set_slice(shift);
-        }
-    };
-
     *resultset        = *rs           = sub { shift->sth->rs(@_) };
     *statement_handle = *sth          = sub { shift->_attr->{'st'} };
     *done             = *finished     = sub { !!shift->_attr->{'fi'} };

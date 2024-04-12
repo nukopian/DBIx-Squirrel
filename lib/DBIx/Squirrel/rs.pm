@@ -31,7 +31,7 @@ sub _fetch_row {
     }
     my ( $row, @t ) = @{ $att->{'bu'} };
     $att->{'bu'} = \@t;
-    $att->{'rc'} += 1;
+    $att->{'row_count'} += 1;
     return @{ $att->{'cb'} }
       ? $self->_transform( $self->_bless($row) )
       : $self->_bless($row);
