@@ -23,7 +23,6 @@ use DBIx::Squirrel::util 'cbargs', 'throw', 'transform', 'whine';
         return $r unless wantarray;
         return RootClass => $r;
     }
-
 }
 
 our $DEFAULT_SLICE = [];

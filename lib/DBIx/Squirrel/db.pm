@@ -188,7 +188,7 @@ BEGIN {
         return $sth->iterate(@_);
     };
 
-    *resultset = *results = *rs = sub {
+    *resultset = *rs = sub {
         my $self      = shift;
         my $statement = shift;
         my $sth       = do {
