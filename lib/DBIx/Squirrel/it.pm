@@ -263,10 +263,9 @@ sub reset {
 }
 
 sub find {
-    my $self = shift;
+    my ( $attr, $self ) = shift->_attr;
     my $row;
     if ( $self->execute(@_) ) {
-        my $attr = $self->_attr;
         $row = $self->_fetch_row;
         if ( defined $row ) {
             $attr->{'row_count'} = 1;
@@ -309,11 +308,12 @@ sub single {
 }
 
 sub remaining {
-    my $self = shift;
+    my ( $attr, $self ) = shift->_attr;
     my @rows;
     unless ( $self->_no_more_rows ) {
-        my $attr = $self->_attr;
-        push @rows, $self->_fetch_row until $attr->{'fi'};
+        until ( $attr->{'fi'} ) {
+            push @rows, $self->_fetch_row;
+        }
         $attr->{'row_count'} += scalar @rows;
         $self->reset if $attr->{'row_count'};
     }
