@@ -1,6 +1,7 @@
 package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::rs;
 use strict;
+no strict 'refs';
 use warnings;
 
 BEGIN {
@@ -15,7 +16,7 @@ use Scalar::Util 'weaken';
 use Sub::Name 'subname';
 
 {
-     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
+    ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
 
     sub ROOT_CLASS {
         return $r unless wantarray;
@@ -24,94 +25,76 @@ use Sub::Name 'subname';
 }
 
 sub _fetch_row {
-    return if $_[0]->_no_more_rows;
-    my ( $attr, $self ) = $_[0]->_attr;
+    my ( $attr, $self ) = shift->_attr;
+    return if $self->_no_more_rows;
     if ( $self->_is_empty ) {
         return unless $self->_fetch;
     }
-    my ( $row, @t ) = @{ $attr->{'bu'} };
-    $attr->{'bu'} = \@t;
+    my ( $head, @tail ) = @{ $attr->{'bu'} };
+    $attr->{'bu'} = \@tail;
     $attr->{'row_count'} += 1;
-    return @{ $attr->{'callbacks'} }
-      ? $self->_transform( $self->_bless($row) )
-      : $self->_bless($row);
-}
-
-{
-    no strict 'refs';
-
-    sub _bless {
-        return unless ref $_[0];
-        my ( $row_class, $self, $row ) = ( $_[0]->row_class, @_ );
-        my $result_class = $self->result_class;
-        my $resultset_fn = $row_class . '::resultset';
-        my $rs_fn        = $row_class . '::rs';
-        unless ( defined &{$rs_fn} ) {
-            undef &{$rs_fn};
-            undef &{$resultset_fn};
-            *{$resultset_fn} = *{$rs_fn} = do {
-                weaken( my $rs = $self );
-                subname( $rs_fn, sub {$rs} );
-            };
-            @{ $row_class . '::ISA' } = $result_class;
-        }
-        return $row_class->new($row);
+    if ( @{ $attr->{'callbacks'} } ) {
+        return $self->_transform( $self->_bless($head) );
     }
+    return $self->_bless($head);
 }
 
-{
-    no strict 'refs';
-
-    sub _undef_autoloaded_accessors {
-        undef &{$_} for @{ $_[0]->row_class . '::AUTOLOAD_ACCESSORS' };
-        return $_[0];
+sub _bless {
+    my $self = shift;
+    return unless ref $self;
+    my ( $row_class, $row ) = ( $self->row_class, @_ );
+    my $result_class = $self->result_class;
+    my $resultset_fn = $row_class . '::resultset';
+    my $rs_fn        = $row_class . '::rs';
+    unless ( defined &{$rs_fn} ) {
+        undef &{$rs_fn};
+        undef &{$resultset_fn};
+        *{$resultset_fn} = *{$rs_fn} = do {
+            weaken( my $rs = $self );
+            subname( $rs_fn, sub {$rs} );
+        };
+        @{ $row_class . '::ISA' } = $result_class;
     }
+    return $row_class->new($row);
 }
 
-{
-    no strict 'refs';
+sub _undef_autoloaded_accessors {
+    my $self = shift;
+    undef &{$_} for @{ $self->row_class . '::AUTOLOAD_ACCESSORS' };
+    return $self;
+}
 
-    sub DESTROY {
-        return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
-        local ( $., $@, $!, $^E, $?, $_ );
-        my $self      = $_[0];
-        my $row_class = $self->row_class;
-        if ( %{ $row_class . '::' } ) {
+sub DESTROY {
+    return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
+    local ( $., $@, $!, $^E, $?, $_ );
+    my $self      = shift;
+    my $row_class = $self->row_class;
+    if ( %{ $row_class . '::' } ) {
+        $self->_undef_autoloaded_accessors;
+    }
+    undef &{ $row_class . '::rs' };
+    undef &{ $row_class . '::resultset' };
+    undef *{$row_class};
+    return $self->SUPER::DESTROY;
+}
+
+sub set_slice {
+    my ( $attr, $self ) = shift->_attr;
+    my $slice = shift;
+    my $old   = defined $attr->{'slice'} ? $attr->{'slice'} : '';
+    $self->SUPER::set_slice($slice);
+    if ( my $new = defined $attr->{'slice'} ? $attr->{'slice'} : '' ) {
+        if ( ref $new ne ref $old && %{ $self->row_class . '::' } ) {
             $self->_undef_autoloaded_accessors;
         }
-        undef &{ $row_class . '::rs' };
-        undef &{ $row_class . '::resultset' };
-        undef *{$row_class};
-        return $self->SUPER::DESTROY;
     }
+    return $self;
 }
 
-{
-    no strict 'refs';
-
-    sub set_slice {
-        my ( $attr, $self, $slice ) = ( $_[0]->_attr, @_[ 1 .. $#_ ] );
-        my $old = defined $attr->{'slice'} ? $attr->{'slice'} : '';
-        $self->SUPER::set_slice($slice);
-        if ( my $new = defined $attr->{'slice'} ? $attr->{'slice'} : '' ) {
-            $self->_undef_autoloaded_accessors
-              if ref $new ne ref $old && %{ $self->row_class . '::' };
-        }
-        return $self;
-    }
-}
-
-sub row_class {
-    return sprintf 'DBIx::Squirrel::rs_0x%x', 0+ $_[0];
-}
+sub row_class { sprintf 'DBIx::Squirrel::rs_0x%x', 0+ $_[0]; }
 
 BEGIN {
-
-    sub result_class {
-        return 'DBIx::Squirrel::rc';
-    }
-
-    *row_base_class = *result_class;
+    *row_base_class = *result_class = sub () { 'DBIx::Squirrel::rc'; }
 }
 
 1;
