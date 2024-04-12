@@ -206,7 +206,10 @@ sub execute {
     };
 }
 
-sub count { $_ = scalar @{ shift->all(@_) } }
+sub count {
+    my $self = shift;
+    return $_ = scalar @{ $self->all(@_) };
+}
 
 sub set_slice {
     my $self = shift;
