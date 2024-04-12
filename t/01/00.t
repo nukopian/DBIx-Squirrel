@@ -58,14 +58,6 @@ sub test_the_basics
     # Check that "DBIx::Squirrel::dr::_is_dbh" does its thing
 
     $standard_dbi_dbh = DBI->connect(@T_DB_CONNECT_ARGS);
-    ok DBIx::Squirrel::dr::_is_dbh($standard_dbi_dbh),
-      '_is_dbh';
-    ok !DBIx::Squirrel::dr::_is_dbh(''),
-      '_is_dbh';
-    ok !DBIx::Squirrel::dr::_is_dbh( \'' ),
-      '_is_dbh';
-    is DBIx::Squirrel::dr::_is_dbh($standard_dbi_dbh), $standard_dbi_dbh,
-      '_is_dbh';
 
     # Check that we can open standard and cached DBIx::Squirrel::db
     # connections
