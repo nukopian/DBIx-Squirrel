@@ -126,7 +126,7 @@ EOF
 
     ( $exp, $got ) = (
         [ @arrayrefs ],
-        scalar $sth->it->tail,
+        scalar $sth->it->remaining,
     );
     is_deeply $exp, $got, 'remaining yields complete set'
       or dump_val { exp => $exp, got => $got };
@@ -146,7 +146,7 @@ EOF
 
     ( $exp, $got ) = (
         [ @arrayrefs ],
-        [ $it->tail ],
+        [ $it->remaining ],
     );
     is_deeply $exp, $got, 'remaining yields complete set'
       or dump_val { exp => $exp, got => $got };
@@ -155,13 +155,13 @@ EOF
 
     ( $exp, $got ) = (
         $arrayrefs[ 0 ],
-        $it->head,
+        $it->first,
     );
     is_deeply $exp, $got, 'first';
 
     ( $exp, $got ) = (
         [ @arrayrefs[ 1 .. 4 ] ],
-        scalar $it->tail,
+        scalar $it->remaining,
     );
     is_deeply $exp, $got, 'remaining'
       or dump_val { exp => $exp, got => $got };
@@ -170,13 +170,13 @@ EOF
 
     ( $exp, $got ) = (
         $arrayrefs[ 0 ],
-        $it->head,
+        $it->first,
     );
     is_deeply $exp, $got, 'first';
 
     ( $exp, $got ) = (
         [ @arrayrefs[ 1 .. 4 ] ],
-        [ $it->tail ],
+        [ $it->remaining ],
     );
     is_deeply $exp, $got, 'remaining'
       or dump_val { exp => $exp, got => $got };
@@ -213,7 +213,7 @@ EOF
         [ @arrayrefs ],
         do {
             $it = $sth->it;
-            my @ary = $it->head;
+            my @ary = $it->first;
             while ( my $row = $it->next ) {
                 push @ary, $row;
             }
@@ -242,7 +242,7 @@ EOF
         [ @hashrefs ],
         do {
             $it = $sth->it;
-            my @ary = $it->head( {} );
+            my @ary = $it->first( {} );
             while ( my $row = $it->next ) {
                 push @ary, $row;
             }
@@ -271,7 +271,7 @@ EOF
         [ @hashrefs ],
         do {
             $it = $sth->it;
-            my @ary = $it->head( {} );
+            my @ary = $it->first( {} );
             while ( my $row = $it->next ) {
                 push @ary, $row;
             }
