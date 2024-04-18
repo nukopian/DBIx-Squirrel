@@ -30,8 +30,8 @@ sub _fetch_row {
     if ( $self->_is_empty ) {
         return unless $self->_fetch;
     }
-    my ( $head, @tail ) = @{ $attr->{'bu'} };
-    $attr->{'bu'} = \@tail;
+    my ( $head, @tail ) = @{ $attr->{'buffer'} };
+    $attr->{'buffer'} = \@tail;
     $attr->{'row_count'} += 1;
     if ( @{ $attr->{'callbacks'} } ) {
         return $self->_transform( $self->_bless($head) );

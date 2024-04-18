@@ -88,7 +88,7 @@ sub _no_more_rows {
 
 sub _is_empty {
     my $attr = shift->_attr;
-    return 0 if @{ $attr->{'bu'} };
+    return 0 if @{ $attr->{'buffer'} };
     return 1;
 }
 
@@ -132,7 +132,7 @@ sub _fetch {
         $attr->{'finished'} = 1;
         return 0;
     }
-    $attr->{'bu'} = ( $_ = $attr->{'bu'} ) ? [ @{$_}, @{$r} ] : $r;
+    $attr->{'buffer'} = ( $_ = $attr->{'buffer'} ) ? [ @{$_}, @{$r} ] : $r;
     if ( $c == $maxrows && $maxrows < $bl ) {
         ( $maxrows, $bl ) = @{$attr}{qw/maxrows bl/} if $self->_auto_manage_maxrows;
     }
@@ -148,8 +148,8 @@ sub _fetch_row {
     my ( $attr, $self ) = shift->_attr;
     return if $self->_no_more_rows;
     return if $self->_is_empty && !$self->_fetch;
-    my ( $head, @tail ) = @{ $attr->{'bu'} };
-    $attr->{'bu'} = \@tail;
+    my ( $head, @tail ) = @{ $attr->{'buffer'} };
+    $attr->{'buffer'} = \@tail;
     $attr->{'row_count'} += 1;
     return @{ $attr->{'callbacks'} } ? $self->_transform($head) : $head;
 }
@@ -161,7 +161,7 @@ sub new {
     return $_ = $self->finish->_attr(
         {   'id'        => 0+ $self,
             'st'        => $sth->_attr( { 'Iterator' => $self } ),
-            'bindvals'  => \@bindvals,
+            'bindvals'  => [@bindvals],
             'callbacks' => $callbacks,
             'slice'     => $self->set_slice->{'Slice'},
             'maxrows'   => $self->set_maxrows->{'MaxRows'},
@@ -244,7 +244,7 @@ sub finish {
     }
     $attr->{'finished'} = undef;
     $attr->{'executed'} = undef;
-    $attr->{'bu'}       = undef;
+    $attr->{'buffer'}   = undef;
     $attr->{'rf'}       = 0;
     $attr->{'bi'}       = $DEFAULT_MAXROWS;
     $attr->{'bm'}       = $BUF_MULT && $BUF_MULT < 11 ? $BUF_MULT : 0;
