@@ -161,7 +161,7 @@ sub new {
     return $_ = $self->finish->_attr(
         {   'id'        => 0+ $self,
             'st'        => $sth->_attr( { 'Iterator' => $self } ),
-            'bindvals'  => \@bindvals,
+            'bindvals'  => [@bindvals],
             'callbacks' => $callbacks,
             'slice'     => $self->set_slice->{'Slice'},
             'maxrows'   => $self->set_maxrows->{'MaxRows'},
@@ -244,7 +244,7 @@ sub finish {
     }
     $attr->{'finished'} = undef;
     $attr->{'executed'} = undef;
-    $attr->{'buffer'}       = undef;
+    $attr->{'buffer'}   = undef;
     $attr->{'rf'}       = 0;
     $attr->{'bi'}       = $DEFAULT_MAXROWS;
     $attr->{'bm'}       = $BUF_MULT && $BUF_MULT < 11 ? $BUF_MULT : 0;
