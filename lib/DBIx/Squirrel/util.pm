@@ -24,7 +24,6 @@ BEGIN {
         'transform' => [
             'cbargs',
             'cbargs_using',
-            'cbargs_using_nr',
             'transform',
         ],
         'sql' => [

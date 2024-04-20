@@ -94,34 +94,36 @@ sub _is_empty {
 
 sub _auto_manage_maxrows {
     my ( $attr, $self ) = shift->_attr;
-    return unless my $limit = $attr->{'bl'};
+    return unless my $limit = $attr->{'buf_lim'};
     my $dirty;
     my $maxrows = $attr->{'maxrows'};
     my $new_mr  = do {
-        if ( my $mul = $attr->{'bm'} ) {
+        if ( my $mul = $attr->{'buf_mul'} ) {
             if ( $mul > 1 ) {
                 $dirty = 1;
                 $maxrows * $mul;
             } else {
-                if ( my $inc = $attr->{'bi'} ) {
+                if ( my $inc = $attr->{'buf_inc'} ) {
                     $dirty = 1;
                     $maxrows + $inc;
                 }
             }
         } else {
-            if ( my $inc = $attr->{'bi'} ) {
+            if ( my $inc = $attr->{'buf_inc'} ) {
                 $dirty = 1;
                 $maxrows + $inc;
             }
         }
     };
-    $attr->{'maxrows'} = $new_mr if $dirty && $new_mr <= $limit;
+    if ( $dirty && $new_mr <= $limit ) {
+        $attr->{'maxrows'} = $new_mr;
+    }
     return !!$dirty;
 }
 
 sub _fetch {
     my ( $attr, $self ) = shift->_attr;
-    my ( $sth, $slice, $maxrows, $bl ) = @{$attr}{qw/st slice maxrows bl/};
+    my ( $sth, $slice, $maxrows, $buf_lim ) = @{$attr}{qw/st slice maxrows buf_lim/};
     unless ( $sth && $sth->{'Active'} ) {
         $attr->{'finished'} = 1;
         return;
@@ -132,11 +134,15 @@ sub _fetch {
         $attr->{'finished'} = 1;
         return 0;
     }
-    $attr->{'buffer'} = ( $_ = $attr->{'buffer'} ) ? [ @{$_}, @{$r} ] : $r;
-    if ( $c == $maxrows && $maxrows < $bl ) {
-        ( $maxrows, $bl ) = @{$attr}{qw/maxrows bl/} if $self->_auto_manage_maxrows;
+    if ( $attr->{'buffer'} ) {
+        $attr->{'buffer'} = [ @{ $attr->{'buffer'} }, @{$r} ];
+    } else {
+        $attr->{'buffer'} = $r;
     }
-    return $attr->{'rf'} += $c;
+    if ( $c == $maxrows && $maxrows < $buf_lim ) {
+        ( $maxrows, $buf_lim ) = @{$attr}{qw/maxrows buf_lim/} if $self->_auto_manage_maxrows;
+    }
+    return $attr->{'rows_fetched'} += $c;
 }
 
 sub _transform {
@@ -151,7 +157,8 @@ sub _fetch_row {
     my ( $head, @tail ) = @{ $attr->{'buffer'} };
     $attr->{'buffer'} = \@tail;
     $attr->{'row_count'} += 1;
-    return @{ $attr->{'callbacks'} } ? $self->_transform($head) : $head;
+    return $self->_transform($head) if @{ $attr->{'callbacks'} };
+    return $head;
 }
 
 sub new {
@@ -242,13 +249,13 @@ sub finish {
     if ( $attr->{'st'} && $attr->{'st'}{'Active'} ) {
         $attr->{'st'}->finish;
     }
-    $attr->{'finished'} = undef;
-    $attr->{'executed'} = undef;
-    $attr->{'buffer'}   = undef;
-    $attr->{'rf'}       = 0;
-    $attr->{'bi'}       = $DEFAULT_MAXROWS;
-    $attr->{'bm'}       = $BUF_MULT && $BUF_MULT < 11 ? $BUF_MULT : 0;
-    $attr->{'bl'}       = $BUF_MAXROWS || $attr->{'bi'};
+    $attr->{'finished'}     = undef;
+    $attr->{'executed'}     = undef;
+    $attr->{'buffer'}       = undef;
+    $attr->{'rows_fetched'} = 0;
+    $attr->{'buf_inc'}      = $DEFAULT_MAXROWS;
+    $attr->{'buf_mul'}      = $BUF_MULT && $BUF_MULT < 11 ? $BUF_MULT : 0;
+    $attr->{'buf_lim'}      = $BUF_MAXROWS || $attr->{'buf_inc'};
     return $self;
 }
 
