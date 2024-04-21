@@ -90,26 +90,33 @@ sub whine {
     goto &Carp::cluck;
 }
 
-sub study_statement {
-    my ( $normalised_sql_string, $sql_string, $sql_digest ) = &normalise_statement;
-    return unless defined $sql_string;
-    my @placeholders = $sql_string =~ m{[\:\$\?]\w+\b}g;
-    return undef, $normalised_sql_string, $sql_string, $sql_digest unless @placeholders;
-    my %placeholder_position_mappings = map { ( 1 + $_ => $placeholders[$_] ) } ( 0 .. @placeholders - 1 );
-    return \%placeholder_position_mappings, $normalised_sql_string, $sql_string, $sql_digest;
+memoize('is_viable_sql_string');
+
+sub is_viable_sql_string {
+    return defined $_[0] && length $_[0] && $_[0] =~ m/\S/;
 }
 
-BEGIN { memoize('study_statement'); }
+memoize('study_statement');
+
+sub study_statement {
+    my ( $normalised, $trimmed_sql, $digest ) = &normalise_statement;
+    return unless is_viable_sql_string($trimmed_sql);
+    my @placeholders = $trimmed_sql =~ m{[\:\$\?]\w+\b}g;
+    my $mapped_positions;
+    if (@placeholders) {
+        $mapped_positions = {
+            map { ( 1 + $_ => $placeholders[$_] ) } ( 0 .. $#placeholders ),
+        };
+    }
+    return $mapped_positions, $normalised, $trimmed_sql, $digest;
+}
 
 sub normalise_statement {
-    my ( $sql_string, $sql_digest ) = &get_trimmed_sql_and_digest;
-    my $normalised_sql_string = $sql_string;
-    if ($DBIx::Squirrel::NORMALISE_SQL) {
-        $normalised_sql_string =~ s{[\:\$\?]\w+\b}{?}g;
-    }
-    return $normalised_sql_string unless wantarray;
-    return $normalised_sql_string, $sql_string, $sql_digest;
-
+    my ( $trimmed_sql, $digest ) = &get_trimmed_sql_and_digest;
+    my $normalised = $trimmed_sql;
+    $normalised =~ s{[\:\$\?]\w+\b}{?}g if $DBIx::Squirrel::NORMALISE_SQL;
+    return $normalised unless wantarray;
+    return $normalised, $trimmed_sql, $digest;
 }
 
 sub get_trimmed_sql_and_digest {
@@ -128,91 +135,41 @@ sub get_trimmed_sql_and_digest {
         }
     };
     return $sql_string unless wantarray;
-    my $sql_digest = hash_sql_string($sql_string);
-    return $sql_string, $sql_digest;
+    return $sql_string, hash_sql_string($sql_string);
 }
+
+memoize('trim_sql_string');
 
 sub trim_sql_string {
-    my $sql_string = shift;
-    return '' unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
-    (   s{\s+-{2}\s+.*$}{}gm,
-        s{^[[:blank:]\r\n]+}{}gm,
-        s{[[:blank:]\r\n]+$}{}gm,
-    ) for $sql_string;
-    return $sql_string;
+    return do {
+        if (&is_viable_sql_string) {
+            my $sql = shift;
+            $sql =~ s{\s+-{2}\s+.*$}{}gm;
+            $sql =~ s{^[[:blank:]\r\n]+}{}gm;
+            $sql =~ s{[[:blank:]\r\n]+$}{}gm;
+            $sql;
+        } else {
+            '';
+        }
+    };
 }
 
-BEGIN { memoize('trim_sql_string'); }
+memoize('hash_sql_string');
 
 sub hash_sql_string {
-    my $sql_string = shift;
-    return unless defined $sql_string && length $sql_string && $sql_string =~ m/\S/;
-    return sha256_base64($sql_string);
+    return do {
+        if (&is_viable_sql_string) {
+            &sha256_base64;
+        } else {
+            undef;
+        }
+    };
 }
 
-BEGIN { memoize('hash_sql_string'); }
-
-# Separates any trailing code-references ("callbacks") from other arguments,
-# partitioning each type into its own distinct collection.
-#
-#   (c, a...) = cbargs(t...)
-#
-#   Arguments:
-#
-#   t - The arguments to be partitioned, expressed as a flat list.
-#
-#   Returns a list containing two elements:
-#
-#   c - A partition containing only the contiguous code-references located
-#       at the end of the list (t), and expressed as a reference to a list of
-#       code-references.
-#   a - A partition containing all arguments that are not part of list (C),
-#       in the same order as they were presented in list (t), expressed as
-#       a flat list.
-#
-# Example
-#
-#   sub my_callback_enabled_fn {
-#       ($callbacks, @_) = cbargs(@_);
-#       ...
-#   }
-#
 sub cbargs {
     return cbargs_using( [], @_ );
 }
 
-# Separates any trailing code-references ("callbacks") from other arguments,
-# partitioning each type into its own distinct collection. This function
-# differs from "cbargs" in that the initial state of the callback queue is
-# determined at the call-site.
-#
-#   (c, a...) = cbargs_using(c, t...)
-#
-#   Arguments:
-#
-#   c - The initial state of the partition that will contain all of the
-#       callbacks. This is typically undefined, or a reference to an empty
-#       list. If undefined, a reference to an empty list will be used. If a
-#       reference to a pre-populated list is passed, any new callbacks will
-#       be _prepended_ to the supplied list.
-#   t - The arguments to be partitioned, expressed as a flat list.
-#
-#   Returns a list containing two elements:
-#
-#   c - A partition containing only the contiguous code-references located
-#       at the end of the list (t), and expressed as a reference to a list of
-#       code-references.
-#   a - A partition containing all arguments that are not part of list (C),
-#       in the same order as they were presented in list (t), expressed as
-#       a flat list.
-#
-# Example
-#
-#   sub my_callback_enabled_fn {
-#       ($callbacks, @_) = cbargs_using([], @_);
-#       ...
-#   }
-#
 sub cbargs_using {
     my ( $c, @t ) = do {
         if ( defined $_[0] ) {
@@ -232,33 +189,6 @@ sub cbargs_using {
     return $c, @t;
 }
 
-# Apply one or more transformations ("callbacks") to a scalar value, or
-# to a list of values.
-#
-#   v = transform(c, v...)
-#
-#   Arguments:
-#
-#   v - The starting value to be transformed, expressed as a list of one or
-#       more scalars.
-#   c - The transformations to apply to the value, expressed as a single
-#       code-reference, or as a reference to a list of code-references.
-#
-#   Returns:
-#
-#   v - The transformed value, expressed as a list, when called in list
-#       context, or as a scalar when called in scalar context. In scalar
-#       context, a transformation resulting in a list containing only one
-#       element returns that element rather than the length of the list.
-#
-# Example
-#
-#   sub my_callback_enabled_fn {
-#       ($callbacks, @_) = cbargs_using([], @_);
-#       my @res = ...
-#       return transform($callbacks, @res);
-#   }
-#
 sub transform {
     my @transforms = do {
         if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
