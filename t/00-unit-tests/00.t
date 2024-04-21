@@ -31,7 +31,7 @@ our ( $cref,   $crefs );
 our (@args);
 
 subtest 'get_trimmed_sql_and_digest' => sub {
-    is( get_trimmed_sql_and_digest("  \n\t  SELECT * FROM t  \n  "), 'SELECT * FROM t' );
+    is( get_trimmed_sql_and_digest("  \n\t  SELECT * \nFROM t  \n  "), "SELECT *\nFROM t" );
 
     my $dbi_dbh = DBI->connect(@T_DB_CONNECT_ARGS);
     my $dbi_sth = $dbi_dbh->prepare("  SELECT * FROM media_types  ");
