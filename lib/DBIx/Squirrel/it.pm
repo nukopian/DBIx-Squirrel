@@ -170,8 +170,8 @@ sub new {
             'st'        => $sth->_attr( { 'Iterator' => $self } ),
             'bindvals'  => [@bindvals],
             'callbacks' => $callbacks,
-            'slice'     => $self->set_slice->{'Slice'},
-            'maxrows'   => $self->set_maxrows->{'MaxRows'},
+            'slice'     => $self->slice->{'Slice'},
+            'maxrows'   => $self->maxrows->{'MaxRows'},
         }
     );
 }
@@ -211,7 +211,7 @@ sub count {
     return $_ = scalar @{ $self->all(@_) };
 }
 
-sub set_slice {
+sub slice {
     my $self = shift;
     if ( defined $_[0] ) {
         unless ( UNIVERSAL::isa( $_[0], 'ARRAY' ) || UNIVERSAL::isa( $_[0], 'HASH' ) ) {
@@ -222,25 +222,25 @@ sub set_slice {
     return $self->_attr( { 'slice' => $self->{'Slice'} } );
 }
 
-sub set_maxrows {
+sub maxrows {
     my $self = shift;
     throw E_BAD_MAXROWS if ref $_[0];
     $self->{'MaxRows'} = int( shift // $DEFAULT_MAXROWS );
     return $self->_attr( { 'maxrows' => $self->{'MaxRows'} } );
 }
 
-sub set_slice_maxrows {
+sub slice_maxrows {
     my $self = shift;
     return $self unless @_;
-    return $self->set_slice(shift)->set_maxrows(shift) if ref $_[0];
-    return $self->set_maxrows(shift)->set_slice(shift);
+    return $self->slice(shift)->maxrows(shift) if ref $_[0];
+    return $self->maxrows(shift)->slice(shift);
 }
 
-BEGIN { *set_maxrows_slice = *set_slice_maxrows }
+BEGIN { *maxrows_slice = *slice_maxrows }
 
 sub next {
     my $self = shift;
-    $self->set_slice_maxrows(@_) if @_;
+    $self->slice_maxrows(@_) if @_;
     return $_ = $self->_fetch_row;
 }
 
@@ -261,7 +261,7 @@ sub finish {
 
 sub reset {
     my $self = shift;
-    $self->set_slice_maxrows(@_) if @_;
+    $self->slice_maxrows(@_) if @_;
     return $self->finish;
 }
 
