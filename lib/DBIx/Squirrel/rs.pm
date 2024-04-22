@@ -78,11 +78,11 @@ sub DESTROY {
     return $self->SUPER::DESTROY;
 }
 
-sub set_slice {
+sub slice {
     my ( $attr, $self ) = shift->_attr;
     my $slice = shift;
     my $old   = defined $attr->{'slice'} ? $attr->{'slice'} : '';
-    $self->SUPER::set_slice($slice);
+    $self->SUPER::slice($slice);
     if ( my $new = defined $attr->{'slice'} ? $attr->{'slice'} : '' ) {
         if ( ref $new ne ref $old && %{ $self->row_class . '::' } ) {
             $self->_undef_autoloaded_accessors;

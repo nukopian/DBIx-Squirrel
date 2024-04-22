@@ -719,7 +719,7 @@ sub test_the_basics
         )
     );
 
-    $it = $sth->it( name => 'AAC audio file' )->set_maxrows(10);
+    $it = $sth->it( name => 'AAC audio file' )->maxrows(10);
     isa_ok $it, 'DBIx::Squirrel::it';
 
     ( $exp, $got ) = (
@@ -868,7 +868,7 @@ sub test_the_basics
 
     ( $exp, $got ) = (
         bless( { 'MaxRows' => 10, 'Slice' => [] }, 'DBIx::Squirrel::rs' ),
-        $sth->rs->set_maxrows(10),
+        $sth->rs->maxrows(10),
     );
     is_deeply $got, $exp, 'results'
       or dump_val { exp => $exp, got => $got };
