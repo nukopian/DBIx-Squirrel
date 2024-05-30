@@ -163,7 +163,7 @@ BEGIN {
         return DBIx::Squirrel::it->new(@_);
     };
 
-    *resultset = *results = *rs = sub {
+    *resultset = *rs = sub {
         return DBIx::Squirrel::rs->new(@_);
     };
 

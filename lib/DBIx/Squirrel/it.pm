@@ -194,7 +194,7 @@ sub execute {
     if ( $sth->execute( @_ ? @_ : @{ $attr->{'bindvals'} } ) ) {
         $attr->{'executed'}  = 1;
         $attr->{'row_count'} = 0;
-        if ( $sth->{NUM_OF_FIELDS} ) {
+        if ( $sth->{'NUM_OF_FIELDS'} ) {
             my $count = $self->_fetch;
             $attr->{'finished'} = $count ? 0 : 1;
             return $_ = $count || '0E0';
@@ -207,18 +207,28 @@ sub execute {
 }
 
 sub count {
-    my $self = shift;
-    return $_ = scalar @{ $self->all(@_) };
+    return $_ = scalar @{ shift->all(@_) };
 }
 
 sub slice {
     my $self = shift;
+    unless (@_) {
+        unless ( defined $self->{'Slice'} ) {
+            $self->{'Slice'} = $DEFAULT_SLICE;
+        }
+        return $self->_attr( { 'slice' => $self->{'Slice'} } );
+    }
     if ( defined $_[0] ) {
-        unless ( UNIVERSAL::isa( $_[0], 'ARRAY' ) || UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+        if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+            $self->{'Slice'} = [];
+        } elsif ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+            $self->{'Slice'} = {};
+        } else {
             throw E_BAD_SLICE;
         }
+    } else {
+        $self->{'Slice'} = $DEFAULT_SLICE;
     }
-    $self->{'Slice'} = ( shift // $DEFAULT_SLICE );
     return $self->_attr( { 'slice' => $self->{'Slice'} } );
 }
 
