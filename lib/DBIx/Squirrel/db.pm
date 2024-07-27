@@ -15,15 +15,6 @@ use Data::Dumper::Concise;
 use DBIx::Squirrel::util ':constants', ':sql', 'throw';
 use SQL::Abstract;
 
-BEGIN {
-    ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
-
-    sub ROOT_CLASS {
-        return $r unless wantarray;
-        return RootClass => $r;
-    }
-}
-
 sub _attr {
     my $self = shift;
     return unless ref $self;
