@@ -16,15 +16,6 @@ use namespace::autoclean;
 use Data::Dumper::Concise;
 use DBIx::Squirrel::util 'cbargs', 'throw', 'transform', 'whine';
 
-{
-    ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
-
-    sub ROOT_CLASS {
-        return $r unless wantarray;
-        return RootClass => $r;
-    }
-}
-
 our $DEFAULT_SLICE = [];
 
 sub DEFAULT_SLICE () { $DEFAULT_SLICE; }

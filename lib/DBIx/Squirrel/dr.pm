@@ -11,38 +11,33 @@ BEGIN {
 }
 
 {
-    ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
+    ( my $root = __PACKAGE__ ) =~ s/::\w+$//;
 
-    sub ROOT_CLASS {
-        return $r unless wantarray;
-        return RootClass => $r;
+    sub RootClass {
+        return $root unless wantarray;
+        return RootClass => $root;
     }
 }
 
 sub connect {
-    return &connect_clone if UNIVERSAL::isa( $_[1], 'DBI::db' );
-    return shift->DBI::connect(
-          ( @_ && UNIVERSAL::isa( $_[$#_], 'HASH' ) )
-        ? ( @_[ 0 .. $#_ - 1 ], { %{ $_[$#_] }, __PACKAGE__->ROOT_CLASS } )
-        : ( @_, { __PACKAGE__->ROOT_CLASS } )
-    );
+    goto &_clone_connection if UNIVERSAL::isa( $_[1], 'DBI::db' );
+    my $invocant   = shift;
+    my $attributes = @_ && UNIVERSAL::isa( $_[$#_], 'HASH' ) ? pop : {};
+    return $invocant->DBI::connect( @_, { %{$attributes}, __PACKAGE__->RootClass } );
 }
 
 sub connect_cached {
-    return shift->DBI::connect_cached(
-          ( @_ && UNIVERSAL::isa( $_[$#_], 'HASH' ) )
-        ? ( @_[ 0 .. $#_ - 1 ], { %{ $_[$#_] }, __PACKAGE__->ROOT_CLASS } )
-        : ( @_, { __PACKAGE__->ROOT_CLASS } )
-    );
+    my $invocant   = shift;
+    my $attributes = @_ && UNIVERSAL::isa( $_[$#_], 'HASH' ) ? pop : {};
+    return $invocant->DBI::connect_cached( @_, { %{$attributes}, __PACKAGE__->RootClass } );
 }
 
-sub connect_clone {
-    return unless UNIVERSAL::isa( $_[1], 'DBI::db' );
-    return $_[1]->clone(
-          ( @_ && UNIVERSAL::isa( $_[$#_], 'HASH' ) )
-        ? ( { %{ $_[$#_] }, __PACKAGE__->ROOT_CLASS } )
-        : ( { __PACKAGE__->ROOT_CLASS } )
-    );
+sub _clone_connection {
+    my $invocant = shift;
+    return unless UNIVERSAL::isa( $_[0], 'DBI::db' );
+    my $connection = shift;
+    my $attributes = @_ && UNIVERSAL::isa( $_[$#_], 'HASH' ) ? pop : {};
+    return $connection->clone( { %{$attributes}, __PACKAGE__->RootClass } );
 }
 
 1;

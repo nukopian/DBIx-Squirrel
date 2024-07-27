@@ -112,3 +112,5 @@ inc/
 .history
 .ionide
 
+# Temporary folder
+tmp/

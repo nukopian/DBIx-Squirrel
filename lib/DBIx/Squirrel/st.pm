@@ -15,15 +15,6 @@ BEGIN {
 use namespace::autoclean;
 use DBIx::Squirrel::util 'throw', 'whine';
 
-{
-     ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
-
-    sub ROOT_CLASS {
-        return $r unless wantarray;
-        return RootClass => $r;
-    }
-}
-
 sub _attr {
     my $self = shift;
     return unless ref $self;
@@ -136,7 +127,7 @@ sub _map_to_values {
 }
 
 sub bind_param {
-    my $self    = shift;
+    my $self     = shift;
     my %bindings = do {
         if ( my $placeholders = $self->_attr->{'Placeholders'} ) {
             if ( $_[0] =~ m/^[\:\$\?]?(?<bind_id>\d+)$/ ) {

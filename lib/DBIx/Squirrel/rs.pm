@@ -15,15 +15,6 @@ use namespace::autoclean;
 use Scalar::Util 'weaken';
 use Sub::Name 'subname';
 
-{
-    ( my $r = __PACKAGE__ ) =~ s/::\w+$//;
-
-    sub ROOT_CLASS {
-        return $r unless wantarray;
-        return RootClass => $r;
-    }
-}
-
 sub _fetch_row {
     my ( $attr, $self ) = shift->_attr;
     return if $self->_no_more_rows;
