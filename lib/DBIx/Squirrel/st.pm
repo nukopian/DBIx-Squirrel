@@ -141,7 +141,7 @@ sub bind_param {
         }
     };
     unless (%bindings) {
-        return unless $DBIx::Squirrel::STRICT_PARAM_CHECKS;
+        return unless $DBIx::Squirrel::STRICT_PARAM_CHECK;
         throw E_UNKNOWN_PLACEHOLDER, $_[0];
     }
     $self->SUPER::bind_param(%bindings);

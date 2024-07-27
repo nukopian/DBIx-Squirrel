@@ -5,7 +5,7 @@ use warnings;
 BEGIN {
     our $VERSION               = '1.0.0_210925';
     our @ISA                   = 'DBI';
-    our $STRICT_PARAM_CHECKS   = 0;
+    our $STRICT_PARAM_CHECK    = 0;
     our $AUTO_FINISH_ON_ACTIVE = 1;
 }
 
