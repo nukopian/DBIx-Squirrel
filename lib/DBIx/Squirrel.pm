@@ -27,7 +27,6 @@ BEGIN {
     *state           = *DBI::state;
     *connect_cached  = *DBIx::Squirrel::dr::connect_cached;
     *connect         = *DBIx::Squirrel::dr::connect;
-    *connect_clone   = *DBIx::Squirrel::dr::connect_clone;
     *SQL_ABSTRACT    = *DBIx::Squirrel::db::SQL_ABSTRACT;
     *DEFAULT_SLICE   = *DBIx::Squirrel::it::DEFAULT_SLICE;
     *DEFAULT_MAXROWS = *DBIx::Squirrel::it::DEFAULT_MAXROWS;
