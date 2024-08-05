@@ -92,6 +92,7 @@ sub import {
             *{ $caller . '::' . $name } = *{$symbol};
         }
     }
+
     return $class;
 }
 
