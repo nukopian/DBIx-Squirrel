@@ -158,7 +158,11 @@ sub new {
     return unless UNIVERSAL::isa( $sth, 'DBI::st' );
     my $self = bless {}, ref $class_or_self || $class_or_self;
     for my $k ( keys %{$sth} ) {
-        weaken( $self->{$k} = $sth->{$k} );
+        if ( ref $sth->{$k} ) {
+            weaken( $self->{$k} = $sth->{$k} );
+        } else {
+            $self->{$k} = $sth->{$k};
+        }
     }
     return $_ = $self->finish->_attr(
         {   'id'        => 0+ $self,
