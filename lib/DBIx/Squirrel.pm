@@ -9,7 +9,7 @@ use Scalar::Util 'reftype';
 use Sub::Name;
 
 BEGIN {
-    our $VERSION               = '1.0.0_210925';
+    our $VERSION               = '1.0.0_20240806';
     our @ISA                   = 'DBI';
     our $STRICT_PARAM_CHECK    = 0;
     our $AUTO_FINISH_ON_ACTIVE = 1;
