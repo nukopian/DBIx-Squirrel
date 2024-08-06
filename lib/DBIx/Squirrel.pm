@@ -1,8 +1,10 @@
 package DBIx::Squirrel;
 use strict;
 use warnings;
+use constant E_BAD_ENT_BIND     => 'May only bind a database connetion handle, statement handle, or iterator';
+use constant E_BAD_ENT_TYPE     => 'May only address a statement handle or iterator';
+use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
 
-use Carp 'croak';
 use Scalar::Util 'reftype';
 use Sub::Name;
 
@@ -20,6 +22,7 @@ use DBIx::Squirrel::st ();
 use DBIx::Squirrel::it ();
 use DBIx::Squirrel::rs ();
 use DBIx::Squirrel::rc ();
+use DBIx::Squirrel::util 'throw';
 
 BEGIN {
     our $NORMALISE_SQL = 1;
@@ -66,7 +69,7 @@ sub import {
                             return ${$symbol};
                         }
 
-                        croak "Expected a database connetion handle, statement handle, or iterator";
+                        throw E_BAD_ENT_BIND;
                     }
 
                     return unless defined ${$symbol};
@@ -92,8 +95,8 @@ sub import {
                                 # a reference to to the entity itself. If,
                                 # however, we wish to have the underlying
                                 # entity perform a contextually relevant
-                                # operation, we allow parameters to be 
-                                # passed inside an anonymous array, which 
+                                # operation, we allow parameters to be
+                                # passed inside an anonymous array, which
                                 # may be empty as a signal to do just that.
 
                                 if ( reftype( $_[0] ) eq 'ARRAY' ) {
@@ -101,7 +104,7 @@ sub import {
                                 } elsif ( reftype( $_[0] ) eq 'HASH' ) {
                                     %{ +shift };
                                 } else {
-                                    croak "Expected a reference to an ARRAY or HASH";
+                                    throw E_EXP_HASH_ARR_REF;
                                 }
                             } else {
                                 @_;
@@ -111,13 +114,13 @@ sub import {
                         return ${$symbol}->execute(@params);
                     }
 
-                    croak "Expected a statement handle or iterator";
+                    throw E_BAD_ENT_TYPE;
                 }
             );
         }
 
         # Export any relevant symbols to caller's namespace.
-        
+
         unless ( defined &{ $caller . '::' . $name } ) {
             *{ $caller . '::' . $name } = *{$symbol};
         }
