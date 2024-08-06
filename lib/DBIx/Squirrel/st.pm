@@ -17,18 +17,23 @@ use DBIx::Squirrel::util 'throw', 'whine';
 
 sub _attr {
     my $self = shift;
+
     return unless ref $self;
+
     unless ( defined $self->{'private_dbix_squirrel'} ) {
         $self->{'private_dbix_squirrel'} = {};
     }
+
     unless (@_) {
         return $self->{'private_dbix_squirrel'} unless wantarray;
         return $self->{'private_dbix_squirrel'}, $self;
     }
+
     unless ( defined $_[0] ) {
         delete $self->{'private_dbix_squirrel'};
         shift;
     }
+
     if (@_) {
         unless ( exists $self->{'private_dbix_squirrel'} ) {
             $self->{'private_dbix_squirrel'} = {};
@@ -41,29 +46,35 @@ sub _attr {
             $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, @_ };
         }
     }
+
     return $self;
 }
 
 sub prepare {
     my $self = shift;
+
     return $self->{'Database'}->prepare( $self->{'Statement'}, @_ );
 }
 
 sub execute {
     my $self = shift;
+
     if ( $DBIx::Squirrel::AUTO_FINISH_ON_ACTIVE && $self->{'Active'} ) {
         $self->finish;
     }
-    if (@_) {
-        $self->bind(@_);
-    }
+
+    $self->bind(@_) if @_;
+
     return $self->SUPER::execute;
 }
 
 sub bind {
     my $self = shift;
+
     return $self unless @_;
+
     my $placeholders = $self->_attr->{'Placeholders'};
+
     if ( $placeholders && not _all_placeholders_are_positional($placeholders) ) {
         if ( my %kv = @{ _map_to_values( $placeholders, @_ ) } ) {
             while ( my ( $key, $value ) = each %kv ) {
@@ -88,16 +99,21 @@ sub bind {
             }
         }
     }
+
     return $self;
 }
 
 sub _all_placeholders_are_positional {
     my $placeholders = shift;
+
     return unless UNIVERSAL::isa( $placeholders, 'HASH' );
+
     my @placeholders     = values %{$placeholders};
     my $total_count      = @placeholders;
     my $positional_count = grep {m/^[\:\$\?]\d+$/} @placeholders;
+
     return unless $positional_count == $total_count;
+
     return $placeholders;
 }
 
@@ -122,7 +138,9 @@ sub _map_to_values {
             \@mappings;
         }
     };
+
     return $mappings unless wantarray;
+
     return @{$mappings};
 }
 
@@ -140,12 +158,16 @@ sub bind_param {
             ( $_[0] => $_[1] );
         }
     };
+
     unless (%bindings) {
         return unless $DBIx::Squirrel::STRICT_PARAM_CHECK;
         throw E_UNKNOWN_PLACEHOLDER, $_[0];
     }
+
     $self->SUPER::bind_param(%bindings);
+
     return \%bindings unless wantarray;
+
     return %bindings;
 }
 
