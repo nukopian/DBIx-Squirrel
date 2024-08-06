@@ -17,22 +17,28 @@ use SQL::Abstract;
 
 sub _attr {
     my $self = shift;
+
     return unless ref $self;
+
     unless ( defined $self->{'private_dbix_squirrel'} ) {
         $self->{'private_dbix_squirrel'} = {};
     }
+
     unless (@_) {
         return $self->{'private_dbix_squirrel'} unless wantarray;
         return ( $self->{'private_dbix_squirrel'}, $self );
     }
+
     unless ( defined $_[0] ) {
         delete $self->{'private_dbix_squirrel'};
         shift;
     }
+
     if (@_) {
         unless ( exists $self->{'private_dbix_squirrel'} ) {
             $self->{'private_dbix_squirrel'} = {};
         }
+
         if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
             $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, %{ $_[0] } };
         } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
@@ -41,6 +47,7 @@ sub _attr {
             $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, @_ };
         }
     }
+
     return $self;
 }
 
@@ -50,28 +57,34 @@ sub abstract {
     my $self        = shift;
     my $method_name = shift;
     my $method      = $SQL_ABSTRACT->can($method_name);
+
     throw E_BAD_SQL_ABSTRACT_METHOD unless $method;
-    $self->do( $method->( $SQL_ABSTRACT, @_ ) );
+
+    return $self->do( $method->( $SQL_ABSTRACT, @_ ) );
 }
 
 sub delete {
     my $self = shift;
+
     return scalar $self->abstract( 'delete', @_ );
 }
 
 sub insert {
     my $self = shift;
+
     return scalar $self->abstract( 'insert', @_ );
 }
 
 sub update {
     my $self = shift;
+
     return scalar $self->abstract( 'update', @_ );
 }
 
 sub select {
     my $self = shift;
     my ( undef, $result, ) = $self->abstract( 'select', @_ );
+
     return $result;
 }
 
@@ -79,9 +92,13 @@ sub prepare {
     my $self      = shift;
     my $statement = shift;
     my ( $placeholders, $normalised_statement, $original_statement, $digest ) = study_statement($statement);
+
     throw E_EXP_STATEMENT unless defined $normalised_statement;
+
     my $sth = $self->SUPER::prepare( $normalised_statement, @_ );
+
     return unless defined $sth;
+
     return bless( $sth, 'DBIx::Squirrel::st' )->_attr(
         {   'Placeholders'        => $placeholders,
             'NormalisedStatement' => $normalised_statement,
@@ -95,9 +112,13 @@ sub prepare_cached {
     my $self      = shift;
     my $statement = shift;
     my ( $placeholders, $normalised_statement, $original_statement, $digest ) = study_statement($statement);
+
     throw E_EXP_STATEMENT unless defined $normalised_statement;
+
     my $sth = $self->SUPER::prepare_cached( $normalised_statement, @_ );
+
     return unless defined $sth;
+
     return bless( $sth, 'DBIx::Squirrel::st' )->_attr(
         {   'Placeholders'        => $placeholders,
             'NormalisedStatement' => $normalised_statement,
@@ -112,7 +133,9 @@ sub execute {
     my $self      = shift;
     my $statement = shift;
     my ( $res, $sth ) = $self->do( $statement, @_ );
+
     return $sth unless wantarray;
+
     return $sth, $res;
 }
 
@@ -142,9 +165,10 @@ sub do {
             $self->prepare($statement);
         }
     };
-    my $res = $sth->execute(@_);
-    return $res unless wantarray;
-    return $res, $sth;
+
+    return $sth->execute(@_) unless wantarray;
+
+    return $sth->execute(@_), $sth;
 }
 
 BEGIN {
@@ -176,7 +200,8 @@ BEGIN {
                 $self->prepare($statement);
             }
         };
-        return $sth->iterate(@_);
+
+        return $sth->it(@_);
     };
 
     *resultset = *rs = sub {
@@ -207,7 +232,8 @@ BEGIN {
                 $self->prepare($statement);
             }
         };
-        return $sth->resultset(@_);
+
+        return $sth->rs(@_);
     };
 }
 

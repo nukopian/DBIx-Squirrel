@@ -28,23 +28,30 @@ sub row_class {
 
 sub get_column {
     return undef unless defined $_[1];
+
     if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
         if ( my $sth = $_[0]->rs->sth ) {
             my $idx = $sth->{NAME_lc_hash}{ lc $_[1] };
+
             throw E_UNKNOWN_COLUMN, $_[1] unless defined $idx;
+
             return $_[0]->[$idx];
         }
+
         throw E_STH_EXPIRED;
     } else {
         throw E_BAD_OBJECT
           unless UNIVERSAL::isa( $_[0], 'HASH' );
-        return $_[0]{ $_[1] }
-          if exists $_[0]{ $_[1] };
+
+        return $_[0]{ $_[1] } if exists $_[0]{ $_[1] };
+
         my ($idx) = do {
             local ($_);
             grep { $_[1] eq lc $_ } keys %{ $_[0] };
         };
+
         throw E_UNKNOWN_COLUMN, $_[1] unless defined $idx;
+
         return $_[0]->{$idx};
     }
 }
@@ -67,14 +74,18 @@ sub new {
 
     sub AUTOLOAD {
         return if substr( $AUTOLOAD, -7 ) eq 'DESTROY';
+
         ( my $name = $AUTOLOAD ) =~ s/.*:://;
         my $symbol = $_[0]->row_class . '::' . $name;
         my $fn     = do {
             push @{ $_[0]->row_class . '::AUTOLOAD_ACCESSORS' }, $symbol;
+ 
             if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
                 if ( my $sth = $_[0]->rs->sth ) {
                     my $idx = $sth->{NAME_lc_hash}{ lc $name };
+ 
                     throw E_UNKNOWN_COLUMN, $name unless defined $idx;
+ 
                     sub { $_[0]->[$idx] };
                 } else {
                     throw E_STH_EXPIRED;
@@ -87,14 +98,18 @@ sub new {
                         local ($_);
                         grep { $name eq lc $_ } keys %{ $_[0] };
                     };
+ 
                     throw E_UNKNOWN_COLUMN, $name unless defined $idx;
+ 
                     sub { $_[0]->{$idx} };
                 }
             } else {
                 throw E_BAD_OBJECT;
             }
         };
+
         *{$symbol} = subname( $symbol, $fn );
+
         goto &{$symbol};
     }
 }

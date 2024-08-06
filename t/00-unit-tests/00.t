@@ -15,9 +15,10 @@ use Capture::Tiny (
     'tee'
 );
 use Cwd 'realpath';
+use Data::Dumper::Concise;
 use DBI;
 use DBIx::Squirrel::util (':all');
-use DBIx::Squirrel;
+use DBIx::Squirrel 'db', 'st', 'it', 'rs';
 
 use lib realpath("$FindBin::Bin/../lib");
 use T::Database ':all';
@@ -32,13 +33,31 @@ our (@args);
 
 subtest 'get_trimmed_sql_and_digest' => sub {
     is( get_trimmed_sql_and_digest("  \n\t  SELECT * \nFROM t  \n  "), "SELECT *\nFROM t" );
+};
 
+subtest 'connect' => sub {
     my $dbi_dbh = DBI->connect(@T_DB_CONNECT_ARGS);
     my $dbi_sth = $dbi_dbh->prepare("  SELECT * FROM media_types  ");
     $dbi_dbh->disconnect;
 
     my $ekorn_dbh = DBIx::Squirrel->connect(@T_DB_CONNECT_ARGS);
-    my $ekorn_sth = $ekorn_dbh->prepare("  SELECT COUNT(*) FROM media_types  ");
+    my $ekorn_sth = $ekorn_dbh->prepare('  SELECT COUNT(*) AS foo FROM media_types  ');
+
+    ok( !defined db );
+    db $ekorn_dbh;
+    isa_ok( db, 'DBIx::Squirrel::db' );
+
+    ok( !defined st );
+    st $ekorn_sth;
+    isa_ok( st, 'DBIx::Squirrel::st' );
+
+    ok( !defined it );
+    it $ekorn_sth->it;
+    isa_ok( it, 'DBIx::Squirrel::it' );
+
+    ok( !defined rs );
+    rs $ekorn_sth->rs;
+    isa_ok( rs, 'DBIx::Squirrel::rs' );
     $ekorn_dbh->disconnect;
 };
 
