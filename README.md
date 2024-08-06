@@ -8,87 +8,84 @@ DBIx::Squirrel - A module for working with databases
 
 # SYNOPSIS
 
+    # Simply use the package.
+
     use DBIx::Squirrel;
 
-    $db1 = DBI->connect($dsn, $user, $pass, \%attr);
-    $dbh = DBIx::Squirrel->connect($db1);
     $dbh = DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
+    $sth = $dbh->prepare('SELECT * FROM product WHERE id = ?');
+    $res = $sth->execute('1001099');
+    $itr = $sth->iterate('1001099');
+    while ($row = $itr->next) {...}
 
-    $st1 = $db1->prepare('SELECT * FROM product WHERE id = ?');
-    $sth = $dbh->prepare($st1);
-    $sth->bind_param(1, '1001099');
-    $sth->bind( '1001099' );
-    $sth->bind(['1001099']);
-    $res = $sth->execute;
-    $res = $sth->execute( '1001099' );
-    $res = $sth->execute(['1001099']);
-    $itr = $sth->it( '1001099' );
-    $itr = $sth->it(['1001099']);
+    # Or, use it and have it create and import helper functions that you
+    # can define at runtime use (and reuse) to interact with database
+    # connections, statements and iterators.
+
+    use DBIx::Squirrel 'db', 'st', 'it';
+
+    db DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
+    st db->prepare('SELECT * FROM product WHERE id = ?');
+    $res = st->execute('1001099');
+    $res = st('1001099');  # Same as line above.
+    it st->iterate('1001099');
+    while ($row = it->next) {...}
+
+    # Clone another database connection.
+
+    $dbi = DBI->connect($dsn, $user, $pass, \%attr);
+    $dbh = DBIx::Squirrel->connect($dbi);
+
+    # Prepare a statement object.
+
+    $sth = $dbh->prepare($statement, \%attr);
+    $sth = $dbh->prepare_cached($statement, \%attr, $if_active);
+
+    # Commonly used positional and named parameter placeholder schemes
+    # conveniently supported regardless of database driver in use.
 
     $sth = $dbh->prepare('SELECT * FROM product WHERE id = ?');
-    $sth->bind_param(1, '1001099');
-    $sth->bind( '1001099' );
-    $sth->bind(['1001099']);
-    $res = $sth->execute;
-    $res = $sth->execute( '1001099' );
-    $res = $sth->execute(['1001099']);
-    $itr = $sth->it( '1001099' );
-    $itr = $sth->it(['1001099']);
-
     $sth = $dbh->prepare('SELECT * FROM product WHERE id = ?1');
-    $sth->bind_param(1, '1001099');
-    $sth->bind( '1001099' );
-    $sth->bind(['1001099']);
-    $res = $sth->execute;
-    $res = $sth->execute( '1001099' );
-    $res = $sth->execute(['1001099']);
-    $itr = $sth->it( '1001099' );
-    $itr = $sth->it(['1001099']);
-
     $sth = $dbh->prepare('SELECT * FROM product WHERE id = $1');
-    $sth->bind_param(1, '1001099');
-    $sth->bind( '1001099' );
-    $sth->bind(['1001099']);
-    $res = $sth->execute;
-    $res = $sth->execute( '1001099' );
-    $res = $sth->execute(['1001099']);
-    $itr = $sth->it( '1001099' );
-    $itr = $sth->it(['1001099']);
-
     $sth = $dbh->prepare('SELECT * FROM product WHERE id = :1');
-    $sth->bind_param(1, '1001099');
-    $sth->bind( '1001099' );
-    $sth->bind(['1001099']);
-    $res = $sth->execute;
-    $res = $sth->execute( '1001099' );
-    $res = $sth->execute(['1001099']);
-    $itr = $sth->it( '1001099' );
-    $itr = $sth->it(['1001099']);
-
     $sth = $dbh->prepare('SELECT * FROM product WHERE id = :id');
-    $sth->bind_param(':id', '1001099');
-    $res = $sth->bind( ':id'=>'1001099' );
-    $res = $sth->bind([':id'=>'1001099']);
-    $res = $sth->bind({':id'=>'1001099'});
-    $res = $sth->bind( id=>'1001099' );
-    $res = $sth->bind([id=>'1001099']);
-    $res = $sth->bind({id=>'1001099'});
-    $res = $sth->execute;
-    $res = $sth->execute( id=>'1001099' );
-    $res = $sth->execute([id=>'1001099']);
-    $res = $sth->execute({id=>'1001099'});
-    $itr = $sth->it( id=>'1001099' );
-    $itr = $sth->it([id=>'1001099']);
-    $itr = $sth->it({id=>'1001099'});
 
-    # The database handle "do" method works as before, but it also
-    # returns the statement handle when called in list-context. So
+    # Able to bind values to individual parameters for both positional
+    # and named placeholder schemes.
+
+    $sth->bind_param(1, '1001099');
+    $sth->bind_param(':id', '1001099');
+    $sth->bind_param('id', '1001099');
+
+    # Bind multiple values to parameters in a single statement.
+
+    $sth->bind( '1001099', ... );
+    $sth->bind( [ '1001099', ... ] );
+    $sth->bind( ':id' => '1001099', ... );
+    $sth->bind( id => '1001099', ... );
+    $sth->bind( { ':id' => '1001099', ... } );
+    $sth->bind( { id => '1001099', ... } );
+
+    # Or just have the statement handle's or iterator's "execute"
+    # method bind all values to parameters by passing it the same
+    # arguments you would pass to "bind".
+
+    $res = $obj->execute( '1001099', ... );
+    $res = $obj->execute( [ '1001099', ... ] );
+    $res = $obj->execute( ':id' => '1001099', ... );
+    $res = $obj->execute( id => '1001099', ... );
+    $res = $obj->execute( { ':id' => '1001099', ... } );
+    $res = $obj->execute( { id => '1001099', ... } );
+
+    # The database handle "do" method works as it does with DBI,
+    # with the exception that returns the result followed by the
+    # statement handle when called in list-context. This means
     # we can use it to prepare and execute statements, before we
     # fetch results. Be careful to use "undef" if passing named
     # parameters in a hashref so they are not used as statement
     # attributes. The new "do" is smart enough not to confuse
     # other things as statement attributes.
-    #
+
     ($res, $sth) = $dbh->do(
         'SELECT * FROM product WHERE id = ?', '1001099'
     );
@@ -96,31 +93,49 @@ DBIx::Squirrel - A module for working with databases
         'SELECT * FROM product WHERE id = ?', ['1001099']
     );
     ($res, $sth) = $dbh->do(
-        'SELECT * FROM product WHERE id = :id', ':id'=>'1001099'
+        'SELECT * FROM product WHERE id = :id', ':id' => '1001099'
     );
     ($res, $sth) = $dbh->do(
-        'SELECT * FROM product WHERE id = :id', id=>'1001099'
-    );
-    ($res, $sth) = $dbh->do(
-        'SELECT * FROM product WHERE id = :id', [':id'=>'1001099']
-    );
-    ($res, $sth) = $dbh->do(
-       'SELECT * FROM product WHERE id = :id', [id=>'1001099']
+        'SELECT * FROM product WHERE id = :id', id => '1001099'
     );
     ($res, $sth) = $dbh->do( # ------------ undef or \%attr
         'SELECT * FROM product WHERE id = :id', undef,
-        {':id'=>'1001099'}
+        { ':id' => '1001099'}
     );
     ($res, $sth) = $dbh->do( # ------------ undef or \%attr
         'SELECT * FROM product WHERE id = :id', undef,
-        {id=>'1001099'},
+        { id => '1001099' },
     );
 
+    # Statement objects can create iterators using the "iterate"
+    # method (or its "it" alias). Use it as you would "execute"
+
+    $itr = $sth->iterate( '1001099' );
+    $itr = $sth->iterate(['1001099']);
+
+    $itr = $sth->iterate( '1001099' );
+    $itr = $sth->iterate(['1001099']);
+
+    $itr = $sth->iterate( '1001099' );
+    $itr = $sth->iterate(['1001099']);
+
+    $itr = $sth->iterate( '1001099' );
+    $itr = $sth->iterate(['1001099']);
+
+    $itr = $sth->iterate( '1001099' );
+    $itr = $sth->iterate(['1001099']);
+
+    $itr = $sth->iterate( ':id' => '1001099' );
+    $itr = $sth->iterate( id => '1001099' );
+
+    $itr = $sth->iterate( { ':id' => '1001099' } );
+    $itr = $sth->iterate( { id => '1001099' } );
+
     # Using the iterators couldn't be easier!
-    #
+
     @ary = ();
-    while ($next = $itr->next) {
-        push @ary, $next;
+    while ($row = $itr->next) {
+        push @ary, $row;
     }
 
     @ary = $itr->first;
@@ -136,34 +151,34 @@ DBIx::Squirrel - A module for working with databases
     $itr = $itr->reset([]); # Fetch rows as arrayrefs
 
     $row = $itr->single;
-    $row = $itr->single( id=>'1001100' );
-    $row = $itr->single([id=>'1001100']);
-    $row = $itr->single({id=>'1001100'});
-    $row = $itr->find( id=>'1001100' );
-    $row = $itr->find([id=>'1001100']);
-    $row = $itr->find({id=>'1001100'});
+    $row = $itr->single( id => '1001100' );
+    $row = $itr->single( { id => '1001100' } );
+    $row = $itr->find( id => '1001100' );
+    $row = $itr->find( { id => '1001100' } );
 
-    # Result sets are just fancy iterators that "bless" results in
-    # a manner that enables us to get column values using accessor
-    # methods, without ever having to worry about whether the row
-    # is implemented as an arrayref or hashref. Accessors are not
-    # case-sensitive.
-    #
+    # A result set is just fancy subclass of the iterator. It will
+    # "bless" results, enabling us to get a column's value using an
+    # accessor methods, without ever having to worry about whether
+    # the row is a array or hash reference. While the accessor
+    # methods use lowercase names, they will access the column's
+    # value regardless of the case used.
+
     $sth = $dbh->prepare('SELECT MediaTypeId, Name FROM media_types');
     $res = $sth->rs;
     while ($res->next) {
         print $_->name, "\n";
     }
 
-    # Use lambdas to define how results are processed.
-    #
-    $it = $sth->it(
+    # Iterators allow for the use of lambda functions to process
+    # each row just in time during iteration.
+
+    $it = $sth->iterate(
         sub { $_->{Name} }
     )->reset({});
     print "$_\n" foreach $it->all;
 
-    # Lambdas may be chained
-    #
+    # Lambdas may be chained.
+
     $res = $sth->rs(
         sub { $_->Name },
         sub { "Media type: $_" },
@@ -181,16 +196,17 @@ DBIx::Squirrel - A module for working with databases
 
 # DESCRIPTION
 
-Just what the world needs — another Perl module for working with databases.
+**Just what the world needs — another Perl package for working with databases!**
 
-DBIx-Squirrel is a DBI extension that subclasses packages in the DBI namespace,
-to add a few enhancements to its venerable ancestor's interface.
+`DBIx::Squirrel` is a `DBI` extension that serves as drop-in replacement for
+`DBI`, while adding a few progressive enhancements to make some tasks much
+easier.
 
 # DESIGN
 
 ## Compatibility
 
-DBIx-Squirrel's baseline behaviour is **be like DBI**.
+DBIx-Squirrel's baseline behaviour is be like `DBI`.
 
 A developer should be able to confidently replace `use DBI` with
 `use DBIx::Squirrel`, while expecting their script to behave just
@@ -250,5 +266,22 @@ the same arguments.
 - Some DBIx-Squirrel iterator method names (`reset`, `first`, `next`,
 `single`, `find`, `all`) may be familiar to other DBIx-Class
 programmers who use them for similar purposes.
+
+# COPYRIGHT AND LICENSE
+
+    Copyright (c) 2020-2024 Iain Campbell
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ![DBIx-Squirrel](resources/images/repository-social-card.png)
