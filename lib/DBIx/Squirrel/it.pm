@@ -14,6 +14,7 @@ BEGIN {
 
 use namespace::autoclean;
 use Data::Dumper::Concise;
+use Scalar::Util 'weaken';
 use DBIx::Squirrel::util 'cbargs', 'throw', 'transform', 'whine';
 
 our $DEFAULT_SLICE = [];
@@ -156,6 +157,9 @@ sub new {
     my ( $callbacks, $class_or_self, $sth, @bindvals ) = cbargs(@_);
     return unless UNIVERSAL::isa( $sth, 'DBI::st' );
     my $self = bless {}, ref $class_or_self || $class_or_self;
+    for my $k ( keys %{$sth} ) {
+        weaken( $self->{$k} = $sth->{$k} );
+    }
     return $_ = $self->finish->_attr(
         {   'id'        => 0+ $self,
             'st'        => $sth->_attr( { 'Iterator' => $self } ),
