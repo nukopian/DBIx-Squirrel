@@ -32,7 +32,9 @@ sub get_column {
     if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
         if ( my $sth = $_[0]->rs->sth ) {
             my $idx = $sth->{NAME_lc_hash}{ lc $_[1] };
+
             throw E_UNKNOWN_COLUMN, $_[1] unless defined $idx;
+
             return $_[0]->[$idx];
         }
 
@@ -45,7 +47,6 @@ sub get_column {
 
         my ($idx) = do {
             local ($_);
-
             grep { $_[1] eq lc $_ } keys %{ $_[0] };
         };
 
