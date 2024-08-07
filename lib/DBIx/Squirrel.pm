@@ -1,132 +1,105 @@
 package DBIx::Squirrel;
+
+use 5.006;
 use strict;
 use warnings;
-use constant E_BAD_ENT_BIND     => 'May only bind a database connetion handle, statement handle, or iterator';
-use constant E_BAD_ENT_TYPE     => 'May only address a statement handle or iterator';
-use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
 
-use Scalar::Util 'reftype';
-use Sub::Name;
+=head1 NAME
 
-BEGIN {
-    our $VERSION               = '1.0.0_20240806';
-    our @ISA                   = 'DBI';
-    our $STRICT_PARAM_CHECK    = 0;
-    our $AUTO_FINISH_ON_ACTIVE = 1;
+DBIx::Squirrel - The great new DBIx::Squirrel!
+
+=head1 VERSION
+
+Version 0.01
+
+=cut
+
+our $VERSION = '0.01';
+
+
+=head1 SYNOPSIS
+
+Quick summary of what the module does.
+
+Perhaps a little code snippet.
+
+    use DBIx::Squirrel;
+
+    my $foo = DBIx::Squirrel->new();
+    ...
+
+=head1 EXPORT
+
+A list of functions that can be exported.  You can delete this section
+if you don't export anything, such as for a purely object-oriented module.
+
+=head1 SUBROUTINES/METHODS
+
+=head2 function1
+
+=cut
+
+sub function1 {
 }
 
-use DBI                ();
-use DBIx::Squirrel::dr ();
-use DBIx::Squirrel::db ();
-use DBIx::Squirrel::st ();
-use DBIx::Squirrel::it ();
-use DBIx::Squirrel::rs ();
-use DBIx::Squirrel::rc ();
-use DBIx::Squirrel::util 'throw';
+=head2 function2
 
-BEGIN {
-    our $NORMALISE_SQL = 1;
+=cut
 
-    *err             = *DBI::err;
-    *errstr          = *DBI::errstr;
-    *rows            = *DBI::rows;
-    *lasth           = *DBI::lasth;
-    *state           = *DBI::state;
-    *connect_cached  = *DBIx::Squirrel::dr::connect_cached;
-    *connect         = *DBIx::Squirrel::dr::connect;
-    *SQL_ABSTRACT    = *DBIx::Squirrel::db::SQL_ABSTRACT;
-    *DEFAULT_SLICE   = *DBIx::Squirrel::it::DEFAULT_SLICE;
-    *DEFAULT_MAXROWS = *DBIx::Squirrel::it::DEFAULT_MAXROWS;
-    *BUF_MULT        = *DBIx::Squirrel::it::BUF_MULT;
-    *BUF_MAXROWS     = *DBIx::Squirrel::it::BUF_MAXROWS;
-    *NORMALIZE_SQL   = *NORMALISE_SQL;
+sub function2 {
 }
 
-sub import {
-    no strict 'refs';
+=head1 AUTHOR
 
-    my $class  = shift;
-    my $caller = caller;
+Iain Campbell, C<< <cpanic at cpan.org> >>
 
-    for my $name (@_) {
-        my $symbol = $class . '::' . $name;
+=head1 BUGS
 
-        unless ( defined &{$symbol} ) {
-            *{$symbol} = subname(
-                $symbol => sub {
-                    if (@_) {
+Please report any bugs or feature requests to C<bug-dbix-squirrel at rt.cpan.org>, or through
+the web interface at L<https://rt.cpan.org/NoAuth/ReportBug.html?Queue=DBIx-Squirrel>.  I will be notified, and then you'll
+automatically be notified of progress on your bug as I make changes.
 
-                        # By passing a database connection handle, statement
-                        # handle, iterator, or result set reference, we may
-                        # define an association between the function and an
-                        # entity at runtime.
 
-                        if (   UNIVERSAL::isa( $_[0], $class . '::db' )
-                            or UNIVERSAL::isa( $_[0], $class . '::st' )
-                            or UNIVERSAL::isa( $_[0], $class . '::it' ) )
-                        {
-                            ${$symbol} = shift;
-                            return ${$symbol};
-                        }
 
-                        throw E_BAD_ENT_BIND;
-                    }
 
-                    return unless defined ${$symbol};
+=head1 SUPPORT
 
-                    return ${$symbol} unless @_;
+You can find documentation for this module with the perldoc command.
 
-                    # If the function reaches this point, we are
-                    # addressing the underlying entity, passing
-                    # parameters that are meaningful in that
-                    # context.
+    perldoc DBIx::Squirrel
 
-                    if (   UNIVERSAL::isa( ${$symbol}, $class . '::st' )
-                        or UNIVERSAL::isa( ${$symbol}, $class . '::it' ) )
-                    {
-                        my @params = do {
-                            if ( @_ == 1 && ref $_[0] ) {
 
-                                # The underlying entity may take no
-                                # parameters, in which case there is
-                                # nothing meaningful that we can pass
-                                # to it. When no parameters are passed,
-                                # we expect this function to simply return
-                                # a reference to to the entity itself. If,
-                                # however, we wish to have the underlying
-                                # entity perform a contextually relevant
-                                # operation, we allow parameters to be
-                                # passed inside an anonymous array, which
-                                # may be empty as a signal to do just that.
+You can also look for information at:
 
-                                if ( reftype( $_[0] ) eq 'ARRAY' ) {
-                                    @{ +shift };
-                                } elsif ( reftype( $_[0] ) eq 'HASH' ) {
-                                    %{ +shift };
-                                } else {
-                                    throw E_EXP_HASH_ARR_REF;
-                                }
-                            } else {
-                                @_;
-                            }
-                        };
+=over 4
 
-                        return ${$symbol}->execute(@params);
-                    }
+=item * RT: CPAN's request tracker (report bugs here)
 
-                    throw E_BAD_ENT_TYPE;
-                }
-            );
-        }
+L<https://rt.cpan.org/NoAuth/Bugs.html?Dist=DBIx-Squirrel>
 
-        # Export any relevant symbols to caller's namespace.
+=item * CPAN Ratings
 
-        unless ( defined &{ $caller . '::' . $name } ) {
-            *{ $caller . '::' . $name } = *{$symbol};
-        }
-    }
+L<https://cpanratings.perl.org/d/DBIx-Squirrel>
 
-    return $class;
-}
+=item * Search CPAN
 
-1;
+L<https://metacpan.org/release/DBIx-Squirrel>
+
+=back
+
+
+=head1 ACKNOWLEDGEMENTS
+
+
+=head1 LICENSE AND COPYRIGHT
+
+This software is Copyright (c) 2024 by Iain Campbell.
+
+This is free software, licensed under:
+
+  The Artistic License 2.0 (GPL Compatible)
+
+
+=cut
+
+1; # End of DBIx::Squirrel
