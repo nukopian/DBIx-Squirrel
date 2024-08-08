@@ -1,7 +1,8 @@
+use strict;
+
 package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::util;
 
-use strict;
 use warnings;
 use constant E_EXP_STATEMENT => 'Expected a statement';
 use constant E_EXP_STH       => 'Expected a statement handle';

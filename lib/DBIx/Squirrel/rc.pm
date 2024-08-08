@@ -1,7 +1,8 @@
+use strict 'subs', 'vars';
+
 package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::rc;
 
-use strict 'subs', 'vars';
 use warnings;
 use constant E_BAD_OBJECT     => 'A reference to either an array or hash was expected';
 use constant E_STH_EXPIRED    => 'Result is no longer associated with a statement';
