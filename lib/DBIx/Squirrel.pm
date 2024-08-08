@@ -327,6 +327,25 @@ sub import {
     return $class;
 }
 
+# Provide a means for undefining and unexporting helpers.
+
+sub unimport {
+    my $class  = shift;
+    my $caller = caller;
+
+    my @helper_names = @_;
+
+    for my $name (@helper_names) {
+        my $symbol = $class . '::' . $name;
+
+        undef &{$symbol} if defined &{$symbol};
+        undef ${$symbol} if defined ${$symbol};
+        undef &{ $caller . '::' . $name } if defined &{ $caller . '::' . $name };
+    }
+
+    return $class;
+}
+
 1;
 __END__
 
