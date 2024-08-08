@@ -1,5 +1,6 @@
 package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::st;
+
 use strict;
 use warnings;
 use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';

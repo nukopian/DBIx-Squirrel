@@ -1,5 +1,6 @@
 package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::dr;
+
 use strict;
 use warnings;
 
