@@ -2,8 +2,7 @@ package DBIx::Squirrel;
 
 use strict 'vars', 'subs';
 use warnings;
-use constant E_BAD_ENT_BIND     => 'May only bind a database connetion handle, statement handle, or iterator';
-use constant E_BAD_ENT_TYPE     => 'May only address a statement handle or iterator';
+use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
 use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
 
 use Scalar::Util 'reftype';
@@ -310,7 +309,10 @@ sub import {
                         return ${$symbol}->execute(@params);
                     }
 
-                    throw E_BAD_ENT_TYPE;
+                    # For any other situation, return a reference to the
+                    # associated object!
+
+                    return ${$symbol};
                 }
             );
         }
