@@ -17,9 +17,13 @@
   <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
   <li><a href="#DESCRIPTION">DESCRIPTION</a>
     <ul>
-      <li><a href="#Database-connection">Database connection</a></li>
-      <li><a href="#Statement-preparation">Statement preparation</a></li>
-      <li><a href="#Results-processing">Results processing</a></li>
+      <li>
+        <ul>
+          <li><a href="#Database-connection">Database connection</a></li>
+          <li><a href="#Statement-preparation">Statement preparation</a></li>
+          <li><a href="#Results-processing">Results processing</a></li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li><a href="#COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</a></li>
@@ -226,7 +230,7 @@ print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;rs(
 
 <p>The <code>DBIx::Squirrel</code> package extends the <code>DBI</code> by offering the regular <code>DBI</code> user a few useful conveniences. Enhancements are subtle and progressive, and they do not detract too much from the normal <code>DBI</code> experience.</p>
 
-<h2 id="Database-connection">Database connection</h2>
+<h3 id="Database-connection">Database connection</h3>
 
 <ul>
 
@@ -235,7 +239,7 @@ print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;rs(
 </li>
 </ul>
 
-<h2 id="Statement-preparation">Statement preparation</h2>
+<h3 id="Statement-preparation">Statement preparation</h3>
 
 <ul>
 
@@ -247,7 +251,7 @@ print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;rs(
 </li>
 </ul>
 
-<h2 id="Results-processing">Results processing</h2>
+<h3 id="Results-processing">Results processing</h3>
 
 <ul>
 

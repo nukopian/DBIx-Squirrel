@@ -201,7 +201,7 @@ regular `DBI` user a few useful conveniences. Enhancements are
 subtle and progressive, and they do not detract too much from
 the normal `DBI` experience.
 
-## Database connection
+### Database connection
 
 - Connecting to a database using `DBIx::Squirrel` works the same
 way as it does when using the `DBI` `connect` and `connect_cached`
@@ -210,7 +210,7 @@ accept a database handle in place of a datasource name. The database
 handle can even be a reference to a `DBI` object. The original database
 connection will be cloned as as `DBIx::Squirrel` object.
 
-## Statement preparation
+### Statement preparation
 
 - Both `prepare` and `prepare_cached` methods continue to work as
 as they do in the `DBI`, though they will also accept a statement
@@ -224,7 +224,7 @@ of positional styles. Styles supported are `:name`, `?1`, `$1`,
 you are converting queries to run on a different database engine,
 any of these style will work regardless of the driver in use.
 
-## Results processing
+### Results processing
 
 - A `DBIx::Squirrel` statement can produce two kinds of iterator, to
 provide for efficient processing of results. These are generated using
