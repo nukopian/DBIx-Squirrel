@@ -175,7 +175,7 @@ sub bind_param {
 
 BEGIN {
     *iterate   = *it   = sub { DBIx::Squirrel::it->new(@_) };
-    *resultset = *rs   = sub { DBIx::Squirrel::rs->new(@_) };
+    *results = *rs   = sub { DBIx::Squirrel::rs->new(@_) };
     *iterator  = *itor = sub { $_[0]->_attr->{'Iterator'} };
 }
 

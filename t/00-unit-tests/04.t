@@ -16,7 +16,7 @@ use T::Database ':all';
 subtest 'test' => sub {
     my $dbh = DBIx::Squirrel->connect(@T_DB_CONNECT_ARGS);
 
-    my @albums = $dbh->resultset('SELECT * FROM albums')->slice([])->all;
+    my @albums = $dbh->results('SELECT * FROM albums')->slice([])->all;
 
     # diag_val @albums;
 

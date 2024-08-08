@@ -206,7 +206,7 @@ BEGIN {
         return $sth->it(@_);
     };
 
-    *resultset = *rs = sub {
+    *results = *rs = sub {
         my $self      = shift;
         my $statement = shift;
         my $sth       = do {

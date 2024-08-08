@@ -44,14 +44,14 @@ sub _bless {
 
     my ( $row_class, $row ) = ( $self->row_class, @_ );
     my $result_class = $self->result_class;
-    my $resultset_fn = $row_class . '::resultset';
+    my $results_fn = $row_class . '::results';
     my $rs_fn        = $row_class . '::rs';
 
     unless ( defined &{$rs_fn} ) {
         undef &{$rs_fn};
-        undef &{$resultset_fn};
+        undef &{$results_fn};
 
-        *{$resultset_fn} = *{$rs_fn} = do {
+        *{$results_fn} = *{$rs_fn} = do {
             weaken( my $rs = $self );
             subname( $rs_fn, sub {$rs} );
         };
@@ -82,7 +82,7 @@ sub DESTROY {
     }
 
     undef &{ $row_class . '::rs' };
-    undef &{ $row_class . '::resultset' };
+    undef &{ $row_class . '::results' };
     undef *{$row_class};
 
     return $self->SUPER::DESTROY;
