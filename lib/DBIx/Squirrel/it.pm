@@ -417,7 +417,7 @@ sub all {
 }
 
 BEGIN {
-    *resultset        = *rs           = sub { shift->sth->rs(@_) };
+    *results          = *rs           = sub { shift->sth->rs(@_) };
     *statement_handle = *sth          = sub { shift->_attr->{'st'} };
     *done             = *finished     = sub { !!shift->_attr->{'finished'} };
     *not_done         = *not_finished = sub { !shift->_attr->{'finished'} };
