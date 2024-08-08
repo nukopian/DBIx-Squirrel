@@ -4,7 +4,7 @@ DBIx::Squirrel - A module for working with databases
 
 # VERSION
 
-1.0.0\_20240807
+version 1.0.0
 
 # SYNOPSIS
 
@@ -272,11 +272,11 @@ programmers who use them for similar purposes.
     The DBIx::Squirrel module is Copyright (c) 2020-2014 Iain Campbell.
     All rights reserved.
 
+DBIx::Squirrel is free Open Source software. IT COMES WITHOUT WARRANTY OF ANY KIND.
     You may distribute under the terms of either the GNU General Public
     License or the Artistic License, as specified in the Perl 5.10.0 README file.
 
 # SUPPORT / WARRANTY
 
-DBIx::Squirrel is free Open Source software. IT COMES WITHOUT WARRANTY OF ANY KIND.
 
 ![DBIx-Squirrel](resources/images/repository-social-card.png)
