@@ -1,6 +1,8 @@
+use strict;
+
 package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::db;
-use strict;
+
 use warnings;
 use constant E_BAD_SQL_ABSTRACT_METHOD => 'Unimplemented SQL::Abstract method';
 

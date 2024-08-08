@@ -1,7 +1,8 @@
+use strict 'subs', 'vars';
+
 package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::rs;
-use strict;
-no strict 'refs';
+
 use warnings;
 
 BEGIN {

@@ -1,6 +1,8 @@
+use strict;
+
 package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::it;
-use strict;
+
 use warnings;
 use constant E_BAD_SLICE   => 'Slice must be a reference to an ARRAY or HASH';
 use constant E_BAD_MAXROWS => 'Maximum row count must be an integer greater than zero';
