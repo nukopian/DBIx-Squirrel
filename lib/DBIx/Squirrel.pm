@@ -367,9 +367,9 @@ __END__
 =head1 DESCRIPTION
 
 The C<DBIx::Squirrel> package extends the C<DBI> by offering the
-regular C<DBI> user some useful conveniences. While powerful, the
-enhancements are subtle and progressive, and they do not detract
-too much from the normal C<DBI> experience.
+regular C<DBI> user a few useful conveniences. Enhancements are
+subtle and progressive, and they do not detract too much from
+the normal C<DBI> experience.
 
 =head2 Database connection
 
@@ -418,6 +418,11 @@ any of these style will work regardless of the driver in use.
 A C<DBIx::Squirrel> statement can produce two kinds of iterator, to
 provide for efficient processing of results. These are generated using
 statement's C<iterate> and C<results> methods in place of C<execute>.
+
+=item *
+
+Iterators offer a declarative way to process results using callbacks
+chains to transform results before they are returned to the caller.
 
 =item *
 

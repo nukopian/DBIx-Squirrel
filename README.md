@@ -4,7 +4,7 @@ DBIx::Squirrel - A module for working with databases
 
 # VERSION
 
-version 1.0.0
+version 1.1.0
 
 # SYNOPSIS
 
@@ -197,9 +197,9 @@ version 1.0.0
 # DESCRIPTION
 
 The `DBIx::Squirrel` package extends the `DBI` by offering the
-regular `DBI` user some useful conveniences. While powerful, the
-enhancements are subtle and progressive, and they do not detract
-too much from the normal `DBI` experience.
+regular `DBI` user a few useful conveniences. Enhancements are
+subtle and progressive, and they do not detract too much from
+the normal `DBI` experience.
 
 ## Database connection
 
@@ -229,6 +229,8 @@ any of these style will work regardless of the driver in use.
 - A `DBIx::Squirrel` statement can produce two kinds of iterator, to
 provide for efficient processing of results. These are generated using
 statement's `iterate` and `results` methods in place of `execute`.
+- Iterators offer a declarative way to process results using callbacks
+chains to transform results before they are returned to the caller.
 - Some DBIx-Squirrel iterator methods named `all`, `find`, `first`,
 `next`, `single` may already be familiar to `DBIx::Class`
 users, and they do similar jobs.
