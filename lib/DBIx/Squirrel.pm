@@ -237,27 +237,49 @@ BEGIN {
     *NORMALIZE_SQL = *NORMALISE_SQL;
 }
 
-sub import {
-    no strict 'refs';
+# By appending a list of one or more names to the caller's "use" directive,
+# can have the DBIx::Squirrel package define helper functions ("helpers")
+# during Perl's compile-phase. All listed helpers are exported to the
+# caller's namespace. Any helper that has already been defined will only
+# be exported; it will not be re-defined.
+#
+# A helper is a callable name that may be associated with a database
+# object (connection, statement, iterator) during runtime. A helper acts
+# as a shim, allowing the caller to get (or address) the underlying object
+# without Perl's traditional line-noise ("$", "->", "(...)").
+#
+# Absent any arguments, a call to a helper simply returns the reference
+# to the object itself. When called with arguments, a statement or
+# iterator helper will behave as if a call was made to the underlying
+# object's "execute" method. A database connection helper doesn't care
+# what is passed; a reference to the connection is all that is returned.
+#
+# Since some statements do not require arguments, execution is coerced
+# by passing a reference to an empty ARRAY or HASH. For the sake of
+# consistency, a reference to an ARRAY or HASH containing arguments
+# may also be passed.
 
+sub import {
     my $class  = shift;
     my $caller = caller;
 
-    for my $name (@_) {
+    my @helper_names = @_;
+
+    for my $name (@helper_names) {
         my $symbol = $class . '::' . $name;
+
+        # Define the symbol once only!
 
         unless ( defined &{$symbol} ) {
             *{$symbol} = subname(
                 $symbol => sub {
                     if (@_) {
 
-                        # By passing a database connection handle, statement
-                        # handle, iterator, or result set reference, we may
-                        # define an association between the function and an
-                        # entity at runtime.
+                        # No reason NOT to have helpers act as proxies for
+                        # DBI connection and statement objects, too!
 
-                        if (   UNIVERSAL::isa( $_[0], $class . '::db' )
-                            or UNIVERSAL::isa( $_[0], $class . '::st' )
+                        if (   UNIVERSAL::isa( $_[0], 'DBI::db' )
+                            or UNIVERSAL::isa( $_[0], 'DBI::st' )
                             or UNIVERSAL::isa( $_[0], $class . '::it' ) )
                         {
                             ${$symbol} = shift;
@@ -267,33 +289,20 @@ sub import {
                         throw E_BAD_ENT_BIND;
                     }
 
+                    # Return nothing if no association is defined!
+
                     return unless defined ${$symbol};
 
-                    return ${$symbol} unless @_;
+                    # If we have arguments remaining and an object we can
+                    # meaningfully address, dispatch the "execute" method!
 
-                    # If the function reaches this point, we are
-                    # addressing the underlying entity, passing
-                    # parameters that are meaningful in that
-                    # context.
-
-                    if (   UNIVERSAL::isa( ${$symbol}, $class . '::st' )
-                        or UNIVERSAL::isa( ${$symbol}, $class . '::it' ) )
+                    if (@_
+                        and (  UNIVERSAL::isa( ${$symbol}, 'DBI::st' )
+                            or UNIVERSAL::isa( ${$symbol}, $class . '::it' ) )
+                      )
                     {
                         my @params = do {
                             if ( @_ == 1 && ref $_[0] ) {
-
-                                # The underlying entity may take no
-                                # parameters, in which case there is
-                                # nothing meaningful that we can pass
-                                # to it. When no parameters are passed,
-                                # we expect this function to simply return
-                                # a reference to to the entity itself. If,
-                                # however, we wish to have the underlying
-                                # entity perform a contextually relevant
-                                # operation, we allow parameters to be
-                                # passed inside an anonymous array, which
-                                # may be empty as a signal to do just that.
-
                                 if ( reftype( $_[0] ) eq 'ARRAY' ) {
                                     @{ +shift };
                                 } elsif ( reftype( $_[0] ) eq 'HASH' ) {
@@ -320,7 +329,7 @@ sub import {
         # Export any relevant symbols to caller's namespace.
 
         unless ( defined &{ $caller . '::' . $name } ) {
-            *{ $caller . '::' . $name } = *{$symbol};
+            *{ $caller . '::' . $name } = \&{$symbol};
         }
     }
 
