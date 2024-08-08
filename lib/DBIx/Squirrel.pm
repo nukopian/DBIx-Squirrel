@@ -1,4 +1,5 @@
 package DBIx::Squirrel;
+
 use strict;
 use warnings;
 use constant E_BAD_ENT_BIND     => 'May only bind a database connetion handle, statement handle, or iterator';
@@ -8,11 +9,6 @@ use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
 use Scalar::Util 'reftype';
 use Sub::Name;
 
-BEGIN {
-    our $VERSION = '1.0.0_20240807';
-    $VERSION = eval $VERSION;
-}
-
 =pod
 
 =encoding UTF-8
@@ -20,10 +16,6 @@ BEGIN {
 =head1 NAME
 
 DBIx::Squirrel - A module for working with databases
-
-=head1 VERSION
-
-1.0.0_20240807
 
 =head1 SYNOPSIS
 
