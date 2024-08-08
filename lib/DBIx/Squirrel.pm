@@ -282,7 +282,7 @@ sub import {
 
                         if (   UNIVERSAL::isa( $_[0], 'DBI::db' )
                             or UNIVERSAL::isa( $_[0], 'DBI::st' )
-                            or UNIVERSAL::isa( $_[0], $class . '::it' ) )
+                            or UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::it' ) )
                         {
                             ${$symbol} = shift;
                             return ${$symbol};
@@ -300,7 +300,7 @@ sub import {
 
                     if (@_
                         and (  UNIVERSAL::isa( ${$symbol}, 'DBI::st' )
-                            or UNIVERSAL::isa( ${$symbol}, $class . '::it' ) )
+                            or UNIVERSAL::isa( ${$symbol}, 'DBIx::Squirrel::it' ) )
                       )
                     {
                         my @params = do {
