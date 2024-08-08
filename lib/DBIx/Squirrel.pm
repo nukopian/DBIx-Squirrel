@@ -371,7 +371,7 @@ regular C<DBI> user a few useful conveniences. Enhancements are
 subtle and progressive, and they do not detract too much from
 the normal C<DBI> experience.
 
-=head2 Database connection
+=head3 Database connection
 
 =over
 
@@ -386,7 +386,7 @@ connection will be cloned as as C<DBIx::Squirrel> object.
 
 =back
 
-=head2 Statement preparation
+=head3 Statement preparation
 
 =over
 
@@ -409,7 +409,7 @@ any of these style will work regardless of the driver in use.
 
 =back
 
-=head2 Results processing
+=head3 Results processing
 
 =over
 
