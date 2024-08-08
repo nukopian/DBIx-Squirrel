@@ -4,7 +4,7 @@ DBIx::Squirrel - A module for working with databases
 
 # VERSION
 
-version 1.0.0
+version 1.1.0
 
 # SYNOPSIS
 
