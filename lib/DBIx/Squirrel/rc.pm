@@ -1,4 +1,3 @@
-
 package                                                                                                                            # hide from PAUSE
   DBIx::Squirrel::rc;
 use strict;
@@ -10,6 +9,7 @@ use constant E_UNKNOWN_COLUMN => 'Unrecognised column (%s)';
 BEGIN {
     require DBIx::Squirrel
       unless defined $DBIx::Squirrel::VERSION;
+    our $VERSION = $DBIx::Squirrel::VERSION;
 }
 
 use namespace::autoclean;
