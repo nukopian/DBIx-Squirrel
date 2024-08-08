@@ -1,6 +1,8 @@
+use strict 'vars', 'subs';  # Moved to stop Perl::Critic carping when Dist::Zilla adds
+                            # $VERSION information.
+
 package DBIx::Squirrel;
 
-use strict 'vars', 'subs';
 use warnings;
 use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
 use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
