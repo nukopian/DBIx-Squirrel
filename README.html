@@ -224,7 +224,7 @@ print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;rs(
 
 <h1 id="DESCRIPTION">DESCRIPTION</h1>
 
-<p>The <code>DBIx::Squirrel</code> package extends the <code>DBI</code> by offering the regular <code>DBI</code> user some useful conveniences. While powerful, the enhancements are subtle and progressive, and they do not detract too much from the normal <code>DBI</code> experience.</p>
+<p>The <code>DBIx::Squirrel</code> package extends the <code>DBI</code> by offering the regular <code>DBI</code> user a few useful conveniences. Enhancements are subtle and progressive, and they do not detract too much from the normal <code>DBI</code> experience.</p>
 
 <h2 id="Database-connection">Database connection</h2>
 
@@ -252,6 +252,9 @@ print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;rs(
 <ul>
 
 <li><p>A <code>DBIx::Squirrel</code> statement can produce two kinds of iterator, to provide for efficient processing of results. These are generated using statement&#39;s <code>iterate</code> and <code>results</code> methods in place of <code>execute</code>.</p>
+
+</li>
+<li><p>Iterators offer a declarative way to process results using callbacks chains to transform results before they are returned to the caller.</p>
 
 </li>
 <li><p>Some DBIx-Squirrel iterator methods named <code>all</code>, <code>find</code>, <code>first</code>, <code>next</code>, <code>single</code> may already be familiar to <code>DBIx::Class</code> users, and they do similar jobs.</p>
