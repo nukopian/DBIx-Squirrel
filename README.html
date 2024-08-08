@@ -196,7 +196,7 @@ $row = $itr-&gt;find( { id =&gt; &#39;1001100&#39; } );
 # value regardless of the case used.
 
 $sth = $dbh-&gt;prepare(&#39;SELECT MediaTypeId, Name FROM media_types&#39;);
-$res = $sth-&gt;rs;
+$res = $sth-&gt;results;
 while ($res-&gt;next) {
     print $_-&gt;name, &quot;\n&quot;;
 }
@@ -211,18 +211,18 @@ print &quot;$_\n&quot; foreach $it-&gt;all;
 
 # Lambdas may be chained.
 
-$res = $sth-&gt;rs(
+$res = $sth-&gt;results(
     sub { $_-&gt;Name },
     sub { &quot;Media type: $_&quot; },
 );
 print &quot;$_\n&quot; while $res-&gt;next;
 
-print &quot;$_\n&quot; for $dbh-&gt;rs(
+print &quot;$_\n&quot; for $dbh-&gt;results(
     q/SELECT MediaTypeId, Name FROM media_types/,
     sub { $_-&gt;Name },
 )-&gt;all;
 
-print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;rs(
+print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;results(
     sub { $_-&gt;Name },
 )-&gt;all;</code></pre>
 

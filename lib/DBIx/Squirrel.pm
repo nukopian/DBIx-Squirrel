@@ -176,7 +176,7 @@ DBIx::Squirrel - A module for working with databases
     # value regardless of the case used.
 
     $sth = $dbh->prepare('SELECT MediaTypeId, Name FROM media_types');
-    $res = $sth->rs;
+    $res = $sth->results;
     while ($res->next) {
         print $_->name, "\n";
     }
@@ -191,18 +191,18 @@ DBIx::Squirrel - A module for working with databases
 
     # Lambdas may be chained.
 
-    $res = $sth->rs(
+    $res = $sth->results(
         sub { $_->Name },
         sub { "Media type: $_" },
     );
     print "$_\n" while $res->next;
 
-    print "$_\n" for $dbh->rs(
+    print "$_\n" for $dbh->results(
         q/SELECT MediaTypeId, Name FROM media_types/,
         sub { $_->Name },
     )->all;
 
-    print "$_\n" for $dbh->select('media_types')->rs(
+    print "$_\n" for $dbh->select('media_types')->results(
         sub { $_->Name },
     )->all;
 
