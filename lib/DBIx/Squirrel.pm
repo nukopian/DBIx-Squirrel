@@ -1,6 +1,6 @@
 package DBIx::Squirrel;
 
-use strict;
+use strict 'vars', 'subs';
 use warnings;
 use constant E_BAD_ENT_BIND     => 'May only bind a database connetion handle, statement handle, or iterator';
 use constant E_BAD_ENT_TYPE     => 'May only address a statement handle or iterator';
