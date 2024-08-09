@@ -7,7 +7,8 @@ use warnings;
 use constant E_BAD_SQL_ABSTRACT_METHOD => 'Unimplemented SQL::Abstract method';
 
 BEGIN {
-    require DBIx::Squirrel unless defined $DBIx::Squirrel::VERSION;
+    require DBIx::Squirrel
+      unless defined $DBIx::Squirrel::VERSION;
     our $VERSION = $DBIx::Squirrel::VERSION;
     our @ISA     = 'DBI::db';
 }
@@ -19,7 +20,6 @@ use SQL::Abstract;
 
 sub _attr {
     my $self = shift;
-
     return unless ref $self;
 
     unless ( defined $self->{'private_dbix_squirrel'} ) {
@@ -27,8 +27,9 @@ sub _attr {
     }
 
     unless (@_) {
-        return $self->{'private_dbix_squirrel'} unless wantarray;
-        return ( $self->{'private_dbix_squirrel'}, $self );
+        return $self->{'private_dbix_squirrel'}, $self if wantarray;
+
+        return $self->{'private_dbix_squirrel'};
     }
 
     unless ( defined $_[0] ) {
@@ -60,42 +61,42 @@ sub abstract {
     my $method_name = shift;
     my $method      = $SQL_ABSTRACT->can($method_name);
 
-    throw E_BAD_SQL_ABSTRACT_METHOD unless $method;
+    throw E_BAD_SQL_ABSTRACT_METHOD
+      unless $method;
 
     return $self->do( $method->( $SQL_ABSTRACT, @_ ) );
 }
 
 sub delete {
     my $self = shift;
-
     return scalar $self->abstract( 'delete', @_ );
 }
 
 sub insert {
     my $self = shift;
-
     return scalar $self->abstract( 'insert', @_ );
 }
 
 sub update {
     my $self = shift;
-
     return scalar $self->abstract( 'update', @_ );
 }
 
 sub select {
     my $self = shift;
     my ( undef, $result, ) = $self->abstract( 'select', @_ );
-
     return $result;
 }
 
 sub prepare {
     my $self      = shift;
     my $statement = shift;
-    my ( $placeholders, $normalised_statement, $original_statement, $digest ) = study_statement($statement);
+    my ($placeholders,       $normalised_statement,
+        $original_statement, $digest
+    ) = study_statement($statement);
 
-    throw E_EXP_STATEMENT unless defined $normalised_statement;
+    throw E_EXP_STATEMENT
+      unless defined $normalised_statement;
 
     my $sth = $self->SUPER::prepare( $normalised_statement, @_ );
 
@@ -115,7 +116,8 @@ sub prepare_cached {
     my $statement = shift;
     my ( $placeholders, $normalised_statement, $original_statement, $digest ) = study_statement($statement);
 
-    throw E_EXP_STATEMENT unless defined $normalised_statement;
+    throw E_EXP_STATEMENT
+      unless defined $normalised_statement;
 
     my $sth = $self->SUPER::prepare_cached( $normalised_statement, @_ );
 
@@ -135,10 +137,9 @@ sub execute {
     my $self      = shift;
     my $statement = shift;
     my ( $res, $sth ) = $self->do( $statement, @_ );
+    return $sth, $res if wantarray;
 
-    return $sth unless wantarray;
-
-    return $sth, $res;
+    return $sth;
 }
 
 sub do {
@@ -168,20 +169,22 @@ sub do {
         }
     };
 
-    return $sth->execute(@_) unless wantarray;
+    return $sth->execute(@_), $sth if wantarray;
 
-    return $sth->execute(@_), $sth;
+    return $sth->execute(@_);
 }
 
 BEGIN {
     *iterate = *it = sub {
         my $self      = shift;
         my $statement = shift;
-        my $sth       = do {
+
+        my $sth = do {
             if (@_) {
                 if ( ref $_[0] ) {
                     if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
                         my $statement_attrs = shift;
+
                         $self->prepare( $statement, $statement_attrs );
                     } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
                         $self->prepare($statement);
@@ -209,11 +212,13 @@ BEGIN {
     *results = *rs = sub {
         my $self      = shift;
         my $statement = shift;
-        my $sth       = do {
+
+        my $sth = do {
             if (@_) {
                 if ( ref $_[0] ) {
                     if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
                         my $statement_attrs = shift;
+
                         $self->prepare( $statement, $statement_attrs );
                     } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
                         $self->prepare($statement);

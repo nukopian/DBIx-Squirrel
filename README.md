@@ -4,7 +4,7 @@ DBIx::Squirrel - A module for working with databases
 
 # VERSION
 
-version 1.1.0
+version 1.1.1
 
 # SYNOPSIS
 
@@ -196,14 +196,63 @@ version 1.1.0
 
 # DESCRIPTION
 
-The `DBIx::Squirrel` package extends the `DBI` by offering the
-regular `DBI` user a few useful conveniences. Enhancements are
-subtle and progressive, and they do not detract too much from
-the normal `DBI` experience.
+The `DBIx::Squirrel` package extends the `DBI`, offering a
+few useful conveniences over and above what its ancestor already
+provides.
+
+The enhancements provided by `DBIx::Squirrel` are subtle, and
+they are additive in nature.
+
+### Importing the package
+
+Simply use the package as you would any other:
+
+    use DBIx::Squirrel [LIST-OF-IMPORTS];
+
+The optional list of imports may contain the names of special proxy
+functions that are imported into the caller's namespace.
+
+Proxy functions are simply syntactic sugar that you can associate with
+and use to address database, statement and/or iterator objects during
+runtime. 
+
+What you call these functions is entirely up to you.
+
+#### Proxy functions
+
+    use DBIx::Squirrel qw(db named_foo all_foo);
+
+    # Define the association between the "db" proxy function
+    # and our database connection...
+
+    db DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
+
+    # Use the "db" proxy function to associate the "named_foo"
+    # and "all_foo" proxy functions with prepared statements...
+
+    named_foo db->prepare("select * from foo where name=?");
+    all_foo   db->prepare("select * from foo");
+
+    # Use statement and iterator proxy functions (without passing
+    # arguments) just as you would normal scalar object references...
+
+    named_foo->execute("baz");
+    all_foo->execute;
+
+    # Statement and iterator proxy functions will call their
+    # object's "execute" method when arguments (bind values)
+    # are passed.
+    #
+    # A set of bind values may also be passed inside an anonymous
+    # list or hash, and this can be left empty to force execution
+    # of any statement that doesn't take parameters.
+
+    named_foo ["baz"];
+    all_foo   [];
 
 ### Database connection
 
-- Connecting to a database using `DBIx::Squirrel` works the same
+Connecting to a database using `DBIx::Squirrel` works the same
 way as it does when using the `DBI` `connect` and `connect_cached`
 methods. The `DBIx::Squirrel` `connect` method, however, can also
 accept a database handle in place of a datasource name. The database
