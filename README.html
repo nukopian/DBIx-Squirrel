@@ -19,6 +19,11 @@
     <ul>
       <li>
         <ul>
+          <li><a href="#Importing-the-package">Importing the package</a>
+            <ul>
+              <li><a href="#Proxy-functions">Proxy functions</a></li>
+            </ul>
+          </li>
           <li><a href="#Database-connection">Database connection</a></li>
           <li><a href="#Statement-preparation">Statement preparation</a></li>
           <li><a href="#Results-processing">Results processing</a></li>
@@ -36,7 +41,7 @@
 
 <h1 id="VERSION">VERSION</h1>
 
-<p>version 1.1.0</p>
+<p>version 1.1.1</p>
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
@@ -228,16 +233,57 @@ print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;results(
 
 <h1 id="DESCRIPTION">DESCRIPTION</h1>
 
-<p>The <code>DBIx::Squirrel</code> package extends the <code>DBI</code> by offering the regular <code>DBI</code> user a few useful conveniences. Enhancements are subtle and progressive, and they do not detract too much from the normal <code>DBI</code> experience.</p>
+<p>The <code>DBIx::Squirrel</code> package extends the <code>DBI</code>, offering a few useful conveniences over and above what its ancestor already provides.</p>
+
+<p>The enhancements provided by <code>DBIx::Squirrel</code> are subtle, and they are additive in nature.</p>
+
+<h3 id="Importing-the-package">Importing the package</h3>
+
+<p>Simply use the package as you would any other:</p>
+
+<pre><code>use DBIx::Squirrel [LIST-OF-IMPORTS];</code></pre>
+
+<p>The optional list of imports may contain the names of special proxy functions that are imported into the caller&#39;s namespace.</p>
+
+<p>Proxy functions are simply syntactic sugar that you can associate with and use to address database, statement and/or iterator objects during runtime.</p>
+
+<p>What you call these functions is entirely up to you.</p>
+
+<h4 id="Proxy-functions">Proxy functions</h4>
+
+<pre><code>use DBIx::Squirrel qw(db named_foo all_foo);
+
+# Define the association between the &quot;db&quot; proxy function
+# and our database connection...
+
+db DBIx::Squirrel-&gt;connect($dsn, $user, $pass, \%attr);
+
+# Use the &quot;db&quot; proxy function to associate the &quot;named_foo&quot;
+# and &quot;all_foo&quot; proxy functions with prepared statements...
+
+named_foo db-&gt;prepare(&quot;select * from foo where name=?&quot;);
+all_foo   db-&gt;prepare(&quot;select * from foo&quot;);
+
+# Use statement and iterator proxy functions (without passing
+# arguments) just as you would normal scalar object references...
+
+named_foo-&gt;execute(&quot;baz&quot;);
+all_foo-&gt;execute;
+
+# Statement and iterator proxy functions will call their
+# object&#39;s &quot;execute&quot; method when arguments (bind values)
+# are passed.
+#
+# A set of bind values may also be passed inside an anonymous
+# list or hash, and this can be left empty to force execution
+# of any statement that doesn&#39;t take parameters.
+
+named_foo [&quot;baz&quot;];
+all_foo   [];</code></pre>
 
 <h3 id="Database-connection">Database connection</h3>
 
-<ul>
-
-<li><p>Connecting to a database using <code>DBIx::Squirrel</code> works the same way as it does when using the <code>DBI</code> <code>connect</code> and <code>connect_cached</code> methods. The <code>DBIx::Squirrel</code> <code>connect</code> method, however, can also accept a database handle in place of a datasource name. The database handle can even be a reference to a <code>DBI</code> object. The original database connection will be cloned as as <code>DBIx::Squirrel</code> object.</p>
-
-</li>
-</ul>
+<p>Connecting to a database using <code>DBIx::Squirrel</code> works the same way as it does when using the <code>DBI</code> <code>connect</code> and <code>connect_cached</code> methods. The <code>DBIx::Squirrel</code> <code>connect</code> method, however, can also accept a database handle in place of a datasource name. The database handle can even be a reference to a <code>DBI</code> object. The original database connection will be cloned as as <code>DBIx::Squirrel</code> object.</p>
 
 <h3 id="Statement-preparation">Statement preparation</h3>
 

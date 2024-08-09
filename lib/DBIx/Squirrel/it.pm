@@ -53,9 +53,9 @@ BEGIN {
         };
 
         unless (@_) {
-            return $attr unless wantarray;
+            return $attr, $self if wantarray;
 
-            return $attr, $self;
+            return $attr;
         }
 
         unless ( defined $_[0] ) {

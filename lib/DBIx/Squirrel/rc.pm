@@ -35,7 +35,8 @@ sub get_column {
         if ( my $sth = $_[0]->rs->sth ) {
             my $idx = $sth->{NAME_lc_hash}{ lc $_[1] };
 
-            throw E_UNKNOWN_COLUMN, $_[1] unless defined $idx;
+            throw E_UNKNOWN_COLUMN, $_[1]
+              unless defined $idx;
 
             return $_[0]->[$idx];
         }
@@ -49,6 +50,7 @@ sub get_column {
 
         my ($idx) = do {
             local ($_);
+
             grep { $_[1] eq lc $_ } keys %{ $_[0] };
         };
 
@@ -58,9 +60,7 @@ sub get_column {
     }
 }
 
-sub new {
-    return bless( $_[1], ref $_[0] || $_[0] );
-}
+sub new { bless $_[1], ref $_[0] || $_[0]; }
 
 # AUTOLOAD is called whenever a row object attempts invoke an unknown
 # method. This implementation will try to create an accessor which is then
@@ -76,14 +76,16 @@ sub AUTOLOAD {
 
     ( my $name = $AUTOLOAD ) =~ s/.*:://;
     my $symbol = $_[0]->row_class . '::' . $name;
-    my $fn     = do {
+
+    my $fn = do {
         push @{ $_[0]->row_class . '::AUTOLOAD_ACCESSORS' }, $symbol;
 
         if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
             if ( my $sth = $_[0]->rs->sth ) {
                 my $idx = $sth->{NAME_lc_hash}{ lc $name };
 
-                throw E_UNKNOWN_COLUMN, $name unless defined $idx;
+                throw E_UNKNOWN_COLUMN, $name
+                  unless defined $idx;
 
                 sub { $_[0]->[$idx] };
             } else {
@@ -95,6 +97,7 @@ sub AUTOLOAD {
             } else {
                 my ($idx) = do {
                     local ($_);
+
                     grep { $name eq lc $_ } keys %{ $_[0] };
                 };
 

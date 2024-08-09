@@ -366,16 +366,61 @@ __END__
 
 =head1 DESCRIPTION
 
-The C<DBIx::Squirrel> package extends the C<DBI> by offering the
-regular C<DBI> user a few useful conveniences. Enhancements are
-subtle and progressive, and they do not detract too much from
-the normal C<DBI> experience.
+The C<DBIx::Squirrel> package extends the C<DBI>, offering a
+few useful conveniences over and above what its ancestor already
+provides.
+
+The enhancements provided by C<DBIx::Squirrel> are subtle, and
+they are additive in nature.
+
+=head3 Importing the package
+
+Simply use the package as you would any other:
+
+    use DBIx::Squirrel [LIST-OF-IMPORTS];
+
+The optional list of imports may contain the names of special proxy
+functions that are imported into the caller's namespace.
+
+Proxy functions are simply syntactic sugar that you can associate with
+and use to address database, statement and/or iterator objects during
+runtime. 
+
+What you call these functions is entirely up to you.
+
+=head4 Proxy functions
+
+    use DBIx::Squirrel qw(db named_foo all_foo);
+
+    # Define the association between the "db" proxy function
+    # and our database connection...
+
+    db DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
+
+    # Use the "db" proxy function to associate the "named_foo"
+    # and "all_foo" proxy functions with prepared statements...
+
+    named_foo db->prepare("select * from foo where name=?");
+    all_foo   db->prepare("select * from foo");
+
+    # Use statement and iterator proxy functions (without passing
+    # arguments) just as you would normal scalar object references...
+
+    named_foo->execute("baz");
+    all_foo->execute;
+
+    # Statement and iterator proxy functions will call their
+    # object's "execute" method when arguments (bind values)
+    # are passed.
+    #
+    # A set of bind values may also be passed inside an anonymous
+    # list or hash, and this can be left empty to force execution
+    # of any statement that doesn't take parameters.
+
+    named_foo ["baz"];
+    all_foo   [];
 
 =head3 Database connection
-
-=over
-
-=item *
 
 Connecting to a database using C<DBIx::Squirrel> works the same
 way as it does when using the C<DBI> C<connect> and C<connect_cached>
@@ -383,8 +428,6 @@ methods. The C<DBIx::Squirrel> C<connect> method, however, can also
 accept a database handle in place of a datasource name. The database
 handle can even be a reference to a C<DBI> object. The original database
 connection will be cloned as as C<DBIx::Squirrel> object.
-
-=back
 
 =head3 Statement preparation
 

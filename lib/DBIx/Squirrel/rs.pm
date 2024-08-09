@@ -30,9 +30,8 @@ sub _fetch_row {
     $attr->{'buffer'} = \@tail;
     $attr->{'row_count'} += 1;
 
-    if ( @{ $attr->{'callbacks'} } ) {
-        return $self->_transform( $self->_bless($head) );
-    }
+    return $self->_transform( $self->_bless($head) )
+      if @{ $attr->{'callbacks'} };
 
     return $self->_bless($head);
 }
@@ -44,7 +43,7 @@ sub _bless {
 
     my ( $row_class, $row ) = ( $self->row_class, @_ );
     my $result_class = $self->result_class;
-    my $results_fn = $row_class . '::results';
+    my $results_fn   = $row_class . '::results';
     my $rs_fn        = $row_class . '::rs';
 
     unless ( defined &{$rs_fn} ) {
@@ -65,7 +64,9 @@ sub _bless {
 sub _undef_autoloaded_accessors {
     my $self = shift;
 
-    undef &{$_} for @{ $self->row_class . '::AUTOLOAD_ACCESSORS' };
+    for my $accessor ( @{ $self->row_class . '::AUTOLOAD_ACCESSORS' } ) {
+        undef &{$accessor};
+    }
 
     return $self;
 }
