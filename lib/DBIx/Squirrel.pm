@@ -222,11 +222,13 @@ use DBIx::Squirrel::rc ();
 use DBIx::Squirrel::util 'throw';
 
 BEGIN {
-    *err    = *DBI::err;
-    *errstr = *DBI::errstr;
-    *rows   = *DBI::rows;
-    *lasth  = *DBI::lasth;
-    *state  = *DBI::state;
+    *EXPORT_OK   = *DBI::EXPORT_OK;
+    *EXPORT_TAGS = *DBI::EXPORT_TAGS;
+    *err         = *DBI::err;
+    *errstr      = *DBI::errstr;
+    *rows        = *DBI::rows;
+    *lasth       = *DBI::lasth;
+    *state       = *DBI::state;
 
     *connect         = *DBIx::Squirrel::dr::connect;
     *connect_cached  = *DBIx::Squirrel::dr::connect_cached;
@@ -269,7 +271,29 @@ sub import {
     my $class  = shift;
     my $caller = caller;
 
-    my @helper_names = @_;
+    my ( @helpers, @dbi_imports );
+    while (@_) {
+        if ( $_[0] =~ m/^database_objects?$/i ) {
+            shift;
+
+            if (@_) {
+                if ( defined $_[0] ) {
+                    if ( ref $_[0] ) {
+                        if ( reftype( $_[0] ) eq 'ARRAY' ) {
+                            push @helpers, @{ +shift };
+                        }
+                    } else {
+                        push @helpers, shift;
+                    }
+                }
+            }
+        } else {
+            push @dbi_imports, shift;
+        }
+    }
+
+    my %seen;
+    @helpers = grep { !$seen{$_}++ } @helpers;
 
     for my $name (@helper_names) {
         my $symbol = $class . '::' . $name;
@@ -339,6 +363,20 @@ sub import {
         }
     }
 
+    # If the caller tried to import any of DBI's exports then take care
+    # of that, otherwise just return our class name.
+
+    if (@dbi_imports) {
+
+        # First import them here.
+
+        DBI->import(@dbi_imports);
+
+        # Then export them to the caller!
+
+        @_ = ( 'DBIx::Squirrel', @dbi_imports );
+        goto &Exporter::import;
+    } else {
     return $class;
 }
 
