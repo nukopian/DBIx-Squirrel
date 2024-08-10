@@ -4,7 +4,7 @@ DBIx::Squirrel - A module for working with databases
 
 # VERSION
 
-version 1.1.1
+version 1.2.0
 
 # SYNOPSIS
 
@@ -18,11 +18,10 @@ version 1.1.1
     $itr = $sth->iterate('1001099');
     while ($row = $itr->next) {...}
 
-    # Or, use it and have it create and import helper functions that you
-    # can define at runtime use (and reuse) to interact with database
-    # connections, statements and iterators.
+    # Or, use it and have it create and import helper functions that
+    # you can use to interact with database objects.
 
-    use DBIx::Squirrel 'db', 'st', 'it';
+    use DBIx::Squirrel database_objects=>['db', 'st', 'it'];
 
     db DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
     st db->prepare('SELECT * FROM product WHERE id = ?');
@@ -197,8 +196,8 @@ version 1.1.1
 # DESCRIPTION
 
 The `DBIx::Squirrel` package extends the `DBI`, offering a
-few useful conveniences over and above what its ancestor already
-provides.
+few useful conveniences over and above what its venerable
+ancestor already provides.
 
 The enhancements provided by `DBIx::Squirrel` are subtle, and
 they are additive in nature.
@@ -207,48 +206,56 @@ they are additive in nature.
 
 Simply use the package as you would any other:
 
-    use DBIx::Squirrel [LIST-OF-IMPORTS];
+    use DBIx::Squirrel;
 
-The optional list of imports may contain the names of special proxy
-functions that are imported into the caller's namespace.
+Any symbols and tags imported from the DBI can still be requested
+via DBIx::Squirrel:
 
-Proxy functions are simply syntactic sugar that you can associate with
-and use to address database, statement and/or iterator objects during
-runtime. 
+    use DBIx::Squirrel DBI-IMPORTS;
 
-What you call these functions is entirely up to you.
+You can also have DBIx::Squirrel create and import database object helpers
+during your script's compile-phase:
 
-#### Proxy functions
+    use DBIx::Squirrel database_object=>NAME;
+    use DBIx::Squirrel database_objects=>[NAMES];
 
-    use DBIx::Squirrel qw(db named_foo all_foo);
+Helpers serve simply as syntactic sugar, providing standardised polymorphic
+functions that may be associated during runtime with connections, statements
+and/or iterators, and then used to address the underlying objects.
 
-    # Define the association between the "db" proxy function
-    # and our database connection...
+DBI imports and database object helpers can be included in the same `use`
+clause.
 
-    db DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
+- Example:
 
-    # Use the "db" proxy function to associate the "named_foo"
-    # and "all_foo" proxy functions with prepared statements...
+        use DBIx::Squirrel database_objects=>['db', 'artists', 'artist'];
 
-    named_foo db->prepare("select * from foo where name=?");
-    all_foo   db->prepare("select * from foo");
+        # Associate the "db" helper with a database connection
 
-    # Use statement and iterator proxy functions (without passing
-    # arguments) just as you would normal scalar object references...
+        db DBIx::Squirrel->connect(
+            'dbi:SQLite:dbname=chinook.db',
+                    '',
+                    '',
+                    {
+                      AutoCommit     => 0,
+                      PrintError     => 0,
+                      RaiseError     => 1,
+                      sqlite_unicode => 1,
+                    },
+        );
 
-    named_foo->execute("baz");
-    all_foo->execute;
+        # Using the "db" association, associate the "artists" and "artist"
+        # helpers with statements:
 
-    # Statement and iterator proxy functions will call their
-    # object's "execute" method when arguments (bind values)
-    # are passed.
-    #
-    # A set of bind values may also be passed inside an anonymous
-    # list or hash, and this can be left empty to force execution
-    # of any statement that doesn't take parameters.
+        artists db->prepare('SELECT * FROM artists');
+        artist  db->prepare('SELECT * FROM artists WHERE Name=?');
 
-    named_foo ["baz"];
-    all_foo   [];
+        # Have the statement helpers to execute their queries.
+
+        artists->execute
+          or die 'Oops!';
+        artist->execute('Eric Clapton')
+          or die 'Oops!';
 
 ### Database connection
 

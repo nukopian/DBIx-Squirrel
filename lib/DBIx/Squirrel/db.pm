@@ -206,7 +206,7 @@ BEGIN {
             }
         };
 
-        return $sth->it(@_);
+        return $sth->iterate(@_);
     };
 
     *results = *rs = sub {
@@ -240,7 +240,7 @@ BEGIN {
             }
         };
 
-        return $sth->rs(@_);
+        return $sth->results(@_);
     };
 }
 
