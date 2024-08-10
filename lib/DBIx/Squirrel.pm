@@ -1,14 +1,11 @@
-use strict 'vars', 'subs';  # Moved to stop Perl::Critic carping when Dist::Zilla adds
-                            # $VERSION information.
+use strict 'vars', 'subs';                                                                                                         # Moved to stop Perl::Critic carping when Dist::Zilla adds
+                                                                                                                                   # $VERSION information.
 
 package DBIx::Squirrel;
 
 use warnings;
 use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
 use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
-
-use Scalar::Util 'reftype';
-use Sub::Name;
 
 =pod
 
@@ -30,11 +27,10 @@ DBIx::Squirrel - A module for working with databases
     $itr = $sth->iterate('1001099');
     while ($row = $itr->next) {...}
 
-    # Or, use it and have it create and import helper functions that you
-    # can define at runtime use (and reuse) to interact with database
-    # connections, statements and iterators.
+    # Or, use it and have it create and import helper functions that
+    # you can use to interact with database objects.
 
-    use DBIx::Squirrel 'db', 'st', 'it';
+    use DBIx::Squirrel database_objects=>['db', 'st', 'it'];
 
     db DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
     st db->prepare('SELECT * FROM product WHERE id = ?');
@@ -208,7 +204,11 @@ DBIx::Squirrel - A module for working with databases
 
 =cut
 
-use DBI                ();
+use DBI;
+use Exporter;
+use Scalar::Util 'reftype';
+use Sub::Name;
+
 use DBIx::Squirrel::dr ();
 use DBIx::Squirrel::db ();
 use DBIx::Squirrel::st ();
@@ -218,11 +218,13 @@ use DBIx::Squirrel::rc ();
 use DBIx::Squirrel::util 'throw';
 
 BEGIN {
-    *err    = *DBI::err;
-    *errstr = *DBI::errstr;
-    *rows   = *DBI::rows;
-    *lasth  = *DBI::lasth;
-    *state  = *DBI::state;
+    *EXPORT_OK   = *DBI::EXPORT_OK;
+    *EXPORT_TAGS = *DBI::EXPORT_TAGS;
+    *err         = *DBI::err;
+    *errstr      = *DBI::errstr;
+    *rows        = *DBI::rows;
+    *lasth       = *DBI::lasth;
+    *state       = *DBI::state;
 
     *connect         = *DBIx::Squirrel::dr::connect;
     *connect_cached  = *DBIx::Squirrel::dr::connect_cached;
@@ -239,94 +241,90 @@ BEGIN {
     *NORMALIZE_SQL = *NORMALISE_SQL;
 }
 
-# By appending a list of one or more names to the caller's "use" directive,
-# can have the DBIx::Squirrel package define helper functions ("helpers")
-# during Perl's compile-phase. All listed helpers are exported to the
-# caller's namespace. Any helper that has already been defined will only
-# be exported; it will not be re-defined.
-#
-# A helper is a callable name that may be associated with a database
-# object (connection, statement, iterator) during runtime. A helper acts
-# as a shim, allowing the caller to get (or address) the underlying object
-# without Perl's traditional line-noise ("$", "->", "(...)").
-#
-# Absent any arguments, a call to a helper simply returns the reference
-# to the object itself. When called with arguments, a statement or
-# iterator helper will behave as if a call was made to the underlying
-# object's "execute" method. A database connection helper doesn't care
-# what is passed; a reference to the connection is all that is returned.
-#
-# Since some statements do not require arguments, execution is coerced
-# by passing a reference to an empty ARRAY or HASH. For the sake of
-# consistency, a reference to an ARRAY or HASH containing arguments
-# may also be passed.
-
 sub import {
     my $class  = shift;
     my $caller = caller;
 
-    my @helper_names = @_;
+    my ( @helpers, @dbi_imports );
+    while (@_) {
+        if ( $_[0] =~ m/^database_objects?$/i ) {
+            shift;
 
-    for my $name (@helper_names) {
+            if (@_) {
+                if ( defined $_[0] ) {
+                    if ( ref $_[0] ) {
+                        if ( reftype( $_[0] ) eq 'ARRAY' ) {
+                            push @helpers, @{ +shift };
+                        }
+                    } else {
+                        push @helpers, shift;
+                    }
+                }
+            }
+        } else {
+            push @dbi_imports, shift;
+        }
+    }
+
+    my %seen;
+    @helpers = grep { !$seen{$_}++ } @helpers;
+
+    for my $name (@helpers) {
         my $symbol = $class . '::' . $name;
 
-        # Define the symbol once only!
+        *{$symbol} = subname(
+            $symbol => sub {
+                if (@_) {
 
-        unless ( defined &{$symbol} ) {
-            *{$symbol} = subname(
-                $symbol => sub {
-                    if (@_) {
+                    # No reason NOT to have helpers act as proxies for
+                    # DBI connection and statement objects, too!
 
-                        # No reason NOT to have helpers act as proxies for
-                        # DBI connection and statement objects, too!
-
-                        if (   UNIVERSAL::isa( $_[0], 'DBI::db' )
-                            or UNIVERSAL::isa( $_[0], 'DBI::st' )
-                            or UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::it' ) )
-                        {
-                            ${$symbol} = shift;
-                            return ${$symbol};
-                        }
-
-                        throw E_BAD_ENT_BIND;
-                    }
-
-                    # Return nothing if no association is defined!
-
-                    return unless defined ${$symbol};
-
-                    # If we have arguments remaining and an object we can
-                    # meaningfully address, dispatch the "execute" method!
-
-                    if (@_
-                        and (  UNIVERSAL::isa( ${$symbol}, 'DBI::st' )
-                            or UNIVERSAL::isa( ${$symbol}, 'DBIx::Squirrel::it' ) )
-                      )
+                    if (   UNIVERSAL::isa( $_[0], 'DBI::db' )
+                        or UNIVERSAL::isa( $_[0], 'DBI::st' )
+                        or UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::it' ) )
                     {
-                        my @params = do {
-                            if ( @_ == 1 && ref $_[0] ) {
-                                if ( reftype( $_[0] ) eq 'ARRAY' ) {
-                                    @{ +shift };
-                                } elsif ( reftype( $_[0] ) eq 'HASH' ) {
-                                    %{ +shift };
-                                } else {
-                                    throw E_EXP_HASH_ARR_REF;
-                                }
-                            } else {
-                                @_;
-                            }
-                        };
-
-                        return ${$symbol}->execute(@params);
+                        ${$symbol} = shift;
+                        return ${$symbol};
                     }
 
-                    # For any other situation, return a reference to the
-                    # associated object!
-
-                    return ${$symbol};
+                    throw E_BAD_ENT_BIND;
                 }
-            );
-        }
+
+                # Return nothing if no association is defined!
+
+                return unless defined ${$symbol};
+
+                # If we have arguments remaining and an object we can
+                # meaningfully address, dispatch the "execute" method!
+
+                if (@_
+                    and (  UNIVERSAL::isa( ${$symbol}, 'DBI::st' )
+                        or UNIVERSAL::isa( ${$symbol}, 'DBIx::Squirrel::it' ) )
+                  )
+                {
+                    my @params = do {
+                        if ( @_ == 1 && ref $_[0] ) {
+                            if ( reftype( $_[0] ) eq 'ARRAY' ) {
+                                @{ +shift };
+                            } elsif ( reftype( $_[0] ) eq 'HASH' ) {
+                                %{ +shift };
+                            } else {
+                                throw E_EXP_HASH_ARR_REF;
+                            }
+                        } else {
+                            @_;
+                        }
+                    };
+
+                    return ${$symbol}->execute(@params);
+                }
+
+                # For any other situation, return a reference to the
+                # associated object!
+
+                return ${$symbol};
+            }
+        );
 
         # Export any relevant symbols to caller's namespace.
 
@@ -335,7 +333,22 @@ sub import {
         }
     }
 
-    return $class;
+    # If the caller tried to import any of DBI's exports then take care
+    # of that, otherwise just return our class name.
+
+    if (@dbi_imports) {
+
+        # First import them here.
+
+        DBI->import(@dbi_imports);
+
+        # Then export them to the caller!
+
+        @_ = ( 'DBIx::Squirrel', @dbi_imports );
+        goto &Exporter::import;
+    } else {
+        return $class;
+    }
 }
 
 # Provide a means for undefining and unexporting helpers.
@@ -344,13 +357,11 @@ sub unimport {
     my $class  = shift;
     my $caller = caller;
 
-    my @helper_names = @_;
-
-    for my $name (@helper_names) {
+    for my $name (@_) {
         my $symbol = $class . '::' . $name;
 
-        undef &{$symbol} if defined &{$symbol};
-        undef ${$symbol} if defined ${$symbol};
+        undef &{$symbol}                  if defined &{$symbol};
+        undef ${$symbol}                  if defined ${$symbol};
         undef &{ $caller . '::' . $name } if defined &{ $caller . '::' . $name };
     }
 
@@ -367,8 +378,8 @@ __END__
 =head1 DESCRIPTION
 
 The C<DBIx::Squirrel> package extends the C<DBI>, offering a
-few useful conveniences over and above what its ancestor already
-provides.
+few useful conveniences over and above what its venerable
+ancestor already provides.
 
 The enhancements provided by C<DBIx::Squirrel> are subtle, and
 they are additive in nature.
@@ -377,48 +388,62 @@ they are additive in nature.
 
 Simply use the package as you would any other:
 
-    use DBIx::Squirrel [LIST-OF-IMPORTS];
+    use DBIx::Squirrel;
 
-The optional list of imports may contain the names of special proxy
-functions that are imported into the caller's namespace.
+Any symbols and tags imported from the DBI can still be requested
+via DBIx::Squirrel:
 
-Proxy functions are simply syntactic sugar that you can associate with
-and use to address database, statement and/or iterator objects during
-runtime. 
+    use DBIx::Squirrel DBI-IMPORTS;
 
-What you call these functions is entirely up to you.
+You can also have DBIx::Squirrel create and import database object helpers
+during your script's compile-phase:
 
-=head4 Proxy functions
+    use DBIx::Squirrel database_object=>NAME;
+    use DBIx::Squirrel database_objects=>[NAMES];
 
-    use DBIx::Squirrel qw(db named_foo all_foo);
+Helpers serve simply as syntactic sugar, providing standardised polymorphic
+functions that may be associated during runtime with connections, statements
+and/or iterators, and then used to address the underlying objects.
 
-    # Define the association between the "db" proxy function
-    # and our database connection...
+DBI imports and database object helpers can be included in the same C<use>
+clause.
 
-    db DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
+=over
 
-    # Use the "db" proxy function to associate the "named_foo"
-    # and "all_foo" proxy functions with prepared statements...
+=item *
 
-    named_foo db->prepare("select * from foo where name=?");
-    all_foo   db->prepare("select * from foo");
+Example:
 
-    # Use statement and iterator proxy functions (without passing
-    # arguments) just as you would normal scalar object references...
+    use DBIx::Squirrel database_objects=>['db', 'artists', 'artist'];
 
-    named_foo->execute("baz");
-    all_foo->execute;
+    # Associate the "db" helper with a database connection
 
-    # Statement and iterator proxy functions will call their
-    # object's "execute" method when arguments (bind values)
-    # are passed.
-    #
-    # A set of bind values may also be passed inside an anonymous
-    # list or hash, and this can be left empty to force execution
-    # of any statement that doesn't take parameters.
+    db DBIx::Squirrel->connect(
+        'dbi:SQLite:dbname=chinook.db',
+		'',
+		'',
+		{
+		  AutoCommit     => 0,
+		  PrintError     => 0,
+		  RaiseError     => 1,
+		  sqlite_unicode => 1,
+		},
+    );
 
-    named_foo ["baz"];
-    all_foo   [];
+    # Using the "db" association, associate the "artists" and "artist"
+    # helpers with statements:
+
+    artists db->prepare('SELECT * FROM artists');
+    artist  db->prepare('SELECT * FROM artists WHERE Name=?');
+
+    # Have the statement helpers to execute their queries.
+
+    artists->execute
+      or die 'Oops!';
+    artist->execute('Eric Clapton')
+      or die 'Oops!';
+
+=back
 
 =head3 Database connection
 

@@ -18,7 +18,10 @@ use Cwd 'realpath';
 use Data::Dumper::Concise;
 use DBI;
 use DBIx::Squirrel::util (':all');
-use DBIx::Squirrel 'db', 'st', 'it', 'rs';
+use DBIx::Squirrel (
+    ':utils',
+    database_objects => [ 'db', 'st', 'it', 'rs' ],
+);
 
 use lib realpath("$FindBin::Bin/../lib");
 use T::Database ':all';
@@ -61,6 +64,9 @@ subtest 'connect' => sub {
     rs $ekorn_sth->rs;
     isa_ok( rs, 'DBIx::Squirrel::rs' );
     $ekorn_dbh->disconnect;
+
+    ok ( defined &neat );
+    is(neat('foo'), "'foo'");
 };
 
 subtest 'normalise_statement' => sub {
