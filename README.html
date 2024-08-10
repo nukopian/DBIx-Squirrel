@@ -17,14 +17,10 @@
   <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
   <li><a href="#DESCRIPTION">DESCRIPTION</a>
     <ul>
-      <li>
-        <ul>
-          <li><a href="#Importing-the-package">Importing the package</a></li>
-          <li><a href="#Database-connection">Database connection</a></li>
-          <li><a href="#Statement-preparation">Statement preparation</a></li>
-          <li><a href="#Results-processing">Results processing</a></li>
-        </ul>
-      </li>
+      <li><a href="#Importing-the-package">Importing the package</a></li>
+      <li><a href="#Database-connection">Database connection</a></li>
+      <li><a href="#Statement-preparation">Statement preparation</a></li>
+      <li><a href="#Results-processing">Results processing</a></li>
     </ul>
   </li>
   <li><a href="#COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</a></li>
@@ -232,7 +228,7 @@ print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;results(
 
 <p>The enhancements provided by <code>DBIx::Squirrel</code> are subtle, and they are additive in nature.</p>
 
-<h3 id="Importing-the-package">Importing the package</h3>
+<h2 id="Importing-the-package">Importing the package</h2>
 
 <p>Simply use the package as you would any other:</p>
 
@@ -287,11 +283,11 @@ artist-&gt;execute(&#39;Eric Clapton&#39;)
 </li>
 </ul>
 
-<h3 id="Database-connection">Database connection</h3>
+<h2 id="Database-connection">Database connection</h2>
 
 <p>Connecting to a database using <code>DBIx::Squirrel</code> works the same way as it does when using the <code>DBI</code> <code>connect</code> and <code>connect_cached</code> methods. The <code>DBIx::Squirrel</code> <code>connect</code> method, however, can also accept a database handle in place of a datasource name. The database handle can even be a reference to a <code>DBI</code> object. The original database connection will be cloned as as <code>DBIx::Squirrel</code> object.</p>
 
-<h3 id="Statement-preparation">Statement preparation</h3>
+<h2 id="Statement-preparation">Statement preparation</h2>
 
 <ul>
 
@@ -303,7 +299,7 @@ artist-&gt;execute(&#39;Eric Clapton&#39;)
 </li>
 </ul>
 
-<h3 id="Results-processing">Results processing</h3>
+<h2 id="Results-processing">Results processing</h2>
 
 <ul>
 

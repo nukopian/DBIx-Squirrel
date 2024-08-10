@@ -384,7 +384,7 @@ ancestor already provides.
 The enhancements provided by C<DBIx::Squirrel> are subtle, and
 they are additive in nature.
 
-=head3 Importing the package
+=head2 Importing the package
 
 Simply use the package as you would any other:
 
@@ -445,7 +445,7 @@ Example:
 
 =back
 
-=head3 Database connection
+=head2 Database connection
 
 Connecting to a database using C<DBIx::Squirrel> works the same
 way as it does when using the C<DBI> C<connect> and C<connect_cached>
@@ -454,7 +454,7 @@ accept a database handle in place of a datasource name. The database
 handle can even be a reference to a C<DBI> object. The original database
 connection will be cloned as as C<DBIx::Squirrel> object.
 
-=head3 Statement preparation
+=head2 Statement preparation
 
 =over
 
@@ -477,7 +477,7 @@ any of these style will work regardless of the driver in use.
 
 =back
 
-=head3 Results processing
+=head2 Results processing
 
 =over
 
