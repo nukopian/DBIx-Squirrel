@@ -208,7 +208,11 @@ DBIx::Squirrel - A module for working with databases
 
 =cut
 
-use DBI                ();
+use DBI;
+use Exporter;
+use Scalar::Util 'reftype';
+use Sub::Name;
+
 use DBIx::Squirrel::dr ();
 use DBIx::Squirrel::db ();
 use DBIx::Squirrel::st ();
