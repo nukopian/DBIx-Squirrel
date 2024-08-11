@@ -255,6 +255,12 @@ sub execute {
     return $_ = undef;
 }
 
+sub iterate {
+    my $self = shift;
+    return unless defined $self->execute(@_);
+    return $self;
+}
+
 sub count {
     return do { $_ = scalar @{ shift->all(@_) } };
 }
