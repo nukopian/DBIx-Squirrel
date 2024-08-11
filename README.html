@@ -41,7 +41,7 @@
 
 <h1 id="VERSION">VERSION</h1>
 
-<p>version 1.2.1</p>
+<p>version 1.2.2</p>
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
@@ -261,7 +261,7 @@ use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
 
 <li><p><b>Establishing an association</b></p>
 
-<p>Before it can be used, a helper must first be associated with a database entity. This accomplished by passing the function single argument: a reference to the associated object.</p>
+<p>Before it can be used, a helper must first be associated with a database entity. This is accomplished by passing the function single argument: a reference to the associated object.</p>
 
 <p>Once established, associations are <i>sticky</i> and cannot easily be undone. You should take care to create them once only, in a sensible place.</p>
 
@@ -277,9 +277,9 @@ use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
 </li>
 <li><p><b>Addressing an association</b></p>
 
-<p>Addressing an association amounts to doing something meaningful with it.</p>
+<p>Addressing an association amounts to doing something meaningful with it, and we accomplish this by calling the helper function with one or more arguments.</p>
 
-<p>We do this by calling the helper function with one or more arguments. Once associated with a database object, a helper function will any arguments that are passed to it and send a version of these to the database object method that imbues meaning to the interaction.</p>
+<p>Once associated with a database object, a helper function will any arguments that are passed to it and send a version of these to the database object method that imbues meaning to the interaction.</p>
 
 <p>Meaning in this context is determined by the type of association:</p>
 
@@ -293,9 +293,7 @@ use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
 </li>
 </ul>
 
-<p>Clearly there is a paradox here, and it centres around statements expect no bind-values.</p>
-
-<p>Optionally, you may enclose any arguments inside anonymous array or hash. In order to coerce the helper into performing the execution, you are allowed to pass an empty array reference (<code>[]</code>) or hash reference (<code>{}</code>), or resolve the association and call the relevant method manually.</p>
+<p><b>Clearly there is a paradox here</b>, which centres around those statements and iterators expecting <i>no bind-values</i>. In order to smooth-out this wrinkle, you can opt to enclose arguments inside an anonymous array or hash. When no bind-values are expected, you can coerce the helper into performing the execution by passing an empty array or hash reference. Alternatively, you could just resolve the association and call the relevant method manually.</p>
 
 </li>
 </ul>
@@ -304,7 +302,7 @@ use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
 
 <ol>
 
-<li><p>Let us do a full worked example. We will connect to a database, create and work with two result sets, one of which expects a single bind-value. Some concepts will be expanded upon later, but it might be helpful to dip a toe in the water ahead of time:</p>
+<li><p>Let us do a full worked example. We will connect to a database, create and work with two result sets, one of which expects a single bind-value. Some concepts will be expanded upon and improved later, but it might be helpful to dip a toe in the water ahead of time:</p>
 
 <pre><code>use DBIx::Squirrel database_objects =&gt; [ qw/db artists artist/ ];
 
@@ -331,7 +329,8 @@ artists( db-&gt;results(&#39;SELECT * FROM artists&#39;) );
 print artist(&#39;Aerosmith&#39;)-&gt;single-&gt;ArtistId, &quot;\n&quot;;
 
 # Iterate over the &quot;artists&quot; result set, printing the Name-column for
-# each artist:
+# each artist. We don&#39;t need to trigger execution manually because
+# the &quot;next&quot; method will do that for us, if it is necessary.
 
 while ( artists-&gt;next ) {
     print $_-&gt;Name, &quot;\n&quot;;
