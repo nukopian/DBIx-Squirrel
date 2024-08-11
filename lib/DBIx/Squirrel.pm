@@ -271,52 +271,65 @@ sub import {
 
     for my $name (@helpers) {
         my $symbol = $class . '::' . $name;
+        my $helper = sub {
 
-        *{$symbol} = subname(
-            $symbol => sub {
-                unless ( defined ${$symbol} ) {
-                    if (@_) {
-                        if (   UNIVERSAL::isa( $_[0], 'DBI::db' )
-                            or UNIVERSAL::isa( $_[0], 'DBI::st' )
-                            or UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::it' ) )
-                        {
-                            ${$symbol} = shift;
-                            return ${$symbol};
-                        }
+            # First time the helper receives a value then it is assumed to be
+            # the reference to the associated database object.
 
-                        throw E_BAD_ENT_BIND;
-                    }
-                }
-
-                return unless defined ${$symbol};
-
+            unless ( defined ${$symbol} ) {
                 if (@_) {
-                    my @params = do {
-                        if ( @_ == 1 && ref $_[0] ) {
-                            if ( reftype( $_[0] ) eq 'ARRAY' ) {
-                                @{ +shift };
-                            } elsif ( reftype( $_[0] ) eq 'HASH' ) {
-                                %{ +shift };
-                            } else {
-                                throw E_EXP_HASH_ARR_REF;
-                            }
-                        } else {
-                            @_;
-                        }
-                    };
-
-                    if ( UNIVERSAL::isa( ${$symbol}, 'DBI::db' ) ) {
-                        return ${$symbol}->prepare(@params);
-                    } elsif ( UNIVERSAL::isa( ${$symbol}, 'DBI::st' ) ) {
-                        return ${$symbol}->execute(@params);
-                    } elsif ( UNIVERSAL::isa( ${$symbol}, 'DBIx::Squirrel::it' ) ) {
-                        return ${$symbol}->iterate(@params);
+                    if (   UNIVERSAL::isa( $_[0], 'DBI::db' )
+                        or UNIVERSAL::isa( $_[0], 'DBI::st' )
+                        or UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::it' ) )
+                    {
+                        ${$symbol} = shift;
+                        return ${$symbol};
                     }
-                }
 
-                return ${$symbol};
+                    throw E_BAD_ENT_BIND;
+                }
             }
-        );
+
+            # At this point, return nothing if no association is defined.
+
+            return unless defined ${$symbol};
+
+
+            # At this point, we have an association. If we have arguments then
+            # we are addressing the associated database object, and they are
+            # passed to the object's relevant method for processing.
+
+            if (@_) {
+                my @params = do {
+                    if ( @_ == 1 && ref $_[0] ) {
+                        if ( reftype( $_[0] ) eq 'ARRAY' ) {
+                            @{ +shift };
+                        } elsif ( reftype( $_[0] ) eq 'HASH' ) {
+                            %{ +shift };
+                        } else {
+                            throw E_EXP_HASH_ARR_REF;
+                        }
+                    } else {
+                        @_;
+                    }
+                };
+
+                if ( UNIVERSAL::isa( ${$symbol}, 'DBI::db' ) ) {
+                    return ${$symbol}->prepare(@params);
+                } elsif ( UNIVERSAL::isa( ${$symbol}, 'DBI::st' ) ) {
+                    return ${$symbol}->execute(@params);
+                } elsif ( UNIVERSAL::isa( ${$symbol}, 'DBIx::Squirrel::it' ) ) {
+                    return ${$symbol}->iterate(@params);
+                }
+            }
+
+            # At this point, return the reference to the associated database
+            # object.
+
+            return ${$symbol};
+        };
+
+        *{$symbol} = subname( $name => $helper );
 
         # Export any relevant symbols to caller's namespace.
 
@@ -352,66 +365,138 @@ __END__
 
 =head1 DESCRIPTION
 
-The C<DBIx::Squirrel> package extends the C<DBI>, offering a
-few useful conveniences over and above what its venerable
-ancestor already provides.
-
-The enhancements provided by C<DBIx::Squirrel> are subtle, and
-they are additive in nature.
+The C<DBIx::Squirrel> package extends the C<DBI>, by providing a few extra
+conveniences that are subtle and additive in nature, and, hopefully, quite
+useful.
 
 =head2 Importing the package
 
-Simply use the package as you would any other:
+In the simplest case, just import the package as you would any other:
 
     use DBIx::Squirrel;
 
-Any symbols and tags imported from the DBI can still be requested
-via DBIx::Squirrel:
+Any symbols and tags that you would typically import from the C<DBI> can
+also be requested via C<DBIx::Squirrel>:
 
-    use DBIx::Squirrel DBI-IMPORTS;
+    use DBIx::Squirrel DBI-IMPORT-LIST;
 
-You can also have DBIx::Squirrel create and import database object helpers
-during your script's compile-phase:
+If required (and in addition to any C<DBI> imports), C<DBIx::Squirrel> can
+create and import Database Object Helper functions for you:
 
     use DBIx::Squirrel database_object=>NAME;
     use DBIx::Squirrel database_objects=>[NAMES];
 
-Helpers serve simply as syntactic sugar, providing standardised polymorphic
-functions that may be associated during runtime with connections, statements
-and/or iterators, and then used to address the underlying objects.
+=head3 Database Object Helper Functions
 
-DBI imports and database object helpers can be included in the same C<use>
-clause.
+A database object helper is nothing more than a standard function providing
+some syntactic sugar in the form of a polymorphic interface for interacting
+with database entities such as database connections, statements and
+iterators.
+
+While it is not absolutely necessary to use themE<mdash>you could just as
+easily use scalar referencesE<mdash>helper functions do possess the advantage
+of being shared more easily among package namespaces than, say, lexical
+variables.
+
+Helper semantics deal with three common types of interaction:
 
 =over
 
+=item * B<Establishing an association>
+
+Before it can be used, a helper must first be associated with a database
+entity. This accomplished by passing the function single argument: a
+reference to the associated object.
+
+Once established, associations are I<sticky> and cannot easily be undone.
+You should take care to create them once only, in a sensible place.
+
+Use Perl's standard importing mechanisms (as shown above) to share
+associations among different package namespaces.
+
+=item * B<Resolving an association>
+
+Fetching the reference to the associated database object is accomplished
+by calling the helper function without any arguments.
+
+When no association exists in this scenario, a helper returns C<undef>.
+
+=item * B<Addressing an association>
+
+Addressing an association amounts to doing something meaningful with it.
+
+We do this by calling the helper function with one or more arguments. Once
+associated with a database object, a helper function will any arguments
+that are passed to it and send a version of these to the database object
+method that imbues meaning to the interaction.
+
+Meaning in this context is determined by the type of association:
+
+=over
+
+=item * 
+
+for a database connection, a statement is prepared using the C<prepare> method;
+
 =item *
 
-Example 1:
+for statements and iterators, these are executed with the C<execute> and C<iterate>
+methods respectively.
 
-    use DBIx::Squirrel database_objects=>['db', 'artists', 'artist'];
+=back
 
-    # Associate the "db" helper with a database connection
+Clearly there is a paradox here, and it centres around statements expect no
+bind-values.
 
-    @connection_args = ( 'dbi:SQLite:dbname=chinook.db', '', '', {
-            AutoCommit     => 0,
-            PrintError     => 0,
-            RaiseError     => 1,
-            sqlite_unicode => 1,
-        },
-    );
+Optionally, you may enclose any arguments inside anonymous array or hash. In
+order to coerce the helper into performing the execution, you are allowed to
+pass an empty array reference (C<[]>) or hash reference (C<{}>), or resolve
+the association and call the relevant method manually.
 
-    db @connection_args;
+=back
 
-    # Associate the "artists" and "artist" helpers with their result sets,
-    # and then do something with the results:
+=head4 Examples
 
-    artists db->results('SELECT * FROM artists');
-    artist  db->results('SELECT * FROM artists WHERE Name=? LIMIT 1');
+=over
 
-    print $_->Name, "\n" while artists->next;
+=item 1.
+
+Let us do a full worked example. We will connect to a database, create and
+work with two result sets, one of which expects a single bind-value. Some
+concepts will be expanded upon later, but it might be helpful to dip a
+toe in the water ahead of time:
+
+    use DBIx::Squirrel database_objects => [ qw/db artists artist/ ];
+
+    # Associate helper ("db") with our database connection:
+
+    @connect_args = ( 'dbi:SQLite:dbname=chinook.db', '', '', { sqlite_unicode => 1 } );
+    db( DBIx::Squirrel->connect(@connection_args) );
+
+    # Resolve the database connection helper ("db"), using it to
+    # associate helpers ("artist" and "artists") with different
+    # result sets:
+
+    artist( db->results('SELECT * FROM artists WHERE Name=? LIMIT 1') );
+    artists( db->results('SELECT * FROM artists') );
+
+    # Address the helper ("artist"), passing it a bind-value, to get
+    # the ArtistId of the artist whose name is "Aerosmith".
+    #
+    # We could have called "next" to get the only matching record, but by
+    # calling "single" (or "first") we can ensure that there are no warnings
+    # about dangling active statements emitted when we disconnect from the
+    # database.
 
     print artist('Aerosmith')->single->ArtistId, "\n";
+
+    # Iterate over the "artists" result set, printing the Name-column for
+    # each artist:
+
+    while ( artists->next ) {
+        print $_->Name, "\n";
+    };
+
 
 =back
 
