@@ -522,8 +522,8 @@ it would be done using the C<DBI>'s C<prepare_cached> and C<prepare>
 methods.
 
 A nice quality-of-life improvement offered by C<DBIx::Squirrel>'s own
-implementation of the C<prepare_cached> and C<prepare> methods is
-its built-in support for a variety of placeholder styles:
+implementation of the C<prepare_cached> and C<prepare> methods is the
+built-in support for a variety of placeholder styles:
 
 =over
 

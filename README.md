@@ -333,8 +333,8 @@ it would be done using the `DBI`'s `prepare_cached` and `prepare`
 methods.
 
 A nice quality-of-life improvement offered by `DBIx::Squirrel`'s own
-implementation of the `prepare_cached` and `prepare` methods is
-its built-in support for a variety of placeholder styles:
+implementation of the `prepare_cached` and `prepare` methods is the
+built-in support for a variety of placeholder styles:
 
 - named (`:name`);
 - positional (`:number`, `$number`, `?number`);
