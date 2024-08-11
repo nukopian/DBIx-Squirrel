@@ -334,15 +334,15 @@ methods.
 
 One nice quality-of-life feature offered by `DBIx::Squirrel`'s own
 implementation of the `prepare_cached` and `prepare` methods is
-its support for a number of parameter placeholder styles:
+its built-in support for a variety of placeholder styles:
 
 - named (`:name`);
 - positional (`:number`, `$number`, `?number`);
 - legacy (`?`)
 
-Regardless of your `DBD` driver and the style you opt to use for a
-statement, everything will be normalised to the legacy placeholder
-(`?`) by the time your statement is executed.
+Regardless of your `DBD` driver or your preferred style, statements
+will be normalised to the legacy placeholder (`?`) by the time they
+are executed.
 
 Use your preferred style or the style that most helps your query to
 be reasoned by others.
