@@ -542,8 +542,6 @@ statement, everything will be normalised to the legacy placeholder
 Use your preferred style or the style that most helps your query to
 be reasoned by others.
 
-=back
-
 =head4 Examples
 
 =over

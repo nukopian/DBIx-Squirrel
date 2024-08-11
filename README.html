@@ -27,7 +27,7 @@
         </ul>
       </li>
       <li><a href="#Connecting-to-databases">Connecting to databases</a></li>
-      <li><a href="#Statement-preparation">Statement preparation</a>
+      <li><a href="#Preparing-statements">Preparing statements</a>
         <ul>
           <li>
             <ul>
@@ -357,11 +357,9 @@ while ( artists-&gt;next ) {
 
 <p>This form clones another connection object and returns a brand object that is blessed using the same class that invoked the <code>connect</code> method. Objects being cloned are allowed to be those created by the <code>DBI</code> or any of its subclasses, <code>DBIx::Squirrel</code> being one of those.</p>
 
-<h2 id="Statement-preparation">Statement preparation</h2>
+<h2 id="Preparing-statements">Preparing statements</h2>
 
-<ul>
-
-<li><p>Preparing a statement using <code>DBIx::Squirrel</code> may be done exactly as it would be done using the <code>DBI</code>&#39;s <code>prepare_cached</code> and <code>prepare</code> methods.</p>
+<p>Preparing a statement using <code>DBIx::Squirrel</code> may be done exactly as it would be done using the <code>DBI</code>&#39;s <code>prepare_cached</code> and <code>prepare</code> methods.</p>
 
 <p>One nice quality-of-life feature offered by <code>DBIx::Squirrel</code>&#39;s own implementation of the <code>prepare_cached</code> and <code>prepare</code> methods is its support for a number of parameter placeholder styles:</p>
 
@@ -381,9 +379,6 @@ while ( artists-&gt;next ) {
 <p>Regardless of your <code>DBD</code> driver and the style you opt to use for a statement, everything will be normalised to the legacy placeholder (<code>?</code>) by the time your statement is executed.</p>
 
 <p>Use your preferred style or the style that most helps your query to be reasoned by others.</p>
-
-</li>
-</ul>
 
 <h4 id="Examples1">Examples</h4>
 
