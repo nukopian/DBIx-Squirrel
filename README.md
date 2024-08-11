@@ -232,25 +232,23 @@ clause.
 
         # Associate the "db" helper with a database connection
 
-        db(
-            DBIx::Squirrel->connect('dbi:SQLite:dbname=chinook.db', '', '', {
-                        AutoCommit     => 0,
-                        PrintError     => 0,
-                        RaiseError     => 1,
-                        sqlite_unicode => 1,
-                    },
+        @connection_args = ( 'dbi:SQLite:dbname=chinook.db', '', '', {
+                AutoCommit     => 0,
+                PrintError     => 0,
+                RaiseError     => 1,
+                sqlite_unicode => 1,
+            },
         );
 
-        # Using the "db" association, associate the "artists" and "artist"
-        # helpers with their result sets:
+        db @connection_args;
 
-        artists(db->results('SELECT * FROM artists'));
-        artist(db->results('SELECT * FROM artists WHERE Name=? LIMIT 1'));
+        # Associate the "artists" and "artist" helpers with their result sets,
+        # and then do something with the results:
 
-        # Have the iterators helpers to execute their queries.
+        artists db->results('SELECT * FROM artists');
+        artist  db->results('SELECT * FROM artists WHERE Name=? LIMIT 1');
 
-        print $_->Name, "\n"
-          while artists->next;
+        print $_->Name, "\n" while artists->next;
 
         print artist('Aerosmith')->single->ArtistId, "\n";
 

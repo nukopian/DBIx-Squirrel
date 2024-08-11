@@ -255,25 +255,23 @@ use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
 
 # Associate the &quot;db&quot; helper with a database connection
 
-db(
-    DBIx::Squirrel-&gt;connect(&#39;dbi:SQLite:dbname=chinook.db&#39;, &#39;&#39;, &#39;&#39;, {
-                AutoCommit     =&gt; 0,
-                PrintError     =&gt; 0,
-                RaiseError     =&gt; 1,
-                sqlite_unicode =&gt; 1,
-            },
+@connection_args = ( &#39;dbi:SQLite:dbname=chinook.db&#39;, &#39;&#39;, &#39;&#39;, {
+        AutoCommit     =&gt; 0,
+        PrintError     =&gt; 0,
+        RaiseError     =&gt; 1,
+        sqlite_unicode =&gt; 1,
+    },
 );
 
-# Using the &quot;db&quot; association, associate the &quot;artists&quot; and &quot;artist&quot;
-# helpers with their result sets:
+db @connection_args;
 
-artists(db-&gt;results(&#39;SELECT * FROM artists&#39;));
-artist(db-&gt;results(&#39;SELECT * FROM artists WHERE Name=? LIMIT 1&#39;));
+# Associate the &quot;artists&quot; and &quot;artist&quot; helpers with their result sets,
+# and then do something with the results:
 
-# Have the iterators helpers to execute their queries.
+artists db-&gt;results(&#39;SELECT * FROM artists&#39;);
+artist  db-&gt;results(&#39;SELECT * FROM artists WHERE Name=? LIMIT 1&#39;);
 
-print $_-&gt;Name, &quot;\n&quot;
-  while artists-&gt;next;
+print $_-&gt;Name, &quot;\n&quot; while artists-&gt;next;
 
 print artist(&#39;Aerosmith&#39;)-&gt;single-&gt;ArtistId, &quot;\n&quot;;</code></pre>
 
