@@ -26,17 +26,22 @@
           </li>
         </ul>
       </li>
-      <li><a href="#Connecting-to-databases">Connecting to databases</a></li>
+      <li><a href="#Connecting-to-databases">Connecting to databases</a>
+        <ul>
+          <li><a href="#Cloning-database-connections">Cloning database connections</a></li>
+        </ul>
+      </li>
       <li><a href="#Preparing-statements">Preparing statements</a>
         <ul>
-          <li>
+          <li><a href="#Placeholders">Placeholders</a>
             <ul>
               <li><a href="#Examples1">Examples</a></li>
             </ul>
           </li>
         </ul>
       </li>
-      <li><a href="#Results-processing">Results processing</a></li>
+      <li><a href="#Iterators">Iterators</a></li>
+      <li><a href="#Processing-results">Processing results</a></li>
     </ul>
   </li>
   <li><a href="#COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</a></li>
@@ -351,7 +356,9 @@ while ( artists-&gt;next ) {
 
 <p>Connecting to a database using <code>DBIx::Squirrel</code> may be done exactly as it would when using the <code>DBI</code>&#39;s <code>connect_cached</code> and <code>connect</code> methods.</p>
 
-<p>The <code>connect</code> method implemented by the <code>DBIx::Squirrel</code> package does, however, offer an alternative form:</p>
+<h3 id="Cloning-database-connections">Cloning database connections</h3>
+
+<p>The <code>connect</code> method implemented by the <code>DBIx::Squirrel</code> package offers an alternative form:</p>
 
 <pre><code>$new_dbh = DBIx::Squirrel-&gt;connect($original_dbh, \%attr);</code></pre>
 
@@ -361,7 +368,9 @@ while ( artists-&gt;next ) {
 
 <p>Preparing a statement using <code>DBIx::Squirrel</code> may be done exactly as it would be done using the <code>DBI</code>&#39;s <code>prepare_cached</code> and <code>prepare</code> methods.</p>
 
-<p>A nice quality-of-life improvement offered by <code>DBIx::Squirrel</code>&#39;s own implementation of the <code>prepare_cached</code> and <code>prepare</code> methods is the built-in support for a variety of placeholder styles:</p>
+<h3 id="Placeholders">Placeholders</h3>
+
+<p>A nice quality-of-life improvement offered by <code>DBIx::Squirrel</code>&#39;s own implementation of the <code>prepare_cached</code> and <code>prepare</code> methods is the built-in support for different placeholder styles:</p>
 
 <ul>
 
@@ -378,7 +387,7 @@ while ( artists-&gt;next ) {
 
 <p>Regardless of your <code>DBD</code> driver, or your preferred style, statements will be normalised to the legacy placeholder (<code>?</code>) by the time they are executed.</p>
 
-<p>Use your preferred style or the style that most helps your query to be reasoned by others.</p>
+<p>Use your preferred style, or the style that most helps your query to be reasoned by others.</p>
 
 <h4 id="Examples1">Examples</h4>
 
@@ -433,20 +442,13 @@ $res = $sth-&gt;execute({ &#39;:Name&#39; =&gt; &#39;Aerosmith&#39; });</code></
 </li>
 </ul>
 
-<h2 id="Results-processing">Results processing</h2>
+<h2 id="Iterators">Iterators</h2>
 
-<ul>
+<p>(TO DO)</p>
 
-<li><p>A <code>DBIx::Squirrel</code> statement can produce two kinds of iterator, to provide for efficient processing of results. These are generated using statement&#39;s <code>iterate</code> and <code>results</code> methods in place of <code>execute</code>.</p>
+<h2 id="Processing-results">Processing results</h2>
 
-</li>
-<li><p>Iterators offer a declarative way to process results using callbacks chains to transform results before they are returned to the caller.</p>
-
-</li>
-<li><p>Some DBIx-Squirrel iterator methods named <code>all</code>, <code>find</code>, <code>first</code>, <code>next</code>, <code>single</code> may already be familiar to <code>DBIx::Class</code> users, and they do similar jobs.</p>
-
-</li>
-</ul>
+<p>(TO DO)</p>
 
 <h1 id="COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</h1>
 

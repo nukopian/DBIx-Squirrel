@@ -316,8 +316,10 @@ to dip a toe in the water ahead of time:
 Connecting to a database using `DBIx::Squirrel` may be done exactly as it
 would when using the `DBI`'s `connect_cached` and `connect` methods.
 
-The `connect` method implemented by the `DBIx::Squirrel` package does,
-however, offer an alternative form:
+### Cloning database connections
+
+The `connect` method implemented by the `DBIx::Squirrel` package offers
+an alternative form:
 
     $new_dbh = DBIx::Squirrel->connect($original_dbh, \%attr);
 
@@ -332,9 +334,11 @@ Preparing a statement using `DBIx::Squirrel` may be done exactly as
 it would be done using the `DBI`'s `prepare_cached` and `prepare`
 methods.
 
+### Placeholders
+
 A nice quality-of-life improvement offered by `DBIx::Squirrel`'s own
 implementation of the `prepare_cached` and `prepare` methods is the
-built-in support for a variety of placeholder styles:
+built-in support for different placeholder styles:
 
 - named (`:name`);
 - positional (`:number`, `$number`, `?number`);
@@ -344,7 +348,7 @@ Regardless of your `DBD` driver, or your preferred style, statements
 will be normalised to the legacy placeholder (`?`) by the time they
 are executed.
 
-Use your preferred style or the style that most helps your query to
+Use your preferred style, or the style that most helps your query to
 be reasoned by others.
 
 #### Examples
@@ -391,16 +395,13 @@ be reasoned by others.
         $res = $sth->execute( ':Name' => 'Aerosmith' );
         $res = $sth->execute({ ':Name' => 'Aerosmith' });
 
-## Results processing
+## Iterators
 
-- A `DBIx::Squirrel` statement can produce two kinds of iterator, to
-provide for efficient processing of results. These are generated using
-statement's `iterate` and `results` methods in place of `execute`.
-- Iterators offer a declarative way to process results using callbacks
-chains to transform results before they are returned to the caller.
-- Some DBIx-Squirrel iterator methods named `all`, `find`, `first`,
-`next`, `single` may already be familiar to `DBIx::Class`
-users, and they do similar jobs.
+(TO DO)
+
+## Processing results
+
+(TO DO)
 
 # COPYRIGHT AND LICENSE
 

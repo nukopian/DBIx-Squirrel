@@ -505,8 +505,10 @@ to dip a toe in the water ahead of time:
 Connecting to a database using C<DBIx::Squirrel> may be done exactly as it
 would when using the C<DBI>'s C<connect_cached> and C<connect> methods.
 
-The C<connect> method implemented by the C<DBIx::Squirrel> package does,
-however, offer an alternative form:
+=head3 Cloning database connections
+
+The C<connect> method implemented by the C<DBIx::Squirrel> package offers
+an alternative form:
 
     $new_dbh = DBIx::Squirrel->connect($original_dbh, \%attr);
 
@@ -521,9 +523,11 @@ Preparing a statement using C<DBIx::Squirrel> may be done exactly as
 it would be done using the C<DBI>'s C<prepare_cached> and C<prepare>
 methods.
 
+=head3 Placeholders
+
 A nice quality-of-life improvement offered by C<DBIx::Squirrel>'s own
 implementation of the C<prepare_cached> and C<prepare> methods is the
-built-in support for a variety of placeholder styles:
+built-in support for different placeholder styles:
 
 =over
 
@@ -539,7 +543,7 @@ Regardless of your C<DBD> driver, or your preferred style, statements
 will be normalised to the legacy placeholder (C<?>) by the time they
 are executed.
 
-Use your preferred style or the style that most helps your query to
+Use your preferred style, or the style that most helps your query to
 be reasoned by others.
 
 =head4 Examples
@@ -600,28 +604,13 @@ Oracle named placeholders (C<:number>):
 
 =back 
 
-=head2 Results processing
+=head2 Iterators
 
-=over
+(TO DO)
 
-=item *
+=head2 Processing results
 
-A C<DBIx::Squirrel> statement can produce two kinds of iterator, to
-provide for efficient processing of results. These are generated using
-statement's C<iterate> and C<results> methods in place of C<execute>.
-
-=item *
-
-Iterators offer a declarative way to process results using callbacks
-chains to transform results before they are returned to the caller.
-
-=item *
-
-Some DBIx-Squirrel iterator methods named C<all>, C<find>, C<first>,
-C<next>, C<single> may already be familiar to C<DBIx::Class>
-users, and they do similar jobs.
-
-=back
+(TO DO)
 
 =head1 COPYRIGHT AND LICENSE
 
