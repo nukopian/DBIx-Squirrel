@@ -33,7 +33,7 @@
 
 <h1 id="VERSION">VERSION</h1>
 
-<p>version 1.2.0</p>
+<p>version 1.2.1</p>
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
@@ -249,36 +249,33 @@ use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
 
 <ul>
 
-<li><p>Example:</p>
+<li><p>Example 1:</p>
 
 <pre><code>use DBIx::Squirrel database_objects=&gt;[&#39;db&#39;, &#39;artists&#39;, &#39;artist&#39;];
 
 # Associate the &quot;db&quot; helper with a database connection
 
-db DBIx::Squirrel-&gt;connect(
-    &#39;dbi:SQLite:dbname=chinook.db&#39;,
-            &#39;&#39;,
-            &#39;&#39;,
-            {
-              AutoCommit     =&gt; 0,
-              PrintError     =&gt; 0,
-              RaiseError     =&gt; 1,
-              sqlite_unicode =&gt; 1,
+db(
+    DBIx::Squirrel-&gt;connect(&#39;dbi:SQLite:dbname=chinook.db&#39;, &#39;&#39;, &#39;&#39;, {
+                AutoCommit     =&gt; 0,
+                PrintError     =&gt; 0,
+                RaiseError     =&gt; 1,
+                sqlite_unicode =&gt; 1,
             },
 );
 
 # Using the &quot;db&quot; association, associate the &quot;artists&quot; and &quot;artist&quot;
-# helpers with statements:
+# helpers with their result sets:
 
-artists db-&gt;prepare(&#39;SELECT * FROM artists&#39;);
-artist  db-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=?&#39;);
+artists(db-&gt;results(&#39;SELECT * FROM artists&#39;));
+artist(db-&gt;results(&#39;SELECT * FROM artists WHERE Name=? LIMIT 1&#39;));
 
-# Have the statement helpers to execute their queries.
+# Have the iterators helpers to execute their queries.
 
-artists-&gt;execute
-  or die &#39;Oops!&#39;;
-artist-&gt;execute(&#39;Eric Clapton&#39;)
-  or die &#39;Oops!&#39;;</code></pre>
+print $_-&gt;Name, &quot;\n&quot;
+  while artists-&gt;next;
+
+print artist(&#39;Aerosmith&#39;)-&gt;single-&gt;ArtistId, &quot;\n&quot;;</code></pre>
 
 </li>
 </ul>

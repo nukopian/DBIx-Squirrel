@@ -4,7 +4,7 @@ DBIx::Squirrel - A module for working with databases
 
 # VERSION
 
-version 1.2.0
+version 1.2.1
 
 # SYNOPSIS
 
@@ -226,36 +226,33 @@ and/or iterators, and then used to address the underlying objects.
 DBI imports and database object helpers can be included in the same `use`
 clause.
 
-- Example:
+- Example 1:
 
         use DBIx::Squirrel database_objects=>['db', 'artists', 'artist'];
 
         # Associate the "db" helper with a database connection
 
-        db DBIx::Squirrel->connect(
-            'dbi:SQLite:dbname=chinook.db',
-                    '',
-                    '',
-                    {
-                      AutoCommit     => 0,
-                      PrintError     => 0,
-                      RaiseError     => 1,
-                      sqlite_unicode => 1,
+        db(
+            DBIx::Squirrel->connect('dbi:SQLite:dbname=chinook.db', '', '', {
+                        AutoCommit     => 0,
+                        PrintError     => 0,
+                        RaiseError     => 1,
+                        sqlite_unicode => 1,
                     },
         );
 
         # Using the "db" association, associate the "artists" and "artist"
-        # helpers with statements:
+        # helpers with their result sets:
 
-        artists db->prepare('SELECT * FROM artists');
-        artist  db->prepare('SELECT * FROM artists WHERE Name=?');
+        artists(db->results('SELECT * FROM artists'));
+        artist(db->results('SELECT * FROM artists WHERE Name=? LIMIT 1'));
 
-        # Have the statement helpers to execute their queries.
+        # Have the iterators helpers to execute their queries.
 
-        artists->execute
-          or die 'Oops!';
-        artist->execute('Eric Clapton')
-          or die 'Oops!';
+        print $_->Name, "\n"
+          while artists->next;
+
+        print artist('Aerosmith')->single->ArtistId, "\n";
 
 ## Database connection
 
