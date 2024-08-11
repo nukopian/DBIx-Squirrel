@@ -311,14 +311,20 @@ to dip a toe in the water ahead of time:
             print $_->Name, "\n";
         };
 
-## Database connection
+## Connecting to databases
 
-Connecting to a database using `DBIx::Squirrel` works the same
-way as it does when using the `DBI` `connect` and `connect_cached`
-methods. The `DBIx::Squirrel` `connect` method, however, can also
-accept a database handle in place of a datasource name. The database
-handle can even be a reference to a `DBI` object. The original database
-connection will be cloned as as `DBIx::Squirrel` object.
+Connecting to a database using `DBIx::Squirrel` is done exactly as it would
+be done using the `DBI`, with the `connect_cached` and `connect` methods.
+
+The `connect` method implemented by the `DBIx::Squirrel` package does,
+however, offer an alternative form:
+
+    $new_dbh = DBIx::Squirrel->connect($original_dbh, \%attr);
+
+This form clones another connection object and returns a brand object that
+is blessed using the same class that invoked the `connect` method. Objects
+being cloned are allowed to be those created by the `DBI` or any of its
+subclasses, `DBIx::Squirrel` being one of those.
 
 ## Statement preparation
 

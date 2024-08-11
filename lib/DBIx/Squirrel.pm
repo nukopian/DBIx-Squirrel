@@ -500,14 +500,20 @@ to dip a toe in the water ahead of time:
 
 =back
 
-=head2 Database connection
+=head2 Connecting to databases
 
-Connecting to a database using C<DBIx::Squirrel> works the same
-way as it does when using the C<DBI> C<connect> and C<connect_cached>
-methods. The C<DBIx::Squirrel> C<connect> method, however, can also
-accept a database handle in place of a datasource name. The database
-handle can even be a reference to a C<DBI> object. The original database
-connection will be cloned as as C<DBIx::Squirrel> object.
+Connecting to a database using C<DBIx::Squirrel> is done exactly as it would
+be done using the C<DBI>, with the C<connect_cached> and C<connect> methods.
+
+The C<connect> method implemented by the C<DBIx::Squirrel> package does,
+however, offer an alternative form:
+
+    $new_dbh = DBIx::Squirrel->connect($original_dbh, \%attr);
+
+This form clones another connection object and returns a brand object that
+is blessed using the same class that invoked the C<connect> method. Objects
+being cloned are allowed to be those created by the C<DBI> or any of its
+subclasses, C<DBIx::Squirrel> being one of those.
 
 =head2 Statement preparation
 
