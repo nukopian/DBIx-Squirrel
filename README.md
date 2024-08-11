@@ -326,26 +326,26 @@ is blessed using the same class that invoked the `connect` method. Objects
 being cloned are allowed to be those created by the `DBI` or any of its
 subclasses, `DBIx::Squirrel` being one of those.
 
-## Statement preparation
+## Preparing statements
 
-- Preparing a statement using `DBIx::Squirrel` may be done exactly as
+Preparing a statement using `DBIx::Squirrel` may be done exactly as
 it would be done using the `DBI`'s `prepare_cached` and `prepare`
 methods.
 
-    One nice quality-of-life feature offered by `DBIx::Squirrel`'s own
-    implementation of the `prepare_cached` and `prepare` methods is
-    its support for a number of parameter placeholder styles:
+One nice quality-of-life feature offered by `DBIx::Squirrel`'s own
+implementation of the `prepare_cached` and `prepare` methods is
+its support for a number of parameter placeholder styles:
 
-    - named (`:name`);
-    - positional (`:number`, `$number`, `?number`);
-    - legacy (`?`)
+- named (`:name`);
+- positional (`:number`, `$number`, `?number`);
+- legacy (`?`)
 
-    Regardless of your `DBD` driver and the style you opt to use for a
-    statement, everything will be normalised to the legacy placeholder
-    (`?`) by the time your statement is executed.
+Regardless of your `DBD` driver and the style you opt to use for a
+statement, everything will be normalised to the legacy placeholder
+(`?`) by the time your statement is executed.
 
-    Use your preferred style or the style that most helps your query to
-    be reasoned by others.
+Use your preferred style or the style that most helps your query to
+be reasoned by others.
 
 #### Examples
 
