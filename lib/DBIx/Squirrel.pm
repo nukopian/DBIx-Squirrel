@@ -515,11 +515,7 @@ is blessed using the same class that invoked the C<connect> method. Objects
 being cloned are allowed to be those created by the C<DBI> or any of its
 subclasses, C<DBIx::Squirrel> being one of those.
 
-=head2 Statement preparation
-
-=over
-
-=item *
+=head2 Preparing statements
 
 Preparing a statement using C<DBIx::Squirrel> may be done exactly as
 it would be done using the C<DBI>'s C<prepare_cached> and C<prepare>
