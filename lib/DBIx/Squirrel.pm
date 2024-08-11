@@ -274,34 +274,23 @@ sub import {
 
         *{$symbol} = subname(
             $symbol => sub {
-                if (@_) {
+                unless ( defined ${$symbol} ) {
+                    if (@_) {
+                        if (   UNIVERSAL::isa( $_[0], 'DBI::db' )
+                            or UNIVERSAL::isa( $_[0], 'DBI::st' )
+                            or UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::it' ) )
+                        {
+                            ${$symbol} = shift;
+                            return ${$symbol};
+                        }
 
-                    # No reason NOT to have helpers act as proxies for
-                    # DBI connection and statement objects, too!
-
-                    if (   UNIVERSAL::isa( $_[0], 'DBI::db' )
-                        or UNIVERSAL::isa( $_[0], 'DBI::st' )
-                        or UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::it' ) )
-                    {
-                        ${$symbol} = shift;
-                        return ${$symbol};
+                        throw E_BAD_ENT_BIND;
                     }
-
-                    throw E_BAD_ENT_BIND;
                 }
-
-                # Return nothing if no association is defined!
 
                 return unless defined ${$symbol};
 
-                # If we have arguments remaining and an object we can
-                # meaningfully address, dispatch the "execute" method!
-
-                if (@_
-                    and (  UNIVERSAL::isa( ${$symbol}, 'DBI::st' )
-                        or UNIVERSAL::isa( ${$symbol}, 'DBIx::Squirrel::it' ) )
-                  )
-                {
+                if (@_) {
                     my @params = do {
                         if ( @_ == 1 && ref $_[0] ) {
                             if ( reftype( $_[0] ) eq 'ARRAY' ) {
@@ -316,11 +305,14 @@ sub import {
                         }
                     };
 
-                    return ${$symbol}->execute(@params);
+                    if ( UNIVERSAL::isa( ${$symbol}, 'DBI::db' ) ) {
+                        return ${$symbol}->prepare(@params);
+                    } elsif ( UNIVERSAL::isa( ${$symbol}, 'DBI::st' ) ) {
+                        return ${$symbol}->execute(@params);
+                    } elsif ( UNIVERSAL::isa( ${$symbol}, 'DBIx::Squirrel::it' ) ) {
+                        return ${$symbol}->iterate(@params);
+                    }
                 }
-
-                # For any other situation, return a reference to the
-                # associated object!
 
                 return ${$symbol};
             }
@@ -349,23 +341,6 @@ sub import {
     } else {
         return $class;
     }
-}
-
-# Provide a means for undefining and unexporting helpers.
-
-sub unimport {
-    my $class  = shift;
-    my $caller = caller;
-
-    for my $name (@_) {
-        my $symbol = $class . '::' . $name;
-
-        undef &{$symbol}                  if defined &{$symbol};
-        undef ${$symbol}                  if defined ${$symbol};
-        undef &{ $caller . '::' . $name } if defined &{ $caller . '::' . $name };
-    }
-
-    return $class;
 }
 
 1;
@@ -412,36 +387,33 @@ clause.
 
 =item *
 
-Example:
+Example 1:
 
     use DBIx::Squirrel database_objects=>['db', 'artists', 'artist'];
 
     # Associate the "db" helper with a database connection
 
-    db DBIx::Squirrel->connect(
-        'dbi:SQLite:dbname=chinook.db',
-		'',
-		'',
-		{
-		  AutoCommit     => 0,
-		  PrintError     => 0,
-		  RaiseError     => 1,
-		  sqlite_unicode => 1,
+    db(
+        DBIx::Squirrel->connect('dbi:SQLite:dbname=chinook.db', '', '', {
+		    AutoCommit     => 0,
+		    PrintError     => 0,
+		    RaiseError     => 1,
+		    sqlite_unicode => 1,
 		},
     );
 
     # Using the "db" association, associate the "artists" and "artist"
-    # helpers with statements:
+    # helpers with their result sets:
 
-    artists db->prepare('SELECT * FROM artists');
-    artist  db->prepare('SELECT * FROM artists WHERE Name=?');
+    artists(db->results('SELECT * FROM artists'));
+    artist(db->results('SELECT * FROM artists WHERE Name=? LIMIT 1'));
 
-    # Have the statement helpers to execute their queries.
+    # Have the iterators helpers to execute their queries.
 
-    artists->execute
-      or die 'Oops!';
-    artist->execute('Eric Clapton')
-      or die 'Oops!';
+    print $_->Name, "\n"
+      while artists->next;
+
+    print artist('Aerosmith')->single->ArtistId, "\n";
 
 =back
 

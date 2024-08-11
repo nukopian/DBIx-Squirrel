@@ -20,7 +20,7 @@ use DBI;
 use DBIx::Squirrel::util (':all');
 use DBIx::Squirrel (
     ':utils',
-    database_objects => [ 'db', 'st', 'it', 'rs' ],
+    database_objects => [ 'db', 'st', 'it', 'rs', 'artist', 'artists' ],
 );
 
 use lib realpath("$FindBin::Bin/../lib");
@@ -51,22 +51,49 @@ subtest 'connect' => sub {
     ok( !defined db );
     db $ekorn_dbh;
     isa_ok( db, 'DBIx::Squirrel::db' );
+    undef $DBIx::Squirrel::db;
 
     ok( !defined st );
     st $ekorn_sth;
     isa_ok( st, 'DBIx::Squirrel::st' );
+    undef $DBIx::Squirrel::st;
 
     ok( !defined it );
     it $ekorn_sth->it;
     isa_ok( it, 'DBIx::Squirrel::it' );
+    undef $DBIx::Squirrel::it;
 
     ok( !defined rs );
     rs $ekorn_sth->rs;
     isa_ok( rs, 'DBIx::Squirrel::rs' );
-    $ekorn_dbh->disconnect;
+    undef $DBIx::Squirrel::rs;
 
-    ok ( defined &neat );
-    is(neat('foo'), "'foo'");
+    ok( defined &neat );
+    is( neat('foo'), "'foo'" );
+
+    $ekorn_dbh->disconnect;
+};
+
+subtest 'example_1' => sub {
+    db(DBIx::Squirrel->connect(@T_DB_CONNECT_ARGS));
+    isa_ok( db, 'DBIx::Squirrel::db' );
+
+    # Using the "db" association, associate the "artists" and "artist"
+    # helpers with their prepared statements:
+
+    artists(db->results('SELECT * FROM artists'));
+    isa_ok( artists, 'DBIx::Squirrel::rs' );
+
+    artist(db->results('SELECT * FROM artists WHERE Name=? LIMIT 1'));
+    isa_ok( artist, 'DBIx::Squirrel::rs' );
+
+    # Have the statement helpers to execute their queries.
+
+    diag $_->Name while artists->next;
+
+    diag "\n", artist('Aerosmith')->single->ArtistId;
+
+    db->disconnect;
 };
 
 subtest 'normalise_statement' => sub {
