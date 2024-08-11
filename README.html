@@ -361,7 +361,7 @@ while ( artists-&gt;next ) {
 
 <p>Preparing a statement using <code>DBIx::Squirrel</code> may be done exactly as it would be done using the <code>DBI</code>&#39;s <code>prepare_cached</code> and <code>prepare</code> methods.</p>
 
-<p>One nice quality-of-life feature offered by <code>DBIx::Squirrel</code>&#39;s own implementation of the <code>prepare_cached</code> and <code>prepare</code> methods is its support for a number of parameter placeholder styles:</p>
+<p>One nice quality-of-life feature offered by <code>DBIx::Squirrel</code>&#39;s own implementation of the <code>prepare_cached</code> and <code>prepare</code> methods is its built-in support for a variety of placeholder styles:</p>
 
 <ul>
 
@@ -376,7 +376,7 @@ while ( artists-&gt;next ) {
 </li>
 </ul>
 
-<p>Regardless of your <code>DBD</code> driver and the style you opt to use for a statement, everything will be normalised to the legacy placeholder (<code>?</code>) by the time your statement is executed.</p>
+<p>Regardless of your <code>DBD</code> driver or your preferred style, statements will be normalised to the legacy placeholder (<code>?</code>) by the time they are executed.</p>
 
 <p>Use your preferred style or the style that most helps your query to be reasoned by others.</p>
 
