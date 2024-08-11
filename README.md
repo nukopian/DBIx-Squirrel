@@ -4,7 +4,7 @@ DBIx::Squirrel - A module for working with databases
 
 # VERSION
 
-version 1.2.1
+version 1.2.2
 
 # SYNOPSIS
 
@@ -233,7 +233,7 @@ Helper semantics deal with three common types of interaction:
 - **Establishing an association**
 
     Before it can be used, a helper must first be associated with a database
-    entity. This accomplished by passing the function single argument: a
+    entity. This is accomplished by passing the function single argument: a
     reference to the associated object.
 
     Once established, associations are _sticky_ and cannot easily be undone.
@@ -251,10 +251,11 @@ Helper semantics deal with three common types of interaction:
 
 - **Addressing an association**
 
-    Addressing an association amounts to doing something meaningful with it.
+    Addressing an association amounts to doing something meaningful with it,
+    and we accomplish this by calling the helper function with one or more
+    arguments.
 
-    We do this by calling the helper function with one or more arguments. Once
-    associated with a database object, a helper function will any arguments
+    Once associated with a database object, a helper function will any arguments
     that are passed to it and send a version of these to the database object
     method that imbues meaning to the interaction.
 
@@ -264,20 +265,19 @@ Helper semantics deal with three common types of interaction:
     - for statements and iterators, these are executed with the `execute` and `iterate`
     methods respectively.
 
-    Clearly there is a paradox here, and it centres around statements expect no
-    bind-values.
-
-    Optionally, you may enclose any arguments inside anonymous array or hash. In
-    order to coerce the helper into performing the execution, you are allowed to
-    pass an empty array reference (`[]`) or hash reference (`{}`), or resolve
-    the association and call the relevant method manually.
+    **Clearly there is a paradox here**, which centres around those statements
+    and iterators expecting _no bind-values_. In order to smooth-out this wrinkle,
+    you can opt to enclose arguments inside an anonymous array or hash. When no
+    bind-values are expected, you can coerce the helper into performing the
+    execution by passing an empty array or hash reference. Alternatively, you
+    could just resolve the association and call the relevant method manually.
 
 #### Examples
 
 1. Let us do a full worked example. We will connect to a database, create and
 work with two result sets, one of which expects a single bind-value. Some
-concepts will be expanded upon later, but it might be helpful to dip a
-toe in the water ahead of time:
+concepts will be expanded upon and improved later, but it might be helpful
+to dip a toe in the water ahead of time:
 
         use DBIx::Squirrel database_objects => [ qw/db artists artist/ ];
 
@@ -304,7 +304,8 @@ toe in the water ahead of time:
         print artist('Aerosmith')->single->ArtistId, "\n";
 
         # Iterate over the "artists" result set, printing the Name-column for
-        # each artist:
+        # each artist. We don't need to trigger execution manually because
+        # the "next" method will do that for us, if it is necessary.
 
         while ( artists->next ) {
             print $_->Name, "\n";
