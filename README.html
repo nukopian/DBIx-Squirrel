@@ -27,7 +27,15 @@
         </ul>
       </li>
       <li><a href="#Connecting-to-databases">Connecting to databases</a></li>
-      <li><a href="#Statement-preparation">Statement preparation</a></li>
+      <li><a href="#Statement-preparation">Statement preparation</a>
+        <ul>
+          <li>
+            <ul>
+              <li><a href="#Examples1">Examples</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
       <li><a href="#Results-processing">Results processing</a></li>
     </ul>
   </li>
@@ -300,7 +308,7 @@ use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
 
 <h4 id="Examples">Examples</h4>
 
-<ol>
+<ul>
 
 <li><p>Let us do a full worked example. We will connect to a database, create and work with two result sets, one of which expects a single bind-value. Some concepts will be expanded upon and improved later, but it might be helpful to dip a toe in the water ahead of time:</p>
 
@@ -337,11 +345,11 @@ while ( artists-&gt;next ) {
 };</code></pre>
 
 </li>
-</ol>
+</ul>
 
 <h2 id="Connecting-to-databases">Connecting to databases</h2>
 
-<p>Connecting to a database using <code>DBIx::Squirrel</code> is done exactly as it would be done using the <code>DBI</code>, with the <code>connect_cached</code> and <code>connect</code> methods.</p>
+<p>Connecting to a database using <code>DBIx::Squirrel</code> may be done exactly as it would when using the <code>DBI</code>&#39;s <code>connect_cached</code> and <code>connect</code> methods.</p>
 
 <p>The <code>connect</code> method implemented by the <code>DBIx::Squirrel</code> package does, however, offer an alternative form:</p>
 
@@ -353,10 +361,62 @@ while ( artists-&gt;next ) {
 
 <ul>
 
-<li><p>Both <code>prepare</code> and <code>prepare_cached</code> methods continue to work as as they do in the <code>DBI</code>, though they will also accept a statement handles in place of a statement strings. Again, this is useful when the intention is to prepare a <code>DBI</code> statement object and represent it as a <code>DBIx::Squirrel</code> statement object.</p>
+<li><p>Preparing a statement using <code>DBIx::Squirrel</code> may be done exactly as it would be done using the <code>DBI</code>&#39;s <code>prepare_cached</code> and <code>prepare</code> methods.</p>
+
+<p>One nice quality-of-life feature offered by <code>DBIx::Squirrel</code>&#39;s own implementation of the <code>prepare_cached</code> and <code>prepare</code> methods is its support for a number of parameter placeholder styles:</p>
+
+<ul>
+
+<li><p>named (<code>:name</code>);</p>
 
 </li>
-<li><p>Statements may be prepared using any one of a number of parameter placeholder styles, with support provided for named and a variety of positional styles. Styles supported are <code>:name</code>, <code>?1</code>, <code>$1</code>, <code>:1</code> and <code>?</code>. Whether you prefer to use a particular style, or you are converting queries to run on a different database engine, any of these style will work regardless of the driver in use.</p>
+<li><p>positional (<code>:number</code>, <code>$number</code>, <code>?number</code>);</p>
+
+</li>
+<li><p>legacy (<code>?</code>)</p>
+
+</li>
+</ul>
+
+<p>Regardless of your <code>DBD</code> driver and the style you opt to use for a statement, everything will be normalised to the legacy placeholder (<code>?</code>) by the time your statement is executed.</p>
+
+<p>Use your preferred style or the style that most helps your query to be reasoned by others.</p>
+
+</li>
+</ul>
+
+<h4 id="Examples1">Examples</h4>
+
+<ul>
+
+<li><p>Legacy placeholders (<code>?</code>):</p>
+
+<pre><code>$sth = $dbh-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=? LIMIT 1&#39;);
+$res = $sth-&gt;execute(&#39;Aerosmith&#39;);</code></pre>
+
+</li>
+<li><p>SQLite positional placeholders (<code>?number</code>):</p>
+
+<pre><code>$sth = $dbh-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=?1 LIMIT 1&#39;);
+$res = $sth-&gt;execute(&#39;Aerosmith&#39;);</code></pre>
+
+</li>
+<li><p>PostgreSQL positional placeholders (<code>$number</code>):</p>
+
+<pre><code>$sth = $dbh-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=$1 LIMIT 1&#39;);
+$res = $sth-&gt;execute(&#39;Aerosmith&#39;);</code></pre>
+
+</li>
+<li><p>Oracle positional placeholders (<code>:number</code>):</p>
+
+<pre><code>$sth = $dbh-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=:1 LIMIT 1&#39;);
+$res = $sth-&gt;execute(&#39;Aerosmith&#39;);</code></pre>
+
+</li>
+<li><p>Oracle named placeholders (<code>:number</code>):</p>
+
+<pre><code>$sth = $dbh-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=:Name LIMIT 1&#39;);
+$res = $sth-&gt;execute(Name =&gt; &#39;Aerosmith&#39;);</code></pre>
 
 </li>
 </ul>

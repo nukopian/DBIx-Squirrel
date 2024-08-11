@@ -274,7 +274,7 @@ Helper semantics deal with three common types of interaction:
 
 #### Examples
 
-1. Let us do a full worked example. We will connect to a database, create and
+- Let us do a full worked example. We will connect to a database, create and
 work with two result sets, one of which expects a single bind-value. Some
 concepts will be expanded upon and improved later, but it might be helpful
 to dip a toe in the water ahead of time:
@@ -313,8 +313,8 @@ to dip a toe in the water ahead of time:
 
 ## Connecting to databases
 
-Connecting to a database using `DBIx::Squirrel` is done exactly as it would
-be done using the `DBI`, with the `connect_cached` and `connect` methods.
+Connecting to a database using `DBIx::Squirrel` may be done exactly as it
+would when using the `DBI`'s `connect_cached` and `connect` methods.
 
 The `connect` method implemented by the `DBIx::Squirrel` package does,
 however, offer an alternative form:
@@ -328,17 +328,51 @@ subclasses, `DBIx::Squirrel` being one of those.
 
 ## Statement preparation
 
-- Both `prepare` and `prepare_cached` methods continue to work as
-as they do in the `DBI`, though they will also accept a statement
-handles in place of a statement strings. Again, this is useful when
-the intention is to prepare a `DBI` statement object and represent
-it as a `DBIx::Squirrel` statement object.
-- Statements may be prepared using any one of a number of parameter
-placeholder styles, with support provided for named and a variety
-of positional styles. Styles supported are `:name`, `?1`, `$1`,
-`:1` and `?`. Whether you prefer to use a particular style, or
-you are converting queries to run on a different database engine,
-any of these style will work regardless of the driver in use.
+- Preparing a statement using `DBIx::Squirrel` may be done exactly as
+it would be done using the `DBI`'s `prepare_cached` and `prepare`
+methods.
+
+    One nice quality-of-life feature offered by `DBIx::Squirrel`'s own
+    implementation of the `prepare_cached` and `prepare` methods is
+    its support for a number of parameter placeholder styles:
+
+    - named (`:name`);
+    - positional (`:number`, `$number`, `?number`);
+    - legacy (`?`)
+
+    Regardless of your `DBD` driver and the style you opt to use for a
+    statement, everything will be normalised to the legacy placeholder
+    (`?`) by the time your statement is executed.
+
+    Use your preferred style or the style that most helps your query to
+    be reasoned by others.
+
+#### Examples
+
+- Legacy placeholders (`?`):
+
+        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=? LIMIT 1');
+        $res = $sth->execute('Aerosmith');
+
+- SQLite positional placeholders (`?number`):
+
+        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=?1 LIMIT 1');
+        $res = $sth->execute('Aerosmith');
+
+- PostgreSQL positional placeholders (`$number`):
+
+        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=$1 LIMIT 1');
+        $res = $sth->execute('Aerosmith');
+
+- Oracle positional placeholders (`:number`):
+
+        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:1 LIMIT 1');
+        $res = $sth->execute('Aerosmith');
+
+- Oracle named placeholders (`:number`):
+
+        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:Name LIMIT 1');
+        $res = $sth->execute(Name => 'Aerosmith');
 
 ## Results processing
 

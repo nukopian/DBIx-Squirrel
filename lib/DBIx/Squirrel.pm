@@ -459,7 +459,7 @@ could just resolve the association and call the relevant method manually.
 
 =over
 
-=item 1.
+=item *
 
 Let us do a full worked example. We will connect to a database, create and
 work with two result sets, one of which expects a single bind-value. Some
@@ -502,8 +502,8 @@ to dip a toe in the water ahead of time:
 
 =head2 Connecting to databases
 
-Connecting to a database using C<DBIx::Squirrel> is done exactly as it would
-be done using the C<DBI>, with the C<connect_cached> and C<connect> methods.
+Connecting to a database using C<DBIx::Squirrel> may be done exactly as it
+would when using the C<DBI>'s C<connect_cached> and C<connect> methods.
 
 The C<connect> method implemented by the C<DBIx::Squirrel> package does,
 however, offer an alternative form:
@@ -521,22 +521,73 @@ subclasses, C<DBIx::Squirrel> being one of those.
 
 =item *
 
-Both C<prepare> and C<prepare_cached> methods continue to work as
-as they do in the C<DBI>, though they will also accept a statement
-handles in place of a statement strings. Again, this is useful when
-the intention is to prepare a C<DBI> statement object and represent
-it as a C<DBIx::Squirrel> statement object.
+Preparing a statement using C<DBIx::Squirrel> may be done exactly as
+it would be done using the C<DBI>'s C<prepare_cached> and C<prepare>
+methods.
+
+One nice quality-of-life feature offered by C<DBIx::Squirrel>'s own
+implementation of the C<prepare_cached> and C<prepare> methods is
+its support for a number of parameter placeholder styles:
+
+=over
+
+=item * named (C<:name>);
+
+=item * positional (C<:number>, C<$number>, C<?number>);
+
+=item * legacy (C<?>)
+
+=back
+
+Regardless of your C<DBD> driver and the style you opt to use for a
+statement, everything will be normalised to the legacy placeholder
+(C<?>) by the time your statement is executed.
+
+Use your preferred style or the style that most helps your query to
+be reasoned by others.
+
+=back
+
+=head4 Examples
+
+=over
 
 =item *
 
-Statements may be prepared using any one of a number of parameter
-placeholder styles, with support provided for named and a variety
-of positional styles. Styles supported are C<:name>, C<?1>, C<$1>,
-C<:1> and C<?>. Whether you prefer to use a particular style, or
-you are converting queries to run on a different database engine,
-any of these style will work regardless of the driver in use.
+Legacy placeholders (C<?>):
 
-=back
+    $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=? LIMIT 1');
+    $res = $sth->execute('Aerosmith');
+
+=item *
+
+SQLite positional placeholders (C<?number>):
+
+    $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=?1 LIMIT 1');
+    $res = $sth->execute('Aerosmith');
+
+=item *
+
+PostgreSQL positional placeholders (C<$number>):
+
+    $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=$1 LIMIT 1');
+    $res = $sth->execute('Aerosmith');
+
+=item *
+
+Oracle positional placeholders (C<:number>):
+
+    $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:1 LIMIT 1');
+    $res = $sth->execute('Aerosmith');
+
+=item *
+
+Oracle named placeholders (C<:number>):
+
+    $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:Name LIMIT 1');
+    $res = $sth->execute(Name => 'Aerosmith');
+
+=back 
 
 =head2 Results processing
 
