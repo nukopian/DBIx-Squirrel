@@ -149,6 +149,8 @@ sub _map_to_values {
     return wantarray ? @{$mappings} : $mappings;
 }
 
+#TODO This code has been subject to lots of edits and I'm pretty
+#     sure the STRICT_PARAM_CHECK needs checking and testing
 sub bind_param {
     my ( $attr, $self ) = shift->_attr;
 

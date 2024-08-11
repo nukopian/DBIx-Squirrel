@@ -49,7 +49,7 @@
 
 <h1 id="VERSION">VERSION</h1>
 
-<p>version 1.2.2</p>
+<p>version 1.2.3</p>
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
@@ -361,7 +361,7 @@ while ( artists-&gt;next ) {
 
 <p>Preparing a statement using <code>DBIx::Squirrel</code> may be done exactly as it would be done using the <code>DBI</code>&#39;s <code>prepare_cached</code> and <code>prepare</code> methods.</p>
 
-<p>One nice quality-of-life feature offered by <code>DBIx::Squirrel</code>&#39;s own implementation of the <code>prepare_cached</code> and <code>prepare</code> methods is its built-in support for a variety of placeholder styles:</p>
+<p>A nice quality-of-life improvement offered by <code>DBIx::Squirrel</code>&#39;s own implementation of the <code>prepare_cached</code> and <code>prepare</code> methods is its built-in support for a variety of placeholder styles:</p>
 
 <ul>
 
@@ -376,7 +376,7 @@ while ( artists-&gt;next ) {
 </li>
 </ul>
 
-<p>Regardless of your <code>DBD</code> driver or your preferred style, statements will be normalised to the legacy placeholder (<code>?</code>) by the time they are executed.</p>
+<p>Regardless of your <code>DBD</code> driver, or your preferred style, statements will be normalised to the legacy placeholder (<code>?</code>) by the time they are executed.</p>
 
 <p>Use your preferred style or the style that most helps your query to be reasoned by others.</p>
 
@@ -387,31 +387,48 @@ while ( artists-&gt;next ) {
 <li><p>Legacy placeholders (<code>?</code>):</p>
 
 <pre><code>$sth = $dbh-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=? LIMIT 1&#39;);
-$res = $sth-&gt;execute(&#39;Aerosmith&#39;);</code></pre>
+
+# Any of the following value-binding styles will work:
+$res = $sth-&gt;execute(&#39;Aerosmith&#39;);
+$res = $sth-&gt;execute([ &#39;Aerosmith&#39; ]);</code></pre>
 
 </li>
 <li><p>SQLite positional placeholders (<code>?number</code>):</p>
 
 <pre><code>$sth = $dbh-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=?1 LIMIT 1&#39;);
-$res = $sth-&gt;execute(&#39;Aerosmith&#39;);</code></pre>
+
+# Any of the following value-binding styles will work:
+$res = $sth-&gt;execute(&#39;Aerosmith&#39;);
+$res = $sth-&gt;execute([ &#39;Aerosmith&#39; ]);</code></pre>
 
 </li>
 <li><p>PostgreSQL positional placeholders (<code>$number</code>):</p>
 
 <pre><code>$sth = $dbh-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=$1 LIMIT 1&#39;);
-$res = $sth-&gt;execute(&#39;Aerosmith&#39;);</code></pre>
+
+# Any of the following value-binding styles will work:
+$res = $sth-&gt;execute(&#39;Aerosmith&#39;);
+$res = $sth-&gt;execute([ &#39;Aerosmith&#39; ]);</code></pre>
 
 </li>
 <li><p>Oracle positional placeholders (<code>:number</code>):</p>
 
 <pre><code>$sth = $dbh-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=:1 LIMIT 1&#39;);
-$res = $sth-&gt;execute(&#39;Aerosmith&#39;);</code></pre>
+
+# Any of the following value-binding styles will work:
+$res = $sth-&gt;execute(&#39;Aerosmith&#39;);
+$res = $sth-&gt;execute([ &#39;Aerosmith&#39; ]);</code></pre>
 
 </li>
 <li><p>Oracle named placeholders (<code>:number</code>):</p>
 
 <pre><code>$sth = $dbh-&gt;prepare(&#39;SELECT * FROM artists WHERE Name=:Name LIMIT 1&#39;);
-$res = $sth-&gt;execute(Name =&gt; &#39;Aerosmith&#39;);</code></pre>
+
+# Any of the following value-binding styles will work:
+$res = $sth-&gt;execute( Name =&gt; &#39;Aerosmith&#39; );
+$res = $sth-&gt;execute({ Name =&gt; &#39;Aerosmith&#39; });
+$res = $sth-&gt;execute( &#39;:Name&#39; =&gt; &#39;Aerosmith&#39; );
+$res = $sth-&gt;execute({ &#39;:Name&#39; =&gt; &#39;Aerosmith&#39; });</code></pre>
 
 </li>
 </ul>
