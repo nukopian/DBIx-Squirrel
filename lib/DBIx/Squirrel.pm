@@ -521,7 +521,7 @@ Preparing a statement using C<DBIx::Squirrel> may be done exactly as
 it would be done using the C<DBI>'s C<prepare_cached> and C<prepare>
 methods.
 
-One nice quality-of-life feature offered by C<DBIx::Squirrel>'s own
+A nice quality-of-life improvement offered by C<DBIx::Squirrel>'s own
 implementation of the C<prepare_cached> and C<prepare> methods is
 its built-in support for a variety of placeholder styles:
 
@@ -535,7 +535,7 @@ its built-in support for a variety of placeholder styles:
 
 =back
 
-Regardless of your C<DBD> driver or your preferred style, statements
+Regardless of your C<DBD> driver, or your preferred style, statements
 will be normalised to the legacy placeholder (C<?>) by the time they
 are executed.
 
@@ -551,35 +551,52 @@ be reasoned by others.
 Legacy placeholders (C<?>):
 
     $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=? LIMIT 1');
+
+    # Any of the following value-binding styles will work:
     $res = $sth->execute('Aerosmith');
+    $res = $sth->execute([ 'Aerosmith' ]);
 
 =item *
 
 SQLite positional placeholders (C<?number>):
 
     $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=?1 LIMIT 1');
+
+    # Any of the following value-binding styles will work:
     $res = $sth->execute('Aerosmith');
+    $res = $sth->execute([ 'Aerosmith' ]);
 
 =item *
 
 PostgreSQL positional placeholders (C<$number>):
 
     $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=$1 LIMIT 1');
+
+    # Any of the following value-binding styles will work:
     $res = $sth->execute('Aerosmith');
+    $res = $sth->execute([ 'Aerosmith' ]);
 
 =item *
 
 Oracle positional placeholders (C<:number>):
 
     $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:1 LIMIT 1');
+
+    # Any of the following value-binding styles will work:
     $res = $sth->execute('Aerosmith');
+    $res = $sth->execute([ 'Aerosmith' ]);
 
 =item *
 
 Oracle named placeholders (C<:number>):
 
     $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:Name LIMIT 1');
-    $res = $sth->execute(Name => 'Aerosmith');
+
+    # Any of the following value-binding styles will work:
+    $res = $sth->execute( Name => 'Aerosmith' );
+    $res = $sth->execute({ Name => 'Aerosmith' });
+    $res = $sth->execute( ':Name' => 'Aerosmith' );
+    $res = $sth->execute({ ':Name' => 'Aerosmith' });
 
 =back 
 

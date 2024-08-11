@@ -4,7 +4,7 @@ DBIx::Squirrel - A module for working with databases
 
 # VERSION
 
-version 1.2.2
+version 1.2.3
 
 # SYNOPSIS
 
@@ -332,7 +332,7 @@ Preparing a statement using `DBIx::Squirrel` may be done exactly as
 it would be done using the `DBI`'s `prepare_cached` and `prepare`
 methods.
 
-One nice quality-of-life feature offered by `DBIx::Squirrel`'s own
+A nice quality-of-life improvement offered by `DBIx::Squirrel`'s own
 implementation of the `prepare_cached` and `prepare` methods is
 its built-in support for a variety of placeholder styles:
 
@@ -340,7 +340,7 @@ its built-in support for a variety of placeholder styles:
 - positional (`:number`, `$number`, `?number`);
 - legacy (`?`)
 
-Regardless of your `DBD` driver or your preferred style, statements
+Regardless of your `DBD` driver, or your preferred style, statements
 will be normalised to the legacy placeholder (`?`) by the time they
 are executed.
 
@@ -352,27 +352,44 @@ be reasoned by others.
 - Legacy placeholders (`?`):
 
         $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=? LIMIT 1');
+
+        # Any of the following value-binding styles will work:
         $res = $sth->execute('Aerosmith');
+        $res = $sth->execute([ 'Aerosmith' ]);
 
 - SQLite positional placeholders (`?number`):
 
         $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=?1 LIMIT 1');
+
+        # Any of the following value-binding styles will work:
         $res = $sth->execute('Aerosmith');
+        $res = $sth->execute([ 'Aerosmith' ]);
 
 - PostgreSQL positional placeholders (`$number`):
 
         $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=$1 LIMIT 1');
+
+        # Any of the following value-binding styles will work:
         $res = $sth->execute('Aerosmith');
+        $res = $sth->execute([ 'Aerosmith' ]);
 
 - Oracle positional placeholders (`:number`):
 
         $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:1 LIMIT 1');
+
+        # Any of the following value-binding styles will work:
         $res = $sth->execute('Aerosmith');
+        $res = $sth->execute([ 'Aerosmith' ]);
 
 - Oracle named placeholders (`:number`):
 
         $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:Name LIMIT 1');
-        $res = $sth->execute(Name => 'Aerosmith');
+
+        # Any of the following value-binding styles will work:
+        $res = $sth->execute( Name => 'Aerosmith' );
+        $res = $sth->execute({ Name => 'Aerosmith' });
+        $res = $sth->execute( ':Name' => 'Aerosmith' );
+        $res = $sth->execute({ ':Name' => 'Aerosmith' });
 
 ## Results processing
 
