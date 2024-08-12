@@ -13,31 +13,34 @@ use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
 
 =head1 NAME
 
-DBIx::Squirrel - A module for working with databases
+DBIx::Squirrel - A C<DBI> extension
 
 =head1 SYNOPSIS
 
-    # Simply use the package.
+    # Use DBIx::Squirrel just like DBI...
 
     use DBIx::Squirrel;
 
     $dbh = DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
-    $sth = $dbh->prepare('SELECT * FROM product WHERE id = ?');
-    $res = $sth->execute('1001099');
-    $itr = $sth->iterate('1001099');
-    while ($row = $itr->next) {...}
+    $sth = $dbh->prepare('SELECT * FROM product WHERE Name=?');
 
-    # Or, use it and have it create and import helper functions that
-    # you can use to interact with database objects.
+    if ( $sth->execute('Acme Rocket') ) {
+        $row = $sth->fetchrow_hashref
+        say "$row->{'Name'}";
+        $sth->finish
+    }
 
-    use DBIx::Squirrel database_objects=>['db', 'st', 'it'];
+    # Or, take advantage of the convenient extras that DBIx::Squirrel
+    # offers...
 
-    db DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
-    st db->prepare('SELECT * FROM product WHERE id = ?');
-    $res = st->execute('1001099');
-    $res = st('1001099');  # Same as line above.
-    it st->iterate('1001099');
-    while ($row = it->next) {...}
+    use DBIx::Squirrel database_objects=>['db', 'product'];
+
+    db do { DBIx::Squirrel->connect($dsn, $user, $pass, \%attr) };
+    product do { db->results('SELECT * FROM product WHERE Name=:Name') };
+
+    if ( $row = product( Name => 'Acme Rocket' )->single ) {
+        say $row->Name;
+    }
 
     # Clone another database connection.
 
@@ -218,9 +221,9 @@ use DBIx::Squirrel::rc ();
 use DBIx::Squirrel::util 'throw';
 
 BEGIN {
-    our @ISA                   = ('DBI');
+    our @ISA                          = ('DBI');
     our $FINISH_ACTIVE_BEFORE_EXECUTE = 1;
-    our $NORMALISE_SQL         = 1;
+    our $NORMALISE_SQL                = 1;
 
     *NORMALIZE_SQL = *NORMALISE_SQL;
 
@@ -245,7 +248,11 @@ sub import {
     my $class  = shift;
     my $caller = caller;
 
+    # Partition import list into lists of helper function names and
+    # DBI imports.
+
     my ( @helpers, @dbi_imports );
+
     while (@_) {
         if ( $_[0] =~ m/^database_objects?$/i ) {
             shift;
@@ -268,6 +275,8 @@ sub import {
 
     my %seen;
     @helpers = grep { !$seen{$_}++ } @helpers;
+
+    # Create (if necessary) and export helpers.
 
     for my $name (@helpers) {
         my $symbol = $class . '::' . $name;
@@ -349,10 +358,13 @@ sub import {
         # Then export them to the caller!
 
         @_ = ( 'DBIx::Squirrel', @dbi_imports );
-        goto &Exporter::import;                                                                                                    # Don't want a new stack frame.
-    } else {
-        return $class;
+
+        # Jump-jump, sugar lump, we don't want a new stack frame!
+
+        goto &Exporter::import;
     }
+
+    return $class;
 }
 
 1;

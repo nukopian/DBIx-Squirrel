@@ -199,7 +199,8 @@ sub new {
     }
 
     return do {
-        $_ = $self->finish->_attr(
+        $self->finish;
+        $self->_attr(
             {   'id'        => 0+ $self,
                 'st'        => $sth->_attr( { 'Iterator' => $self } ),
                 'bindvals'  => [@bindvals],
@@ -208,6 +209,7 @@ sub new {
                 'maxrows'   => $self->maxrows->{'MaxRows'},
             }
         );
+        $_ = $self;
     };
 }
 
@@ -216,7 +218,10 @@ sub DESTROY {
 
     local ( $., $@, $!, $^E, $?, $_ );
 
-    shift->finish->_attr(undef);
+    my $self = shift;
+    
+    $self->finish;
+    $self->_attr(undef);
 
     return;
 }
@@ -233,7 +238,7 @@ sub execute {
 
     $attr->{'executed'} = 1;
 
-    if ( $sth->execute( @_ ? @_ : @{ $attr->{'bindvals'} } ) ) {
+    if ( defined $sth->execute( @_ ? @_ : @{ $attr->{'bindvals'} } ) ) {
         $attr->{'executed'}  = 1;
         $attr->{'row_count'} = 0;
 
@@ -252,13 +257,13 @@ sub execute {
 
     $attr->{'finished'} = 1;
 
-    return $_ = undef;
+    return do { $_ = undef };
 }
 
 sub iterate {
     my $self = shift;
     return unless defined $self->execute(@_);
-    return $self;
+    return do { $_ = $self };
 }
 
 sub count {
@@ -323,8 +328,8 @@ sub next {
 sub finish {
     my ( $attr, $self ) = shift->_attr;
 
-    if ( $attr->{'st'} && $attr->{'st'}{'Active'} ) {
-        $attr->{'st'}->finish;
+    if ( $attr->{'st'} ) {
+        $attr->{'st'}->finish if $attr->{'st'}{'Active'};
     }
 
     $attr->{'finished'}     = undef;
@@ -335,7 +340,7 @@ sub finish {
     $attr->{'buf_mul'}      = $BUF_MULT && $BUF_MULT < 11 ? $BUF_MULT : 0;
     $attr->{'buf_lim'}      = $BUF_MAXROWS || $attr->{'buf_inc'};
 
-    return $self;
+    return do { $_ = $self };
 }
 
 sub reset {
@@ -343,7 +348,7 @@ sub reset {
 
     $self->slice_maxrows(@_) if @_;
 
-    return $self->finish;
+    return do { $_ = $self->finish };
 }
 
 sub find {

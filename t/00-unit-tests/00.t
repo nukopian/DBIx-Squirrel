@@ -75,16 +75,25 @@ subtest 'connect' => sub {
 };
 
 subtest 'example_1' => sub {
-    db( DBIx::Squirrel->connect(@T_DB_CONNECT_ARGS) );
+    db do { DBIx::Squirrel->connect(@T_DB_CONNECT_ARGS) };
     isa_ok( db, 'DBIx::Squirrel::db' );
 
     # Using the "db" association, associate the "artists" and "artist"
     # helpers with their prepared statements:
 
-    artists( db('SELECT * FROM artists')->results );
+    artists do { db->results('SELECT * FROM artists') };
     isa_ok( artists, 'DBIx::Squirrel::rs' );
 
-    artist( db('SELECT * FROM artists WHERE Name=? LIMIT 1')->results );
+    artist do {
+        db->results(
+            'SELECT * FROM artists WHERE Name=? LIMIT 1' => sub {
+                my $row = $_;
+                print STDERR "# -- ", $row->ArtistId, ": ", $row->Name, " --\n";
+                return $row;
+            }
+        );
+    };
+
     isa_ok( artist, 'DBIx::Squirrel::rs' );
 
     # Have the statement helpers to execute their queries.
@@ -92,7 +101,8 @@ subtest 'example_1' => sub {
     @arr = artists->all;
     is( $arr[0]->Name,                         'AC/DC' );
     is( $arr[-1]->Name,                        'Philip Glass Ensemble' );
-    is( artist('Aerosmith')->next->ArtistId, 3 );
+    artist('Aerosmith')->single;
+    is( $_->ArtistId, 3 );
 
     db->disconnect;
 };
