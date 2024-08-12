@@ -218,13 +218,11 @@ use DBIx::Squirrel::rc ();
 use DBIx::Squirrel::util 'throw';
 
 BEGIN {
-    *EXPORT_OK   = *DBI::EXPORT_OK;
-    *EXPORT_TAGS = *DBI::EXPORT_TAGS;
-    *err         = *DBI::err;
-    *errstr      = *DBI::errstr;
-    *rows        = *DBI::rows;
-    *lasth       = *DBI::lasth;
-    *state       = *DBI::state;
+    our @ISA                   = ('DBI');
+    our $FINISH_ACTIVE_BEFORE_EXECUTE = 1;
+    our $NORMALISE_SQL         = 1;
+
+    *NORMALIZE_SQL = *NORMALISE_SQL;
 
     *connect         = *DBIx::Squirrel::dr::connect;
     *connect_cached  = *DBIx::Squirrel::dr::connect_cached;
@@ -234,11 +232,13 @@ BEGIN {
     *BUF_MULT        = *DBIx::Squirrel::it::BUF_MULT;
     *BUF_MAXROWS     = *DBIx::Squirrel::it::BUF_MAXROWS;
 
-    our @ISA                   = ('DBI');
-    our $STRICT_PARAM_CHECKING = 0;
-    our $AUTO_FINISH_ON_ACTIVE = 1;
-    our $NORMALISE_SQL         = 1;
-    *NORMALIZE_SQL = *NORMALISE_SQL;
+    *EXPORT_OK   = *DBI::EXPORT_OK;
+    *EXPORT_TAGS = *DBI::EXPORT_TAGS;
+    *err         = *DBI::err;
+    *errstr      = *DBI::errstr;
+    *rows        = *DBI::rows;
+    *lasth       = *DBI::lasth;
+    *state       = *DBI::state;
 }
 
 sub import {
@@ -293,7 +293,6 @@ sub import {
             # At this point, return nothing if no association is defined.
 
             return unless defined ${$symbol};
-
 
             # At this point, we have an association. If we have arguments then
             # we are addressing the associated database object, and they are
@@ -350,7 +349,7 @@ sub import {
         # Then export them to the caller!
 
         @_ = ( 'DBIx::Squirrel', @dbi_imports );
-        goto &Exporter::import;
+        goto &Exporter::import;                                                                                                    # Don't want a new stack frame.
     } else {
         return $class;
     }
@@ -435,7 +434,7 @@ Meaning in this context is determined by the type of association:
 
 =over
 
-=item * 
+=item *
 
 for a database connection, a statement is prepared using the C<prepare> method;
 
@@ -602,7 +601,7 @@ Oracle named placeholders (C<:number>):
     $res = $sth->execute( ':Name' => 'Aerosmith' );
     $res = $sth->execute({ ':Name' => 'Aerosmith' });
 
-=back 
+=back
 
 =head2 Iterators
 

@@ -5,7 +5,6 @@ package                                                                         
 
 use warnings;
 use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';
-use constant E_UNKNOWN_PLACEHOLDER => 'Cannot bind unknown placeholder (%s)';
 use constant W_CHECK_BIND_VALS     => 'Check bind values match placeholder scheme';
 
 BEGIN {
@@ -22,14 +21,10 @@ sub _attr {
 
     return unless ref $self;
 
-    unless ( defined $self->{'private_ekorn'} ) {
-        $self->{'private_ekorn'} = {};
-    }
+    $self->{'private_ekorn'} = {} unless defined $self->{'private_ekorn'};
 
     unless (@_) {
-        return $self->{'private_ekorn'}, $self if wantarray;
-
-        return $self->{'private_ekorn'};
+        return wantarray ? ( $self->{'private_ekorn'}, $self ) : $self->{'private_ekorn'};
     }
 
     unless ( defined $_[0] ) {
@@ -38,10 +33,6 @@ sub _attr {
     }
 
     if (@_) {
-        unless ( exists $self->{'private_ekorn'} ) {
-            $self->{'private_ekorn'} = {};
-        }
-
         if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
             $self->{'private_ekorn'} = { %{ $self->{'private_ekorn'} }, %{ $_[0] } };
         } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
@@ -56,18 +47,19 @@ sub _attr {
 
 sub prepare {
     my $self = shift;
-
     return $self->{'Database'}->prepare( $self->{'Statement'}, @_ );
 }
 
 sub execute {
     my $self = shift;
 
-    if ( $DBIx::Squirrel::AUTO_FINISH_ON_ACTIVE && $self->{'Active'} ) {
+    if ( $DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE && $self->{'Active'} ) {
         $self->finish;
     }
 
-    $self->bind(@_) if @_;
+    if (@_) {
+        $self->bind(@_);
+    }
 
     return $self->SUPER::execute;
 }
@@ -78,16 +70,15 @@ sub bind {
     if (@_) {
         my $placeholders = $attr->{'Placeholders'};
 
-        if ( $placeholders && not _all_placeholders_are_positional($placeholders) ) {
-            if ( my %kv = @{ _map_to_values( $placeholders, @_ ) } ) {
-                while ( my ( $key, $value ) = each %kv ) {
-                    if ( $key =~ m/^[\:\$\?]?(?<bind_id>\d+)$/ ) {
-                        unless ( $+{'bind_id'} > 0 ) {
-                            throw E_INVALID_PLACEHOLDER, $key;
-                        }
-                        $self->bind_param( $+{'bind_id'}, $value );
+        if ( $placeholders && !_placeholders_are_positional($placeholders) ) {
+            if ( my %kv = @{ _map_placeholders_to_values( $placeholders, @_ ) } ) {
+                while ( my ( $k, $v ) = each %kv ) {
+                    if ( $k =~ m/^[\:\$\?]?(?<bind_id>\d+)$/ ) {
+                        throw E_INVALID_PLACEHOLDER, $k unless $+{'bind_id'};
+
+                        $self->bind_param( $+{'bind_id'}, $v );
                     } else {
-                        $self->bind_param( $key, $value );
+                        $self->bind_param( $k, $v );
                     }
                 }
             }
@@ -107,25 +98,27 @@ sub bind {
     return $self;
 }
 
-sub _all_placeholders_are_positional {
+sub _placeholders_are_positional {
     my $placeholders = shift;
-
     return unless UNIVERSAL::isa( $placeholders, 'HASH' );
 
     my @placeholders     = values %{$placeholders};
     my $total_count      = @placeholders;
     my $positional_count = grep {m/^[\:\$\?]\d+$/} @placeholders;
 
-    return $placeholders if $positional_count == $total_count;
+    # Even though this routine is used as a predicate, the tests
+    # perform some deeper checks. So we return a "truthy" value
+    # to enable that deeper introspection.
 
-    return;
+    return unless $positional_count == $total_count;
+    return $placeholders;
 }
 
-sub _map_to_values {
+sub _map_placeholders_to_values {
     my $placeholders = shift;
 
     my $mappings = do {
-        if ( _all_placeholders_are_positional($placeholders) ) {
+        if ( _placeholders_are_positional($placeholders) ) {
             [ map { ( $placeholders->{$_} => $_[ $_ - 1 ] ) } keys %{$placeholders} ];
         } else {
             my @mappings = do {
@@ -149,40 +142,33 @@ sub _map_to_values {
     return wantarray ? @{$mappings} : $mappings;
 }
 
-#TODO This code has been subject to lots of edits and I'm pretty
-#     sure the STRICT_PARAM_CHECK needs checking and testing
 sub bind_param {
     my ( $attr, $self ) = shift->_attr;
 
-    my %bindings = do {
+    my $bindings = do {
         if ( my $placeholders = $attr->{'Placeholders'} ) {
             if ( $_[0] =~ m/^[\:\$\?]?(?<bind_id>\d+)$/ ) {
-                ( $+{'bind_id'} => $_[1] )
+                +{ $+{'bind_id'} => $_[1] };
             } else {
                 my $prefixed = $_[0] =~ m/^[\:\$\?]/ ? $_[0] : ":$_[0]";
 
-                map { ( $_ => $_[1] ) } grep { $placeholders->{$_} eq $prefixed } keys %{$placeholders};
+                +{  map  { ( $_ => $_[1] ) }
+                    grep { $placeholders->{$_} eq $prefixed } keys %{$placeholders}
+                };
             }
         } else {
-            ( $_[0] => $_[1] );
+            +{ $_[0] => $_[1] };
         }
     };
 
-    unless (%bindings) {
-        return unless $DBIx::Squirrel::STRICT_PARAM_CHECKING;
-
-        throw E_UNKNOWN_PLACEHOLDER, $_[0];
-    }
-
-    $self->SUPER::bind_param(%bindings);
-
-    return wantarray ? %bindings : \%bindings;
+    $self->SUPER::bind_param( %{$bindings} );
+    return wantarray ? %{$bindings} : $bindings;
 }
 
 BEGIN {
     *iterate  = *it   = sub { DBIx::Squirrel::it->new(@_) };
     *results  = *rs   = sub { DBIx::Squirrel::rs->new(@_) };
-    *iterator = *itor = sub { $_[0]->_attr->{'Iterator'} };
+    *iterator = *itor = sub { shift->_attr->{'Iterator'} };
 }
 
 1;
