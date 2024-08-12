@@ -1,6 +1,6 @@
 # NAME
 
-DBIx::Squirrel - A module for working with databases
+DBIx::Squirrel - A `DBI` extension
 
 # VERSION
 
@@ -8,27 +8,30 @@ version 1.2.3
 
 # SYNOPSIS
 
-    # Simply use the package.
+    # Use DBIx::Squirrel just like DBI...
 
     use DBIx::Squirrel;
 
     $dbh = DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
-    $sth = $dbh->prepare('SELECT * FROM product WHERE id = ?');
-    $res = $sth->execute('1001099');
-    $itr = $sth->iterate('1001099');
-    while ($row = $itr->next) {...}
+    $sth = $dbh->prepare('SELECT * FROM product WHERE Name=?');
 
-    # Or, use it and have it create and import helper functions that
-    # you can use to interact with database objects.
+    if ( $sth->execute('Acme Rocket') ) {
+        $row = $sth->fetchrow_hashref
+        say "$row->{'Name'}";
+        $sth->finish
+    }
 
-    use DBIx::Squirrel database_objects=>['db', 'st', 'it'];
+    # Or, take advantage of the convenient extras that DBIx::Squirrel
+    # offers...
 
-    db DBIx::Squirrel->connect($dsn, $user, $pass, \%attr);
-    st db->prepare('SELECT * FROM product WHERE id = ?');
-    $res = st->execute('1001099');
-    $res = st('1001099');  # Same as line above.
-    it st->iterate('1001099');
-    while ($row = it->next) {...}
+    use DBIx::Squirrel database_objects=>['db', 'product'];
+
+    db do { DBIx::Squirrel->connect($dsn, $user, $pass, \%attr) };
+    product do { db->results('SELECT * FROM product WHERE Name=:Name') };
+
+    if ( $row = product( Name => 'Acme Rocket' )->single ) {
+        say $row->Name;
+    }
 
     # Clone another database connection.
 

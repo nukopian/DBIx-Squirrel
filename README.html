@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>DBIx::Squirrel - A module for working with databases</title>
+<title></title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <link rev="made" href="mailto:icampbell@eeyore.local" />
 </head>
@@ -50,7 +50,7 @@
 
 <h1 id="NAME">NAME</h1>
 
-<p>DBIx::Squirrel - A module for working with databases</p>
+<p>DBIx::Squirrel - A <code>DBI</code> extension</p>
 
 <h1 id="VERSION">VERSION</h1>
 
@@ -58,27 +58,30 @@
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
-<pre><code># Simply use the package.
+<pre><code># Use DBIx::Squirrel just like DBI...
 
 use DBIx::Squirrel;
 
 $dbh = DBIx::Squirrel-&gt;connect($dsn, $user, $pass, \%attr);
-$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = ?&#39;);
-$res = $sth-&gt;execute(&#39;1001099&#39;);
-$itr = $sth-&gt;iterate(&#39;1001099&#39;);
-while ($row = $itr-&gt;next) {...}
+$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE Name=?&#39;);
 
-# Or, use it and have it create and import helper functions that
-# you can use to interact with database objects.
+if ( $sth-&gt;execute(&#39;Acme Rocket&#39;) ) {
+    $row = $sth-&gt;fetchrow_hashref
+    say &quot;$row-&gt;{&#39;Name&#39;}&quot;;
+    $sth-&gt;finish
+}
 
-use DBIx::Squirrel database_objects=&gt;[&#39;db&#39;, &#39;st&#39;, &#39;it&#39;];
+# Or, take advantage of the convenient extras that DBIx::Squirrel
+# offers...
 
-db DBIx::Squirrel-&gt;connect($dsn, $user, $pass, \%attr);
-st db-&gt;prepare(&#39;SELECT * FROM product WHERE id = ?&#39;);
-$res = st-&gt;execute(&#39;1001099&#39;);
-$res = st(&#39;1001099&#39;);  # Same as line above.
-it st-&gt;iterate(&#39;1001099&#39;);
-while ($row = it-&gt;next) {...}
+use DBIx::Squirrel database_objects=&gt;[&#39;db&#39;, &#39;product&#39;];
+
+db do { DBIx::Squirrel-&gt;connect($dsn, $user, $pass, \%attr) };
+product do { db-&gt;results(&#39;SELECT * FROM product WHERE Name=:Name&#39;) };
+
+if ( $row = product( Name =&gt; &#39;Acme Rocket&#39; )-&gt;single ) {
+    say $row-&gt;Name;
+}
 
 # Clone another database connection.
 
