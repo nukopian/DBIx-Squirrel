@@ -739,7 +739,7 @@ sub test_the_basics
             NormalisedStatement => "SELECT * FROM media_types WHERE Name = ?",
             Hash => DBIx::Squirrel::util::hash_sql_string("SELECT * FROM media_types WHERE Name = :name"),
         },
-        $sth->{'private_dbix_squirrel'},
+        $sth->{'private_ekorn'},
     );
     is_deeply $got, $exp, 'iterate'
       or dump_val { exp => $exp, got => $got };

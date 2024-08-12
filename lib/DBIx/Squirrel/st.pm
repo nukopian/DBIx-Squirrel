@@ -22,32 +22,32 @@ sub _attr {
 
     return unless ref $self;
 
-    unless ( defined $self->{'private_dbix_squirrel'} ) {
-        $self->{'private_dbix_squirrel'} = {};
+    unless ( defined $self->{'private_ekorn'} ) {
+        $self->{'private_ekorn'} = {};
     }
 
     unless (@_) {
-        return $self->{'private_dbix_squirrel'}, $self if wantarray;
+        return $self->{'private_ekorn'}, $self if wantarray;
 
-        return $self->{'private_dbix_squirrel'};
+        return $self->{'private_ekorn'};
     }
 
     unless ( defined $_[0] ) {
-        delete $self->{'private_dbix_squirrel'};
+        delete $self->{'private_ekorn'};
         shift;
     }
 
     if (@_) {
-        unless ( exists $self->{'private_dbix_squirrel'} ) {
-            $self->{'private_dbix_squirrel'} = {};
+        unless ( exists $self->{'private_ekorn'} ) {
+            $self->{'private_ekorn'} = {};
         }
 
         if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
-            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, %{ $_[0] } };
+            $self->{'private_ekorn'} = { %{ $self->{'private_ekorn'} }, %{ $_[0] } };
         } elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
-            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, @{ $_[0] } };
+            $self->{'private_ekorn'} = { %{ $self->{'private_ekorn'} }, @{ $_[0] } };
         } else {
-            $self->{'private_dbix_squirrel'} = { %{ $self->{'private_dbix_squirrel'} }, @_ };
+            $self->{'private_ekorn'} = { %{ $self->{'private_ekorn'} }, @_ };
         }
     }
 
