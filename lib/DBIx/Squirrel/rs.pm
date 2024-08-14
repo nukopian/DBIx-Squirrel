@@ -22,10 +22,8 @@ sub _fetch_row {
     my($attr, $self) = shift->_private_attributes;
     return
       if $self->_no_more_rows;
-    if ($self->_is_empty) {
-        return
-          unless $self->_fetch;
-    }
+    return
+      if $self->_is_empty and not $self->_fetch;
     my($head, @tail) = @{$attr->{'buffer'}};
     $attr->{'buffer'}     = \@tail;
     $attr->{'row_count'} += 1;
@@ -66,9 +64,9 @@ sub _undef_autoloaded_accessors {
 sub slice {
     my($attr, $self) = shift->_private_attributes;
     my $slice = shift;
-    my $old   = defined $attr->{'slice'} ? $attr->{'slice'} : '';
+    my $old   = defined($attr->{'slice'}) ? $attr->{'slice'} : '';
     $self->SUPER::slice($slice);
-    if (my $new = defined $attr->{'slice'} ? $attr->{'slice'} : '') {
+    if (my $new = defined($attr->{'slice'}) ? $attr->{'slice'} : '') {
         $self->_undef_autoloaded_accessors
           if ref($new) ne ref($old) && %{$self->row_class . '::'};
     }
