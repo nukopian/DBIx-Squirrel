@@ -217,32 +217,28 @@ use DBIx::Squirrel::util qw/throw uniq/;
 
 
 BEGIN {
-    @DBIx::Squirrel::ISA = 'DBI';
-
-    *NORMALIZE_SQL = *NORMALISE_SQL;
-
-    *connect         = *DBIx::Squirrel::dr::connect;
-    *connect_cached  = *DBIx::Squirrel::dr::connect_cached;
-    *SQL_ABSTRACT    = *DBIx::Squirrel::db::SQL_ABSTRACT;
-    *DEFAULT_SLICE   = *DBIx::Squirrel::it::DEFAULT_SLICE;
-    *DEFAULT_MAXROWS = *DBIx::Squirrel::it::DEFAULT_MAXROWS;
-    *BUF_MULT        = *DBIx::Squirrel::it::BUF_MULT;
-    *BUF_MAXROWS     = *DBIx::Squirrel::it::BUF_MAXROWS;
-
-    *EXPORT_OK   = *DBI::EXPORT_OK;
-    *EXPORT_TAGS = *DBI::EXPORT_TAGS;
-    *err         = *DBI::err;
-    *errstr      = *DBI::errstr;
-    *rows        = *DBI::rows;
-    *lasth       = *DBI::lasth;
-    *state       = *DBI::state;
+    @DBIx::Squirrel::ISA                          = 'DBI';
+    *DBIx::Squirrel::EXPORT_OK                    = *DBI::EXPORT_OK;
+    *DBIx::Squirrel::EXPORT_TAGS                  = *DBI::EXPORT_TAGS;
+    *DBIx::Squirrel::err                          = *DBI::err;
+    *DBIx::Squirrel::errstr                       = *DBI::errstr;
+    *DBIx::Squirrel::rows                         = *DBI::rows;
+    *DBIx::Squirrel::lasth                        = *DBI::lasth;
+    *DBIx::Squirrel::state                        = *DBI::state;
+    *DBIx::Squirrel::connect                      = *DBIx::Squirrel::dr::connect;
+    *DBIx::Squirrel::connect_cached               = *DBIx::Squirrel::dr::connect_cached;
+    *DBIx::Squirrel::SQL_ABSTRACT                 = *DBIx::Squirrel::db::SQL_ABSTRACT;
+    *DBIx::Squirrel::DEFAULT_SLICE                = *DBIx::Squirrel::it::DEFAULT_SLICE;
+    *DBIx::Squirrel::DEFAULT_MAXROWS              = *DBIx::Squirrel::it::DEFAULT_MAXROWS;
+    *DBIx::Squirrel::BUF_MULT                     = *DBIx::Squirrel::it::BUF_MULT;
+    *DBIx::Squirrel::BUF_MAXROWS                  = *DBIx::Squirrel::it::BUF_MAXROWS;
+    $DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE = 1;
+    $DBIx::Squirrel::NORMALISE_SQL                = 1;
+    *DBIx::Squirrel::NORMALIZE_SQL                = *DBIx::Squirrel::NORMALISE_SQL;
 }
 
 use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
 use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
-
-our $FINISH_ACTIVE_BEFORE_EXECUTE = 1;
-our $NORMALISE_SQL                = 1;
 
 
 sub _partition_imports_into_helpers_and_dbi_imports {
