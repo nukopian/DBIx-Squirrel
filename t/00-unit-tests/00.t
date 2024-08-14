@@ -39,7 +39,7 @@ subtest 'get_trimmed_sql_and_digest' => sub {
 };
 
 subtest 'connect' => sub {
-    no strict 'subs';
+    no strict 'subs';  ## no critic
 
     my $dbi_dbh = DBI->connect(@T_DB_CONNECT_ARGS);
     my $dbi_sth = $dbi_dbh->prepare("  SELECT * FROM media_types  ");
