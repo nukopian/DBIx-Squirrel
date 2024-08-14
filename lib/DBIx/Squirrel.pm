@@ -215,10 +215,9 @@ use DBIx::Squirrel::rs   ();
 use DBIx::Squirrel::rc   ();
 use DBIx::Squirrel::util qw/throw uniq/;
 
+
 BEGIN {
-    our @ISA                          = ('DBI');
-    our $FINISH_ACTIVE_BEFORE_EXECUTE = 1;
-    our $NORMALISE_SQL                = 1;
+    @DBIx::Squirrel::ISA = 'DBI';
 
     *NORMALIZE_SQL = *NORMALISE_SQL;
 
@@ -242,43 +241,50 @@ BEGIN {
 use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
 use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
 
+our $FINISH_ACTIVE_BEFORE_EXECUTE = 1;
+our $NORMALISE_SQL                = 1;
+
+
 sub _partition_imports_into_helpers_and_dbi_imports {
     my $class = shift;
-    my ( @helpers, @dbi );
+    my(@helpers, @dbi);
     while (@_) {
         my $symbol = shift;
         next unless defined($symbol);
-        if ( $symbol eq 'database_objects' ) {
+        if ($symbol eq 'database_objects') {
             my $symbols = shift;
-            if ( UNIVERSAL::isa( $symbols, 'ARRAY' ) ) {
+            if (UNIVERSAL::isa($symbols, 'ARRAY')) {
                 push @helpers, @{$symbols};
             }
-        } elsif ( $symbol eq 'database_object' ) {
+        }
+        elsif ($symbol eq 'database_object') {
             $symbol = shift;
-            if ( defined($symbol) and not ref($symbol) ) {
+            if (defined($symbol) and not ref($symbol)) {
                 push @helpers, $symbol;
             }
-        } else {
+        }
+        else {
             push @dbi, $symbol;
         }
     }
-    return ( \@helpers, \@dbi );
+    return (\@helpers, \@dbi);
 }
+
 
 sub import {
     no strict 'refs';    ## no critic
     my $class  = shift;
     my $caller = caller;
-    my ( $helpers, $dbi ) = $class->_partition_imports_into_helpers_and_dbi_imports(@_);
-    for my $name ( @{$helpers} ) {
+    my($helpers, $dbi) = $class->_partition_imports_into_helpers_and_dbi_imports(@_);
+    for my $name (@{$helpers}) {
         my $symbol = $class . '::' . $name;
         my $helper = sub {
-            unless ( defined ${$symbol} ) {
+            unless (defined ${$symbol}) {
                 if (@_) {
                     throw E_BAD_ENT_BIND
-                      unless UNIVERSAL::isa( $_[0], 'DBI::db' )
-                      or UNIVERSAL::isa( $_[0], 'DBI::st' )
-                      or UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::it' );
+                      unless UNIVERSAL::isa($_[0], 'DBI::db')
+                      or UNIVERSAL::isa($_[0], 'DBI::st')
+                      or UNIVERSAL::isa($_[0], 'DBIx::Squirrel::it');
                     ${$symbol} = shift;
                     return ${$symbol};
                 }
@@ -286,35 +292,43 @@ sub import {
             return unless defined ${$symbol};
             if (@_) {
                 my @params = do {
-                    if ( @_ == 1 && ref $_[0] ) {
-                        if ( reftype( $_[0] ) eq 'ARRAY' ) {
-                            @{ +shift };
-                        } elsif ( reftype( $_[0] ) eq 'HASH' ) {
-                            %{ +shift };
-                        } else {
+                    if (@_ == 1 && ref $_[0]) {
+                        if (reftype($_[0]) eq 'ARRAY') {
+                            @{+shift};
+                        }
+                        elsif (reftype($_[0]) eq 'HASH') {
+                            %{+shift};
+                        }
+                        else {
                             throw E_EXP_HASH_ARR_REF;
                         }
-                    } else {
+                    }
+                    else {
                         @_;
                     }
                 };
-                if ( UNIVERSAL::isa( ${$symbol}, 'DBI::db' ) ) {
+                if (UNIVERSAL::isa(${$symbol}, 'DBI::db')) {
                     return ${$symbol}->prepare(@params);
-                } elsif ( UNIVERSAL::isa( ${$symbol}, 'DBI::st' ) ) {
+                }
+                elsif (UNIVERSAL::isa(${$symbol}, 'DBI::st')) {
                     return ${$symbol}->execute(@params);
-                } elsif ( UNIVERSAL::isa( ${$symbol}, 'DBIx::Squirrel::it' ) ) {
+                }
+                elsif (UNIVERSAL::isa(${$symbol}, 'DBIx::Squirrel::it')) {
                     return ${$symbol}->iterate(@params);
+                }
+                else {
+                    # ok - no worries
                 }
             }
             return ${$symbol};
         };
-        *{$symbol} = subname( $name => $helper );
-        *{ $caller . '::' . $name } = subname( $caller . '::' . $name => \&{$symbol} )
-          unless defined &{ $caller . '::' . $name };
+        *{$symbol} = subname($name => $helper);
+        *{$caller . '::' . $name} = subname($caller . '::' . $name => \&{$symbol})
+          unless defined &{$caller . '::' . $name};
     }
-    if ( @{$dbi} ) {
-        DBI->import( @{$dbi} );
-        @_ = ( 'DBIx::Squirrel', @{$dbi} );
+    if (@{$dbi}) {
+        DBI->import(@{$dbi});
+        @_ = ('DBIx::Squirrel', @{$dbi});
         goto &Exporter::import;
     }
     return $class;

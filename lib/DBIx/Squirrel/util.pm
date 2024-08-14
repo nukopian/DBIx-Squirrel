@@ -9,6 +9,7 @@ use constant E_EXP_STH       => 'Expected a statement handle';
 use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
 use constant E_BAD_CB_LIST   => 'Expected a reference to a list of code-references, a code-reference, or undefined';
 
+
 BEGIN {
     require Exporter;
     our @ISA         = 'Exporter';
@@ -34,15 +35,15 @@ BEGIN {
             'study_statement',
             'trim_sql_string',
             'hash_sql_string',
-        ]
+        ],
     );
     our @EXPORT_OK = @{
         $EXPORT_TAGS{'all'} = [
             qw/uniq/,
             do {
                 my %seen;
-                grep { !$seen{$_}++ } map { @{ $EXPORT_TAGS{$_} } } qw/constants diagnostics sql transform/;
-            }
+                grep {!$seen{$_}++} map {@{$EXPORT_TAGS{$_}}} qw/constants diagnostics sql transform/;
+            },
         ]
     };
 }
@@ -54,13 +55,15 @@ use Memoize;
 use Scalar::Util ();
 use Sub::Name    ();
 
+
 sub throw {
     @_ = do {
         if (@_) {
-            my ( $f, @a ) = @_;
+            my($f, @a) = @_;
             if (@a) {
                 sprintf $f, @a;
-            } else {
+            }
+            else {
                 defined $f ? $f : 'Exception';
             }
         } ## end if ( @_ )
@@ -71,13 +74,15 @@ sub throw {
     goto &Carp::confess;
 }
 
+
 sub whine {
     @_ = do {
         if (@_) {
-            my ( $f, @a ) = @_;
+            my($f, @a) = @_;
             if (@a) {
                 sprintf $f, @a;
-            } else {
+            }
+            else {
                 defined $f ? $f : 'Warning';
             }
         } ## end if ( @_ )
@@ -90,12 +95,14 @@ sub whine {
 
 memoize('uniq');
 
+
 sub uniq {
     my %seen;
-    return grep { !$seen{$_}++ } @_;
+    return grep {!$seen{$_}++} @_;
 }
 
 memoize('is_viable_sql_string');
+
 
 sub is_viable_sql_string {
     return defined $_[0] && length $_[0] && $_[0] =~ m/\S/;
@@ -103,39 +110,45 @@ sub is_viable_sql_string {
 
 memoize('study_statement');
 
+
 sub study_statement {
-    my ( $normalised, $trimmed_sql, $digest ) = &normalise_statement;
+    my($normalised, $trimmed_sql, $digest) = &normalise_statement;
     return unless is_viable_sql_string($trimmed_sql);
     my @placeholders = $trimmed_sql =~ m{[\:\$\?]\w+\b}g;
     my $mapped_positions;
     if (@placeholders) {
         $mapped_positions = {
-            map { ( 1 + $_ => $placeholders[$_] ) } ( 0 .. $#placeholders ),
+            map {(1 + $_ => $placeholders[$_])} (0 .. $#placeholders),
         };
     }
     return $mapped_positions, $normalised, $trimmed_sql, $digest;
 }
 
+
 sub normalise_statement {
-    my ( $trimmed_sql, $digest ) = &get_trimmed_sql_and_digest;
+    my($trimmed_sql, $digest) = &get_trimmed_sql_and_digest;
     my $normalised = $trimmed_sql;
     $normalised =~ s{[\:\$\?]\w+\b}{?}g if $DBIx::Squirrel::NORMALISE_SQL;
     return $normalised unless wantarray;
     return $normalised, $trimmed_sql, $digest;
 }
 
+
 sub get_trimmed_sql_and_digest {
     my $sth_or_sql_string = shift;
     my $sql_string        = do {
-        if ( ref $sth_or_sql_string ) {
-            if ( UNIVERSAL::isa( $sth_or_sql_string, 'DBIx::Squirrel::st' ) ) {
-                trim_sql_string( $sth_or_sql_string->_attr->{'OriginalStatement'} );
-            } elsif ( UNIVERSAL::isa( $sth_or_sql_string, 'DBI::st' ) ) {
-                trim_sql_string( $sth_or_sql_string->{Statement} );
-            } else {
+        if (ref $sth_or_sql_string) {
+            if (UNIVERSAL::isa($sth_or_sql_string, 'DBIx::Squirrel::st')) {
+                trim_sql_string($sth_or_sql_string->_attr->{'OriginalStatement'});
+            }
+            elsif (UNIVERSAL::isa($sth_or_sql_string, 'DBI::st')) {
+                trim_sql_string($sth_or_sql_string->{Statement});
+            }
+            else {
                 throw E_EXP_STH;
             }
-        } else {
+        }
+        else {
             trim_sql_string($sth_or_sql_string);
         }
     };
@@ -145,6 +158,7 @@ sub get_trimmed_sql_and_digest {
 
 memoize('trim_sql_string');
 
+
 sub trim_sql_string {
     return do {
         if (&is_viable_sql_string) {
@@ -153,7 +167,8 @@ sub trim_sql_string {
             $sql =~ s{^[[:blank:]\r\n]+}{}gm;
             $sql =~ s{[[:blank:]\r\n]+$}{}gm;
             $sql;
-        } else {
+        }
+        else {
             '';
         }
     };
@@ -161,51 +176,61 @@ sub trim_sql_string {
 
 memoize('hash_sql_string');
 
+
 sub hash_sql_string {
     return do {
         if (&is_viable_sql_string) {
             &sha256_base64;
-        } else {
+        }
+        else {
             undef;
         }
     };
 }
 
+
 sub cbargs {
-    return cbargs_using( [], @_ );
+    return cbargs_using([], @_);
 }
 
+
 sub cbargs_using {
-    my ( $c, @t ) = do {
-        if ( defined $_[0] ) {
-            if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+    my($c, @t) = do {
+        if (defined $_[0]) {
+            if (UNIVERSAL::isa($_[0], 'ARRAY')) {
                 @_;
-            } elsif ( UNIVERSAL::isa( $_[0], 'CODE' ) ) {
+            }
+            elsif (UNIVERSAL::isa($_[0], 'CODE')) {
                 [shift], @_;
-            } else {
+            }
+            else {
                 throw E_BAD_CB_LIST;
             }
-        } else {
+        }
+        else {
             shift;
             [], @_;
         }
     };
-    unshift @{$c}, pop @t while UNIVERSAL::isa( $t[$#t], 'CODE' );
+    unshift @{$c}, pop @t while UNIVERSAL::isa($t[$#t], 'CODE');
     return $c, @t;
 }
 
+
 sub transform {
     my @transforms = do {
-        if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
-            @{ +shift };
-        } elsif ( UNIVERSAL::isa( $_[0], 'CODE' ) ) {
+        if (UNIVERSAL::isa($_[0], 'ARRAY')) {
+            @{+shift};
+        }
+        elsif (UNIVERSAL::isa($_[0], 'CODE')) {
             shift;
-        } else {
+        }
+        else {
             ();
         }
     };
-    if ( @transforms && @_ ) {
-        local ($_);
+    if (@transforms && @_) {
+        local($_);
         for my $transform (@transforms) {
             last unless @_ = do {
                 ($_) = @_;
