@@ -74,7 +74,7 @@ sub get_column {
 # method. We assume that the missing method is the name of a column, so
 # we try to create an accessor asscoiated with that column. There is some
 # initial overhead involved in the accessor's validation and creation.
-# 
+#
 # During accessor creation, AUTOLOAD will decide the best strategy for
 # geting the column data depending on the underlying row implementation,
 # which is determined by the slice type.
@@ -87,7 +87,7 @@ sub AUTOLOAD {
       if substr($AUTOLOAD, -7) eq 'DESTROY';
     my $name = $AUTOLOAD;
     $name =~ s/.*:://;
-    my $self   = $_[0];
+    my($self)  = @_;
     my $symbol = $self->row_class . '::' . $name;
     my $fn     = do {
         push @{$self->row_class . '::AUTOLOAD_ACCESSORS'}, $symbol;
@@ -100,18 +100,18 @@ sub AUTOLOAD {
             my $idx = $sth->{NAME_lc_hash}{lc($name)};
             throw E_UNKNOWN_COLUMN, $name
               unless defined($idx);
-            sub {shift->[$idx]};
+            sub {$_[0][$idx]};
         }
         elsif (UNIVERSAL::isa($self, 'HASH')) {
             if (exists($self->{$name})) {
-                sub {shift->{$name}};
+                sub {$_[0]{$name}};
             }
             else {
                 local($_);
                 my($idx) = grep {lc eq $name} keys(%{$self});
                 throw E_UNKNOWN_COLUMN, $name
                   unless defined($idx);
-                sub {shift->{$idx}};
+                sub {$_[0]{$idx}};
             }
         }
         else {
