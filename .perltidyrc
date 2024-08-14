@@ -53,3 +53,5 @@
 --no-indent-spaced-block-comments
 --ignore-side-comment-lengths
 --hanging-side-comments
+--valign-signed-numbers
+--valign-wide-equals

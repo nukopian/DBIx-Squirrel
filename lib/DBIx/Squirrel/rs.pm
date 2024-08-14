@@ -25,7 +25,7 @@ sub _fetch_row {
         return unless $self->_fetch;
     }
     my($head, @tail) = @{$attr->{'buffer'}};
-    $attr->{'buffer'} = \@tail;
+    $attr->{'buffer'}     = \@tail;
     $attr->{'row_count'} += 1;
     return $self->_transform($self->_bless($head))
       if @{$attr->{'callbacks'}};

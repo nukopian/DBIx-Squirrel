@@ -165,7 +165,7 @@ sub _fetch_row {
     return if $self->_no_more_rows;
     return if $self->_is_empty && !$self->_fetch;
     my($head, @tail) = @{$attr->{'buffer'}};
-    $attr->{'buffer'} = \@tail;
+    $attr->{'buffer'}     = \@tail;
     $attr->{'row_count'} += 1;
     return $self->_transform($head) if @{$attr->{'callbacks'}};
     return $head;
