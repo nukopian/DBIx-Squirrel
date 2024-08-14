@@ -1,6 +1,6 @@
 use strict;
 
-package                                                                                                                            # hide from PAUSE
+package    # hide from PAUSE
   DBIx::Squirrel::util;
 
 use warnings;
@@ -38,14 +38,10 @@ BEGIN {
     );
     our @EXPORT_OK = @{
         $EXPORT_TAGS{'all'} = [
+            qw/uniq/,
             do {
                 my %seen;
-                grep { !$seen{$_}++ } map { @{ $EXPORT_TAGS{$_} } } (
-                    'constants',
-                    'diagnostics',
-                    'sql',
-                    'transform',
-                );
+                grep { !$seen{$_}++ } map { @{ $EXPORT_TAGS{$_} } } qw/constants diagnostics sql transform/;
             }
         ]
     };
@@ -90,6 +86,13 @@ sub whine {
         }
     };
     goto &Carp::cluck;
+}
+
+memoize('uniq');
+
+sub uniq {
+    my %seen;
+    return grep { !$seen{$_}++ } @_;
 }
 
 memoize('is_viable_sql_string');
