@@ -35,6 +35,5 @@
 --trim-pod
 --indent-block-comments
 --no-indent-spaced-block-comments
---fixed-position-side-comment=132
 --ignore-side-comment-lengths
 --hanging-side-comments
