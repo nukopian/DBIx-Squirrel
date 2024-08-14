@@ -1,19 +1,13 @@
-use strict;
+use Modern::Perl;
 
 package    # hide from PAUSE
   DBIx::Squirrel::util;
 
-use warnings;
-use constant E_EXP_STATEMENT => 'Expected a statement';
-use constant E_EXP_STH       => 'Expected a statement handle';
-use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
-use constant E_BAD_CB_LIST   => 'Expected a reference to a list of code-references, a code-reference, or undefined';
-
 
 BEGIN {
     require Exporter;
-    our @ISA         = 'Exporter';
-    our %EXPORT_TAGS = (
+    @DBIx::Squirrel::util::ISA         = 'Exporter';
+    %DBIx::Squirrel::util::EXPORT_TAGS = (
         'constants' => [
             'E_EXP_STATEMENT',
             'E_EXP_STH',
@@ -37,12 +31,15 @@ BEGIN {
             'hash_sql_string',
         ],
     );
-    our @EXPORT_OK = @{
-        $EXPORT_TAGS{'all'} = [
+    @DBIx::Squirrel::util::EXPORT_OK = @{
+        $DBIx::Squirrel::util::EXPORT_TAGS{'all'} = [
             qw/uniq/,
             do {
                 my %seen;
-                grep {!$seen{$_}++} map {@{$EXPORT_TAGS{$_}}} qw/constants diagnostics sql transform/;
+                grep {!$seen{$_}++}
+                  map {@{$DBIx::Squirrel::util::EXPORT_TAGS{$_}}} (
+                    qw/constants diagnostics sql transform/,
+                  );
             },
         ]
     };
@@ -54,6 +51,11 @@ use Digest::SHA 'sha256_base64';
 use Memoize;
 use Scalar::Util ();
 use Sub::Name    ();
+
+use constant E_EXP_STATEMENT => 'Expected a statement';
+use constant E_EXP_STH       => 'Expected a statement handle';
+use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
+use constant E_BAD_CB_LIST   => 'Expected a reference to a list of code-references, a code-reference, or undefined';
 
 
 sub throw {
@@ -139,7 +141,7 @@ sub get_trimmed_sql_and_digest {
     my $sql_string        = do {
         if (ref $sth_or_sql_string) {
             if (UNIVERSAL::isa($sth_or_sql_string, 'DBIx::Squirrel::st')) {
-                trim_sql_string($sth_or_sql_string->_attr->{'OriginalStatement'});
+                trim_sql_string($sth_or_sql_string->_private_attributes->{'OriginalStatement'});
             }
             elsif (UNIVERSAL::isa($sth_or_sql_string, 'DBI::st')) {
                 trim_sql_string($sth_or_sql_string->{Statement});
