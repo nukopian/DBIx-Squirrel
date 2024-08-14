@@ -1,11 +1,6 @@
-use strict 'vars', 'subs';                                                                                                         # Moved to stop Perl::Critic carping when Dist::Zilla adds
-                                                                                                                                   # $VERSION information.
+use Modern::Perl;
 
 package DBIx::Squirrel;
-
-use warnings;
-use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
-use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
 
 =pod
 
@@ -212,13 +207,13 @@ use Exporter;
 use Scalar::Util 'reftype';
 use Sub::Name;
 
-use DBIx::Squirrel::dr ();
-use DBIx::Squirrel::db ();
-use DBIx::Squirrel::st ();
-use DBIx::Squirrel::it ();
-use DBIx::Squirrel::rs ();
-use DBIx::Squirrel::rc ();
-use DBIx::Squirrel::util 'throw';
+use DBIx::Squirrel::dr   ();
+use DBIx::Squirrel::db   ();
+use DBIx::Squirrel::st   ();
+use DBIx::Squirrel::it   ();
+use DBIx::Squirrel::rs   ();
+use DBIx::Squirrel::rc   ();
+use DBIx::Squirrel::util qw/throw uniq/;
 
 BEGIN {
     our @ISA                          = ('DBI');
@@ -244,47 +239,40 @@ BEGIN {
     *state       = *DBI::state;
 }
 
-sub import {
-    my $class  = shift;
-    my $caller = caller;
+use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
+use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
 
-    # Partition import list into lists of helper function names and
-    # DBI imports.
-
-    my ( @helpers, @dbi_imports );
-
+sub _partition_imports_into_helpers_and_dbi_imports {
+    my $class = shift;
+    my ( @helpers, @dbi );
     while (@_) {
-        if ( $_[0] =~ m/^database_objects?$/i ) {
-            shift;
-
-            if (@_) {
-                if ( defined $_[0] ) {
-                    if ( ref $_[0] ) {
-                        if ( reftype( $_[0] ) eq 'ARRAY' ) {
-                            push @helpers, @{ +shift };
-                        }
-                    } else {
-                        push @helpers, shift;
-                    }
-                }
+        my $symbol = shift;
+        next unless defined($symbol);
+        if ( $symbol eq 'database_objects' ) {
+            my $symbols = shift;
+            if ( UNIVERSAL::isa( $symbols, 'ARRAY' ) ) {
+                push @helpers, @{$symbols};
+            }
+        } elsif ( $symbol eq 'database_object' ) {
+            $symbol = shift;
+            if ( defined($symbol) and not ref($symbol) ) {
+                push @helpers, $symbol;
             }
         } else {
-            push @dbi_imports, shift;
+            push @dbi, $symbol;
         }
     }
+    return ( \@helpers, \@dbi );
+}
 
-    my %seen;
-    @helpers = grep { !$seen{$_}++ } @helpers;
-
-    # Create (if necessary) and export helpers.
-
-    for my $name (@helpers) {
+sub import {
+    no strict 'refs';    ## no critic
+    my $class  = shift;
+    my $caller = caller;
+    my ( $helpers, $dbi ) = $class->_partition_imports_into_helpers_and_dbi_imports(@_);
+    for my $name ( @{$helpers} ) {
         my $symbol = $class . '::' . $name;
         my $helper = sub {
-
-            # First time the helper receives a value then it is assumed to be
-            # the reference to the associated database object.
-
             unless ( defined ${$symbol} ) {
                 if (@_) {
                     if (   UNIVERSAL::isa( $_[0], 'DBI::db' )
@@ -298,15 +286,7 @@ sub import {
                     throw E_BAD_ENT_BIND;
                 }
             }
-
-            # At this point, return nothing if no association is defined.
-
             return unless defined ${$symbol};
-
-            # At this point, we have an association. If we have arguments then
-            # we are addressing the associated database object, and they are
-            # passed to the object's relevant method for processing.
-
             if (@_) {
                 my @params = do {
                     if ( @_ == 1 && ref $_[0] ) {
@@ -321,7 +301,6 @@ sub import {
                         @_;
                     }
                 };
-
                 if ( UNIVERSAL::isa( ${$symbol}, 'DBI::db' ) ) {
                     return ${$symbol}->prepare(@params);
                 } elsif ( UNIVERSAL::isa( ${$symbol}, 'DBI::st' ) ) {
@@ -330,40 +309,17 @@ sub import {
                     return ${$symbol}->iterate(@params);
                 }
             }
-
-            # At this point, return the reference to the associated database
-            # object.
-
             return ${$symbol};
         };
-
         *{$symbol} = subname( $name => $helper );
-
-        # Export any relevant symbols to caller's namespace.
-
-        unless ( defined &{ $caller . '::' . $name } ) {
-            *{ $caller . '::' . $name } = \&{$symbol};
-        }
+        *{ $caller . '::' . $name } = subname( $caller . '::' . $name => \&{$symbol} )
+          unless defined &{ $caller . '::' . $name };
     }
-
-    # If the caller tried to import any of DBI's exports then take care
-    # of that, otherwise just return our class name.
-
-    if (@dbi_imports) {
-
-        # First import them here.
-
-        DBI->import(@dbi_imports);
-
-        # Then export them to the caller!
-
-        @_ = ( 'DBIx::Squirrel', @dbi_imports );
-
-        # Jump-jump, sugar lump, we don't want a new stack frame!
-
+    if ( @{$dbi} ) {
+        DBI->import( @{$dbi} );
+        @_ = ( 'DBIx::Squirrel', @{$dbi} );
         goto &Exporter::import;
     }
-
     return $class;
 }
 
