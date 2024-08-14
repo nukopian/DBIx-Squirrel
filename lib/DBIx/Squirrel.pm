@@ -275,15 +275,12 @@ sub import {
         my $helper = sub {
             unless ( defined ${$symbol} ) {
                 if (@_) {
-                    if (   UNIVERSAL::isa( $_[0], 'DBI::db' )
-                        or UNIVERSAL::isa( $_[0], 'DBI::st' )
-                        or UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::it' ) )
-                    {
-                        ${$symbol} = shift;
-                        return ${$symbol};
-                    }
-
-                    throw E_BAD_ENT_BIND;
+                    throw E_BAD_ENT_BIND
+                      unless UNIVERSAL::isa( $_[0], 'DBI::db' )
+                      or UNIVERSAL::isa( $_[0], 'DBI::st' )
+                      or UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::it' );
+                    ${$symbol} = shift;
+                    return ${$symbol};
                 }
             }
             return unless defined ${$symbol};
