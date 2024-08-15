@@ -1,12 +1,7 @@
-use strict;
+use Modern::Perl;
 
 package    # hide from PAUSE
   DBIx::Squirrel::it;
-
-use warnings;
-use constant E_BAD_SLICE   => 'Slice must be a reference to an ARRAY or HASH';
-use constant E_BAD_MAXROWS => 'Maximum row count must be an integer greater than zero';
-use constant W_MORE_ROWS   => 'Query returned more than one row';
 
 
 BEGIN {
@@ -23,6 +18,10 @@ use namespace::autoclean;
 use Data::Dumper::Concise;
 use Scalar::Util 'weaken';
 use DBIx::Squirrel::util 'cbargs', 'throw', 'transform', 'whine';
+
+use constant E_BAD_SLICE   => 'Slice must be a reference to an ARRAY or HASH';
+use constant E_BAD_MAXROWS => 'Maximum row count must be an integer greater than zero';
+use constant W_MORE_ROWS   => 'Query returned more than one row';
 
 sub DEFAULT_SLICE () {$DBIx::Squirrel::it::DEFAULT_SLICE}
 
