@@ -70,7 +70,8 @@ DBIx::Squirrel - A C<DBI> extension
     #
     # Use the style you prefer. DBIx::Squirrel doesn't care about the DBD
     # engine you are using. By the time the statement is prepared, it will
-    # have been normalised to use the legacy ("?") style.
+    # have been normalised to use the legacy style ("?") supported by all
+    # engines.
     #
     # Oracle
     $sth = $dbh->prepare('SELECT * FROM product WHERE id=:id');
