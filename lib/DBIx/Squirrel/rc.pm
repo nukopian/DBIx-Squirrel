@@ -1,7 +1,6 @@
 use Modern::Perl;
-no strict 'refs';    ## no critic
 
-package              # hide from PAUSE
+package    # hide from PAUSE
   DBIx::Squirrel::rc;
 
 
@@ -83,6 +82,7 @@ our $AUTOLOAD;
 
 
 sub AUTOLOAD {
+    no strict 'refs';    ## no critic
     return
       if substr($AUTOLOAD, -7) eq 'DESTROY';
     my $name = $AUTOLOAD;
