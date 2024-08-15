@@ -133,7 +133,7 @@ DBIx::Squirrel - A C<DBI> extension
     $res = $dbh->do('SELECT * FROM product WHERE id=:id', id => '1001099');
     $res = $dbh->do('SELECT * FROM product WHERE id=:id', ':id' => '1001099');
 
-    # You must supply hash reference to the statement attributes (or "undef"),
+    # You must supply hash reference (or "undef") as the statement attributes,
     # when bind-values are presented as a hash reference.
     #
     $res = $dbh->do(

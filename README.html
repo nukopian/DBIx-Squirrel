@@ -192,7 +192,7 @@ $res = $dbh-&gt;do(&#39;SELECT * FROM product WHERE id=?&#39;, [&#39;1001099&#39
 $res = $dbh-&gt;do(&#39;SELECT * FROM product WHERE id=:id&#39;, id =&gt; &#39;1001099&#39;);
 $res = $dbh-&gt;do(&#39;SELECT * FROM product WHERE id=:id&#39;, &#39;:id&#39; =&gt; &#39;1001099&#39;);
 
-# You must supply hash reference to the statement attributes (or &quot;undef&quot;),
+# You must supply hash reference (or &quot;undef&quot;) as the statement attributes,
 # when bind-values are presented as a hash reference.
 #
 $res = $dbh-&gt;do(
