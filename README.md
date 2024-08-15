@@ -52,7 +52,7 @@ version 1.2.6
     # Cloning database connections
     # ----------------------------
 
-    # Cloning connections created by the DBI, DBIx::Squirrel or their
+    # Cloning connections created by the DBI, DBIx::Squirrel and
     # subclasses is permitted.
     #
     $dbh = DBI->connect($dsn, $user, $pass, \%attr);
