@@ -302,7 +302,7 @@ DBIx::Squirrel - A C<DBI> extension
     }
 
     $itr = $dbh->iterate(
-        'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->[Id]},
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->{Id}},
     )->reset({});
     if ($id = $itr->iterate('Acme Rocket')->single) {
         print "Id: $id\n"

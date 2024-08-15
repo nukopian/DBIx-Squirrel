@@ -361,7 +361,7 @@ if ($id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
 }
 
 $itr = $dbh-&gt;iterate(
-    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {$_-&gt;[Id]},
+    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {$_-&gt;{Id}},
 )-&gt;reset({});
 if ($id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
     print &quot;Id: $id\n&quot;

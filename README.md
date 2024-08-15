@@ -298,7 +298,7 @@ version 1.2.6
     }
 
     $itr = $dbh->iterate(
-        'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->[Id]},
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->{Id}},
     )->reset({});
     if ($id = $itr->iterate('Acme Rocket')->single) {
         print "Id: $id\n"
