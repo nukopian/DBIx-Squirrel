@@ -58,193 +58,191 @@
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
-<pre><code># Use DBIx::Squirrel just like DBI...
+<pre><code># ------------------
+# Import the package
+# ------------------
 
 use DBIx::Squirrel;
 
+# We still have the freedom to accomplish tasks the familiar DBI-way.
+#
 $dbh = DBIx::Squirrel-&gt;connect($dsn, $user, $pass, \%attr);
 $sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE Name=?&#39;);
 
 if ( $sth-&gt;execute(&#39;Acme Rocket&#39;) ) {
     $row = $sth-&gt;fetchrow_hashref
-    say &quot;$row-&gt;{&#39;Name&#39;}&quot;;
+    print $row-&gt;{Name}, &quot;\n&quot;;
     $sth-&gt;finish
 }
 
-# Or, take advantage of the convenient extras that DBIx::Squirrel
-# offers...
+# ------------------------------
+# Import the package (variation)
+# ------------------------------
 
-use DBIx::Squirrel database_objects=&gt;[&#39;db&#39;, &#39;product&#39;];
+use DBIx::Squirrel database_entities =&gt; [qw/db product/];
 
-db do { DBIx::Squirrel-&gt;connect($dsn, $user, $pass, \%attr) };
-product do { db-&gt;results(&#39;SELECT * FROM product WHERE Name=:Name&#39;) };
+# Associate &quot;db&quot; with a database connection, then use &quot;db&quot; to reference
+# it in future.
+#
+db(DBIx::Squirrel-&gt;connect($dsn, $user, $pass, \%attr));
 
-if ( $row = product( Name =&gt; &#39;Acme Rocket&#39; )-&gt;single ) {
-    say $row-&gt;Name;
-}
+# First, we need to associate &quot;product&quot; with a result set, then use
+# &quot;product&quot; to reference itt in future. The next time arguments are
+# passed, they are treated as bind-values when the statement is
+# executed.
+#
+product(db-&gt;results(&#39;SELECT * FROM product WHERE Name=?&#39;));
 
-# Clone another database connection.
+# Print the named product if there is one. The &quot;single&quot; method will
+# finish the statement automatically.
+#
+print $_-&gt;Name, &quot;\n&quot; if product(&#39;Acme Rocket&#39;)-&gt;single;
 
-$dbi = DBI-&gt;connect($dsn, $user, $pass, \%attr);
-$dbh = DBIx::Squirrel-&gt;connect($dbi);
+# Cloning database connections
+# ----------------------------
 
-# Prepare a statement object.
+# Cloning DBI connections is also allowed.
+#
+$dbh = DBI-&gt;connect($dsn, $user, $pass, \%attr);
+$clone = DBIx::Squirrel-&gt;connect($dbh);
 
-$sth = $dbh-&gt;prepare($statement, \%attr);
-$sth = $dbh-&gt;prepare_cached($statement, \%attr, $if_active);
+# Parameter placeholders and binding values
+# -----------------------------------------
 
-# Commonly used positional and named parameter placeholder schemes
-# conveniently supported regardless of database driver in use.
-
-$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = ?&#39;);
-$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = ?1&#39;);
-$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = $1&#39;);
-$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = :1&#39;);
+# Several commonly used placeholder styles are supported. Just use the
+# one you prefer. By the time the statement is prepared, it will have
+# been normalised to use the legacy (&quot;?&quot;) style.
+#
+# Oracle
 $sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = :id&#39;);
+$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = :1&#39;);
+
+# Postgres
+$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = $1&#39;);
+
+# SQLite
+$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = ?1&#39;);
+
+# MySQL, MariaDB and legacy
+$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = ?&#39;);
 
 # Able to bind values to individual parameters for both positional
 # and named placeholder schemes.
 
-$sth-&gt;bind_param(1, &#39;1001099&#39;);
+# Use either of these calling styles when binding a value to a
+# named placeholder; both are ok.
+#
+$sth-&gt;bind_param(id =&gt; &#39;1001099&#39;);
 $sth-&gt;bind_param(&#39;:id&#39;, &#39;1001099&#39;);
-$sth-&gt;bind_param(&#39;id&#39;, &#39;1001099&#39;);
 
-# Bind multiple values to parameters in a single statement.
+# Use this calling styles when binding a values to a positional
+# placeholder.
+#
+$sth-&gt;bind_param(1, &#39;1001099&#39;);
 
-$sth-&gt;bind( &#39;1001099&#39;, ... );
-$sth-&gt;bind( [ &#39;1001099&#39;, ... ] );
-$sth-&gt;bind( &#39;:id&#39; =&gt; &#39;1001099&#39;, ... );
+# Or, bind all values in one call.
+#
 $sth-&gt;bind( id =&gt; &#39;1001099&#39;, ... );
-$sth-&gt;bind( { &#39;:id&#39; =&gt; &#39;1001099&#39;, ... } );
+$sth-&gt;bind( &#39;:id&#39; =&gt; &#39;1001099&#39;, ... );
+$sth-&gt;bind( &#39;1001099&#39;, ... );
+
+# References are ok, too.
+#
 $sth-&gt;bind( { id =&gt; &#39;1001099&#39;, ... } );
+$sth-&gt;bind( { &#39;:id&#39; =&gt; &#39;1001099&#39;, ... } );
+$sth-&gt;bind( [ &#39;1001099&#39;, ... ] );
 
-# Or just have the statement handle&#39;s or iterator&#39;s &quot;execute&quot;
-# method bind all values to parameters by passing it the same
-# arguments you would pass to &quot;bind&quot;.
+# You can also pass the bind values in the same manner to
+# the &quot;execute&quot; and &quot;iterate&quot; methods.
+#
+$res = $sth-&gt;execute(...);
+$res = $itr-&gt;execute(...);
+$itr = $itr-&gt;iterate(...);
 
-$res = $obj-&gt;execute( &#39;1001099&#39;, ... );
-$res = $obj-&gt;execute( [ &#39;1001099&#39;, ... ] );
-$res = $obj-&gt;execute( &#39;:id&#39; =&gt; &#39;1001099&#39;, ... );
-$res = $obj-&gt;execute( id =&gt; &#39;1001099&#39;, ... );
-$res = $obj-&gt;execute( { &#39;:id&#39; =&gt; &#39;1001099&#39;, ... } );
-$res = $obj-&gt;execute( { id =&gt; &#39;1001099&#39;, ... } );
+# The database connection object&#39;s &quot;do&quot; method
+# --------------------------------------------
 
-# The database handle &quot;do&quot; method works as it does with DBI,
-# with the exception that returns the result followed by the
-# statement handle when called in list-context. This means
-# we can use it to prepare and execute statements, before we
-# fetch results. Be careful to use &quot;undef&quot; if passing named
-# parameters in a hashref so they are not used as statement
-# attributes. The new &quot;do&quot; is smart enough not to confuse
-# other things as statement attributes.
+# WHEN CALLED IN SCALAR-CONTEXT, the &quot;do&quot; method is used exactly as
+# it would when working with the DBI. The only difference is that
+# the DBIx::Squirrel interface allows for more options in how
+# bind-values are passed.
+#
+$res = $dbh-&gt;do(&#39;SELECT * FROM product WHERE id=?&#39;, &#39;1001099&#39;);
+$res = $dbh-&gt;do(&#39;SELECT * FROM product WHERE id=?&#39;, [&#39;1001099&#39;]);
+$res = $dbh-&gt;do(&#39;SELECT * FROM product WHERE id=:id&#39;, id =&gt; &#39;1001099&#39;);
+$res = $dbh-&gt;do(&#39;SELECT * FROM product WHERE id=:id&#39;, &#39;:id&#39; =&gt; &#39;1001099&#39;);
 
-($res, $sth) = $dbh-&gt;do(
-    &#39;SELECT * FROM product WHERE id = ?&#39;, &#39;1001099&#39;
-);
-($res, $sth) = $dbh-&gt;do(
-    &#39;SELECT * FROM product WHERE id = ?&#39;, [&#39;1001099&#39;]
-);
-($res, $sth) = $dbh-&gt;do(
-    &#39;SELECT * FROM product WHERE id = :id&#39;, &#39;:id&#39; =&gt; &#39;1001099&#39;
-);
-($res, $sth) = $dbh-&gt;do(
-    &#39;SELECT * FROM product WHERE id = :id&#39;, id =&gt; &#39;1001099&#39;
-);
-($res, $sth) = $dbh-&gt;do( # ------------ undef or \%attr
-    &#39;SELECT * FROM product WHERE id = :id&#39;, undef,
+# You must supply hash reference to the statement attributes (or &quot;undef&quot;),
+# when bind-values are presented as a hash reference.
+#
+$res = $dbh-&gt;do(
+    &#39;SELECT * FROM product WHERE id = :id&#39;,
+    undef | \%attr,
     { &#39;:id&#39; =&gt; &#39;1001099&#39;}
 );
-($res, $sth) = $dbh-&gt;do( # ------------ undef or \%attr
-    &#39;SELECT * FROM product WHERE id = :id&#39;, undef,
+$res = $dbh-&gt;do(
+    &#39;SELECT * FROM product WHERE id = :id&#39;,
+    undef | \%attr,
     { id =&gt; &#39;1001099&#39; },
 );
 
-# Statement objects can create iterators using the &quot;iterate&quot;
-# method (or its &quot;it&quot; alias). Use it as you would &quot;execute&quot;
+# WHEN CALLED IN LIST-CONTEXT, however, the &quot;do&quot; method works as
+# described previously, but returns both the statement&#39;s execution
+# result and its handle (in that order).
+#
+($res, $sth) = $dbh-&gt;do(...);
 
-$itr = $sth-&gt;iterate( &#39;1001099&#39; );
-$itr = $sth-&gt;iterate([&#39;1001099&#39;]);
+# Statement objects
+# -----------------
 
-$itr = $sth-&gt;iterate( &#39;1001099&#39; );
-$itr = $sth-&gt;iterate([&#39;1001099&#39;]);
+# Statement objects can be used to generate two kinds of iterator.
 
-$itr = $sth-&gt;iterate( &#39;1001099&#39; );
-$itr = $sth-&gt;iterate([&#39;1001099&#39;]);
+# A basic iterator.
+#
+$itr = $sth-&gt;iterate(...);
+$itr = $sth-&gt;iterate(...)-&gt;slice({});
 
-$itr = $sth-&gt;iterate( &#39;1001099&#39; );
-$itr = $sth-&gt;iterate([&#39;1001099&#39;]);
+# A fancy iterator (or result set).
+#
+$itr = $sth-&gt;results(...);
+$itr = $sth-&gt;results(...)-&gt;slice({});
 
-$itr = $sth-&gt;iterate( &#39;1001099&#39; );
-$itr = $sth-&gt;iterate([&#39;1001099&#39;]);
+# Iterators
+# ---------
 
-$itr = $sth-&gt;iterate( &#39;:id&#39; =&gt; &#39;1001099&#39; );
-$itr = $sth-&gt;iterate( id =&gt; &#39;1001099&#39; );
+# We only expect one row and require the statement to be finished. Will
+# warning if there were more rows to fetch, so use &quot;LIMIT 1&quot; in your
+# statement to prevent this.
+#
+$row = $itr-&gt;single(OPTIONAL-NEW-BIND-VALUES)
+  or die &quot;No matching row!&quot;;
 
-$itr = $sth-&gt;iterate( { &#39;:id&#39; =&gt; &#39;1001099&#39; } );
-$itr = $sth-&gt;iterate( { id =&gt; &#39;1001099&#39; } );
+$row = $itr-&gt;one(OPTIONAL-NEW-BIND-VALUES)
+  or die &quot;No matching row!&quot;;
 
-# Using the iterators couldn&#39;t be easier!
+# As above, but won&#39;t whinge if there were unexpectedly more rows
+# available to be fetched.
+#
+$row = $itr-&gt;find(OPTIONAL-NEW-BIND-VALUES)
+  or die &quot;No matching row!&quot;;
 
+# Various ways to populate an array using &quot;next&quot;.
+#
 @ary = ();
-while ($row = $itr-&gt;next) {
-    push @ary, $row;
-}
+push @ary, $_ while $itr-&gt;next;
 
 @ary = $itr-&gt;first;
 push @ary, $_ while $itr-&gt;next;
 
 @ary = $itr-&gt;first;
+push @ary, $_ while $itr-&gt;next;
+
+# Various ways to get everything at once.
+#
+@ary = $itr-&gt;first;
 push @ary, $itr-&gt;remaining;
 
-@ary = $itr-&gt;all;
-
-$itr = $itr-&gt;reset;     # Repositions iterator at the start
-$itr = $itr-&gt;reset({}); # Fetch rows as hashrefs
-$itr = $itr-&gt;reset([]); # Fetch rows as arrayrefs
-
-$row = $itr-&gt;single;
-$row = $itr-&gt;single( id =&gt; &#39;1001100&#39; );
-$row = $itr-&gt;single( { id =&gt; &#39;1001100&#39; } );
-$row = $itr-&gt;find( id =&gt; &#39;1001100&#39; );
-$row = $itr-&gt;find( { id =&gt; &#39;1001100&#39; } );
-
-# A result set is just fancy subclass of the iterator. It will
-# &quot;bless&quot; results, enabling us to get a column&#39;s value using an
-# accessor methods, without ever having to worry about whether
-# the row is a array or hash reference. While the accessor
-# methods use lowercase names, they will access the column&#39;s
-# value regardless of the case used.
-
-$sth = $dbh-&gt;prepare(&#39;SELECT MediaTypeId, Name FROM media_types&#39;);
-$res = $sth-&gt;results;
-while ($res-&gt;next) {
-    print $_-&gt;name, &quot;\n&quot;;
-}
-
-# Iterators allow for the use of lambda functions to process
-# each row just in time during iteration.
-
-$it = $sth-&gt;iterate(
-    sub { $_-&gt;{Name} }
-)-&gt;reset({});
-print &quot;$_\n&quot; foreach $it-&gt;all;
-
-# Lambdas may be chained.
-
-$res = $sth-&gt;results(
-    sub { $_-&gt;Name },
-    sub { &quot;Media type: $_&quot; },
-);
-print &quot;$_\n&quot; while $res-&gt;next;
-
-print &quot;$_\n&quot; for $dbh-&gt;results(
-    q/SELECT MediaTypeId, Name FROM media_types/,
-    sub { $_-&gt;Name },
-)-&gt;all;
-
-print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;results(
-    sub { $_-&gt;Name },
-)-&gt;all;</code></pre>
+@ary = $itr-&gt;all;</code></pre>
 
 <h1 id="DESCRIPTION">DESCRIPTION</h1>
 
@@ -262,12 +260,12 @@ print &quot;$_\n&quot; for $dbh-&gt;select(&#39;media_types&#39;)-&gt;results(
 
 <p>If required (and in addition to any <code>DBI</code> imports), <code>DBIx::Squirrel</code> can create and import Database Object Helper functions for you:</p>
 
-<pre><code>use DBIx::Squirrel database_object=&gt;NAME;
-use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
+<pre><code>use DBIx::Squirrel database_entity=&gt;NAME;
+use DBIx::Squirrel database_entities=&gt;[NAMES];</code></pre>
 
 <h3 id="Database-Object-Helper-Functions">Database Object Helper Functions</h3>
 
-<p>A database object helper is nothing more than a standard function providing some syntactic sugar in the form of a polymorphic interface for interacting with database entities such as database connections, statements and iterators.</p>
+<p>A database entity helper is nothing more than a standard function providing some syntactic sugar in the form of a polymorphic interface for interacting with database entities such as database connections, statements and iterators.</p>
 
 <p>While it is not absolutely necessary to use them&mdash;you could just as easily use scalar references&mdash;helper functions do possess the advantage of being shared more easily among package namespaces than, say, lexical variables.</p>
 
@@ -286,7 +284,7 @@ use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
 </li>
 <li><p><b>Resolving an association</b></p>
 
-<p>Fetching the reference to the associated database object is accomplished by calling the helper function without any arguments.</p>
+<p>Fetching the reference to the associated database entity is accomplished by calling the helper function without any arguments.</p>
 
 <p>When no association exists in this scenario, a helper returns <code>undef</code>.</p>
 
@@ -295,7 +293,7 @@ use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
 
 <p>Addressing an association amounts to doing something meaningful with it, and we accomplish this by calling the helper function with one or more arguments.</p>
 
-<p>Once associated with a database object, a helper function will any arguments that are passed to it and send a version of these to the database object method that imbues meaning to the interaction.</p>
+<p>Once associated with a database entity, a helper function will any arguments that are passed to it and send a version of these to the database entity method that imbues meaning to the interaction.</p>
 
 <p>Meaning in this context is determined by the type of association:</p>
 
@@ -320,7 +318,7 @@ use DBIx::Squirrel database_objects=&gt;[NAMES];</code></pre>
 
 <li><p>Let us do a full worked example. We will connect to a database, create and work with two result sets, one of which expects a single bind-value. Some concepts will be expanded upon and improved later, but it might be helpful to dip a toe in the water ahead of time:</p>
 
-<pre><code>use DBIx::Squirrel database_objects =&gt; [ qw/db artists artist/ ];
+<pre><code>use DBIx::Squirrel database_entities =&gt; [ qw/db artists artist/ ];
 
 # Associate helper (&quot;db&quot;) with our database connection:
 

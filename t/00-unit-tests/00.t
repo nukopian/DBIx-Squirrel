@@ -20,7 +20,7 @@ use DBI;
 use DBIx::Squirrel::util (':all');
 use DBIx::Squirrel (
     ':utils',
-    database_objects => [ 'db', 'st', 'it', 'rs', 'artist', 'artists' ],
+    database_entities => [ 'db', 'st', 'it', 'rs', 'artist', 'artists' ],
 );
 
 use lib realpath("$FindBin::Bin/../lib");
