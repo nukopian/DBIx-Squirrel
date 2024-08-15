@@ -161,20 +161,21 @@ DBIx::Squirrel - A C<DBI> extension
     # A basic iterator.
     #
     $itr = $sth->iterate(...);
-    $itr = $sth->iterate(...)->slice({});
+    $itr = $sth->iterate(...)->_slice({});
 
     # A fancy iterator (or result set).
     #
     $itr = $sth->results(...);
-    $itr = $sth->results(...)->slice({});
+    $itr = $sth->results(...)->_slice({});
 
     # ---------
     # Iterators
     # ---------
 
-    # We only expect one row and require the statement to be finished. Will
-    # warning if there were more rows to fetch, so use "LIMIT 1" in your
-    # statement to prevent this.
+    # We only expect one row and require the statement to be finished. 
+    #
+    # Will emit a warning if there are more rows to fetch as a reminder 
+    # to use "LIMIT 1" in your query.
     #
     $row = $itr->single(OPTIONAL-NEW-BIND-VALUES)
       or die "No matching row!";
@@ -188,7 +189,7 @@ DBIx::Squirrel - A C<DBI> extension
     $row = $itr->find(OPTIONAL-NEW-BIND-VALUES)
       or die "No matching row!";
 
-    # Various ways to populate an array using "next".
+    # Populate an array using "next".
     #
     @ary = ();
     push @ary, $_ while $itr->next;
@@ -199,13 +200,43 @@ DBIx::Squirrel - A C<DBI> extension
     @ary = $itr->first;
     push @ary, $_ while $itr->next;
 
-    # Various ways to get everything at once.
+    # Get everything at once.
     #
     @ary = $itr->first;
     push @ary, $itr->remaining;
 
     @ary = $itr->all;
+    $ary_ref = $itr->all;
 
+    # Get the number of records. More memory efficient than "count_all", 
+    # since "next" is called after each record is read and discarded.
+    #
+    $num = $itr->count();
+
+    # Get the number of records. Not as memory efficient as "count", since
+    # all rows are fetched at once and the size of the resulting array
+    # is returned.
+    #
+    $num = $itr->count_all();
+
+    # Reset the iterator
+    #
+    $itr = $itr->reset();
+
+    # Reset the iterator, and decide how to slice rows.
+    #
+    $itr = $itr->reset({});
+    $itr = $itr->reset([]);
+
+    # Reset the iterator, and decide how many rows to buffer up at a time.
+    #
+    $itr = $itr->reset(10);
+
+    # Reset the iterator. Also decide how many rows to buffer up at a time
+    # and how to slice up the rows.
+    #
+    $itr = $itr->reset($slice, $row_count);
+    $itr = $itr->reset($row_count, $slice);
 =cut
 
 use DBI;

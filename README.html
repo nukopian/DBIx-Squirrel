@@ -207,20 +207,21 @@ $res = $dbh-&gt;do(
 # A basic iterator.
 #
 $itr = $sth-&gt;iterate(...);
-$itr = $sth-&gt;iterate(...)-&gt;slice({});
+$itr = $sth-&gt;iterate(...)-&gt;_slice({});
 
 # A fancy iterator (or result set).
 #
 $itr = $sth-&gt;results(...);
-$itr = $sth-&gt;results(...)-&gt;slice({});
+$itr = $sth-&gt;results(...)-&gt;_slice({});
 
 # ---------
 # Iterators
 # ---------
 
-# We only expect one row and require the statement to be finished. Will
-# warning if there were more rows to fetch, so use &quot;LIMIT 1&quot; in your
-# statement to prevent this.
+# We only expect one row and require the statement to be finished. 
+#
+# Will emit a warning if there are more rows to fetch as a reminder 
+# to use &quot;LIMIT 1&quot; in your query.
 #
 $row = $itr-&gt;single(OPTIONAL-NEW-BIND-VALUES)
   or die &quot;No matching row!&quot;;
@@ -234,7 +235,7 @@ $row = $itr-&gt;one(OPTIONAL-NEW-BIND-VALUES)
 $row = $itr-&gt;find(OPTIONAL-NEW-BIND-VALUES)
   or die &quot;No matching row!&quot;;
 
-# Various ways to populate an array using &quot;next&quot;.
+# Populate an array using &quot;next&quot;.
 #
 @ary = ();
 push @ary, $_ while $itr-&gt;next;
@@ -245,12 +246,43 @@ push @ary, $_ while $itr-&gt;next;
 @ary = $itr-&gt;first;
 push @ary, $_ while $itr-&gt;next;
 
-# Various ways to get everything at once.
+# Get everything at once.
 #
 @ary = $itr-&gt;first;
 push @ary, $itr-&gt;remaining;
 
-@ary = $itr-&gt;all;</code></pre>
+@ary = $itr-&gt;all;
+$ary_ref = $itr-&gt;all;
+
+# Get the number of records. More memory efficient than &quot;count_all&quot;, 
+# since &quot;next&quot; is called after each record is read and discarded.
+#
+$num = $itr-&gt;count();
+
+# Get the number of records. Not as memory efficient as &quot;count&quot;, since
+# all rows are fetched at once and the size of the resulting array
+# is returned.
+#
+$num = $itr-&gt;count_all();
+
+# Reset the iterator
+#
+$itr = $itr-&gt;reset();
+
+# Reset the iterator, and decide how to slice rows.
+#
+$itr = $itr-&gt;reset({});
+$itr = $itr-&gt;reset([]);
+
+# Reset the iterator, and decide how many rows to buffer up at a time.
+#
+$itr = $itr-&gt;reset(10);
+
+# Reset the iterator. Also decide how many rows to buffer up at a time
+# and how to slice up the rows.
+#
+$itr = $itr-&gt;reset($slice, $row_count);
+$itr = $itr-&gt;reset($row_count, $slice);</code></pre>
 
 <h1 id="DESCRIPTION">DESCRIPTION</h1>
 
