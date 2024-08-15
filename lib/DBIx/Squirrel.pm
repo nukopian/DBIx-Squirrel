@@ -707,7 +707,7 @@ Oracle named placeholders (C<:name>):
 
 =head2 Iterators
 
-In addition statement objects, C<DBIx::Squirrel> provides two kinds
+In addition to statement objects, C<DBIx::Squirrel> provides two kinds
 of iterator:
 
 =over
@@ -721,18 +721,29 @@ of iterator:
 =head3 Basic Iterators
 
 Basic iterators present row data as ARRAYREFs or HASHREFs, depending
-on the slice-style in force. Column values are accessed by column-
-index when using the ARRAYREFs-slice-style, or by column-name when
-using the HASHREFs-slice-style.
+on the slice-style currently in use. Column values are accessed either
+by column-index when using the ARRAYREFs-slice-style, or by column-
+name when using the HASHREFs-slice-style.
 
-The default behaviour is to slice rowns as ARRAYREFs. An iterator's
-"reset" method can be used to change this behaviour by passing it an
-empty HASHREF (C<{}>) or an empty ARRAYREF (C<[]>).
+The default slice-style is ARRAYREFs. An iterator's "reset" method may
+be used to alter this behaviour.
 
 =head4 How to create a basic iterator
 
-    $itr = $dbh->iterate($query,[undef|\%attr,][@bindvalues,][@coderefs]);
-    $itr = $sth->iterate([@bindvalues,][@coderefs]);
+    $itr = $dbh->iterate(
+        $query,
+        [undef|\%attr,]
+        [@bindvalues,]
+        [@coderefs]
+    );
+
+    $itr = $sth->iterate(
+        [@bindvalues,]
+        [@coderefs]
+    );
+
+The C<iterate> methods may be replaced by either of the C<it> or C<iterator>
+aliases, if preferred.
 
 =head3 Fancy Iterators
 
@@ -744,8 +755,20 @@ created the first time they are used.
 
 =head4 How to create a fancy iterator
 
-    $itr = $dbh->results($query,[undef|\%attr,][@bindvalues,][@coderefs]);
-    $itr = $sth->results([@bindvalues,][@coderefs]);
+    $itr = $dbh->results(
+        $query,
+        [undef|\%attr,]
+        [@bindvalues,]
+        [@coderefs]
+    );
+
+    $itr = $sth->results(
+        [@bindvalues,]
+        [@coderefs]
+    );
+
+The C<results> methods may be replaced by either of the C<rs> or C<resultset>
+aliases, if preferred.
 
 =head2 Processing results
 
