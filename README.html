@@ -129,7 +129,8 @@ $clone = DBIx::Squirrel-&gt;connect($dbh);
 #
 # Use the style you prefer. DBIx::Squirrel doesn&#39;t care about the DBD
 # engine you are using. By the time the statement is prepared, it will
-# have been normalised to use the legacy (&quot;?&quot;) style.
+# have been normalised to use the legacy style (&quot;?&quot;) supported by all
+# engines.
 #
 # Oracle
 $sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id=:id&#39;);
