@@ -559,6 +559,9 @@ be used to alter this behaviour.
         [@coderefs]
     );
 
+The `iterate` methods may be replaced by either of the `it` or `iterator`
+aliases, if preferred.
+
 ### Fancy Iterators
 
 Fancy iterators behave just like their basic alternatives, but the
@@ -580,6 +583,9 @@ created the first time they are used.
         [@bindvalues,]
         [@coderefs]
     );
+
+The `results` methods may be replaced by either of the `rs` or `resultset`
+aliases, if preferred.
 
 ## Processing results
 

@@ -618,6 +618,8 @@ $itr = $sth-&gt;iterate(
     [@coderefs]
 );</code></pre>
 
+<p>The <code>iterate</code> methods may be replaced by either of the <code>it</code> or <code>iterator</code> aliases, if preferred.</p>
+
 <h3 id="Fancy-Iterators">Fancy Iterators</h3>
 
 <p>Fancy iterators behave just like their basic alternatives, but the row data they present is blessed. Column values may continue to be accessed as they would be with basic iterators, but accessor methods may also be used to get column values. Such accessor methods are created the first time they are used.</p>
@@ -635,6 +637,8 @@ $itr = $sth-&gt;results(
     [@bindvalues,]
     [@coderefs]
 );</code></pre>
+
+<p>The <code>results</code> methods may be replaced by either of the <code>rs</code> or <code>resultset</code> aliases, if preferred.</p>
 
 <h2 id="Processing-results">Processing results</h2>
 

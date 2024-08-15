@@ -742,6 +742,9 @@ be used to alter this behaviour.
         [@coderefs]
     );
 
+The C<iterate> methods may be replaced by either of the C<it> or C<iterator>
+aliases, if preferred.
+
 =head3 Fancy Iterators
 
 Fancy iterators behave just like their basic alternatives, but the
@@ -763,6 +766,9 @@ created the first time they are used.
         [@bindvalues,]
         [@coderefs]
     );
+
+The C<results> methods may be replaced by either of the C<rs> or C<resultset>
+aliases, if preferred.
 
 =head2 Processing results
 
