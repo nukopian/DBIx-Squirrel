@@ -54,7 +54,7 @@
 
 <h1 id="VERSION">VERSION</h1>
 
-<p>version 1.2.5</p>
+<p>version 1.2.6</p>
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
@@ -210,12 +210,12 @@ $res = $dbh-&gt;do(
 # A basic iterator.
 #
 $itr = $sth-&gt;iterate(...);
-$itr = $sth-&gt;iterate(...)-&gt;_slice({});
+$itr = $sth-&gt;iterate(...)-&gt;reset({});
 
 # A fancy iterator (or result set).
 #
 $itr = $sth-&gt;results(...);
-$itr = $sth-&gt;results(...)-&gt;_slice({});
+$itr = $sth-&gt;results(...)-&gt;reset({});
 
 # ---------
 # Iterators
@@ -293,12 +293,12 @@ $itr = $itr-&gt;reset($row_count, $slice);
 
 # Accessing column values using basic iterators.
 #
-$itr = $dbh-&gt;iterate(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice([]);
+$itr = $dbh-&gt;iterate(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;reset([]);
 if ($row = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
     print &quot;Id: $row-&gt;[0]\n&quot;
 }
 
-$itr = $dbh-&gt;iterate(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice({});
+$itr = $dbh-&gt;iterate(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;reset({});
 if ($row = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
     print &quot;Id: $row-&gt;{Id}\n&quot;
 }
@@ -340,14 +340,14 @@ if ($row = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
 #
 $itr = $dbh-&gt;iterate(
     &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {$_-&gt;[0]},
-)-&gt;slice([]);
+)-&gt;reset([]);
 if ($id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
     print &quot;Id: $id\n&quot;
 }
 
 $itr = $dbh-&gt;iterate(
     &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {$_-&gt;[Id]},
-)-&gt;slice({});
+)-&gt;reset({});
 if ($id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
     print &quot;Id: $id\n&quot;
 }

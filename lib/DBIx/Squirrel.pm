@@ -164,12 +164,12 @@ DBIx::Squirrel - A C<DBI> extension
     # A basic iterator.
     #
     $itr = $sth->iterate(...);
-    $itr = $sth->iterate(...)->_slice({});
+    $itr = $sth->iterate(...)->reset({});
 
     # A fancy iterator (or result set).
     #
     $itr = $sth->results(...);
-    $itr = $sth->results(...)->_slice({});
+    $itr = $sth->results(...)->reset({});
 
     # ---------
     # Iterators
@@ -247,12 +247,12 @@ DBIx::Squirrel - A C<DBI> extension
 
     # Accessing column values using basic iterators.
     #
-    $itr = $dbh->iterate('SELECT Id, Name FROM product WHERE Name=?')->slice([]);
+    $itr = $dbh->iterate('SELECT Id, Name FROM product WHERE Name=?')->reset([]);
     if ($row = $itr->iterate('Acme Rocket')->single) {
         print "Id: $row->[0]\n"
     }
 
-    $itr = $dbh->iterate('SELECT Id, Name FROM product WHERE Name=?')->slice({});
+    $itr = $dbh->iterate('SELECT Id, Name FROM product WHERE Name=?')->reset({});
     if ($row = $itr->iterate('Acme Rocket')->single) {
         print "Id: $row->{Id}\n"
     }
@@ -294,14 +294,14 @@ DBIx::Squirrel - A C<DBI> extension
     #
     $itr = $dbh->iterate(
         'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->[0]},
-    )->slice([]);
+    )->reset([]);
     if ($id = $itr->iterate('Acme Rocket')->single) {
         print "Id: $id\n"
     }
 
     $itr = $dbh->iterate(
         'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->[Id]},
-    )->slice({});
+    )->reset({});
     if ($id = $itr->iterate('Acme Rocket')->single) {
         print "Id: $id\n"
     }
