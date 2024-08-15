@@ -707,14 +707,14 @@ Oracle named placeholders (C<:name>):
 
 =head2 Iterators
 
-In addition the statements, C<DBIx::Squirrel> provides iterators. There are
-two kinds to choose from:
+In addition statement objects, C<DBIx::Squirrel> provides two kinds
+of iterator:
 
 =over
 
 =item * Basic
 
-=item * Fancy
+=item * Fancy, I<or Result Sets>
 
 =back
 
@@ -734,7 +734,7 @@ empty HASHREF (C<{}>) or an empty ARRAYREF (C<[]>).
     $itr = $dbh->iterate($query,[undef|\%attr,][@bindvalues,][@coderefs]);
     $itr = $sth->iterate([@bindvalues,][@coderefs]);
 
-=head3 Fancy Iterators, I<(or Result Sets)>
+=head3 Fancy Iterators
 
 Fancy iterators behave just like their basic alternatives, but the
 row data they present is blessed. Column values may continue to be
