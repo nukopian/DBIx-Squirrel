@@ -340,12 +340,12 @@ also be requested via `DBIx::Squirrel`:
     use DBIx::Squirrel DBI-IMPORT-LIST;
 
 If required (and in addition to any `DBI` imports), `DBIx::Squirrel` can
-create and import Database Object Helper functions for you:
+create and import Database Entity Helper functions for you:
 
     use DBIx::Squirrel database_entity=>NAME;
     use DBIx::Squirrel database_entities=>[NAMES];
 
-### Database Object Helper Functions
+### Database Entity Helper Functions
 
 A database entity helper is nothing more than a standard function providing
 some syntactic sugar in the form of a polymorphic interface for interacting

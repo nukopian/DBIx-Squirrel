@@ -19,7 +19,7 @@
     <ul>
       <li><a href="#Importing-the-package">Importing the package</a>
         <ul>
-          <li><a href="#Database-Object-Helper-Functions">Database Object Helper Functions</a>
+          <li><a href="#Database-Entity-Helper-Functions">Database Entity Helper Functions</a>
             <ul>
               <li><a href="#Examples">Examples</a></li>
             </ul>
@@ -386,12 +386,12 @@ $id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;</code></pre>
 
 <pre><code>use DBIx::Squirrel DBI-IMPORT-LIST;</code></pre>
 
-<p>If required (and in addition to any <code>DBI</code> imports), <code>DBIx::Squirrel</code> can create and import Database Object Helper functions for you:</p>
+<p>If required (and in addition to any <code>DBI</code> imports), <code>DBIx::Squirrel</code> can create and import Database Entity Helper functions for you:</p>
 
 <pre><code>use DBIx::Squirrel database_entity=&gt;NAME;
 use DBIx::Squirrel database_entities=&gt;[NAMES];</code></pre>
 
-<h3 id="Database-Object-Helper-Functions">Database Object Helper Functions</h3>
+<h3 id="Database-Entity-Helper-Functions">Database Entity Helper Functions</h3>
 
 <p>A database entity helper is nothing more than a standard function providing some syntactic sugar in the form of a polymorphic interface for interacting with database entities such as database connections, statements and iterators.</p>
 
