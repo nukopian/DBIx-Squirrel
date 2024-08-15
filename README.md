@@ -529,7 +529,7 @@ style (`?`) supported by all drivers.
 
 ## Iterators
 
-In addition statement objects, `DBIx::Squirrel` provides two kinds
+In addition to statement objects, `DBIx::Squirrel` provides two kinds
 of iterator:
 
 - Basic
@@ -538,18 +538,26 @@ of iterator:
 ### Basic Iterators
 
 Basic iterators present row data as ARRAYREFs or HASHREFs, depending
-on the slice-style in force. Column values are accessed by column-
-index when using the ARRAYREFs-slice-style, or by column-name when
-using the HASHREFs-slice-style.
+on the slice-style currently in use. Column values are accessed either
+by column-index when using the ARRAYREFs-slice-style, or by column-
+name when using the HASHREFs-slice-style.
 
-The default behaviour is to slice rowns as ARRAYREFs. An iterator's
-"reset" method can be used to change this behaviour by passing it an
-empty HASHREF (`{}`) or an empty ARRAYREF (`[]`).
+The default slice-style is ARRAYREFs. An iterator's "reset" method may
+be used to alter this behaviour.
 
 #### How to create a basic iterator
 
-    $itr = $dbh->iterate($query,[undef|\%attr,][@bindvalues,][@coderefs]);
-    $itr = $sth->iterate([@bindvalues,][@coderefs]);
+    $itr = $dbh->iterate(
+        $query,
+        [undef|\%attr,]
+        [@bindvalues,]
+        [@coderefs]
+    );
+
+    $itr = $sth->iterate(
+        [@bindvalues,]
+        [@coderefs]
+    );
 
 ### Fancy Iterators
 
@@ -561,8 +569,17 @@ created the first time they are used.
 
 #### How to create a fancy iterator
 
-    $itr = $dbh->results($query,[undef|\%attr,][@bindvalues,][@coderefs]);
-    $itr = $sth->results([@bindvalues,][@coderefs]);
+    $itr = $dbh->results(
+        $query,
+        [undef|\%attr,]
+        [@bindvalues,]
+        [@coderefs]
+    );
+
+    $itr = $sth->results(
+        [@bindvalues,]
+        [@coderefs]
+    );
 
 ## Processing results
 
