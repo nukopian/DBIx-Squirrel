@@ -7,12 +7,11 @@
 -vmll     # Variable maximum line length
 -i=4      # Indent level is 4 cols
 -ci=2     # Continuation indent is 2 cols
--vt=2     # Medium vertical tightness
+-vt=1     # Medium vertical tightness
 -vtc=0    # Minimum vertical closing tightness
 -cti=0    # No extra indentation for closing brackets
 -cab=1    # Comma arrow breakpoints 1
 -mft=1    # Maximum fields per tabel 1
--boc      # Break at old comma breakpoints
 -otr      # No break between comma and opening token
 -sot      # Stack opening tokens
 -pt=2     # Tight parentheses
@@ -53,3 +52,5 @@
 --no-indent-spaced-block-comments
 --ignore-side-comment-lengths
 --hanging-side-comments
+--valign-signed-numbers
+--valign-wide-equals
