@@ -219,21 +219,21 @@ version 1.2.6
     #
     $num = $itr->count_all();
 
-    # Reset the iterator
+    # Reset an iterator so that it will be executed again.
     #
     $itr = $itr->reset();
 
-    # Reset the iterator, and decide how to slice rows.
+    # Reset the iterator. Also set the slice-style.
     #
     $itr = $itr->reset({});
     $itr = $itr->reset([]);
 
-    # Reset the iterator, and decide how many rows to buffer up at a time.
+    # Reset the iterator. Also specify how many rows to slurp at a time.
     #
     $itr = $itr->reset(10);
 
-    # Reset the iterator. Also decide how many rows to buffer up at a time
-    # and how to slice up the rows.
+    # Reset the iterator. Set the slice style and how slurpy our row fetches
+    # are.
     #
     $itr = $itr->reset($slice, $row_count);
     $itr = $itr->reset($row_count, $slice);
