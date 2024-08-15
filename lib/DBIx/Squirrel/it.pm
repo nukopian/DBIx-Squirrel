@@ -101,15 +101,17 @@ sub execute {
 
 sub find {
     my($attr, $self) = shift->_private_attributes;
+    $self->reset()
+      if @_;
     my $row;
     if ($self->execute(@_)) {
-        if ($row = $self->_fetch_row) {
+        if ($row = $self->_fetch_row()) {
             $attr->{'row_count'} = 1;
-            $self->reset;
         }
         else {
             $attr->{'row_count'} = 0;
         }
+        $self->reset();
     }
     return do {$_ = $row};
 }
@@ -330,17 +332,26 @@ sub reset {
 
 sub single {
     my($attr, $self) = shift->_private_attributes;
-    my $count = $self->execute(@_);
+    $self->reset()
+      if @_;
     my $row;
-    if ($count) {
+    if (my $count = $self->execute(@_)) {
         whine W_MORE_ROWS
           if $count > 1;
-        if ($row = $self->_fetch_row) {
+        if ($row = $self->_fetch_row()) {
             $attr->{'row_count'} = 1;
-            $self->reset;
         }
+        else {
+            $attr->{'row_count'} = 0;
+        }
+        $self->reset();
     }
     return do {$_ = $row};
+}
+
+
+BEGIN {
+    *one = *single;
 }
 
 
