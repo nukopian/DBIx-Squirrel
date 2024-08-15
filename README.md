@@ -153,6 +153,9 @@ version 1.2.5
     # -----------------
 
     # Statement objects can be used to generate two kinds of iterator.
+    #
+    # Database objects, too, use methods of the same name to generate
+    # iterators.
 
     # A basic iterator.
     #
