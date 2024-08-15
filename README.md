@@ -529,11 +529,11 @@ style (`?`) supported by all drivers.
 
 ## Iterators
 
-In addition the statements, `DBIx::Squirrel` provides iterators. There are
-two kinds to choose from:
+In addition statement objects, `DBIx::Squirrel` provides two kinds
+of iterator:
 
 - Basic
-- Fancy
+- Fancy, _or Result Sets_
 
 ### Basic Iterators
 
@@ -551,7 +551,7 @@ empty HASHREF (`{}`) or an empty ARRAYREF (`[]`).
     $itr = $dbh->iterate($query,[undef|\%attr,][@bindvalues,][@coderefs]);
     $itr = $sth->iterate([@bindvalues,][@coderefs]);
 
-### Fancy Iterators, _(or Result Sets)_
+### Fancy Iterators
 
 Fancy iterators behave just like their basic alternatives, but the
 row data they present is blessed. Column values may continue to be

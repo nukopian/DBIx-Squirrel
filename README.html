@@ -47,7 +47,7 @@
               <li><a href="#How-to-create-a-basic-iterator">How to create a basic iterator</a></li>
             </ul>
           </li>
-          <li><a href="#Fancy-Iterators-or-Result-Sets">Fancy Iterators, (or Result Sets)</a>
+          <li><a href="#Fancy-Iterators">Fancy Iterators</a>
             <ul>
               <li><a href="#How-to-create-a-fancy-iterator">How to create a fancy iterator</a></li>
             </ul>
@@ -586,14 +586,14 @@ $res = $sth-&gt;execute({&#39;:Name&#39; =&gt; &#39;Aerosmith&#39;});</code></pr
 
 <h2 id="Iterators">Iterators</h2>
 
-<p>In addition the statements, <code>DBIx::Squirrel</code> provides iterators. There are two kinds to choose from:</p>
+<p>In addition statement objects, <code>DBIx::Squirrel</code> provides two kinds of iterator:</p>
 
 <ul>
 
 <li><p>Basic</p>
 
 </li>
-<li><p>Fancy</p>
+<li><p>Fancy, <i>or Result Sets</i></p>
 
 </li>
 </ul>
@@ -609,7 +609,7 @@ $res = $sth-&gt;execute({&#39;:Name&#39; =&gt; &#39;Aerosmith&#39;});</code></pr
 <pre><code>$itr = $dbh-&gt;iterate($query,[undef|\%attr,][@bindvalues,][@coderefs]);
 $itr = $sth-&gt;iterate([@bindvalues,][@coderefs]);</code></pre>
 
-<h3 id="Fancy-Iterators-or-Result-Sets">Fancy Iterators, <i>(or Result Sets)</i></h3>
+<h3 id="Fancy-Iterators">Fancy Iterators</h3>
 
 <p>Fancy iterators behave just like their basic alternatives, but the row data they present is blessed. Column values may continue to be accessed as they would be with basic iterators, but accessor methods may also be used to get column values. Such accessor methods are created the first time they are used.</p>
 
