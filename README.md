@@ -219,21 +219,21 @@ version 1.2.6
     #
     $num = $itr->count_all();
 
-    # Reset the iterator
+    # Reset an iterator so that it will be executed again.
     #
     $itr = $itr->reset();
 
-    # Reset the iterator, and decide how to slice rows.
+    # Reset the iterator. Also set the slice-style.
     #
     $itr = $itr->reset({});
     $itr = $itr->reset([]);
 
-    # Reset the iterator, and decide how many rows to buffer up at a time.
+    # Reset the iterator. Also specify how many rows to slurp at a time.
     #
     $itr = $itr->reset(10);
 
-    # Reset the iterator. Also decide how many rows to buffer up at a time
-    # and how to slice up the rows.
+    # Reset the iterator. Set the slice style and how slurpy our row fetches
+    # are.
     #
     $itr = $itr->reset($slice, $row_count);
     $itr = $itr->reset($row_count, $slice);
@@ -282,12 +282,13 @@ version 1.2.6
     # A transformation is a sequence of one or more trailing code references
     # that are passed to the method that generates the iterator. The initial
     # result enters the first stage of the transformation as $_[0] (and $_),
-    # and the result of that transformation is passed onto the next stage,
-    # or returned to the caller,  using a "return" statement or the result
+    # and the result of that transformation is passed onto the next stage (or
+    # or returned to the caller), using a "return" statement or as the result
     # of the final expression.
     #
-    # Transformations are a great way to declare, in one place, the common
-    # processing logic that should be applied to results.
+    # Transformations are a great way to declare, in one place, any common
+    # processing logic that should be applied automatically to results as
+    # they are fetched.
     #
     $itr = $dbh->iterate(
         'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->[0]},
