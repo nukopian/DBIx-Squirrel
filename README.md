@@ -48,6 +48,7 @@ version 1.2.5
     #
     print $_->Name, "\n" if product('Acme Rocket')->single;
 
+    # ----------------------------
     # Cloning database connections
     # ----------------------------
 
@@ -56,6 +57,7 @@ version 1.2.5
     $dbh = DBI->connect($dsn, $user, $pass, \%attr);
     $clone = DBIx::Squirrel->connect($dbh);
 
+    # -----------------------------------------
     # Parameter placeholders and binding values
     # -----------------------------------------
 
@@ -109,6 +111,7 @@ version 1.2.5
     $res = $itr->execute(...);
     $itr = $itr->iterate(...);
 
+    # --------------------------------------------
     # The database connection object's "do" method
     # --------------------------------------------
 
@@ -142,6 +145,7 @@ version 1.2.5
     #
     ($res, $sth) = $dbh->do(...);
 
+    # -----------------
     # Statement objects
     # -----------------
 
@@ -157,6 +161,7 @@ version 1.2.5
     $itr = $sth->results(...);
     $itr = $sth->results(...)->slice({});
 
+    # ---------
     # Iterators
     # ---------
 
