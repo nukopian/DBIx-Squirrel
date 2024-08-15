@@ -8,28 +8,11 @@ BEGIN {
     require Exporter;
     @DBIx::Squirrel::util::ISA         = 'Exporter';
     %DBIx::Squirrel::util::EXPORT_TAGS = (
-        'constants' => [
-            'E_EXP_STATEMENT',
-            'E_EXP_STH',
-            'E_EXP_REF',
-        ],
-        'diagnostics' => [
-            'Dumper',
-            'throw',
-            'whine',
-        ],
-        'transform' => [
-            'cbargs',
-            'cbargs_using',
-            'transform',
-        ],
-        'sql' => [
-            'get_trimmed_sql_and_digest',
-            'normalise_statement',
-            'study_statement',
-            'trim_sql_string',
-            'hash_sql_string',
-        ],
+        'constants'   => ['E_EXP_STATEMENT', 'E_EXP_STH',    'E_EXP_REF',],
+        'diagnostics' => ['Dumper',          'throw',        'whine',],
+        'transform'   => ['cbargs',          'cbargs_using', 'transform',],
+        'sql'         =>
+          ['get_trimmed_sql_and_digest', 'normalise_statement', 'study_statement', 'trim_sql_string', 'hash_sql_string',],
     );
     @DBIx::Squirrel::util::EXPORT_OK = @{
         $DBIx::Squirrel::util::EXPORT_TAGS{'all'} = [
@@ -37,9 +20,7 @@ BEGIN {
             do {
                 my %seen;
                 grep {!$seen{$_}++}
-                  map {@{$DBIx::Squirrel::util::EXPORT_TAGS{$_}}} (
-                    qw/constants diagnostics sql transform/,
-                  );
+                  map {@{$DBIx::Squirrel::util::EXPORT_TAGS{$_}}} (qw/constants diagnostics sql transform/,);
             },
         ]
     };
@@ -47,7 +28,7 @@ BEGIN {
 
 use Carp ();
 use Data::Dumper::Concise;
-use Digest::SHA 'sha256_base64';
+use Digest::SHA qw/sha256_base64/;
 use Memoize;
 use Scalar::Util ();
 use Sub::Name    ();
@@ -119,9 +100,7 @@ sub study_statement {
     my @placeholders = $trimmed_sql =~ m{[\:\$\?]\w+\b}g;
     my $mapped_positions;
     if (@placeholders) {
-        $mapped_positions = {
-            map {(1 + $_ => $placeholders[$_])} (0 .. $#placeholders),
-        };
+        $mapped_positions = {map {(1 + $_ => $placeholders[$_])} (0 .. $#placeholders),};
     }
     return $mapped_positions, $normalised, $trimmed_sql, $digest;
 }

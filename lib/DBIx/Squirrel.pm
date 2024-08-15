@@ -204,9 +204,8 @@ DBIx::Squirrel - A C<DBI> extension
 
 use DBI;
 use Exporter;
-use Scalar::Util 'reftype';
+use Scalar::Util qw/reftype/;
 use Sub::Name;
-
 use DBIx::Squirrel::dr   ();
 use DBIx::Squirrel::db   ();
 use DBIx::Squirrel::st   ();
@@ -232,8 +231,8 @@ BEGIN {
     *DBIx::Squirrel::DEFAULT_MAXROWS              = *DBIx::Squirrel::it::DEFAULT_MAXROWS;
     *DBIx::Squirrel::BUF_MULT                     = *DBIx::Squirrel::it::BUF_MULT;
     *DBIx::Squirrel::BUF_MAXROWS                  = *DBIx::Squirrel::it::BUF_MAXROWS;
-    $DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE = 1;
-    $DBIx::Squirrel::NORMALISE_SQL                = 1;
+    $DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE = !!1;
+    $DBIx::Squirrel::NORMALISE_SQL                = !!1;
     *DBIx::Squirrel::NORMALIZE_SQL                = *DBIx::Squirrel::NORMALISE_SQL;
 }
 
