@@ -153,29 +153,29 @@ version 1.2.6
     # Statement objects
     # -----------------
 
-    # Statement objects can be used to generate two kinds of iterator.
+    # Both database and statement objects can be used to generate two
+    # kinds of iterator.
     #
-    # Database objects, too, use methods of the same name to generate
-    # iterators.
-
     # A basic iterator.
     #
+    $itr = $dbh->iterate($query, \%attr, ...);
     $itr = $sth->iterate(...);
-    $itr = $sth->iterate(...)->reset({});
 
     # A fancy iterator (or result set).
     #
+    $itr = $dbh->results($query, \%attr, ...);
     $itr = $sth->results(...);
-    $itr = $sth->results(...)->reset({});
 
     # ---------
     # Iterators
     # ---------
 
-    # We only expect one row, and we require the statement to be finished.
+    # When we only expect one row, and we require the statement to be
+    # finished after that row is fetched, we can call the "single"
+    # method (or its alias "one").
     #
-    # Will emit a warning if there are more rows to fetch as a reminder
-    # to use "LIMIT 1" in your query.
+    # This method will emit a warning if there are more rows to fetch
+    # as a reminder to use "LIMIT 1" in your query.
     #
     $row = $itr->single(OPTIONAL-NEW-BIND-VALUES)
       or die "No matching row!";
@@ -280,11 +280,11 @@ version 1.2.6
     # ---------------
 
     # A transformation is a sequence of one or more trailing code references
-    # that are passed to the method that generates the iterator. The initial
-    # result enters the first stage of the transformation as $_[0] (and $_),
-    # and the result of that transformation is passed onto the next stage (or
-    # or returned to the caller), using a "return" statement or as the result
-    # of the final expression.
+    # passed to the method that generates the iterator. The initial result
+    # enters the first stage of the transformation as $_ (and in $_[0]). The
+    # result of that transformation is passed on to the next stage (or to the
+    # caller), with an explicit "return" statement or as the result of the
+    # sfinal expression.
     #
     # Transformations are a great way to declare, in one place, any common
     # processing logic that should be applied automatically to results as
