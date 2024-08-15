@@ -178,7 +178,7 @@ DBIx::Squirrel - A C<DBI> extension
 
     # We only expect one row, and we require the statement to be finished.
     #
-    # Will emit a warning if there are more rows to fetch as a reminder 
+    # Will emit a warning if there are more rows to fetch as a reminder
     # to use "LIMIT 1" in your query.
     #
     $row = $itr->single(OPTIONAL-NEW-BIND-VALUES)
@@ -212,7 +212,7 @@ DBIx::Squirrel - A C<DBI> extension
     #
     $ary_ref = $itr->all;
 
-    # Get the number of records. More memory efficient than "count_all", 
+    # Get the number of records. More memory efficient than "count_all",
     # since "next" is called after each record is read and discarded.
     #
     $num = $itr->count();
@@ -401,7 +401,7 @@ sub import {
     for my $name (@{$helpers}) {
         my $symbol = $class . '::' . $name;
         my $helper = sub {
-            unless (defined ${$symbol}) {
+            unless (defined(${$symbol})) {
                 if (@_) {
                     throw E_BAD_ENT_BIND
                       unless UNIVERSAL::isa($_[0], 'DBI::db')
@@ -411,7 +411,7 @@ sub import {
                     return ${$symbol};
                 }
             }
-            return unless defined ${$symbol};
+            return unless defined(${$symbol});
             if (@_) {
                 my @params = do {
                     if (@_ == 1 && ref $_[0]) {
@@ -446,7 +446,7 @@ sub import {
         };
         *{$symbol} = subname($name => $helper);
         *{$caller . '::' . $name} = subname($caller . '::' . $name => \&{$symbol})
-          unless defined &{$caller . '::' . $name};
+          unless defined(&{$caller . '::' . $name});
     }
     if (@{$dbi}) {
         DBI->import(@{$dbi});

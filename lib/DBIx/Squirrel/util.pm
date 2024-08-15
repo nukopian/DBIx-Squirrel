@@ -47,11 +47,11 @@ sub throw {
                 sprintf $f, @a;
             }
             else {
-                defined $f ? $f : 'Exception';
+                defined($f) ? $f : 'Exception';
             }
         } ## end if ( @_ )
         else {
-            defined $@ ? $@ : 'Exception';
+            defined($@) ? $@ : 'Exception';
         }
     };
     goto &Carp::confess;
@@ -63,10 +63,10 @@ sub whine {
         if (@_) {
             my($f, @a) = @_;
             if (@a) {
-                sprintf $f, @a;
+                sprintf($f, @a);
             }
             else {
-                defined $f ? $f : 'Warning';
+                defined($f) ? $f : 'Warning';
             }
         } ## end if ( @_ )
         else {
@@ -88,7 +88,7 @@ memoize('is_viable_sql_string');
 
 
 sub is_viable_sql_string {
-    return defined $_[0] && length $_[0] && $_[0] =~ m/\S/;
+    return defined($_[0]) && length($_[0]) && $_[0] =~ m/\S/;
 }
 
 memoize('study_statement');
@@ -177,7 +177,7 @@ sub cbargs {
 
 sub cbargs_using {
     my($c, @t) = do {
-        if (defined $_[0]) {
+        if (defined($_[0])) {
             if (UNIVERSAL::isa($_[0], 'ARRAY')) {
                 @_;
             }

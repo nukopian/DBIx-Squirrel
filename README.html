@@ -237,7 +237,7 @@ $itr = $sth-&gt;results(...)-&gt;reset({});
 
 # We only expect one row, and we require the statement to be finished.
 #
-# Will emit a warning if there are more rows to fetch as a reminder 
+# Will emit a warning if there are more rows to fetch as a reminder
 # to use &quot;LIMIT 1&quot; in your query.
 #
 $row = $itr-&gt;single(OPTIONAL-NEW-BIND-VALUES)
@@ -271,7 +271,7 @@ push @ary, $itr-&gt;remaining;
 #
 $ary_ref = $itr-&gt;all;
 
-# Get the number of records. More memory efficient than &quot;count_all&quot;, 
+# Get the number of records. More memory efficient than &quot;count_all&quot;,
 # since &quot;next&quot; is called after each record is read and discarded.
 #
 $num = $itr-&gt;count();

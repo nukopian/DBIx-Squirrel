@@ -174,7 +174,7 @@ version 1.2.6
 
     # We only expect one row, and we require the statement to be finished.
     #
-    # Will emit a warning if there are more rows to fetch as a reminder 
+    # Will emit a warning if there are more rows to fetch as a reminder
     # to use "LIMIT 1" in your query.
     #
     $row = $itr->single(OPTIONAL-NEW-BIND-VALUES)
@@ -208,7 +208,7 @@ version 1.2.6
     #
     $ary_ref = $itr->all;
 
-    # Get the number of records. More memory efficient than "count_all", 
+    # Get the number of records. More memory efficient than "count_all",
     # since "next" is called after each record is read and discarded.
     #
     $num = $itr->count();

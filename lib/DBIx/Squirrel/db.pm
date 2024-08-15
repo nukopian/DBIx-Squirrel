@@ -39,7 +39,7 @@ sub _private_attributes {
           if wantarray;
         return $self->{'private_ekorn'};
     }
-    unless (defined $_[0]) {
+    unless (defined($_[0])) {
         delete $self->{'private_ekorn'};
         shift;
     }
