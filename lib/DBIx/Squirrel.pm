@@ -153,9 +153,9 @@ DBIx::Squirrel - A C<DBI> extension
     #
     ($res, $sth) = $dbh->do(...);
 
-    # -----------------
-    # Statement objects
-    # -----------------
+    # ---------
+    # Iterators
+    # ---------
 
     # Both database and statement objects can be used to generate two
     # kinds of iterator.
@@ -169,10 +169,6 @@ DBIx::Squirrel - A C<DBI> extension
     #
     $itr = $dbh->results($query, \%attr, ...);
     $itr = $sth->results(...);
-
-    # ---------
-    # Iterators
-    # ---------
 
     # When we only expect one row, and we require the statement to be
     # finished after that row is fetched, we can call the "single"

@@ -212,9 +212,9 @@ $res = $dbh-&gt;do(
 #
 ($res, $sth) = $dbh-&gt;do(...);
 
-# -----------------
-# Statement objects
-# -----------------
+# ---------
+# Iterators
+# ---------
 
 # Both database and statement objects can be used to generate two
 # kinds of iterator.
@@ -228,10 +228,6 @@ $itr = $sth-&gt;iterate(...);
 #
 $itr = $dbh-&gt;results($query, \%attr, ...);
 $itr = $sth-&gt;results(...);
-
-# ---------
-# Iterators
-# ---------
 
 # When we only expect one row, and we require the statement to be
 # finished after that row is fetched, we can call the &quot;single&quot;

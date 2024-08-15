@@ -149,9 +149,9 @@ version 1.2.6
     #
     ($res, $sth) = $dbh->do(...);
 
-    # -----------------
-    # Statement objects
-    # -----------------
+    # ---------
+    # Iterators
+    # ---------
 
     # Both database and statement objects can be used to generate two
     # kinds of iterator.
@@ -165,10 +165,6 @@ version 1.2.6
     #
     $itr = $dbh->results($query, \%attr, ...);
     $itr = $sth->results(...);
-
-    # ---------
-    # Iterators
-    # ---------
 
     # When we only expect one row, and we require the statement to be
     # finished after that row is fetched, we can call the "single"
