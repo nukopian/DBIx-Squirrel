@@ -16,8 +16,8 @@ BEGIN {
 
 use namespace::autoclean;
 use Data::Dumper::Concise;
-use Scalar::Util 'weaken';
-use DBIx::Squirrel::util 'cbargs', 'throw', 'transform', 'whine';
+use Scalar::Util         qw/weaken/;
+use DBIx::Squirrel::util qw/cbargs throw transform whine/;
 
 use constant E_BAD_SLICE   => 'Slice must be a reference to an ARRAY or HASH';
 use constant E_BAD_MAXROWS => 'Maximum row count must be an integer greater than zero';
@@ -62,9 +62,8 @@ sub new {
 sub all {
     my $self = shift;
     my @rows;
-    if ($self->execute(@_)) {
-        push @rows, $self->remaining;
-    }
+    push @rows, $self->remaining
+      if $self->execute(@_);
     return @rows
       if wantarray;
     return \@rows;
