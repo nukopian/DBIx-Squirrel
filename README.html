@@ -119,17 +119,17 @@ $clone = DBIx::Squirrel-&gt;connect($dbh);
 # have been normalised to use the legacy (&quot;?&quot;) style.
 #
 # Oracle
-$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = :id&#39;);
-$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = :1&#39;);
+$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id=:id&#39;);
+$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id=:1&#39;);
 
 # Postgres
-$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = $1&#39;);
+$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id=$1&#39;);
 
 # SQLite
-$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = ?1&#39;);
+$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id=?1&#39;);
 
 # MySQL, MariaDB and legacy
-$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id = ?&#39;);
+$sth = $dbh-&gt;prepare(&#39;SELECT * FROM product WHERE id=?&#39;);
 
 # Able to bind values to individual parameters for both positional
 # and named placeholder schemes.
@@ -182,12 +182,12 @@ $res = $dbh-&gt;do(&#39;SELECT * FROM product WHERE id=:id&#39;, &#39;:id&#39; =
 # when bind-values are presented as a hash reference.
 #
 $res = $dbh-&gt;do(
-    &#39;SELECT * FROM product WHERE id = :id&#39;,
+    &#39;SELECT * FROM product WHERE id=:id&#39;,
     undef | \%attr,
     { &#39;:id&#39; =&gt; &#39;1001099&#39;}
 );
 $res = $dbh-&gt;do(
-    &#39;SELECT * FROM product WHERE id = :id&#39;,
+    &#39;SELECT * FROM product WHERE id=:id&#39;,
     undef | \%attr,
     { id =&gt; &#39;1001099&#39; },
 );
@@ -243,15 +243,15 @@ push @ary, $_ while $itr-&gt;next;
 @ary = $itr-&gt;first;
 push @ary, $_ while $itr-&gt;next;
 
-@ary = $itr-&gt;first;
-push @ary, $_ while $itr-&gt;next;
-
 # Get everything at once.
 #
 @ary = $itr-&gt;first;
 push @ary, $itr-&gt;remaining;
 
 @ary = $itr-&gt;all;
+
+# Having &quot;all&quot; return a reference is faster!
+#
 $ary_ref = $itr-&gt;all;
 
 # Get the number of records. More memory efficient than &quot;count_all&quot;, 
@@ -282,7 +282,77 @@ $itr = $itr-&gt;reset(10);
 # and how to slice up the rows.
 #
 $itr = $itr-&gt;reset($slice, $row_count);
-$itr = $itr-&gt;reset($row_count, $slice);</code></pre>
+$itr = $itr-&gt;reset($row_count, $slice);
+
+# --------------------
+# Working with results
+# --------------------
+
+# Accessing column values using basic iterators.
+#
+$itr = $dbh-&gt;iterate(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice([]);
+print &quot;Id: $_-&gt;[0]\n&quot;
+  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+
+$itr = $dbh-&gt;iterate(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice({});
+print &quot;Id: $_-&gt;{Id}\n&quot;
+  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+
+# Accessing column values using using fancy iterators is be accomplished
+# as shown above or via accessors. Regardless of case, accessors just work.
+
+$itr = $dbh-&gt;results(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice({});
+print &quot;Id: &quot;, $_-&gt;Id, &quot;\n&quot;
+  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+
+$itr = $dbh-&gt;results(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice({});
+print &quot;Id: &quot;, $_-&gt;ID, &quot;\n&quot;
+  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+
+$itr = $dbh-&gt;results(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice({});
+print &quot;Id: &quot;, $_-&gt;id, &quot;\n&quot;
+  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+
+# ---------------
+# Transformations
+# ---------------
+
+$itr = $dbh-&gt;iterate(
+    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {
+        return $_-&gt;[0];
+    }
+)-&gt;slice([]);
+print &quot;Id: $_\n&quot;
+  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+
+$itr = $dbh-&gt;iterate(
+    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {
+        return $_-&gt;[Id];
+    }
+)-&gt;slice({});
+print &quot;Id: $_\n&quot;
+  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+
+$itr = $dbh-&gt;results(
+    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {
+        return $_-&gt;Id;
+    }
+)-&gt;slice({});
+print &quot;Id: $_\n&quot;
+  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+
+# Transformations can be chained together.
+#
+$itr = $dbh-&gt;results(
+    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {
+        my $row = $_;
+        print &quot;Id: &quot;, $row-&gt;Id, &quot;\n&quot;;
+        return $row;
+    } =&gt; sub {
+        return $_-&gt;Id;
+    }
+)-&gt;slice({});
+$id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;</code></pre>
 
 <h1 id="DESCRIPTION">DESCRIPTION</h1>
 

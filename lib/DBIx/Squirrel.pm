@@ -73,17 +73,17 @@ DBIx::Squirrel - A C<DBI> extension
     # have been normalised to use the legacy ("?") style.
     #
     # Oracle
-    $sth = $dbh->prepare('SELECT * FROM product WHERE id = :id');
-    $sth = $dbh->prepare('SELECT * FROM product WHERE id = :1');
+    $sth = $dbh->prepare('SELECT * FROM product WHERE id=:id');
+    $sth = $dbh->prepare('SELECT * FROM product WHERE id=:1');
 
     # Postgres
-    $sth = $dbh->prepare('SELECT * FROM product WHERE id = $1');
+    $sth = $dbh->prepare('SELECT * FROM product WHERE id=$1');
 
     # SQLite
-    $sth = $dbh->prepare('SELECT * FROM product WHERE id = ?1');
+    $sth = $dbh->prepare('SELECT * FROM product WHERE id=?1');
 
     # MySQL, MariaDB and legacy
-    $sth = $dbh->prepare('SELECT * FROM product WHERE id = ?');
+    $sth = $dbh->prepare('SELECT * FROM product WHERE id=?');
 
     # Able to bind values to individual parameters for both positional
     # and named placeholder schemes.
@@ -136,12 +136,12 @@ DBIx::Squirrel - A C<DBI> extension
     # when bind-values are presented as a hash reference.
     #
     $res = $dbh->do(
-        'SELECT * FROM product WHERE id = :id',
+        'SELECT * FROM product WHERE id=:id',
         undef | \%attr,
         { ':id' => '1001099'}
     );
     $res = $dbh->do(
-        'SELECT * FROM product WHERE id = :id',
+        'SELECT * FROM product WHERE id=:id',
         undef | \%attr,
         { id => '1001099' },
     );
@@ -197,15 +197,15 @@ DBIx::Squirrel - A C<DBI> extension
     @ary = $itr->first;
     push @ary, $_ while $itr->next;
 
-    @ary = $itr->first;
-    push @ary, $_ while $itr->next;
-
     # Get everything at once.
     #
     @ary = $itr->first;
     push @ary, $itr->remaining;
 
     @ary = $itr->all;
+
+    # Having "all" return a reference is faster!
+    #
     $ary_ref = $itr->all;
 
     # Get the number of records. More memory efficient than "count_all", 
@@ -237,6 +237,76 @@ DBIx::Squirrel - A C<DBI> extension
     #
     $itr = $itr->reset($slice, $row_count);
     $itr = $itr->reset($row_count, $slice);
+
+    # --------------------
+    # Working with results
+    # --------------------
+
+    # Accessing column values using basic iterators.
+    #
+    $itr = $dbh->iterate('SELECT Id, Name FROM product WHERE Name=?')->slice([]);
+    print "Id: $_->[0]\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    $itr = $dbh->iterate('SELECT Id, Name FROM product WHERE Name=?')->slice({});
+    print "Id: $_->{Id}\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    # Accessing column values using using fancy iterators is be accomplished
+    # as shown above or via accessors. Regardless of case, accessors just work.
+
+    $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?')->slice({});
+    print "Id: ", $_->Id, "\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?')->slice({});
+    print "Id: ", $_->ID, "\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?')->slice({});
+    print "Id: ", $_->id, "\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    # ---------------
+    # Transformations
+    # ---------------
+
+    $itr = $dbh->iterate(
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {
+            return $_->[0];
+        }
+    )->slice([]);
+    print "Id: $_\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    $itr = $dbh->iterate(
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {
+            return $_->[Id];
+        }
+    )->slice({});
+    print "Id: $_\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    $itr = $dbh->results(
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {
+            return $_->Id;
+        }
+    )->slice({});
+    print "Id: $_\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    # Transformations can be chained together.
+    #
+    $itr = $dbh->results(
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {
+            my $row = $_;
+            print "Id: ", $row->Id, "\n";
+            return $row;
+        } => sub {
+            return $_->Id;
+        }
+    )->slice({});
+    $id = $itr->iterate('Acme Rocket')->single;
 =cut
 
 use DBI;
