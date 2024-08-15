@@ -52,7 +52,8 @@ version 1.2.5
     # Cloning database connections
     # ----------------------------
 
-    # Cloning DBI connections is also allowed.
+    # Cloning connections created by the DBI, DBIx::Squirrel or their
+    # subclasses is permitted.
     #
     $dbh = DBI->connect($dsn, $user, $pass, \%attr);
     $clone = DBIx::Squirrel->connect($dbh);
@@ -61,9 +62,11 @@ version 1.2.5
     # Parameter placeholders and binding values
     # -----------------------------------------
 
-    # Several commonly used placeholder styles are supported. Just use the
-    # one you prefer. By the time the statement is prepared, it will have
-    # been normalised to use the legacy ("?") style.
+    # Several commonly used placeholder styles are supported and just work!
+    #
+    # Use the style you prefer. DBIx::Squirrel doesn't care about the DBD
+    # engine you are using. By the time the statement is prepared, it will
+    # have been normalised to use the legacy ("?") style.
     #
     # Oracle
     $sth = $dbh->prepare('SELECT * FROM product WHERE id = :id');
