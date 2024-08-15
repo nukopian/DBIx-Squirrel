@@ -52,6 +52,7 @@ DBIx::Squirrel - A C<DBI> extension
     #
     print $_->Name, "\n" if product('Acme Rocket')->single;
 
+    # ----------------------------
     # Cloning database connections
     # ----------------------------
 
@@ -60,6 +61,7 @@ DBIx::Squirrel - A C<DBI> extension
     $dbh = DBI->connect($dsn, $user, $pass, \%attr);
     $clone = DBIx::Squirrel->connect($dbh);
 
+    # -----------------------------------------
     # Parameter placeholders and binding values
     # -----------------------------------------
 
@@ -113,6 +115,7 @@ DBIx::Squirrel - A C<DBI> extension
     $res = $itr->execute(...);
     $itr = $itr->iterate(...);
 
+    # --------------------------------------------
     # The database connection object's "do" method
     # --------------------------------------------
 
@@ -146,6 +149,7 @@ DBIx::Squirrel - A C<DBI> extension
     #
     ($res, $sth) = $dbh->do(...);
 
+    # -----------------
     # Statement objects
     # -----------------
 
@@ -161,6 +165,7 @@ DBIx::Squirrel - A C<DBI> extension
     $itr = $sth->results(...);
     $itr = $sth->results(...)->slice({});
 
+    # ---------
     # Iterators
     # ---------
 

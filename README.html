@@ -98,6 +98,7 @@ product(db-&gt;results(&#39;SELECT * FROM product WHERE Name=?&#39;));
 #
 print $_-&gt;Name, &quot;\n&quot; if product(&#39;Acme Rocket&#39;)-&gt;single;
 
+# ----------------------------
 # Cloning database connections
 # ----------------------------
 
@@ -106,6 +107,7 @@ print $_-&gt;Name, &quot;\n&quot; if product(&#39;Acme Rocket&#39;)-&gt;single;
 $dbh = DBI-&gt;connect($dsn, $user, $pass, \%attr);
 $clone = DBIx::Squirrel-&gt;connect($dbh);
 
+# -----------------------------------------
 # Parameter placeholders and binding values
 # -----------------------------------------
 
@@ -159,6 +161,7 @@ $res = $sth-&gt;execute(...);
 $res = $itr-&gt;execute(...);
 $itr = $itr-&gt;iterate(...);
 
+# --------------------------------------------
 # The database connection object&#39;s &quot;do&quot; method
 # --------------------------------------------
 
@@ -192,6 +195,7 @@ $res = $dbh-&gt;do(
 #
 ($res, $sth) = $dbh-&gt;do(...);
 
+# -----------------
 # Statement objects
 # -----------------
 
@@ -207,6 +211,7 @@ $itr = $sth-&gt;iterate(...)-&gt;slice({});
 $itr = $sth-&gt;results(...);
 $itr = $sth-&gt;results(...)-&gt;slice({});
 
+# ---------
 # Iterators
 # ---------
 
