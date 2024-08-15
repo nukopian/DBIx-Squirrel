@@ -466,19 +466,22 @@ methods.
 ### Placeholders
 
 A nice quality-of-life improvement offered by `DBIx::Squirrel`'s own
-implementation of the `prepare_cached` and `prepare` methods is the
-built-in support for different placeholder styles:
+implementation of the `prepare_cached` and `prepare` methods is their
+built-in ability to cope with for a number of different placeholder
+styles:
 
 - named (`:name`);
 - positional (`:number`, `$number`, `?number`);
 - legacy (`?`)
 
-Regardless of your `DBD` driver, or your preferred style, statements
-will be normalised to the legacy placeholder (`?`) by the time they
-are executed.
+It does not matter what style your `DBD`-drive supports, `DBIx::Squirrel`
+will happily deal with all of the above styles. Just pick the one that
+you prefer to work with, or use the one that is most suitable to the
+task at hand.
 
-Use your preferred style, or the style that most helps your query to
-be reasoned by others.
+By the time your statement is passed to the `DBD`-driver for execution,
+both it and its bind-values will have been normalised to use the legacy
+style (`?`) supported by all drivers.
 
 #### Examples
 
@@ -488,7 +491,7 @@ be reasoned by others.
 
         # Any of the following value-binding styles will work:
         $res = $sth->execute('Aerosmith');
-        $res = $sth->execute([ 'Aerosmith' ]);
+        $res = $sth->execute(['Aerosmith']);
 
 - SQLite positional placeholders (`?number`):
 
@@ -496,7 +499,7 @@ be reasoned by others.
 
         # Any of the following value-binding styles will work:
         $res = $sth->execute('Aerosmith');
-        $res = $sth->execute([ 'Aerosmith' ]);
+        $res = $sth->execute(['Aerosmith']);
 
 - PostgreSQL positional placeholders (`$number`):
 
@@ -504,7 +507,7 @@ be reasoned by others.
 
         # Any of the following value-binding styles will work:
         $res = $sth->execute('Aerosmith');
-        $res = $sth->execute([ 'Aerosmith' ]);
+        $res = $sth->execute(['Aerosmith']);
 
 - Oracle positional placeholders (`:number`):
 
@@ -512,21 +515,54 @@ be reasoned by others.
 
         # Any of the following value-binding styles will work:
         $res = $sth->execute('Aerosmith');
-        $res = $sth->execute([ 'Aerosmith' ]);
+        $res = $sth->execute(['Aerosmith']);
 
-- Oracle named placeholders (`:number`):
+- Oracle named placeholders (`:name`):
 
         $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:Name LIMIT 1');
 
         # Any of the following value-binding styles will work:
-        $res = $sth->execute( Name => 'Aerosmith' );
-        $res = $sth->execute({ Name => 'Aerosmith' });
-        $res = $sth->execute( ':Name' => 'Aerosmith' );
-        $res = $sth->execute({ ':Name' => 'Aerosmith' });
+        $res = $sth->execute(Name => 'Aerosmith');
+        $res = $sth->execute( ':Name' => 'Aerosmith');
+        $res = $sth->execute({Name => 'Aerosmith'});
+        $res = $sth->execute({':Name' => 'Aerosmith'});
 
 ## Iterators
 
-(TO DO)
+In addition the statements, `DBIx::Squirrel` provides iterators. There are
+two kinds to choose from:
+
+- Basic
+- Fancy
+
+### Basic Iterators
+
+Basic iterators present row data as ARRAYREFs or HASHREFs, depending
+on the slice-style in force. Column values are accessed by column-
+index when using the ARRAYREFs-slice-style, or by column-name when
+using the HASHREFs-slice-style.
+
+The default behaviour is to slice rowns as ARRAYREFs. An iterator's
+"reset" method can be used to change this behaviour by passing it an
+empty HASHREF (`{}`) or an empty ARRAYREF (`[]`).
+
+#### How to create a basic iterator
+
+    $itr = $dbh->iterate($query,[undef|\%attr,][@bindvalues,][@coderefs]);
+    $itr = $sth->iterate([@bindvalues,][@coderefs]);
+
+### Fancy Iterators, _(or Result Sets)_
+
+Fancy iterators behave just like their basic alternatives, but the
+row data they present is blessed. Column values may continue to be
+accessed as they would be with basic iterators, but accessor methods
+may also be used to get column values. Such accessor methods are
+created the first time they are used.
+
+#### How to create a fancy iterator
+
+    $itr = $dbh->results($query,[undef|\%attr,][@bindvalues,][@coderefs]);
+    $itr = $sth->results([@bindvalues,][@coderefs]);
 
 ## Processing results
 
