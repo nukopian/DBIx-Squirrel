@@ -52,8 +52,8 @@ sub new {
         'st'        => $sth->_private_attributes({'Iterator' => $self}),
         'bindvals'  => [@bindvals],
         'callbacks' => $callbacks,
-        'slice'     => $self->slice->{'Slice'},
-        'maxrows'   => $self->maxrows->{'MaxRows'},
+        'slice'     => $self->_slice->{'Slice'},
+        'maxrows'   => $self->_maxrows->{'MaxRows'},
     });
     return do {$_ = $self};
 }
@@ -71,6 +71,14 @@ sub all {
 
 
 sub count {
+    my $self  = shift;
+    my $count = 0;
+    $count += 1 while $self->next;
+    return do {$_ = $count};
+}
+
+
+sub count_all {
     return do {$_ = scalar(@{shift->all(@_)})};
 }
 
@@ -151,15 +159,6 @@ sub iterate {
     return
       unless defined($self->execute(@_));
     return do {$_ = $self};
-}
-
-
-sub maxrows {
-    my $self = shift;
-    throw E_BAD_MAXROWS
-      if ref($_[0]);
-    $self->{'MaxRows'} = int(shift || DEFAULT_MAXROWS);
-    return $self->_private_attributes({'maxrows' => $self->{'MaxRows'}});
 }
 
 
@@ -300,7 +299,7 @@ sub _fetch_row {
 
 sub next {
     my $self = shift;
-    $self->slice_maxrows(@_)
+    $self->_slice_maxrows(@_)
       if @_;
     return do {$_ = $self->_fetch_row};
 }
@@ -322,9 +321,59 @@ sub remaining {
 }
 
 
+sub _maxrows {
+    my $self = shift;
+    throw E_BAD_MAXROWS
+      if ref($_[0]);
+    $self->{'MaxRows'} = int(shift || DEFAULT_MAXROWS);
+    return $self->_private_attributes({'maxrows' => $self->{'MaxRows'}});
+}
+
+
+sub _slice {
+    my $self = shift;
+    unless (@_) {
+        unless (defined $self->{'Slice'}) {
+            $self->{'Slice'} = DEFAULT_SLICE;
+        }
+        return $self->_private_attributes({'slice' => $self->{'Slice'}});
+    }
+    if (defined($_[0])) {
+        if (UNIVERSAL::isa($_[0], 'ARRAY')) {
+            $self->{'Slice'} = [];
+        }
+        elsif (UNIVERSAL::isa($_[0], 'HASH')) {
+            $self->{'Slice'} = {};
+        }
+        else {
+            throw E_BAD_SLICE;
+        }
+    }
+    else {
+        $self->{'Slice'} = DEFAULT_SLICE;
+    }
+    return $self->_private_attributes({'slice' => $self->{'Slice'}});
+}
+
+
+sub _slice_maxrows {
+    my $self = shift;
+    return $self
+      unless @_;
+    return $self->_slice(shift)->_maxrows(shift)
+      if ref($_[0]);
+    return $self->_maxrows(shift)->_slice(shift);
+}
+
+
+BEGIN {
+    *_maxrows_slice = *_slice_maxrows;    # Don't make me think!
+}
+
+
 sub reset {
     my $self = shift;
-    $self->slice_maxrows(@_)
+    $self->_slice_maxrows(@_)
       if @_;
     return do {$_ = $self->finish};
 }
@@ -352,47 +401,6 @@ sub single {
 
 BEGIN {
     *one = *single;
-}
-
-
-sub slice {
-    my $self = shift;
-    unless (@_) {
-        unless (defined $self->{'Slice'}) {
-            $self->{'Slice'} = DEFAULT_SLICE;
-        }
-        return $self->_private_attributes({'slice' => $self->{'Slice'}});
-    }
-    if (defined($_[0])) {
-        if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-            $self->{'Slice'} = [];
-        }
-        elsif (UNIVERSAL::isa($_[0], 'HASH')) {
-            $self->{'Slice'} = {};
-        }
-        else {
-            throw E_BAD_SLICE;
-        }
-    }
-    else {
-        $self->{'Slice'} = DEFAULT_SLICE;
-    }
-    return $self->_private_attributes({'slice' => $self->{'Slice'}});
-}
-
-
-sub slice_maxrows {
-    my $self = shift;
-    return $self
-      unless @_;
-    return $self->slice(shift)->maxrows(shift)
-      if ref($_[0]);
-    return $self->maxrows(shift)->slice(shift);
-}
-
-
-BEGIN {
-    *maxrows_slice = *slice_maxrows;    # Don't make me think!
 }
 
 

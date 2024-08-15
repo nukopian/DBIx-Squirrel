@@ -61,11 +61,11 @@ sub _undef_autoloaded_accessors {
 }
 
 
-sub slice {
+sub _slice {
     my($attr, $self) = shift->_private_attributes;
     my $slice = shift;
     my $old   = defined($attr->{'slice'}) ? $attr->{'slice'} : '';
-    $self->SUPER::slice($slice);
+    $self->SUPER::_slice($slice);
     if (my $new = defined($attr->{'slice'}) ? $attr->{'slice'} : '') {
         $self->_undef_autoloaded_accessors
           if ref($new) ne ref($old) && %{$self->row_class . '::'};
