@@ -3,8 +3,6 @@ use Modern::Perl;
 package    # hide from PAUSE
   DBIx::Squirrel::rs;
 
-use warnings;
-
 
 BEGIN {
     require DBIx::Squirrel
