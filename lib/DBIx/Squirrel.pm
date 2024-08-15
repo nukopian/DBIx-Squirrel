@@ -311,7 +311,7 @@ DBIx::Squirrel - A C<DBI> extension
         print "Id: $id\n"
     }
 
-    # Multiple transformations may be chained together.
+    # Transformation squences.
     #
     $itr = $dbh->results(
         'SELECT Id, Name FROM product WHERE Name=?' => sub {
@@ -770,7 +770,73 @@ aliases, if preferred.
 
 =head2 Processing results
 
-(TO DO)
+=head3 Getting one result
+
+I<(TO DO)>
+
+=head3 Getting more than one result
+
+I<(TO DO)>
+
+=head3 Transformations
+
+Within the context of C<DBIx::Squirrel> iterators, a "transformation" is a
+single- or multi-stage process responsible for changing the shape of results
+and/or doing something else with them prior to them being returned to the
+caller.
+
+Iterator methods such as "single", "first", "next" and "all" would normally
+fetch rows and return these strainght to the caller for further processing
+and use after the call site. Iterators, however, provide the programmer with
+a mechanism for declaring what should happen automatically to each row after
+it is fetched but before it is returned to the caller. This is accomplished
+by appending one or more CODEREFs to the argument-list passed into the
+method that constructs the iterator.
+
+B<For example>
+
+In the code below, we will:
+
+=over
+
+=item * Connect to the database;
+
+=item * Create a C<product_id> iterator that returns the id of a named product;
+
+=item * Execute our query and return the id.
+
+=back
+
+We just want the product's id returned to the caller. We aren't interested
+in any other information. Nevertheless, we I<do> want to quickly check that
+all is as it should be, so we will log some additional debug information
+to the error console.
+
+    use DBIx::Squirrel database_entities => [qw/db product_id/];
+
+    db(DBIx::Squirrel->connect($dsn, $user, $pass, \%attr));
+
+    product_id($db->results(
+        'SELECT Id, Name, Description FROM product WHERE Name=?' => sub {
+            my $res = shift;
+            print STDERR "Id:          ", $res->Id, "\n";
+            print STDERR "Name:        ", $res->Name, "\n";
+            print STDERR "Description: ", $res->Description, "\n";
+            return $res;
+        } => sub {
+            $_->Id;
+        },
+    ));
+
+    $id = product_id('Acme Rocket')->single;
+
+    db->disconnect();
+
+Rather than litter the area around our call site with code to process the
+result, we have kept all that logic where the iterator is constructed. There
+is a two-stage transformation chain defined at the end of the call to the
+"results" method. The first takes care of the debug output, while the second
+re-shapes the result into just the information we want.
 
 =head1 COPYRIGHT AND LICENSE
 

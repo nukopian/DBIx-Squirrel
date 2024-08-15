@@ -54,7 +54,13 @@
           </li>
         </ul>
       </li>
-      <li><a href="#Processing-results">Processing results</a></li>
+      <li><a href="#Processing-results">Processing results</a>
+        <ul>
+          <li><a href="#Getting-one-result">Getting one result</a></li>
+          <li><a href="#Getting-more-than-one-result">Getting more than one result</a></li>
+          <li><a href="#Transformations">Transformations</a></li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li><a href="#COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</a></li>
@@ -370,7 +376,7 @@ if ($id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
     print &quot;Id: $id\n&quot;
 }
 
-# Multiple transformations may be chained together.
+# Transformation squences.
 #
 $itr = $dbh-&gt;results(
     &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {
@@ -640,7 +646,60 @@ $itr = $sth-&gt;results(
 
 <h2 id="Processing-results">Processing results</h2>
 
-<p>(TO DO)</p>
+<h3 id="Getting-one-result">Getting one result</h3>
+
+<p><i>(TO DO)</i></p>
+
+<h3 id="Getting-more-than-one-result">Getting more than one result</h3>
+
+<p><i>(TO DO)</i></p>
+
+<h3 id="Transformations">Transformations</h3>
+
+<p>Within the context of <code>DBIx::Squirrel</code> iterators, a &quot;transformation&quot; is a single- or multi-stage process responsible for changing the shape of results and/or doing something else with them prior to them being returned to the caller.</p>
+
+<p>Iterator methods such as &quot;single&quot;, &quot;first&quot;, &quot;next&quot; and &quot;all&quot; would normally fetch rows and return these strainght to the caller for further processing and use after the call site. Iterators, however, provide the programmer with a mechanism for declaring what should happen automatically to each row after it is fetched but before it is returned to the caller. This is accomplished by appending one or more CODEREFs to the argument-list passed into the method that constructs the iterator.</p>
+
+<p><b>For example</b></p>
+
+<p>In the code below, we will:</p>
+
+<ul>
+
+<li><p>Connect to the database;</p>
+
+</li>
+<li><p>Create a <code>product_id</code> iterator that returns the id of a named product;</p>
+
+</li>
+<li><p>Execute our query and return the id.</p>
+
+</li>
+</ul>
+
+<p>We just want the product&#39;s id returned to the caller. We aren&#39;t interested in any other information. Nevertheless, we <i>do</i> want to quickly check that all is as it should be, so we will log some additional debug information to the error console.</p>
+
+<pre><code>use DBIx::Squirrel database_entities =&gt; [qw/db product_id/];
+
+db(DBIx::Squirrel-&gt;connect($dsn, $user, $pass, \%attr));
+
+product_id($db-&gt;results(
+    &#39;SELECT Id, Name, Description FROM product WHERE Name=?&#39; =&gt; sub {
+        my $res = shift;
+        print STDERR &quot;Id:          &quot;, $res-&gt;Id, &quot;\n&quot;;
+        print STDERR &quot;Name:        &quot;, $res-&gt;Name, &quot;\n&quot;;
+        print STDERR &quot;Description: &quot;, $res-&gt;Description, &quot;\n&quot;;
+        return $res;
+    } =&gt; sub {
+        $_-&gt;Id;
+    },
+));
+
+$id = product_id(&#39;Acme Rocket&#39;)-&gt;single;
+
+db-&gt;disconnect();</code></pre>
+
+<p>Rather than litter the area around our call site with code to process the result, we have kept all that logic where the iterator is constructed. There is a two-stage transformation chain defined at the end of the call to the &quot;results&quot; method. The first takes care of the debug output, while the second re-shapes the result into just the information we want.</p>
 
 <h1 id="COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</h1>
 
