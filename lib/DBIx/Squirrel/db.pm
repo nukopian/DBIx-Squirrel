@@ -186,7 +186,7 @@ sub do {
 
 
 BEGIN {
-    *iterate = *it = sub {
+    *iterate = *iterator = *it = sub {
         my $self      = shift;
         my $statement = shift;
         my $sth       = do {
@@ -223,7 +223,7 @@ BEGIN {
         return $sth->iterate(@_);
     };
 
-    *results = *rs = sub {
+    *results = *resultset = *rs = sub {
         my $self      = shift;
         my $statement = shift;
         my $sth       = do {
