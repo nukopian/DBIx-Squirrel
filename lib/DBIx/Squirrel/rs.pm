@@ -1,4 +1,4 @@
-use strict 'subs', 'vars';
+use Modern::Perl;
 
 package    # hide from PAUSE
   DBIx::Squirrel::rs;
@@ -34,6 +34,7 @@ sub _fetch_row {
 
 
 sub _rebless {
+    no strict 'refs';    ## no critic
     my $self = shift;
     return
       unless ref($self);
@@ -55,6 +56,7 @@ sub _rebless {
 
 
 sub _undef_autoloaded_accessors {
+    no strict 'refs';    ## no critic
     my $self = shift;
     undef &{$_} foreach @{$self->row_class . '::AUTOLOAD_ACCESSORS'};
     return $self;
@@ -91,6 +93,7 @@ BEGIN {
 
 
 sub DESTROY {
+    no strict 'refs';    ## no critic
     return
       if ${^GLOBAL_PHASE} eq 'DESTRUCT';
     local($., $@, $!, $^E, $?, $_);
