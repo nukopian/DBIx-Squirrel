@@ -171,7 +171,7 @@ version 1.2.6
     # Iterators
     # ---------
 
-    # We only expect one row and require the statement to be finished. 
+    # We only expect one row, and we require the statement to be finished.
     #
     # Will emit a warning if there are more rows to fetch as a reminder 
     # to use "LIMIT 1" in your query.
