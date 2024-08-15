@@ -238,7 +238,7 @@ version 1.2.5
     # Working with results
     # --------------------
 
-    # Accession column values using basic iterators.
+    # Accessing column values using basic iterators.
     #
     $itr = $dbh->iterate('SELECT Id, Name FROM product WHERE Name=?')->slice([]);
     print "Id: $_->[0]\n"
@@ -248,9 +248,8 @@ version 1.2.5
     print "Id: $_->{Id}\n"
       if $itr->iterate('Acme Rocket')->single;
 
-    # Accessing column values using using fancy iterators can be accomplished
-    # as shown above, but also via accessors. Regardless of case, accessors
-    # work.
+    # Accessing column values using using fancy iterators is be accomplished
+    # as shown above or via accessors. Regardless of case, accessors just work.
 
     $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?')->slice({});
     print "Id: ", $_->Id, "\n"
@@ -263,6 +262,47 @@ version 1.2.5
     $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?')->slice({});
     print "Id: ", $_->id, "\n"
       if $itr->iterate('Acme Rocket')->single;
+
+    # ---------------
+    # Transformations
+    # ---------------
+
+    $itr = $dbh->iterate(
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {
+            return $_->[0];
+        }
+    )->slice([]);
+    print "Id: $_\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    $itr = $dbh->iterate(
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {
+            return $_->[Id];
+        }
+    )->slice({});
+    print "Id: $_\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    $itr = $dbh->results(
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {
+            return $_->Id;
+        }
+    )->slice({});
+    print "Id: $_\n"
+      if $itr->iterate('Acme Rocket')->single;
+
+    # Transformations can be chained together.
+    #
+    $itr = $dbh->results(
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {
+            my $row = $_;
+            print "Id: ", $row->Id, "\n";
+            return $row;
+        } => sub {
+            return $_->Id;
+        }
+    )->slice({});
+    $id = $itr->iterate('Acme Rocket')->single;
 
 # DESCRIPTION
 
