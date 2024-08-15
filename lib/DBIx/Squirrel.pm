@@ -245,67 +245,82 @@ DBIx::Squirrel - A C<DBI> extension
     # Accessing column values using basic iterators.
     #
     $itr = $dbh->iterate('SELECT Id, Name FROM product WHERE Name=?')->slice([]);
-    print "Id: $_->[0]\n"
-      if $itr->iterate('Acme Rocket')->single;
+    if ($row = $itr->iterate('Acme Rocket')->single) {
+        print "Id: $row->[0]\n"
+    }
 
     $itr = $dbh->iterate('SELECT Id, Name FROM product WHERE Name=?')->slice({});
-    print "Id: $_->{Id}\n"
-      if $itr->iterate('Acme Rocket')->single;
+    if ($row = $itr->iterate('Acme Rocket')->single) {
+        print "Id: $row->{Id}\n"
+    }
 
-    # Accessing column values using using fancy iterators is be accomplished
-    # as shown above or via accessors. Regardless of case, accessors just work.
+    # Accessing column values using using fancy iterators can be accomplished
+    # as shown above. Fancy iterators, however, don't care how your rows are
+    # sliced, because they also provide access to column values via on-demand
+    # accessors. You can use any case for accessors as they all resolve to
+    # the same column.
+    #
+    $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?');
+    if ($row = $itr->iterate('Acme Rocket')->single) {
+        print "Id: ", $row->Id, "\n"
+    }
 
-    $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?')->slice({});
-    print "Id: ", $_->Id, "\n"
-      if $itr->iterate('Acme Rocket')->single;
+    $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?');
+    if ($row = $itr->iterate('Acme Rocket')->single) {
+        print "Id: ", $row->ID, "\n"
+    }
 
-    $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?')->slice({});
-    print "Id: ", $_->ID, "\n"
-      if $itr->iterate('Acme Rocket')->single;
-
-    $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?')->slice({});
-    print "Id: ", $_->id, "\n"
-      if $itr->iterate('Acme Rocket')->single;
+    $itr = $dbh->results('SELECT Id, Name FROM product WHERE Name=?');
+    if ($row = $itr->iterate('Acme Rocket')->single) {
+        print "Id: ", $row->id, "\n"
+    }
 
     # ---------------
     # Transformations
     # ---------------
 
+    # A transformation is a sequence of one or more trailing code references
+    # that are passed to the method that generates the iterator. The initial
+    # result enters the first stage on the transformation as $_[0] (and $_),
+    # and the result of that transformation is passed to the next stage (or
+    # returned to the caller) using a "return" statement, or as the result
+    # of the final expression.
+    #
+    # Transformations are a great way to declare in one place the common
+    # processing logic that is to be applied to results.
+    #
     $itr = $dbh->iterate(
-        'SELECT Id, Name FROM product WHERE Name=?' => sub {
-            return $_->[0];
-        }
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->[0]},
     )->slice([]);
-    print "Id: $_\n"
-      if $itr->iterate('Acme Rocket')->single;
+    if ($id = $itr->iterate('Acme Rocket')->single) {
+        print "Id: $id\n"
+    }
 
     $itr = $dbh->iterate(
-        'SELECT Id, Name FROM product WHERE Name=?' => sub {
-            return $_->[Id];
-        }
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->[Id]},
     )->slice({});
-    print "Id: $_\n"
-      if $itr->iterate('Acme Rocket')->single;
+    if ($id = $itr->iterate('Acme Rocket')->single) {
+        print "Id: $id\n"
+    }
 
     $itr = $dbh->results(
-        'SELECT Id, Name FROM product WHERE Name=?' => sub {
-            return $_->Id;
-        }
-    )->slice({});
-    print "Id: $_\n"
-      if $itr->iterate('Acme Rocket')->single;
+        'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->Id},
+    );
+    if ($id = $itr->iterate('Acme Rocket')->single) {
+        print "Id: $id\n"
+    }
 
-    # Transformations can be chained together.
+    # Multiple transformations may be chained together.
     #
     $itr = $dbh->results(
         'SELECT Id, Name FROM product WHERE Name=?' => sub {
-            my $row = $_;
-            print "Id: ", $row->Id, "\n";
-            return $row;
+            $_->Id;
         } => sub {
-            return $_->Id;
-        }
-    )->slice({});
+            my $result = $_;
+            print "Id: $result\n";
+            return $result;
+        },
+    );
     $id = $itr->iterate('Acme Rocket')->single;
 =cut
 

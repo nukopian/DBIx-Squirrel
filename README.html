@@ -291,67 +291,82 @@ $itr = $itr-&gt;reset($row_count, $slice);
 # Accessing column values using basic iterators.
 #
 $itr = $dbh-&gt;iterate(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice([]);
-print &quot;Id: $_-&gt;[0]\n&quot;
-  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+if ($row = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
+    print &quot;Id: $row-&gt;[0]\n&quot;
+}
 
 $itr = $dbh-&gt;iterate(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice({});
-print &quot;Id: $_-&gt;{Id}\n&quot;
-  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+if ($row = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
+    print &quot;Id: $row-&gt;{Id}\n&quot;
+}
 
-# Accessing column values using using fancy iterators is be accomplished
-# as shown above or via accessors. Regardless of case, accessors just work.
+# Accessing column values using using fancy iterators can be accomplished
+# as shown above. Fancy iterators, however, don&#39;t care how your rows are
+# sliced, because they also provide access to column values via on-demand
+# accessors. You can use any case for accessors as they all resolve to
+# the same column.
+#
+$itr = $dbh-&gt;results(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;);
+if ($row = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
+    print &quot;Id: &quot;, $row-&gt;Id, &quot;\n&quot;
+}
 
-$itr = $dbh-&gt;results(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice({});
-print &quot;Id: &quot;, $_-&gt;Id, &quot;\n&quot;
-  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+$itr = $dbh-&gt;results(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;);
+if ($row = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
+    print &quot;Id: &quot;, $row-&gt;ID, &quot;\n&quot;
+}
 
-$itr = $dbh-&gt;results(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice({});
-print &quot;Id: &quot;, $_-&gt;ID, &quot;\n&quot;
-  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
-
-$itr = $dbh-&gt;results(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;)-&gt;slice({});
-print &quot;Id: &quot;, $_-&gt;id, &quot;\n&quot;
-  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+$itr = $dbh-&gt;results(&#39;SELECT Id, Name FROM product WHERE Name=?&#39;);
+if ($row = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
+    print &quot;Id: &quot;, $row-&gt;id, &quot;\n&quot;
+}
 
 # ---------------
 # Transformations
 # ---------------
 
+# A transformation is a sequence of one or more trailing code references
+# that are passed to the method that generates the iterator. The initial
+# result enters the first stage on the transformation as $_[0] (and $_),
+# and the result of that transformation is passed to the next stage (or
+# returned to the caller) using a &quot;return&quot; statement, or as the result
+# of the final expression.
+#
+# Transformations are a great way to declare in one place the common
+# processing logic that is to be applied to results.
+#
 $itr = $dbh-&gt;iterate(
-    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {
-        return $_-&gt;[0];
-    }
+    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {$_-&gt;[0]},
 )-&gt;slice([]);
-print &quot;Id: $_\n&quot;
-  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+if ($id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
+    print &quot;Id: $id\n&quot;
+}
 
 $itr = $dbh-&gt;iterate(
-    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {
-        return $_-&gt;[Id];
-    }
+    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {$_-&gt;[Id]},
 )-&gt;slice({});
-print &quot;Id: $_\n&quot;
-  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+if ($id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
+    print &quot;Id: $id\n&quot;
+}
 
 $itr = $dbh-&gt;results(
-    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {
-        return $_-&gt;Id;
-    }
-)-&gt;slice({});
-print &quot;Id: $_\n&quot;
-  if $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;
+    &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {$_-&gt;Id},
+);
+if ($id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single) {
+    print &quot;Id: $id\n&quot;
+}
 
-# Transformations can be chained together.
+# Multiple transformations may be chained together.
 #
 $itr = $dbh-&gt;results(
     &#39;SELECT Id, Name FROM product WHERE Name=?&#39; =&gt; sub {
-        my $row = $_;
-        print &quot;Id: &quot;, $row-&gt;Id, &quot;\n&quot;;
-        return $row;
+        $_-&gt;Id;
     } =&gt; sub {
-        return $_-&gt;Id;
-    }
-)-&gt;slice({});
+        my $result = $_;
+        print &quot;Id: $result\n&quot;;
+        return $result;
+    },
+);
 $id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;</code></pre>
 
 <h1 id="DESCRIPTION">DESCRIPTION</h1>
