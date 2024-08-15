@@ -175,7 +175,7 @@ DBIx::Squirrel - A C<DBI> extension
     # Iterators
     # ---------
 
-    # We only expect one row and require the statement to be finished. 
+    # We only expect one row, and we require the statement to be finished.
     #
     # Will emit a warning if there are more rows to fetch as a reminder 
     # to use "LIMIT 1" in your query.
@@ -624,8 +624,9 @@ methods.
 =head3 Placeholders
 
 A nice quality-of-life improvement offered by C<DBIx::Squirrel>'s own
-implementation of the C<prepare_cached> and C<prepare> methods is the
-built-in support for different placeholder styles:
+implementation of the C<prepare_cached> and C<prepare> methods is their
+built-in ability to cope with for a number of different placeholder
+styles:
 
 =over
 
@@ -637,12 +638,14 @@ built-in support for different placeholder styles:
 
 =back
 
-Regardless of your C<DBD> driver, or your preferred style, statements
-will be normalised to the legacy placeholder (C<?>) by the time they
-are executed.
+It does not matter what style your C<DBD>-drive supports, C<DBIx::Squirrel>
+will happily deal with all of the above styles. Just pick the one that
+you prefer to work with, or use the one that is most suitable to the
+task at hand.
 
-Use your preferred style, or the style that most helps your query to
-be reasoned by others.
+By the time your statement is passed to the C<DBD>-driver for execution,
+both it and its bind-values will have been normalised to use the legacy
+style (C<?>) supported by all drivers.
 
 =head4 Examples
 
@@ -656,7 +659,7 @@ Legacy placeholders (C<?>):
 
     # Any of the following value-binding styles will work:
     $res = $sth->execute('Aerosmith');
-    $res = $sth->execute([ 'Aerosmith' ]);
+    $res = $sth->execute(['Aerosmith']);
 
 =item *
 
@@ -666,7 +669,7 @@ SQLite positional placeholders (C<?number>):
 
     # Any of the following value-binding styles will work:
     $res = $sth->execute('Aerosmith');
-    $res = $sth->execute([ 'Aerosmith' ]);
+    $res = $sth->execute(['Aerosmith']);
 
 =item *
 
@@ -676,7 +679,7 @@ PostgreSQL positional placeholders (C<$number>):
 
     # Any of the following value-binding styles will work:
     $res = $sth->execute('Aerosmith');
-    $res = $sth->execute([ 'Aerosmith' ]);
+    $res = $sth->execute(['Aerosmith']);
 
 =item *
 
@@ -686,25 +689,63 @@ Oracle positional placeholders (C<:number>):
 
     # Any of the following value-binding styles will work:
     $res = $sth->execute('Aerosmith');
-    $res = $sth->execute([ 'Aerosmith' ]);
+    $res = $sth->execute(['Aerosmith']);
 
 =item *
 
-Oracle named placeholders (C<:number>):
+Oracle named placeholders (C<:name>):
 
     $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:Name LIMIT 1');
 
     # Any of the following value-binding styles will work:
-    $res = $sth->execute( Name => 'Aerosmith' );
-    $res = $sth->execute({ Name => 'Aerosmith' });
-    $res = $sth->execute( ':Name' => 'Aerosmith' );
-    $res = $sth->execute({ ':Name' => 'Aerosmith' });
+    $res = $sth->execute(Name => 'Aerosmith');
+    $res = $sth->execute( ':Name' => 'Aerosmith');
+    $res = $sth->execute({Name => 'Aerosmith'});
+    $res = $sth->execute({':Name' => 'Aerosmith'});
 
 =back
 
 =head2 Iterators
 
-(TO DO)
+In addition the statements, C<DBIx::Squirrel> provides iterators. There are
+two kinds to choose from:
+
+=over
+
+=item * Basic
+
+=item * Fancy
+
+=back
+
+=head3 Basic Iterators
+
+Basic iterators present row data as ARRAYREFs or HASHREFs, depending
+on the slice-style in force. Column values are accessed by column-
+index when using the ARRAYREFs-slice-style, or by column-name when
+using the HASHREFs-slice-style.
+
+The default behaviour is to slice rowns as ARRAYREFs. An iterator's
+"reset" method can be used to change this behaviour by passing it an
+empty HASHREF (C<{}>) or an empty ARRAYREF (C<[]>).
+
+=head4 How to create a basic iterator
+
+    $itr = $dbh->iterate($query,[undef|\%attr,][@bindvalues,][@coderefs]);
+    $itr = $sth->iterate([@bindvalues,][@coderefs]);
+
+=head3 Fancy Iterators, I<(or Result Sets)>
+
+Fancy iterators behave just like their basic alternatives, but the
+row data they present is blessed. Column values may continue to be
+accessed as they would be with basic iterators, but accessor methods
+may also be used to get column values. Such accessor methods are
+created the first time they are used.
+
+=head4 How to create a fancy iterator
+
+    $itr = $dbh->results($query,[undef|\%attr,][@bindvalues,][@coderefs]);
+    $itr = $sth->results([@bindvalues,][@coderefs]);
 
 =head2 Processing results
 
