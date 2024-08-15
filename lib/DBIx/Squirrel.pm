@@ -157,6 +157,9 @@ DBIx::Squirrel - A C<DBI> extension
     # -----------------
 
     # Statement objects can be used to generate two kinds of iterator.
+    #
+    # Database objects, too, use methods of the same name to generate
+    # iterators.
 
     # A basic iterator.
     #
