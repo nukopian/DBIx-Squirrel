@@ -682,7 +682,7 @@ $itr = $sth-&gt;iterate(        |  $itr = $sth-&gt;results(
     [@transforms]            |      [@transforms]
 );                           |  );</code></pre>
 
-<p>The final element of each constructor&#39;s argument-lists is the transformation pipeline (<code>[@transforms]</code>). Each stage of this pipeline is an individual processing step, represented by a CODEREF (or a call that returns a CODEREF).</p>
+<p>The final element of each constructor&#39;s argument-list is the transformation pipeline (<code>[@transforms]</code>). Each stage of this pipeline is an individual processing step, represented by a CODEREF (or a call that returns a CODEREF).</p>
 
 <p>Each stage of a transformation receives the latest version of the result via the argument-list (<code>$_[0]</code> to be precise). For the sake of convenience (and for convention), this result is also always available as <code>$_</code>. Hand-off to the next stage or the caller is via an explicit <code>return</code> statement, or the result of evaluating the unit&#39;s final expression.</p>
 

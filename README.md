@@ -626,7 +626,7 @@ each:
         [@transforms]            |      [@transforms]
     );                           |  );
 
-The final element of each constructor's argument-lists is the transformation
+The final element of each constructor's argument-list is the transformation
 pipeline (`[@transforms]`). Each stage of this pipeline is an individual
 processing step, represented by a CODEREF (or a call that returns a CODEREF).
 
