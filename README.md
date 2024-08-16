@@ -703,12 +703,12 @@ will apply to it.
 
     3. **Query the database and process the results**
 
-        Here, I'm executing the query once for each of four artist to get and print
-        their artist ids.
+        Here, I'm executing the query once for each one of four artist to get and
+        print their artist ids.
 
     4. **Disconnect from the database**
 
-        Just as we would with the `DBI`
+        Just as we would with the `DBI`.
 
     Find the script and run it:
 
