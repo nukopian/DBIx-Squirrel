@@ -461,7 +461,7 @@ __END__
 
 =head1 DESCRIPTION
 
-The C<DBIx::Squirrel> package extends the C<DBI>, by providing a few extra
+The C<DBIx::Squirrel> package extends the C<DBI> by providing a few extra
 conveniences that are subtle and additive in nature, and, hopefully, quite
 useful.
 

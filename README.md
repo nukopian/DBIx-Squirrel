@@ -322,7 +322,7 @@ version 1.2.9
 
 # DESCRIPTION
 
-The `DBIx::Squirrel` package extends the `DBI`, by providing a few extra
+The `DBIx::Squirrel` package extends the `DBI` by providing a few extra
 conveniences that are subtle and additive in nature, and, hopefully, quite
 useful.
 
