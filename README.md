@@ -598,9 +598,11 @@ _(TO DO)_
 ### Transformation
 
 All `DBIx::Squirrel` iterators support an optional processing step called
-_transformation_. This can be summarised as the automatic, just-in-time
-processing and, potentially, re-shaping (or filtering) of results as they
-are fetched from the database, before they are returned to the caller.
+_transformation_.
+
+Transformation can be summarised as the automatic, just-in-time processing,
+re-shaping, or filtering of results as they are fetched from the database,
+before being returned to the caller.
 
 A transformation is comprised of one or more processing stages. Each stage
 receives its version of the result, changes it or does something else it,
