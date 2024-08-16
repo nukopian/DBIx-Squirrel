@@ -632,7 +632,10 @@ processing step, represented by a CODEREF (or a call that returns a CODEREF).
 
 Each stage of a transformation receives the latest version of the result via
 the argument-list (`$_[0]` to be precise). For the sake of convenience (and
-for convention), this result is also available as `$_`.
+for convention), this result is also available as `$_`. If you prefer to
+rely on something like `$_`, but would like something much less ephemeral,
+just `use DBIx::Squirrel::util 'result'` and use the `result` function
+inside your transformation stage.
 
 Hand-off to the next stage, or the caller, is via an explicit `return`
 statement, or the result of evaluating the unit's final expression. Returning

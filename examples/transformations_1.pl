@@ -1,4 +1,5 @@
 use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
+use DBIx::Squirrel::util qw/result/;
 
 db do {
     DBIx::Squirrel->connect(
