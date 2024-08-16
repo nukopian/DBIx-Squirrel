@@ -782,16 +782,16 @@ I<(TO DO)>
 
 All C<DBIx::Squirrel> iterators support an optional processing step called
 I<transformation>. This can be summarised as the automatic, just-in-time
-processing and, potentially, re-shaping or filtering of results as they
-are fetched from the database and before they are returned to the caller.
+processing and, potentially, re-shaping (or filtering) of results as they
+are fetched from the database, before they are returned to the caller.
 
-A transformation is comprised of one or more processing stages, in which
-each stage receives a result and then changes the result (or does something
-else it), finally handing a result off to the next stage, or returning it
-to the caller if there are no more stages.
+A transformation is comprised of one or more processing stages. Each stage
+receives its version of the result, changes it or does something else it,
+and finally hands it off to the next stage, or to the caller if there are
+no more stages.
 
 Recall, if you will, that there are two kinds of iterator, as well as two
-ways to construct each of type:
+ways to construct each:
 
     Basic Iterators              |  Fancy Iterators
     ---------------------------------------------------------------
@@ -808,20 +808,19 @@ ways to construct each of type:
     );                           |  );
 
 The final element in each of the constructors' argument-lists is an optional
-list of transforms. A transform is an individual processing stage in a
-transformation, and is represented by a CODEREF or a call that returns a
-CODEREF.
+list of transforms. A transform is an individual processing stage within a
+transformation, represented by a CODEREF (or a call that returns a
+CODEREF).
 
-Each stage of a transformation receives its version of the result via the
-argument-list (C<$_[0]> to be precise). For the sake of convenience (and
-for convention), this result is also always available as C<$_>. Hand-off
-to the next stage or, when there are no more stages, the caller is via
-an explicit C<return> statement, or the result of evaluating the unit's
-final expression.
+Each stage of a transformation receives the latest version of the result via
+the argument-list (C<$_[0]> to be precise). For the sake of convenience (and
+for convention), this result is also always available as C<$_>. Hand-off to
+the next stage or the caller is via an explicit C<return> statement, or the
+result of evaluating the unit's final expression.
 
-Returning nothing (C<()> or a bare C<return>) from a transform stage will
-filter the result out entirely, and no further transformations will be
-applied to it.
+Returning nothingE<mdash>C<()>, or a bare C<return>E<mdash>from a transform
+stage will filter the result out entirely, and no further transformations will
+be applied to it.
 
 =head4 Examples
 

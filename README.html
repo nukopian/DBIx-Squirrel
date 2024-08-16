@@ -660,11 +660,11 @@ $itr = $sth-&gt;results(
 
 <h3 id="Transformation">Transformation</h3>
 
-<p>All <code>DBIx::Squirrel</code> iterators support an optional processing step called <i>transformation</i>. This can be summarised as the automatic, just-in-time processing and, potentially, re-shaping or filtering of results as they are fetched from the database and before they are returned to the caller.</p>
+<p>All <code>DBIx::Squirrel</code> iterators support an optional processing step called <i>transformation</i>. This can be summarised as the automatic, just-in-time processing and, potentially, re-shaping (or filtering) of results as they are fetched from the database, before they are returned to the caller.</p>
 
-<p>A transformation is comprised of one or more processing stages, in which each stage receives a result and then changes the result (or does something else it), finally handing a result off to the next stage, or returning it to the caller if there are no more stages.</p>
+<p>A transformation is comprised of one or more processing stages. Each stage receives its version of the result, changes it or does something else it, and finally hands it off to the next stage, or to the caller if there are no more stages.</p>
 
-<p>Recall, if you will, that there are two kinds of iterator, as well as two ways to construct each of type:</p>
+<p>Recall, if you will, that there are two kinds of iterator, as well as two ways to construct each:</p>
 
 <pre><code>Basic Iterators              |  Fancy Iterators
 ---------------------------------------------------------------
@@ -680,11 +680,11 @@ $itr = $sth-&gt;iterate(        |  $itr = $sth-&gt;results(
     [@transforms]            |      [@transforms]
 );                           |  );</code></pre>
 
-<p>The final element in each of the constructors&#39; argument-lists is an optional list of transforms. A transform is an individual processing stage in a transformation, and is represented by a CODEREF or a call that returns a CODEREF.</p>
+<p>The final element in each of the constructors&#39; argument-lists is an optional list of transforms. A transform is an individual processing stage within a transformation, represented by a CODEREF (or a call that returns a CODEREF).</p>
 
-<p>Each stage of a transformation receives its version of the result via the argument-list (<code>$_[0]</code> to be precise). For the sake of convenience (and for convention), this result is also always available as <code>$_</code>. Hand-off to the next stage or, when there are no more stages, the caller is via an explicit <code>return</code> statement, or the result of evaluating the unit&#39;s final expression.</p>
+<p>Each stage of a transformation receives the latest version of the result via the argument-list (<code>$_[0]</code> to be precise). For the sake of convenience (and for convention), this result is also always available as <code>$_</code>. Hand-off to the next stage or the caller is via an explicit <code>return</code> statement, or the result of evaluating the unit&#39;s final expression.</p>
 
-<p>Returning nothing (<code>()</code> or a bare <code>return</code>) from a transform stage will filter the result out entirely, and no further transformations will be applied to it.</p>
+<p>Returning nothing&mdash;<code>()</code>, or a bare <code>return</code>&mdash;from a transform stage will filter the result out entirely, and no further transformations will be applied to it.</p>
 
 <h4 id="Examples2">Examples</h4>
 
