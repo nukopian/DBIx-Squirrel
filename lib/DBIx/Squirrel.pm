@@ -822,7 +822,7 @@ will apply to it.
 
 =item 1.
 
-See script C<examples/transformations_1.pl>:
+See script C<examples/transformations/1.pl>:
 
     use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
 
@@ -910,7 +910,7 @@ Just as we would with the C<DBI>.
 
 Find the script and run it:
 
-    $ perl -I./lib ./examples/transformations_1.pl
+    $ perl -Ilib examples/transformations/1.pl
     ----
     Name: AC/DC
     ArtistId: 1
