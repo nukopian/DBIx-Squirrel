@@ -795,7 +795,9 @@ method that constructs the iterator.
 
 =head4 Examples
 
-C<examples/transformations_1.pl>
+=over
+
+=item 1. C<examples/transformations_1.pl>
 
     use Modern::Perl;
     use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
@@ -843,17 +845,6 @@ executed, it produces the following console output:
     ----
     Name: Rush
     ArtistId: 128
-
-
-=over
-
-=item * Connect to the database.
-
-=item * Create a C<get_artist_id_by_name> function
-
-=item * Get our chosen artist's id.
-
-=item * Disconnect from the data base.
 
 =back
 

@@ -612,59 +612,54 @@ method that constructs the iterator.
 
 #### Examples
 
-`examples/transformations_1.pl`
+- 1. `examples/transformations_1.pl`
 
-    use Modern::Perl;
-    use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
+        use Modern::Perl;
+        use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
 
-    db do {
-        DBIx::Squirrel->connect(
-            "dbi:SQLite:dbname=./t/data/chinook.db",
-            "",
-            "",
-            {   PrintError     => !!0,
-                RaiseError     => !!1,
-                sqlite_unicode => !!1,
-            },
-        );
-    };
+        db do {
+            DBIx::Squirrel->connect(
+                "dbi:SQLite:dbname=./t/data/chinook.db",
+                "",
+                "",
+                {   PrintError     => !!0,
+                    RaiseError     => !!1,
+                    sqlite_unicode => !!1,
+                },
+            );
+        };
 
-    get_artist_id_by_name do {
-        db->results(
-            "SELECT ArtistId, Name FROM artists WHERE Name=?" => sub {
-                my $artist = $_;
-                print "----\n";
-                print "Name: ", $artist->Name, "\n";
-                return $artist;
-            } => sub {
-                return $_->ArtistId;
-            }
-        );
-    };
+        get_artist_id_by_name do {
+            db->results(
+                "SELECT ArtistId, Name FROM artists WHERE Name=?" => sub {
+                    my $artist = $_;
+                    print "----\n";
+                    print "Name: ", $artist->Name, "\n";
+                    return $artist;
+                } => sub {
+                    return $_->ArtistId;
+                }
+            );
+        };
 
-    foreach my $name ("AC/DC", "Aerosmith", "Darling West", "Rush") {
-        get_artist_id_by_name($name)->single and print "ArtistId: $_\n";
-    }
+        foreach my $name ("AC/DC", "Aerosmith", "Darling West", "Rush") {
+            get_artist_id_by_name($name)->single and print "ArtistId: $_\n";
+        }
 
-    db->disconnect();
+        db->disconnect();
 
-You should be able to find the script in the DBIx-Squirrel distribution. When
-executed, it produces the following console output:
+    You should be able to find the script in the DBIx-Squirrel distribution. When
+    executed, it produces the following console output:
 
-    ----
-    Name: AC/DC
-    ArtistId: 1
-    ----
-    Name: Aerosmith
-    ArtistId: 3
-    ----
-    Name: Rush
-    ArtistId: 128
-
-- Connect to the database.
-- Create a `get_artist_id_by_name` function
-- Get our chosen artist's id.
-- Disconnect from the data base.
+        ----
+        Name: AC/DC
+        ArtistId: 1
+        ----
+        Name: Aerosmith
+        ArtistId: 3
+        ----
+        Name: Rush
+        ArtistId: 128
 
 # COPYRIGHT AND LICENSE
 
