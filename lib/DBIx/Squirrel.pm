@@ -850,6 +850,20 @@ Find the script and run it:
     Name: Rush
     ArtistId: 128
 
+The script is comprised of four parts:
+
+=over
+
+=item * Connect to the database
+
+=item * Create the C<get_artist_id_by_name> helper function
+
+=item * Query the database and process the results
+
+=item * Disconnect from the database
+
+=back
+
 =back
 
 =head1 COPYRIGHT AND LICENSE

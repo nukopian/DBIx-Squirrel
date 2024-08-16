@@ -663,6 +663,13 @@ method that constructs the iterator.
         Name: Rush
         ArtistId: 128
 
+    The script is comprised of four parts:
+
+    - Connect to the database
+    - Create the `get_artist_id_by_name` helper function
+    - Query the database and process the results
+    - Disconnect from the database
+
 # COPYRIGHT AND LICENSE
 
 The DBIx::Squirrel module is Copyright (c) 2020-2014 Iain Campbell.
