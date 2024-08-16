@@ -841,13 +841,21 @@ The script is comprised of four parts:
 
 =over
 
-=item 1. Connect to the database
+=item 1.
 
-=item 2. Create the C<get_artist_id_by_name> helper function
+Connect to the database
 
-=item 3. Query the database and process the results
+=item 2.
 
-=item 4. Disconnect from the database
+Create the C<get_artist_id_by_name> helper function
+
+=item 3. 
+
+Query the database and process the results
+
+=item 4. 
+
+Disconnect from the database
 
 =back
 
