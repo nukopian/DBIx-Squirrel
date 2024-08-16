@@ -607,8 +607,8 @@ receives its version of the result, changes it or does something else it,
 and finally hands it off to the next stage, or to the caller if there are
 no more stages.
 
-Recall, if you will, that there are two kinds of iterator, as well as two
-ways to construct each:
+Recall that there are two kinds of iterator, and two methods to construct
+each:
 
     Basic Iterators              |  Fancy Iterators
     ---------------------------------------------------------------
