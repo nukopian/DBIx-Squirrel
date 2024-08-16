@@ -16,7 +16,7 @@ BEGIN {
     );
     @DBIx::Squirrel::util::EXPORT_OK = @{
         $DBIx::Squirrel::util::EXPORT_TAGS{'all'} = [
-            qw/uniq/,
+            qw/uniq result/,
             do {
                 my %seen;
                 grep {!$seen{$_}++}
@@ -197,6 +197,10 @@ sub cbargs_using {
     return $c, @t;
 }
 
+our $_result;
+
+sub result {$_result}
+
 
 sub transform {
     my @transforms = do {
@@ -211,17 +215,17 @@ sub transform {
         }
     };
     if (@transforms && @_) {
-        local($_);
         for my $transform (@transforms) {
             last unless @_ = do {
-                ($_) = @_;
+                local($_result) = @_;
+                local($_)       = $_result;
                 $transform->(@_);
             };
         }
     }
-    return @_        if wantarray;
-    return scalar @_ if @_ > 1;
-    return $_[0];
+    return @_         if wantarray;
+    return scalar(@_) if @_ > 1;
+    return do {$_ = $_[0]};
 }
 
 1;

@@ -815,7 +815,10 @@ processing step, represented by a CODEREF (or a call that returns a CODEREF).
 
 Each stage of a transformation receives the latest version of the result via
 the argument-list (C<$_[0]> to be precise). For the sake of convenience (and
-for convention), this result is also available as C<$_>.
+for convention), this result is also available as C<$_>. If you prefer to
+rely on something like C<$_>, but would like something much less ephemeral,
+just C<use DBIx::Squirrel::util 'result'> and use the C<result> function
+inside your transformation stage.
 
 Hand-off to the next stage, or the caller, is via an explicit C<return>
 statement, or the result of evaluating the unit's final expression. Returning
@@ -852,9 +855,7 @@ See script C<examples/transformations_1.pl>:
                 print "----\n";
                 print "Name: ", $artist->Name, "\n";
                 return $artist;
-            } => sub {
-                return $_->ArtistId;
-            }
+            } => sub {$_->ArtistId}
         );
     };
 
