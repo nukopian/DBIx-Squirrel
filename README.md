@@ -612,7 +612,7 @@ method that constructs the iterator.
 
 #### Examples
 
-- 1. `examples/transformations_1.pl`
+1. `examples/transformations_1.pl`
 
         use Modern::Perl;
         use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];

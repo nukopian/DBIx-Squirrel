@@ -797,7 +797,9 @@ method that constructs the iterator.
 
 =over
 
-=item 1. C<examples/transformations_1.pl>
+=item 1.
+
+C<examples/transformations_1.pl>
 
     use Modern::Perl;
     use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
