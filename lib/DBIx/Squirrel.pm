@@ -907,14 +907,14 @@ I am only intersted in getting back the artist's id.
 
 B<Query the database and process the results>
 
-Here, I'm executing the query once for each of four artist to get and print
-their artist ids.
+Here, I'm executing the query once for each one of four artist to get and
+print their artist ids.
 
 =item 4. 
 
 B<Disconnect from the database>
 
-Just as we would with the C<DBI>
+Just as we would with the C<DBI>.
 
 =back
 
