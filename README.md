@@ -650,6 +650,13 @@ method that constructs the iterator.
 
         db->disconnect();
 
+    The script is comprised of four parts:
+
+    - 1. Connect to the database
+    - 2. Create the `get_artist_id_by_name` helper function
+    - 3. Query the database and process the results
+    - 4. Disconnect from the database
+
     Find the script and run it:
 
         $ perl -I./lib ./examples/transformations_1.pl
@@ -662,13 +669,6 @@ method that constructs the iterator.
         ----
         Name: Rush
         ArtistId: 128
-
-    The script is comprised of four parts:
-
-    - Connect to the database
-    - Create the `get_artist_id_by_name` helper function
-    - Query the database and process the results
-    - Disconnect from the database
 
 # COPYRIGHT AND LICENSE
 
