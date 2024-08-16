@@ -815,9 +815,9 @@ processing step, represented by a CODEREF (or a call that returns a CODEREF).
 
 Each stage of a transformation receives the latest version of the result via
 the argument-list (C<$_[0]> to be precise). For the sake of convenience (and
-for convention), this result is also always available as C<$_>. Hand-off to
-the next stage or the caller is via an explicit C<return> statement, or the
-result of evaluating the unit's final expression.
+for convention), this result is also available as C<$_>. Hand-off to the next
+stage or the caller is via an explicit C<return> statement, or the result of
+evaluating the unit's final expression.
 
 Returning nothingE<mdash>C<()>, or a bare C<return>E<mdash>from a transform
 stage will filter the result out entirely, and no further transformations will
