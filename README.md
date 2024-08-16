@@ -601,7 +601,7 @@ All `DBIx::Squirrel` iterators support an optional processing step called
 _transformation_.
 
 Transformation can be summarised as the automatic, just-in-time processing,
-re-shaping, or filtering of results as they are fetched from the database,
+re-shaping or filtering of results as they are fetched from the database,
 before being returned to the caller.
 
 A transformation is comprised of one or more processing stages. Each stage
@@ -626,10 +626,9 @@ each:
         [@transforms]            |      [@transforms]
     );                           |  );
 
-The final element in each of the constructors' argument-lists is an optional
-list of transforms. A transform is an individual processing stage within a
-transformation, represented by a CODEREF (or a call that returns a
-CODEREF).
+The final element of each constructor's argument-lists is the transformation
+pipeline (`[@transforms]`). Each stage of this pipeline is an individual
+processing step, represented by a CODEREF (or a call that returns a CODEREF).
 
 Each stage of a transformation receives the latest version of the result via
 the argument-list (`$_[0]` to be precise). For the sake of convenience (and
