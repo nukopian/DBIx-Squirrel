@@ -27,7 +27,9 @@ get_artist_id_by_name do {
 };
 
 foreach my $name ("AC/DC", "Aerosmith", "Darling West", "Rush") {
-    get_artist_id_by_name($name)->single and print "ArtistId: $_\n";
+    if (get_artist_id_by_name($name)->single) {
+        print "ArtistId: $_\n";
+    }
 }
 
 db->disconnect();

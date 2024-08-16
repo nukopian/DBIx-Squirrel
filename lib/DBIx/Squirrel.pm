@@ -799,7 +799,7 @@ method that constructs the iterator.
 
 =item 1.
 
-C<examples/transformations_1.pl>
+See script C<examples/transformations_1.pl>:
 
     use Modern::Perl;
     use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
@@ -830,14 +830,16 @@ C<examples/transformations_1.pl>
     };
 
     foreach my $name ("AC/DC", "Aerosmith", "Darling West", "Rush") {
-        get_artist_id_by_name($name)->single and print "ArtistId: $_\n";
+        if (get_artist_id_by_name($name)->single) {
+            print "ArtistId: $_\n";
+        }
     }
 
     db->disconnect();
 
-You should be able to find the script in the DBIx-Squirrel distribution. When
-executed, it produces the following console output:
+Find the script and run it:
 
+    $ perl -I./lib ./examples/transformations_1.pl
     ----
     Name: AC/DC
     ArtistId: 1
