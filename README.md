@@ -4,7 +4,7 @@ DBIx::Squirrel - A `DBI` extension
 
 # VERSION
 
-version 1.2.7
+version 1.2.8
 
 # SYNOPSIS
 
@@ -382,9 +382,9 @@ Helper semantics deal with three common types of interaction:
     and we accomplish this by calling the helper function with one or more
     arguments.
 
-    Once associated with a database entity, a helper function will any arguments
-    that are passed to it and send a version of these to the database entity
-    method that imbues meaning to the interaction.
+    Once associated with a database entity, a helper function will consume
+    any arguments that are passed to it and send a version of these to the
+    database entity method that imparts meaning to the interaction.
 
     Meaning in this context is determined by the type of association:
 
@@ -392,12 +392,13 @@ Helper semantics deal with three common types of interaction:
     - for statements and iterators, these are executed with the `execute` and `iterate`
     methods respectively.
 
-    **Clearly there is a paradox here**, which centres around those statements
-    and iterators expecting _no bind-values_. In order to smooth-out this wrinkle,
-    you can opt to enclose arguments inside an anonymous array or hash. When no
-    bind-values are expected, you can coerce the helper into performing the
-    execution by passing an empty array or hash reference. Alternatively, you
-    could just resolve the association and call the relevant method manually.
+    **Clearly there is a paradox here**, and itcentres around those statements
+    and iterators that take no parameters and expect no bind-values. In order
+    to smooth-out this wrinkle, you can opt to enclose arguments inside an
+    anonymous array or hash. When no bind-values are expected, you can coerce
+    the helper into performing the execution by passing an empty ARRAYREF or
+    HASHREF. Alternatively, you could just resolve the association and call
+    the relevant method manually.
 
 #### Examples
 
@@ -450,10 +451,10 @@ an alternative form:
 
     $new_dbh = DBIx::Squirrel->connect($original_dbh, \%attr);
 
-This form clones another connection object and returns a brand object that
-is blessed using the same class that invoked the `connect` method. Objects
-being cloned are allowed to be those created by the `DBI` or any of its
-subclasses, `DBIx::Squirrel` being one of those.
+This form clones another connection object and returns a brand new object
+that is blessed using the same class that invoked the `connect` method.
+The method will allow you to clone database connections created by the
+`DBI` and any subclasses (`DBIx::Squirrel` being one).
 
 ## Preparing statements
 
@@ -465,16 +466,15 @@ methods.
 
 A nice quality-of-life improvement offered by `DBIx::Squirrel`'s own
 implementation of the `prepare_cached` and `prepare` methods is their
-built-in ability to cope with for a number of different placeholder
-styles:
+built-in ability to cope with a number of different placeholder styles:
 
 - named (`:name`);
 - positional (`:number`, `$number`, `?number`);
 - legacy (`?`)
 
-It does not matter what style your `DBD`-drive supports, `DBIx::Squirrel`
+It does not matter what style your `DBD`-driver supports, `DBIx::Squirrel`
 will happily deal with all of the above styles. Just pick the one that
-you prefer to work with, or use the one that is most suitable to the
+you prefer to work with, or use the one that is most suitable for the
 task at hand.
 
 By the time your statement is passed to the `DBD`-driver for execution,
@@ -535,13 +535,13 @@ of iterator:
 
 ### Basic Iterators
 
-Basic iterators present row data as ARRAYREFs or HASHREFs, depending
+Basic iterators present row data as ARRAYREFs or HASHREFs depending
 on the slice-style currently in use. Column values are accessed either
-by column-index when using the ARRAYREFs-slice-style, or by column-
-name when using the HASHREFs-slice-style.
+by column-index when using the ARRAYREF-slicing, or by column-name
+when using the HASHREF-slicing.
 
-The default slice-style is ARRAYREFs. An iterator's "reset" method may
-be used to alter this behaviour.
+The default, row data is sliced as an ARRAYREF. The iterator "reset"
+method may be used to alter this behaviour.
 
 #### How to create a basic iterator
 
@@ -627,7 +627,7 @@ rely on something like `$_`, but would like something much less ephemeral,
 just `use DBIx::Squirrel::util 'result'` and use the `result` function
 inside your transformation stage.
 
-Hand-off to the next stage, or the caller, is via an explicit `return`
+Handing off to the next stage, or the caller, is with an explicit `return`
 statement, or the result of evaluating the unit's final expression. Returning
 nothing—either `()`, or a bare `return`—from a processing
 step will filter the result out entirely, and no further processing steps
@@ -693,7 +693,7 @@ will apply to it.
 
     - **Query the database and process the results**
 
-        Here, I'm executing the query once for each one of four artist to get and
+        Here, I'm executing the query once for each one of four artists to get and
         print their artist ids.
 
     - **Disconnect from the database**
