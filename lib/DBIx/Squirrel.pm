@@ -822,7 +822,7 @@ will apply to it.
 
 =item 1.
 
-See script C<examples/transformations/1.pl>:
+See script C<examples/transformations/01.pl>:
 
     use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
 
