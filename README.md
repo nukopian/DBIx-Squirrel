@@ -602,7 +602,7 @@ _transformation_.
 
 Transformation can be summarised as the automatic, just-in-time processing,
 re-shaping or filtering of results, as they are fetched from the database
-and before being returned to the caller.
+and before they are handed-off to the caller.
 
 A transformation is comprised of one or more processing stages. Each stage
 receives its version of the result, changes it or does something else it,
