@@ -585,17 +585,7 @@ created the first time they are used.
 The `results` methods may be replaced by either of the `rs` or `resultset`
 aliases, if preferred.
 
-## Processing results
-
-### Getting one result
-
-_(TO DO)_
-
-### Getting more than one result
-
-_(TO DO)_
-
-### Transformation
+## Transforming results
 
 All `DBIx::Squirrel` iterators support an optional processing step called
 _transformation_.
@@ -643,7 +633,7 @@ nothing—either `()`, or a bare `return`—from a processing
 step will filter the result out entirely, and no further processing steps
 will apply to it.
 
-#### Examples
+### Examples
 
 1. See script `examples/transformations_1.pl`:
 

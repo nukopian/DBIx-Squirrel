@@ -768,17 +768,7 @@ created the first time they are used.
 The C<results> methods may be replaced by either of the C<rs> or C<resultset>
 aliases, if preferred.
 
-=head2 Processing results
-
-=head3 Getting one result
-
-I<(TO DO)>
-
-=head3 Getting more than one result
-
-I<(TO DO)>
-
-=head3 Transformation
+=head2 Transforming results
 
 All C<DBIx::Squirrel> iterators support an optional processing step called
 I<transformation>.
@@ -826,7 +816,7 @@ nothingE<mdash>either C<()>, or a bare C<return>E<mdash>from a processing
 step will filter the result out entirely, and no further processing steps
 will apply to it.
 
-=head4 Examples
+=head3 Examples
 
 =over
 

@@ -54,15 +54,9 @@
           </li>
         </ul>
       </li>
-      <li><a href="#Processing-results">Processing results</a>
+      <li><a href="#Transforming-results">Transforming results</a>
         <ul>
-          <li><a href="#Getting-one-result">Getting one result</a></li>
-          <li><a href="#Getting-more-than-one-result">Getting more than one result</a></li>
-          <li><a href="#Transformation">Transformation</a>
-            <ul>
-              <li><a href="#Examples2">Examples</a></li>
-            </ul>
-          </li>
+          <li><a href="#Examples2">Examples</a></li>
         </ul>
       </li>
     </ul>
@@ -648,17 +642,7 @@ $itr = $sth-&gt;results(
 
 <p>The <code>results</code> methods may be replaced by either of the <code>rs</code> or <code>resultset</code> aliases, if preferred.</p>
 
-<h2 id="Processing-results">Processing results</h2>
-
-<h3 id="Getting-one-result">Getting one result</h3>
-
-<p><i>(TO DO)</i></p>
-
-<h3 id="Getting-more-than-one-result">Getting more than one result</h3>
-
-<p><i>(TO DO)</i></p>
-
-<h3 id="Transformation">Transformation</h3>
+<h2 id="Transforming-results">Transforming results</h2>
 
 <p>All <code>DBIx::Squirrel</code> iterators support an optional processing step called <i>transformation</i>.</p>
 
@@ -688,7 +672,7 @@ $itr = $sth-&gt;iterate(        |  $itr = $sth-&gt;results(
 
 <p>Hand-off to the next stage, or the caller, is via an explicit <code>return</code> statement, or the result of evaluating the unit&#39;s final expression. Returning nothing&mdash;either <code>()</code>, or a bare <code>return</code>&mdash;from a processing step will filter the result out entirely, and no further processing steps will apply to it.</p>
 
-<h4 id="Examples2">Examples</h4>
+<h3 id="Examples2">Examples</h3>
 
 <ol>
 
