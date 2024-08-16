@@ -632,13 +632,13 @@ processing step, represented by a CODEREF (or a call that returns a CODEREF).
 
 Each stage of a transformation receives the latest version of the result via
 the argument-list (`$_[0]` to be precise). For the sake of convenience (and
-for convention), this result is also available as `$_`. Hand-off to the next
-stage or the caller is via an explicit `return` statement, or the result of
-evaluating the unit's final expression.
+for convention), this result is also available as `$_`.
 
-Returning nothing—`()`, or a bare `return`—from a transform
-stage will filter the result out entirely, and no further transformations will
-be applied to it.
+Hand-off to the next stage, or the caller, is via an explicit `return`
+statement, or the result of evaluating the unit's final expression. Returning
+nothing—either `()`, or a bare `return`—from a processing
+step will filter the result out entirely, and no further processing steps
+will apply to it.
 
 #### Examples
 
