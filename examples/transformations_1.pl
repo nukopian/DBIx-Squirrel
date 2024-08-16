@@ -19,9 +19,7 @@ get_artist_id_by_name do {
             print "----\n";
             print "Name: ", $artist->Name, "\n";
             return $artist;
-        } => sub {
-            return $_->ArtistId;
-        }
+        } => sub {$_->ArtistId}
     );
 };
 

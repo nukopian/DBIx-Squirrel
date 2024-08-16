@@ -665,9 +665,7 @@ will apply to it.
                     print "----\n";
                     print "Name: ", $artist->Name, "\n";
                     return $artist;
-                } => sub {
-                    return $_->ArtistId;
-                }
+                } => sub {$_->ArtistId}
             );
         };
 

@@ -852,9 +852,7 @@ See script C<examples/transformations_1.pl>:
                 print "----\n";
                 print "Name: ", $artist->Name, "\n";
                 return $artist;
-            } => sub {
-                return $_->ArtistId;
-            }
+            } => sub {$_->ArtistId}
         );
     };
 

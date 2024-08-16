@@ -715,9 +715,7 @@ get_artist_id_by_name do {
             print &quot;----\n&quot;;
             print &quot;Name: &quot;, $artist-&gt;Name, &quot;\n&quot;;
             return $artist;
-        } =&gt; sub {
-            return $_-&gt;ArtistId;
-        }
+        } =&gt; sub {$_-&gt;ArtistId}
     );
 };
 
