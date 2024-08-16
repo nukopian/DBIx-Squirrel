@@ -741,9 +741,9 @@ db-&gt;disconnect();</code></pre>
 </li>
 <li><p><b>Create the <code>get_artist_id_by_name</code> helper function</b></p>
 
-<p>Here, I am constructing a fancy iterator and also associating it with the <code>get_artist_id_by_name</code> helper function.</p>
+<p>Here, I am constructing a fancy iterator and also associating it with the <code>get_artist_id_by_name</code> helper function. This means I can just call the <code>get_artist_id_by_name</code> function to execute the iterator in future.</p>
 
-<p>Also here, I describe the the kind of processing I want applied to every single result produced by this iterator, expressed as a transformation comprised of two separat stages:</p>
+<p>Also here, I describe the the kind of processing I want applied to every single result produced by this iterator, expressed as a transformation pipeline that is comprised of two separate stages:</p>
 
 <ul>
 
@@ -781,7 +781,7 @@ ArtistId: 3
 Name: Rush
 ArtistId: 128</code></pre>
 
-<p>Notice that we got nothing back for <code>&quot;Darling West&quot;</code>? That&#39;s because (no matter how excellent they are), they aren&#39;t in our database, and we can&#39;t apply transformations to nothing.</p>
+<p>Notice that we got nothing back for one of our artists? That&#39;s because the artist in question is not in our database, and we cannot apply a transformation to nothing.</p>
 
 </li>
 </ol>

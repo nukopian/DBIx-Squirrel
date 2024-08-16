@@ -691,11 +691,12 @@ will apply to it.
     2. **Create the `get_artist_id_by_name` helper function**
 
         Here, I am constructing a fancy iterator and also associating it with the
-        `get_artist_id_by_name` helper function.
+        `get_artist_id_by_name` helper function. This means I can just call the
+        `get_artist_id_by_name` function to execute the iterator in future.
 
         Also here, I describe the the kind of processing I want applied to every
         single result produced by this iterator, expressed as a transformation
-        comprised of two separat stages:
+        pipeline that is comprised of two separate stages:
 
         - I want the names of matched artists printed nicely on the console;
         - I am only intersted in getting back the artist's id.
@@ -722,9 +723,9 @@ will apply to it.
         Name: Rush
         ArtistId: 128
 
-    Notice that we got nothing back for `"Darling West"`? That's because (no
-    matter how excellent they are), they aren't in our database, and we can't
-    apply transformations to nothing.
+    Notice that we got nothing back for one of our artists? That's because
+    the artist in question is not in our database, and we cannot apply a
+    transformation to nothing.
 
 # COPYRIGHT AND LICENSE
 
