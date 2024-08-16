@@ -781,20 +781,22 @@ I<(TO DO)>
 =head3 Transformation
 
 All C<DBIx::Squirrel> iterators support an optional processing step called
-I<transformation>. This can be summarised as the automatic, just-in-time
-processing and, potentially, re-shaping or filtering of results as they
-are fetched from the database and before they are returned to the caller.
+I<transformation>.
 
-A transformation is comprised of one or more processing stages, in which
-each stage receives a result and then changes the result (or does something
-else it), finally handing a result off to the next stage, or returning it
-to the caller if there are no more stages.
+Transformation can be summarised as the automatic, just-in-time processing,
+re-shaping or filtering of results, as they are fetched from the database
+and before they are handed-off to the caller.
 
-Recall, if you will, that there are two kinds of iterator, as well as two
-ways to construct each of type:
+A transformation is comprised of one or more processing stages. Each stage
+receives its version of the result, changes it or does something else it,
+and finally hands it off to the next stage, or to the caller if there are
+no more stages.
+
+Recall that there are two kinds of iterator, and two methods to construct
+each:
 
     Basic Iterators              |  Fancy Iterators
-    ---------------------------------------------------------------
+    -----------------------------|------------------------------
     $itr = $dbh->iterate(        |  $itr = $dbh->results(
         $query,                  |      $query,
         [undef|\%attr,]          |      [undef|\%attr,]
@@ -807,21 +809,19 @@ ways to construct each of type:
         [@transforms]            |      [@transforms]
     );                           |  );
 
-The final element in each of the constructors' argument-lists is an optional
-list of transforms. A transform is an individual processing stage in a
-transformation, and is represented by a CODEREF or a call that returns a
-CODEREF.
+The final element of each constructor's argument-list is the transformation
+pipeline (C<[@transforms]>). Each stage of this pipeline is an individual
+processing step, represented by a CODEREF (or a call that returns a CODEREF).
 
-Each stage of a transformation receives its version of the result via the
-argument-list (C<$_[0]> to be precise). For the sake of convenience (and
-for convention), this result is also always available as C<$_>. Hand-off
-to the next stage or, when there are no more stages, the caller is via
-an explicit C<return> statement, or the result of evaluating the unit's
-final expression.
+Each stage of a transformation receives the latest version of the result via
+the argument-list (C<$_[0]> to be precise). For the sake of convenience (and
+for convention), this result is also available as C<$_>.
 
-Returning nothing (C<()> or a bare C<return>) from a transform stage will
-filter the result out entirely, and no further transformations will be
-applied to it.
+Hand-off to the next stage, or the caller, is via an explicit C<return>
+statement, or the result of evaluating the unit's final expression. Returning
+nothingE<mdash>either C<()>, or a bare C<return>E<mdash>from a processing
+step will filter the result out entirely, and no further processing steps
+will apply to it.
 
 =head4 Examples
 
@@ -848,7 +848,7 @@ See script C<examples/transformations_1.pl>:
 
     get_artist_id_by_name do {
         db->results(
-            "SELECT ArtistId, Name FROM artists WHERE Name=?" => sub {
+            "SELECT ArtistId, Name FROM artists WHERE Name=? LIMIT 1" => sub {
                 my($artist) = @_;
                 print "----\n";
                 print "Name: ", $artist->Name, "\n";
@@ -873,19 +873,47 @@ The script is comprised of four parts:
 
 =item 1.
 
-Connect to the database
+B<Connect to the database>
+
+Here, I am not just connecting to the database. I am associating the resulting
+database connection handle with the C<db> helper function, meaning I can refer
+to it as C<db> in future.
 
 =item 2.
 
-Create the C<get_artist_id_by_name> helper function
+B<Create the C<get_artist_id_by_name> helper function>
+
+Here, I am constructing a fancy iterator and also associating it with the
+C<get_artist_id_by_name> helper function.
+
+Also here, I describe the the kind of processing I want applied to every
+single result produced by this iterator, expressed as a transformation
+comprised of two separat stages:
+
+=over
+
+=item *
+
+I want the names of matched artists printed nicely on the console;
+
+=item *
+
+I am only intersted in getting back the artist's id.
+
+=back
 
 =item 3. 
 
-Query the database and process the results
+B<Query the database and process the results>
+
+Here, I'm executing the query once for each of four artist to get and print
+their artist ids.
 
 =item 4. 
 
-Disconnect from the database
+B<Disconnect from the database>
+
+Just as we would with the C<DBI>
 
 =back
 
@@ -901,6 +929,10 @@ Find the script and run it:
     ----
     Name: Rush
     ArtistId: 128
+
+Notice that we got nothing back for C<"Darling West">? That's because (no
+matter how excellent they are), they aren't in our database, and we can't
+apply transformations to nothing.
 
 =back
 

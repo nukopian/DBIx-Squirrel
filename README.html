@@ -660,14 +660,16 @@ $itr = $sth-&gt;results(
 
 <h3 id="Transformation">Transformation</h3>
 
-<p>All <code>DBIx::Squirrel</code> iterators support an optional processing step called <i>transformation</i>. This can be summarised as the automatic, just-in-time processing and, potentially, re-shaping or filtering of results as they are fetched from the database and before they are returned to the caller.</p>
+<p>All <code>DBIx::Squirrel</code> iterators support an optional processing step called <i>transformation</i>.</p>
 
-<p>A transformation is comprised of one or more processing stages, in which each stage receives a result and then changes the result (or does something else it), finally handing a result off to the next stage, or returning it to the caller if there are no more stages.</p>
+<p>Transformation can be summarised as the automatic, just-in-time processing, re-shaping or filtering of results, as they are fetched from the database and before they are handed-off to the caller.</p>
 
-<p>Recall, if you will, that there are two kinds of iterator, as well as two ways to construct each of type:</p>
+<p>A transformation is comprised of one or more processing stages. Each stage receives its version of the result, changes it or does something else it, and finally hands it off to the next stage, or to the caller if there are no more stages.</p>
+
+<p>Recall that there are two kinds of iterator, and two methods to construct each:</p>
 
 <pre><code>Basic Iterators              |  Fancy Iterators
----------------------------------------------------------------
+-----------------------------|------------------------------
 $itr = $dbh-&gt;iterate(        |  $itr = $dbh-&gt;results(
     $query,                  |      $query,
     [undef|\%attr,]          |      [undef|\%attr,]
@@ -680,11 +682,11 @@ $itr = $sth-&gt;iterate(        |  $itr = $sth-&gt;results(
     [@transforms]            |      [@transforms]
 );                           |  );</code></pre>
 
-<p>The final element in each of the constructors&#39; argument-lists is an optional list of transforms. A transform is an individual processing stage in a transformation, and is represented by a CODEREF or a call that returns a CODEREF.</p>
+<p>The final element of each constructor&#39;s argument-list is the transformation pipeline (<code>[@transforms]</code>). Each stage of this pipeline is an individual processing step, represented by a CODEREF (or a call that returns a CODEREF).</p>
 
-<p>Each stage of a transformation receives its version of the result via the argument-list (<code>$_[0]</code> to be precise). For the sake of convenience (and for convention), this result is also always available as <code>$_</code>. Hand-off to the next stage or, when there are no more stages, the caller is via an explicit <code>return</code> statement, or the result of evaluating the unit&#39;s final expression.</p>
+<p>Each stage of a transformation receives the latest version of the result via the argument-list (<code>$_[0]</code> to be precise). For the sake of convenience (and for convention), this result is also available as <code>$_</code>.</p>
 
-<p>Returning nothing (<code>()</code> or a bare <code>return</code>) from a transform stage will filter the result out entirely, and no further transformations will be applied to it.</p>
+<p>Hand-off to the next stage, or the caller, is via an explicit <code>return</code> statement, or the result of evaluating the unit&#39;s final expression. Returning nothing&mdash;either <code>()</code>, or a bare <code>return</code>&mdash;from a processing step will filter the result out entirely, and no further processing steps will apply to it.</p>
 
 <h4 id="Examples2">Examples</h4>
 
@@ -709,7 +711,7 @@ db do {
 
 get_artist_id_by_name do {
     db-&gt;results(
-        &quot;SELECT ArtistId, Name FROM artists WHERE Name=?&quot; =&gt; sub {
+        &quot;SELECT ArtistId, Name FROM artists WHERE Name=? LIMIT 1&quot; =&gt; sub {
             my($artist) = @_;
             print &quot;----\n&quot;;
             print &quot;Name: &quot;, $artist-&gt;Name, &quot;\n&quot;;
@@ -732,16 +734,36 @@ db-&gt;disconnect();</code></pre>
 
 <ol>
 
-<li><p>Connect to the database</p>
+<li><p><b>Connect to the database</b></p>
+
+<p>Here, I am not just connecting to the database. I am associating the resulting database connection handle with the <code>db</code> helper function, meaning I can refer to it as <code>db</code> in future.</p>
 
 </li>
-<li><p>Create the <code>get_artist_id_by_name</code> helper function</p>
+<li><p><b>Create the <code>get_artist_id_by_name</code> helper function</b></p>
+
+<p>Here, I am constructing a fancy iterator and also associating it with the <code>get_artist_id_by_name</code> helper function.</p>
+
+<p>Also here, I describe the the kind of processing I want applied to every single result produced by this iterator, expressed as a transformation comprised of two separat stages:</p>
+
+<ul>
+
+<li><p>I want the names of matched artists printed nicely on the console;</p>
 
 </li>
-<li><p>Query the database and process the results</p>
+<li><p>I am only intersted in getting back the artist&#39;s id.</p>
 
 </li>
-<li><p>Disconnect from the database</p>
+</ul>
+
+</li>
+<li><p><b>Query the database and process the results</b></p>
+
+<p>Here, I&#39;m executing the query once for each of four artist to get and print their artist ids.</p>
+
+</li>
+<li><p><b>Disconnect from the database</b></p>
+
+<p>Just as we would with the <code>DBI</code></p>
 
 </li>
 </ol>
@@ -758,6 +780,8 @@ ArtistId: 3
 ----
 Name: Rush
 ArtistId: 128</code></pre>
+
+<p>Notice that we got nothing back for <code>&quot;Darling West&quot;</code>? That&#39;s because (no matter how excellent they are), they aren&#39;t in our database, and we can&#39;t apply transformations to nothing.</p>
 
 </li>
 </ol>

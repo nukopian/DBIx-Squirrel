@@ -598,20 +598,22 @@ _(TO DO)_
 ### Transformation
 
 All `DBIx::Squirrel` iterators support an optional processing step called
-_transformation_. This can be summarised as the automatic, just-in-time
-processing and, potentially, re-shaping or filtering of results as they
-are fetched from the database and before they are returned to the caller.
+_transformation_.
 
-A transformation is comprised of one or more processing stages, in which
-each stage receives a result and then changes the result (or does something
-else it), finally handing a result off to the next stage, or returning it
-to the caller if there are no more stages.
+Transformation can be summarised as the automatic, just-in-time processing,
+re-shaping or filtering of results, as they are fetched from the database
+and before they are handed-off to the caller.
 
-Recall, if you will, that there are two kinds of iterator, as well as two
-ways to construct each of type:
+A transformation is comprised of one or more processing stages. Each stage
+receives its version of the result, changes it or does something else it,
+and finally hands it off to the next stage, or to the caller if there are
+no more stages.
+
+Recall that there are two kinds of iterator, and two methods to construct
+each:
 
     Basic Iterators              |  Fancy Iterators
-    ---------------------------------------------------------------
+    -----------------------------|------------------------------
     $itr = $dbh->iterate(        |  $itr = $dbh->results(
         $query,                  |      $query,
         [undef|\%attr,]          |      [undef|\%attr,]
@@ -624,21 +626,19 @@ ways to construct each of type:
         [@transforms]            |      [@transforms]
     );                           |  );
 
-The final element in each of the constructors' argument-lists is an optional
-list of transforms. A transform is an individual processing stage in a
-transformation, and is represented by a CODEREF or a call that returns a
-CODEREF.
+The final element of each constructor's argument-list is the transformation
+pipeline (`[@transforms]`). Each stage of this pipeline is an individual
+processing step, represented by a CODEREF (or a call that returns a CODEREF).
 
-Each stage of a transformation receives its version of the result via the
-argument-list (`$_[0]` to be precise). For the sake of convenience (and
-for convention), this result is also always available as `$_`. Hand-off
-to the next stage or, when there are no more stages, the caller is via
-an explicit `return` statement, or the result of evaluating the unit's
-final expression.
+Each stage of a transformation receives the latest version of the result via
+the argument-list (`$_[0]` to be precise). For the sake of convenience (and
+for convention), this result is also available as `$_`.
 
-Returning nothing (`()` or a bare `return`) from a transform stage will
-filter the result out entirely, and no further transformations will be
-applied to it.
+Hand-off to the next stage, or the caller, is via an explicit `return`
+statement, or the result of evaluating the unit's final expression. Returning
+nothing—either `()`, or a bare `return`—from a processing
+step will filter the result out entirely, and no further processing steps
+will apply to it.
 
 #### Examples
 
@@ -661,7 +661,7 @@ applied to it.
 
         get_artist_id_by_name do {
             db->results(
-                "SELECT ArtistId, Name FROM artists WHERE Name=?" => sub {
+                "SELECT ArtistId, Name FROM artists WHERE Name=? LIMIT 1" => sub {
                     my($artist) = @_;
                     print "----\n";
                     print "Name: ", $artist->Name, "\n";
@@ -682,10 +682,32 @@ applied to it.
 
     The script is comprised of four parts:
 
-    1. Connect to the database
-    2. Create the `get_artist_id_by_name` helper function
-    3. Query the database and process the results
-    4. Disconnect from the database
+    1. **Connect to the database**
+
+        Here, I am not just connecting to the database. I am associating the resulting
+        database connection handle with the `db` helper function, meaning I can refer
+        to it as `db` in future.
+
+    2. **Create the `get_artist_id_by_name` helper function**
+
+        Here, I am constructing a fancy iterator and also associating it with the
+        `get_artist_id_by_name` helper function.
+
+        Also here, I describe the the kind of processing I want applied to every
+        single result produced by this iterator, expressed as a transformation
+        comprised of two separat stages:
+
+        - I want the names of matched artists printed nicely on the console;
+        - I am only intersted in getting back the artist's id.
+
+    3. **Query the database and process the results**
+
+        Here, I'm executing the query once for each of four artist to get and print
+        their artist ids.
+
+    4. **Disconnect from the database**
+
+        Just as we would with the `DBI`
 
     Find the script and run it:
 
@@ -699,6 +721,10 @@ applied to it.
         ----
         Name: Rush
         ArtistId: 128
+
+    Notice that we got nothing back for `"Darling West"`? That's because (no
+    matter how excellent they are), they aren't in our database, and we can't
+    apply transformations to nothing.
 
 # COPYRIGHT AND LICENSE
 
