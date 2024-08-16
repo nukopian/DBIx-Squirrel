@@ -793,50 +793,86 @@ it is fetched but before it is returned to the caller. This is accomplished
 by appending one or more CODEREFs to the argument-list passed into the
 method that constructs the iterator.
 
-B<For example>
-
-In the code below, we will:
+=head4 Examples
 
 =over
 
-=item * Connect to the database;
+=item 1.
 
-=item * Create a C<product_id> iterator that returns the id of a named product;
+See script C<examples/transformations_1.pl>:
 
-=item * Execute our query and return the id.
+    use Modern::Perl;
+    use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
 
-=back
+    db do {
+        DBIx::Squirrel->connect(
+            "dbi:SQLite:dbname=./t/data/chinook.db",
+            "",
+            "",
+            {   PrintError     => !!0,
+                RaiseError     => !!1,
+                sqlite_unicode => !!1,
+            },
+        );
+    };
 
-We just want the product's id returned to the caller. We aren't interested
-in any other information. Nevertheless, we I<do> want to quickly check that
-all is as it should be, so we will log some additional debug information
-to the error console.
+    get_artist_id_by_name do {
+        db->results(
+            "SELECT ArtistId, Name FROM artists WHERE Name=?" => sub {
+                my($artist) = @_;
+                print "----\n";
+                print "Name: ", $artist->Name, "\n";
+                return $artist;
+            } => sub {
+                return $_->ArtistId;
+            }
+        );
+    };
 
-    use DBIx::Squirrel database_entities => [qw/db product_id/];
-
-    db(DBIx::Squirrel->connect($dsn, $user, $pass, \%attr));
-
-    product_id($db->results(
-        'SELECT Id, Name, Description FROM product WHERE Name=?' => sub {
-            my $res = shift;
-            print STDERR "Id:          ", $res->Id, "\n";
-            print STDERR "Name:        ", $res->Name, "\n";
-            print STDERR "Description: ", $res->Description, "\n";
-            return $res;
-        } => sub {
-            $_->Id;
-        },
-    ));
-
-    $id = product_id('Acme Rocket')->single;
+    foreach my $name ("AC/DC", "Aerosmith", "Darling West", "Rush") {
+        if (get_artist_id_by_name($name)->single) {
+            print "ArtistId: $_\n";
+        }
+    }
 
     db->disconnect();
 
-Rather than litter the area around our call site with code to process the
-result, we have kept all that logic where the iterator is constructed. There
-is a two-stage transformation chain defined at the end of the call to the
-"results" method. The first takes care of the debug output, while the second
-re-shapes the result into just the information we want.
+The script is comprised of four parts:
+
+=over
+
+=item 1.
+
+Connect to the database
+
+=item 2.
+
+Create the C<get_artist_id_by_name> helper function
+
+=item 3. 
+
+Query the database and process the results
+
+=item 4. 
+
+Disconnect from the database
+
+=back
+
+Find the script and run it:
+
+    $ perl -I./lib ./examples/transformations_1.pl
+    ----
+    Name: AC/DC
+    ArtistId: 1
+    ----
+    Name: Aerosmith
+    ArtistId: 3
+    ----
+    Name: Rush
+    ArtistId: 128
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 

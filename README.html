@@ -58,7 +58,11 @@
         <ul>
           <li><a href="#Getting-one-result">Getting one result</a></li>
           <li><a href="#Getting-more-than-one-result">Getting more than one result</a></li>
-          <li><a href="#Transformations">Transformations</a></li>
+          <li><a href="#Transformations">Transformations</a>
+            <ul>
+              <li><a href="#Examples2">Examples</a></li>
+            </ul>
+          </li>
         </ul>
       </li>
     </ul>
@@ -660,46 +664,81 @@ $itr = $sth-&gt;results(
 
 <p>Iterator methods such as &quot;single&quot;, &quot;first&quot;, &quot;next&quot; and &quot;all&quot; would normally fetch rows and return these strainght to the caller for further processing and use after the call site. Iterators, however, provide the programmer with a mechanism for declaring what should happen automatically to each row after it is fetched but before it is returned to the caller. This is accomplished by appending one or more CODEREFs to the argument-list passed into the method that constructs the iterator.</p>
 
-<p><b>For example</b></p>
+<h4 id="Examples2">Examples</h4>
 
-<p>In the code below, we will:</p>
+<ol>
 
-<ul>
+<li><p>See script <code>examples/transformations_1.pl</code>:</p>
 
-<li><p>Connect to the database;</p>
+<pre><code>use Modern::Perl;
+use DBIx::Squirrel database_entities =&gt; [qw/db get_artist_id_by_name/];
 
-</li>
-<li><p>Create a <code>product_id</code> iterator that returns the id of a named product;</p>
+db do {
+    DBIx::Squirrel-&gt;connect(
+        &quot;dbi:SQLite:dbname=./t/data/chinook.db&quot;,
+        &quot;&quot;,
+        &quot;&quot;,
+        {   PrintError     =&gt; !!0,
+            RaiseError     =&gt; !!1,
+            sqlite_unicode =&gt; !!1,
+        },
+    );
+};
 
-</li>
-<li><p>Execute our query and return the id.</p>
+get_artist_id_by_name do {
+    db-&gt;results(
+        &quot;SELECT ArtistId, Name FROM artists WHERE Name=?&quot; =&gt; sub {
+            my($artist) = @_;
+            print &quot;----\n&quot;;
+            print &quot;Name: &quot;, $artist-&gt;Name, &quot;\n&quot;;
+            return $artist;
+        } =&gt; sub {
+            return $_-&gt;ArtistId;
+        }
+    );
+};
 
-</li>
-</ul>
-
-<p>We just want the product&#39;s id returned to the caller. We aren&#39;t interested in any other information. Nevertheless, we <i>do</i> want to quickly check that all is as it should be, so we will log some additional debug information to the error console.</p>
-
-<pre><code>use DBIx::Squirrel database_entities =&gt; [qw/db product_id/];
-
-db(DBIx::Squirrel-&gt;connect($dsn, $user, $pass, \%attr));
-
-product_id($db-&gt;results(
-    &#39;SELECT Id, Name, Description FROM product WHERE Name=?&#39; =&gt; sub {
-        my $res = shift;
-        print STDERR &quot;Id:          &quot;, $res-&gt;Id, &quot;\n&quot;;
-        print STDERR &quot;Name:        &quot;, $res-&gt;Name, &quot;\n&quot;;
-        print STDERR &quot;Description: &quot;, $res-&gt;Description, &quot;\n&quot;;
-        return $res;
-    } =&gt; sub {
-        $_-&gt;Id;
-    },
-));
-
-$id = product_id(&#39;Acme Rocket&#39;)-&gt;single;
+foreach my $name (&quot;AC/DC&quot;, &quot;Aerosmith&quot;, &quot;Darling West&quot;, &quot;Rush&quot;) {
+    if (get_artist_id_by_name($name)-&gt;single) {
+        print &quot;ArtistId: $_\n&quot;;
+    }
+}
 
 db-&gt;disconnect();</code></pre>
 
-<p>Rather than litter the area around our call site with code to process the result, we have kept all that logic where the iterator is constructed. There is a two-stage transformation chain defined at the end of the call to the &quot;results&quot; method. The first takes care of the debug output, while the second re-shapes the result into just the information we want.</p>
+<p>The script is comprised of four parts:</p>
+
+<ol>
+
+<li><p>Connect to the database</p>
+
+</li>
+<li><p>Create the <code>get_artist_id_by_name</code> helper function</p>
+
+</li>
+<li><p>Query the database and process the results</p>
+
+</li>
+<li><p>Disconnect from the database</p>
+
+</li>
+</ol>
+
+<p>Find the script and run it:</p>
+
+<pre><code>$ perl -I./lib ./examples/transformations_1.pl
+----
+Name: AC/DC
+ArtistId: 1
+----
+Name: Aerosmith
+ArtistId: 3
+----
+Name: Rush
+ArtistId: 128</code></pre>
+
+</li>
+</ol>
 
 <h1 id="COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</h1>
 
