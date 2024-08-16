@@ -688,7 +688,7 @@ db do {
 get_artist_id_by_name do {
     db-&gt;results(
         &quot;SELECT ArtistId, Name FROM artists WHERE Name=?&quot; =&gt; sub {
-            my $artist = $_;
+            my($artist) = @_;
             print &quot;----\n&quot;;
             print &quot;Name: &quot;, $artist-&gt;Name, &quot;\n&quot;;
             return $artist;

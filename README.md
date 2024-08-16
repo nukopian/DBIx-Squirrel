@@ -632,7 +632,7 @@ method that constructs the iterator.
         get_artist_id_by_name do {
             db->results(
                 "SELECT ArtistId, Name FROM artists WHERE Name=?" => sub {
-                    my $artist = $_;
+                    my($artist) = @_;
                     print "----\n";
                     print "Name: ", $artist->Name, "\n";
                     return $artist;
