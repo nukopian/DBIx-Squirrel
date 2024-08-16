@@ -58,7 +58,7 @@
         <ul>
           <li><a href="#Getting-one-result">Getting one result</a></li>
           <li><a href="#Getting-more-than-one-result">Getting more than one result</a></li>
-          <li><a href="#Transformations">Transformations</a>
+          <li><a href="#Transformation">Transformation</a>
             <ul>
               <li><a href="#Examples2">Examples</a></li>
             </ul>
@@ -618,12 +618,12 @@ $res = $sth-&gt;execute({&#39;:Name&#39; =&gt; &#39;Aerosmith&#39;});</code></pr
     $query,
     [undef|\%attr,]
     [@bindvalues,]
-    [@coderefs]
+    [@transforms]
 );
 
 $itr = $sth-&gt;iterate(
     [@bindvalues,]
-    [@coderefs]
+    [@transforms]
 );</code></pre>
 
 <p>The <code>iterate</code> methods may be replaced by either of the <code>it</code> or <code>iterator</code> aliases, if preferred.</p>
@@ -638,12 +638,12 @@ $itr = $sth-&gt;iterate(
     $query,
     [undef|\%attr,]
     [@bindvalues,]
-    [@coderefs]
+    [@transforms]
 );
 
 $itr = $sth-&gt;results(
     [@bindvalues,]
-    [@coderefs]
+    [@transforms]
 );</code></pre>
 
 <p>The <code>results</code> methods may be replaced by either of the <code>rs</code> or <code>resultset</code> aliases, if preferred.</p>
@@ -658,11 +658,33 @@ $itr = $sth-&gt;results(
 
 <p><i>(TO DO)</i></p>
 
-<h3 id="Transformations">Transformations</h3>
+<h3 id="Transformation">Transformation</h3>
 
-<p>Within the context of <code>DBIx::Squirrel</code> iterators, a &quot;transformation&quot; is a single- or multi-stage process responsible for changing the shape of results and/or doing something else with them prior to them being returned to the caller.</p>
+<p>All <code>DBIx::Squirrel</code> iterators support an optional processing step called <i>transformation</i>. This can be summarised as the automatic, just-in-time processing and, potentially, re-shaping or filtering of results as they are fetched from the database and before they are returned to the caller.</p>
 
-<p>Iterator methods such as &quot;single&quot;, &quot;first&quot;, &quot;next&quot; and &quot;all&quot; would normally fetch rows and return these strainght to the caller for further processing and use after the call site. Iterators, however, provide the programmer with a mechanism for declaring what should happen automatically to each row after it is fetched but before it is returned to the caller. This is accomplished by appending one or more CODEREFs to the argument-list passed into the method that constructs the iterator.</p>
+<p>A transformation is comprised of one or more processing stages, in which each stage receives a result and then changes the result (or does something else it), finally handing a result off to the next stage, or returning it to the caller if there are no more stages.</p>
+
+<p>Recall, if you will, that there are two kinds of iterator, as well as two ways to construct each of type:</p>
+
+<pre><code>Basic Iterators              |  Fancy Iterators
+---------------------------------------------------------------
+$itr = $dbh-&gt;iterate(        |  $itr = $dbh-&gt;results(
+    $query,                  |      $query,
+    [undef|\%attr,]          |      [undef|\%attr,]
+    [@bindvalues,]           |      [@bindvalues,]
+    [@transforms]            |      [@transforms]
+);                           |  );
+                             |
+$itr = $sth-&gt;iterate(        |  $itr = $sth-&gt;results(
+    [@bindvalues,]           |      [@bindvalues,]
+    [@transforms]            |      [@transforms]
+);                           |  );</code></pre>
+
+<p>The final element in each of the constructors&#39; argument-lists is an optional list of transforms. A transform is an individual processing stage in a transformation, and is represented by a CODEREF or a call that returns a CODEREF.</p>
+
+<p>Each stage of a transformation receives its version of the result via the argument-list (<code>$_[0]</code> to be precise). For the sake of convenience (and for convention), this result is also always available as <code>$_</code>. Hand-off to the next stage or, when there are no more stages, the caller is via an explicit <code>return</code> statement, or the result of evaluating the unit&#39;s final expression.</p>
+
+<p>Returning nothing (<code>()</code> or a bare <code>return</code>) from a transform stage will filter the result out entirely, and no further transformations will be applied to it.</p>
 
 <h4 id="Examples2">Examples</h4>
 

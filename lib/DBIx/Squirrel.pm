@@ -732,12 +732,12 @@ be used to alter this behaviour.
         $query,
         [undef|\%attr,]
         [@bindvalues,]
-        [@coderefs]
+        [@transforms]
     );
 
     $itr = $sth->iterate(
         [@bindvalues,]
-        [@coderefs]
+        [@transforms]
     );
 
 The C<iterate> methods may be replaced by either of the C<it> or C<iterator>
@@ -757,12 +757,12 @@ created the first time they are used.
         $query,
         [undef|\%attr,]
         [@bindvalues,]
-        [@coderefs]
+        [@transforms]
     );
 
     $itr = $sth->results(
         [@bindvalues,]
-        [@coderefs]
+        [@transforms]
     );
 
 The C<results> methods may be replaced by either of the C<rs> or C<resultset>
@@ -778,20 +778,50 @@ I<(TO DO)>
 
 I<(TO DO)>
 
-=head3 Transformations
+=head3 Transformation
 
-Within the context of C<DBIx::Squirrel> iterators, a "transformation" is a
-single- or multi-stage process responsible for changing the shape of results
-and/or doing something else with them prior to them being returned to the
-caller.
+All C<DBIx::Squirrel> iterators support an optional processing step called
+I<transformation>. This can be summarised as the automatic, just-in-time
+processing and, potentially, re-shaping or filtering of results as they
+are fetched from the database and before they are returned to the caller.
 
-Iterator methods such as "single", "first", "next" and "all" would normally
-fetch rows and return these strainght to the caller for further processing
-and use after the call site. Iterators, however, provide the programmer with
-a mechanism for declaring what should happen automatically to each row after
-it is fetched but before it is returned to the caller. This is accomplished
-by appending one or more CODEREFs to the argument-list passed into the
-method that constructs the iterator.
+A transformation is comprised of one or more processing stages, in which
+each stage receives a result and then changes the result (or does something
+else it), finally handing a result off to the next stage, or returning it
+to the caller if there are no more stages.
+
+Recall, if you will, that there are two kinds of iterator, as well as two
+ways to construct each of type:
+
+    Basic Iterators              |  Fancy Iterators
+    ---------------------------------------------------------------
+    $itr = $dbh->iterate(        |  $itr = $dbh->results(
+        $query,                  |      $query,
+        [undef|\%attr,]          |      [undef|\%attr,]
+        [@bindvalues,]           |      [@bindvalues,]
+        [@transforms]            |      [@transforms]
+    );                           |  );
+                                 |
+    $itr = $sth->iterate(        |  $itr = $sth->results(
+        [@bindvalues,]           |      [@bindvalues,]
+        [@transforms]            |      [@transforms]
+    );                           |  );
+
+The final element in each of the constructors' argument-lists is an optional
+list of transforms. A transform is an individual processing stage in a
+transformation, and is represented by a CODEREF or a call that returns a
+CODEREF.
+
+Each stage of a transformation receives its version of the result via the
+argument-list (C<$_[0]> to be precise). For the sake of convenience (and
+for convention), this result is also always available as C<$_>. Hand-off
+to the next stage or, when there are no more stages, the caller is via
+an explicit C<return> statement, or the result of evaluating the unit's
+final expression.
+
+Returning nothing (C<()> or a bare C<return>) from a transform stage will
+filter the result out entirely, and no further transformations will be
+applied to it.
 
 =head4 Examples
 
