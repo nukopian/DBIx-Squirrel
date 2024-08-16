@@ -1,4 +1,3 @@
-use Modern::Perl;
 use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
 
 db do {

@@ -831,7 +831,6 @@ will apply to it.
 
 See script C<examples/transformations_1.pl>:
 
-    use Modern::Perl;
     use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
 
     db do {
