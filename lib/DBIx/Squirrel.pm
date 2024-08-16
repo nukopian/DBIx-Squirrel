@@ -871,7 +871,7 @@ The script is comprised of four parts:
 
 =over
 
-=item 1.
+=item *
 
 B<Connect to the database>
 
@@ -879,7 +879,7 @@ Here, I am not just connecting to the database. I am associating the resulting
 database connection handle with the C<db> helper function, meaning I can refer
 to it as C<db> in future.
 
-=item 2.
+=item *
 
 B<Create the C<get_artist_id_by_name> helper function>
 
@@ -903,14 +903,14 @@ I am only intersted in getting back the artist's id.
 
 =back
 
-=item 3. 
+=item *
 
 B<Query the database and process the results>
 
 Here, I'm executing the query once for each one of four artist to get and
 print their artist ids.
 
-=item 4. 
+=item *
 
 B<Disconnect from the database>
 

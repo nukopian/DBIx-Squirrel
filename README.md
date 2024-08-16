@@ -682,13 +682,13 @@ will apply to it.
 
     The script is comprised of four parts:
 
-    1. **Connect to the database**
+    - **Connect to the database**
 
         Here, I am not just connecting to the database. I am associating the resulting
         database connection handle with the `db` helper function, meaning I can refer
         to it as `db` in future.
 
-    2. **Create the `get_artist_id_by_name` helper function**
+    - **Create the `get_artist_id_by_name` helper function**
 
         Here, I am constructing a fancy iterator and also associating it with the
         `get_artist_id_by_name` helper function. This means I can just call the
@@ -701,12 +701,12 @@ will apply to it.
         - I want the names of matched artists printed nicely on the console;
         - I am only intersted in getting back the artist's id.
 
-    3. **Query the database and process the results**
+    - **Query the database and process the results**
 
         Here, I'm executing the query once for each one of four artist to get and
         print their artist ids.
 
-    4. **Disconnect from the database**
+    - **Disconnect from the database**
 
         Just as we would with the `DBI`.
 
