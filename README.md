@@ -682,10 +682,10 @@ will apply to it.
 
     The script is comprised of four parts:
 
-    1. Connect to the database
-    2. Create the `get_artist_id_by_name` helper function
-    3. Query the database and process the results
-    4. Disconnect from the database
+    1. **Connect to the database**
+    2. **Create the `get_artist_id_by_name` helper function**
+    3. **Query the database and process the results**
+    4. **Disconnect from the database**
 
     Find the script and run it:
 
