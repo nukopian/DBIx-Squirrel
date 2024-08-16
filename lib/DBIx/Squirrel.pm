@@ -523,9 +523,9 @@ Addressing an association amounts to doing something meaningful with it,
 and we accomplish this by calling the helper function with one or more
 arguments.
 
-Once associated with a database entity, a helper function will any arguments
-that are passed to it and send a version of these to the database entity
-method that imbues meaning to the interaction.
+Once associated with a database entity, a helper function will consume
+any arguments that are passed to it and send a version of these to the
+database entity method that imparts meaning to the interaction.
 
 Meaning in this context is determined by the type of association:
 
@@ -542,12 +542,13 @@ methods respectively.
 
 =back
 
-B<Clearly there is a paradox here>, which centres around those statements
-and iterators expecting I<no bind-values>. In order to smooth-out this wrinkle,
-you can opt to enclose arguments inside an anonymous array or hash. When no
-bind-values are expected, you can coerce the helper into performing the
-execution by passing an empty array or hash reference. Alternatively, you
-could just resolve the association and call the relevant method manually.
+B<Clearly there is a paradox here>, and itcentres around those statements
+and iterators that take no parameters and expect no bind-values. In order
+to smooth-out this wrinkle, you can opt to enclose arguments inside an
+anonymous array or hash. When no bind-values are expected, you can coerce
+the helper into performing the execution by passing an empty ARRAYREF or
+HASHREF. Alternatively, you could just resolve the association and call
+the relevant method manually.
 
 =back
 
@@ -608,10 +609,10 @@ an alternative form:
 
     $new_dbh = DBIx::Squirrel->connect($original_dbh, \%attr);
 
-This form clones another connection object and returns a brand object that
-is blessed using the same class that invoked the C<connect> method. Objects
-being cloned are allowed to be those created by the C<DBI> or any of its
-subclasses, C<DBIx::Squirrel> being one of those.
+This form clones another connection object and returns a brand new object
+that is blessed using the same class that invoked the C<connect> method.
+The method will allow you to clone database connections created by the
+C<DBI> and any subclasses (C<DBIx::Squirrel> being one).
 
 =head2 Preparing statements
 
@@ -623,8 +624,7 @@ methods.
 
 A nice quality-of-life improvement offered by C<DBIx::Squirrel>'s own
 implementation of the C<prepare_cached> and C<prepare> methods is their
-built-in ability to cope with for a number of different placeholder
-styles:
+built-in ability to cope with a number of different placeholder styles:
 
 =over
 
@@ -636,9 +636,9 @@ styles:
 
 =back
 
-It does not matter what style your C<DBD>-drive supports, C<DBIx::Squirrel>
+It does not matter what style your C<DBD>-driver supports, C<DBIx::Squirrel>
 will happily deal with all of the above styles. Just pick the one that
-you prefer to work with, or use the one that is most suitable to the
+you prefer to work with, or use the one that is most suitable for the
 task at hand.
 
 By the time your statement is passed to the C<DBD>-driver for execution,
@@ -718,13 +718,13 @@ of iterator:
 
 =head3 Basic Iterators
 
-Basic iterators present row data as ARRAYREFs or HASHREFs, depending
+Basic iterators present row data as ARRAYREFs or HASHREFs depending
 on the slice-style currently in use. Column values are accessed either
-by column-index when using the ARRAYREFs-slice-style, or by column-
-name when using the HASHREFs-slice-style.
+by column-index when using the ARRAYREF-slicing, or by column-name
+when using the HASHREF-slicing.
 
-The default slice-style is ARRAYREFs. An iterator's "reset" method may
-be used to alter this behaviour.
+The default, row data is sliced as an ARRAYREF. The iterator "reset"
+method may be used to alter this behaviour.
 
 =head4 How to create a basic iterator
 
@@ -810,7 +810,7 @@ rely on something like C<$_>, but would like something much less ephemeral,
 just C<use DBIx::Squirrel::util 'result'> and use the C<result> function
 inside your transformation stage.
 
-Hand-off to the next stage, or the caller, is via an explicit C<return>
+Handing off to the next stage, or the caller, is with an explicit C<return>
 statement, or the result of evaluating the unit's final expression. Returning
 nothingE<mdash>either C<()>, or a bare C<return>E<mdash>from a processing
 step will filter the result out entirely, and no further processing steps
@@ -897,7 +897,7 @@ I am only intersted in getting back the artist's id.
 
 B<Query the database and process the results>
 
-Here, I'm executing the query once for each one of four artist to get and
+Here, I'm executing the query once for each one of four artists to get and
 print their artist ids.
 
 =item *

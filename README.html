@@ -71,7 +71,7 @@
 
 <h1 id="VERSION">VERSION</h1>
 
-<p>version 1.2.7</p>
+<p>version 1.2.8</p>
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
@@ -436,7 +436,7 @@ use DBIx::Squirrel database_entities=&gt;[NAMES];</code></pre>
 
 <p>Addressing an association amounts to doing something meaningful with it, and we accomplish this by calling the helper function with one or more arguments.</p>
 
-<p>Once associated with a database entity, a helper function will any arguments that are passed to it and send a version of these to the database entity method that imbues meaning to the interaction.</p>
+<p>Once associated with a database entity, a helper function will consume any arguments that are passed to it and send a version of these to the database entity method that imparts meaning to the interaction.</p>
 
 <p>Meaning in this context is determined by the type of association:</p>
 
@@ -450,7 +450,7 @@ use DBIx::Squirrel database_entities=&gt;[NAMES];</code></pre>
 </li>
 </ul>
 
-<p><b>Clearly there is a paradox here</b>, which centres around those statements and iterators expecting <i>no bind-values</i>. In order to smooth-out this wrinkle, you can opt to enclose arguments inside an anonymous array or hash. When no bind-values are expected, you can coerce the helper into performing the execution by passing an empty array or hash reference. Alternatively, you could just resolve the association and call the relevant method manually.</p>
+<p><b>Clearly there is a paradox here</b>, and itcentres around those statements and iterators that take no parameters and expect no bind-values. In order to smooth-out this wrinkle, you can opt to enclose arguments inside an anonymous array or hash. When no bind-values are expected, you can coerce the helper into performing the execution by passing an empty ARRAYREF or HASHREF. Alternatively, you could just resolve the association and call the relevant method manually.</p>
 
 </li>
 </ul>
@@ -506,7 +506,7 @@ while ( artists-&gt;next ) {
 
 <pre><code>$new_dbh = DBIx::Squirrel-&gt;connect($original_dbh, \%attr);</code></pre>
 
-<p>This form clones another connection object and returns a brand object that is blessed using the same class that invoked the <code>connect</code> method. Objects being cloned are allowed to be those created by the <code>DBI</code> or any of its subclasses, <code>DBIx::Squirrel</code> being one of those.</p>
+<p>This form clones another connection object and returns a brand new object that is blessed using the same class that invoked the <code>connect</code> method. The method will allow you to clone database connections created by the <code>DBI</code> and any subclasses (<code>DBIx::Squirrel</code> being one).</p>
 
 <h2 id="Preparing-statements">Preparing statements</h2>
 
@@ -514,7 +514,7 @@ while ( artists-&gt;next ) {
 
 <h3 id="Placeholders">Placeholders</h3>
 
-<p>A nice quality-of-life improvement offered by <code>DBIx::Squirrel</code>&#39;s own implementation of the <code>prepare_cached</code> and <code>prepare</code> methods is their built-in ability to cope with for a number of different placeholder styles:</p>
+<p>A nice quality-of-life improvement offered by <code>DBIx::Squirrel</code>&#39;s own implementation of the <code>prepare_cached</code> and <code>prepare</code> methods is their built-in ability to cope with a number of different placeholder styles:</p>
 
 <ul>
 
@@ -529,7 +529,7 @@ while ( artists-&gt;next ) {
 </li>
 </ul>
 
-<p>It does not matter what style your <code>DBD</code>-drive supports, <code>DBIx::Squirrel</code> will happily deal with all of the above styles. Just pick the one that you prefer to work with, or use the one that is most suitable to the task at hand.</p>
+<p>It does not matter what style your <code>DBD</code>-driver supports, <code>DBIx::Squirrel</code> will happily deal with all of the above styles. Just pick the one that you prefer to work with, or use the one that is most suitable for the task at hand.</p>
 
 <p>By the time your statement is passed to the <code>DBD</code>-driver for execution, both it and its bind-values will have been normalised to use the legacy style (<code>?</code>) supported by all drivers.</p>
 
@@ -602,9 +602,9 @@ $res = $sth-&gt;execute({&#39;:Name&#39; =&gt; &#39;Aerosmith&#39;});</code></pr
 
 <h3 id="Basic-Iterators">Basic Iterators</h3>
 
-<p>Basic iterators present row data as ARRAYREFs or HASHREFs, depending on the slice-style currently in use. Column values are accessed either by column-index when using the ARRAYREFs-slice-style, or by column- name when using the HASHREFs-slice-style.</p>
+<p>Basic iterators present row data as ARRAYREFs or HASHREFs depending on the slice-style currently in use. Column values are accessed either by column-index when using the ARRAYREF-slicing, or by column-name when using the HASHREF-slicing.</p>
 
-<p>The default slice-style is ARRAYREFs. An iterator&#39;s &quot;reset&quot; method may be used to alter this behaviour.</p>
+<p>The default, row data is sliced as an ARRAYREF. The iterator &quot;reset&quot; method may be used to alter this behaviour.</p>
 
 <h4 id="How-to-create-a-basic-iterator">How to create a basic iterator</h4>
 
@@ -670,7 +670,7 @@ $itr = $sth-&gt;iterate(        |  $itr = $sth-&gt;results(
 
 <p>Each stage of a transformation receives the latest version of the result via the argument-list (<code>$_[0]</code> to be precise). For the sake of convenience (and for convention), this result is also available as <code>$_</code>. If you prefer to rely on something like <code>$_</code>, but would like something much less ephemeral, just <code>use DBIx::Squirrel::util &#39;result&#39;</code> and use the <code>result</code> function inside your transformation stage.</p>
 
-<p>Hand-off to the next stage, or the caller, is via an explicit <code>return</code> statement, or the result of evaluating the unit&#39;s final expression. Returning nothing&mdash;either <code>()</code>, or a bare <code>return</code>&mdash;from a processing step will filter the result out entirely, and no further processing steps will apply to it.</p>
+<p>Handing off to the next stage, or the caller, is with an explicit <code>return</code> statement, or the result of evaluating the unit&#39;s final expression. Returning nothing&mdash;either <code>()</code>, or a bare <code>return</code>&mdash;from a processing step will filter the result out entirely, and no further processing steps will apply to it.</p>
 
 <h3 id="Examples2">Examples</h3>
 
@@ -739,7 +739,7 @@ db-&gt;disconnect();</code></pre>
 </li>
 <li><p><b>Query the database and process the results</b></p>
 
-<p>Here, I&#39;m executing the query once for each one of four artist to get and print their artist ids.</p>
+<p>Here, I&#39;m executing the query once for each one of four artists to get and print their artist ids.</p>
 
 </li>
 <li><p><b>Disconnect from the database</b></p>
