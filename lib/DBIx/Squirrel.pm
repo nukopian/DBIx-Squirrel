@@ -884,11 +884,12 @@ to it as C<db> in future.
 B<Create the C<get_artist_id_by_name> helper function>
 
 Here, I am constructing a fancy iterator and also associating it with the
-C<get_artist_id_by_name> helper function.
+C<get_artist_id_by_name> helper function. This means I can just call the
+C<get_artist_id_by_name> function to execute the iterator in future.
 
 Also here, I describe the the kind of processing I want applied to every
 single result produced by this iterator, expressed as a transformation
-comprised of two separat stages:
+pipeline that is comprised of two separate stages:
 
 =over
 
@@ -930,9 +931,9 @@ Find the script and run it:
     Name: Rush
     ArtistId: 128
 
-Notice that we got nothing back for C<"Darling West">? That's because (no
-matter how excellent they are), they aren't in our database, and we can't
-apply transformations to nothing.
+Notice that we got nothing back for one of our artists? That's because
+the artist in question is not in our database, and we cannot apply a
+transformation to nothing.
 
 =back
 
