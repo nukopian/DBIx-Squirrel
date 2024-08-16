@@ -728,4 +728,4 @@ License or the Artistic License, as specified in the Perl 5.10.0 README file.
 # SUPPORT / WARRANTY
 
 DBIx::Squirrel is free Open Source software. IT COMES WITHOUT WARRANTY OF ANY KIND.
-<br>!["Logo"](resources/images/ekorn-small.png)
+<br><br>!["Logo"](resources/images/ekorn-small.png)
