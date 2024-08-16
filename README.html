@@ -711,7 +711,7 @@ db do {
 
 get_artist_id_by_name do {
     db-&gt;results(
-        &quot;SELECT ArtistId, Name FROM artists WHERE Name=?&quot; =&gt; sub {
+        &quot;SELECT ArtistId, Name FROM artists WHERE Name=? LIMIT 1&quot; =&gt; sub {
             my($artist) = @_;
             print &quot;----\n&quot;;
             print &quot;Name: &quot;, $artist-&gt;Name, &quot;\n&quot;;
@@ -736,14 +736,34 @@ db-&gt;disconnect();</code></pre>
 
 <li><p><b>Connect to the database</b></p>
 
+<p>Here, I am not just connecting to the database. I am associating the resulting database connection handle with the <code>db</code> helper function, meaning I can refer to it as <code>db</code> in future.</p>
+
 </li>
 <li><p><b>Create the <code>get_artist_id_by_name</code> helper function</b></p>
+
+<p>Here, I am constructing a fancy iterator and also associating it with the <code>get_artist_id_by_name</code> helper function.</p>
+
+<p>Also here, I describe the the kind of processing I want applied to every single result produced by this iterator, expressed as a transformation comprised of two separat stages:</p>
+
+<ul>
+
+<li><p>I want the names of matched artists printed nicely on the console;</p>
+
+</li>
+<li><p>I am only intersted in getting back the artist&#39;s id.</p>
+
+</li>
+</ul>
 
 </li>
 <li><p><b>Query the database and process the results</b></p>
 
+<p>Here, I&#39;m executing the query once for each of four artist to get and print their artist ids.</p>
+
 </li>
 <li><p><b>Disconnect from the database</b></p>
+
+<p>Just as we would with the <code>DBI</code></p>
 
 </li>
 </ol>
@@ -760,6 +780,8 @@ ArtistId: 3
 ----
 Name: Rush
 ArtistId: 128</code></pre>
+
+<p>Notice that we got nothing back for <code>&quot;Darling West&quot;</code>? That&#39;s because (no matter how excellent they are), they aren&#39;t in our database, and we can&#39;t apply transformations to nothing.</p>
 
 </li>
 </ol>

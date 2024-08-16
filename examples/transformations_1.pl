@@ -15,7 +15,7 @@ db do {
 
 get_artist_id_by_name do {
     db->results(
-        "SELECT ArtistId, Name FROM artists WHERE Name=?" => sub {
+        "SELECT ArtistId, Name FROM artists WHERE Name=? LIMIT 1" => sub {
             my($artist) = @_;
             print "----\n";
             print "Name: ", $artist->Name, "\n";

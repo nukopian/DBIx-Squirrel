@@ -661,7 +661,7 @@ will apply to it.
 
         get_artist_id_by_name do {
             db->results(
-                "SELECT ArtistId, Name FROM artists WHERE Name=?" => sub {
+                "SELECT ArtistId, Name FROM artists WHERE Name=? LIMIT 1" => sub {
                     my($artist) = @_;
                     print "----\n";
                     print "Name: ", $artist->Name, "\n";
@@ -683,9 +683,31 @@ will apply to it.
     The script is comprised of four parts:
 
     1. **Connect to the database**
+
+        Here, I am not just connecting to the database. I am associating the resulting
+        database connection handle with the `db` helper function, meaning I can refer
+        to it as `db` in future.
+
     2. **Create the `get_artist_id_by_name` helper function**
+
+        Here, I am constructing a fancy iterator and also associating it with the
+        `get_artist_id_by_name` helper function.
+
+        Also here, I describe the the kind of processing I want applied to every
+        single result produced by this iterator, expressed as a transformation
+        comprised of two separat stages:
+
+        - I want the names of matched artists printed nicely on the console;
+        - I am only intersted in getting back the artist's id.
+
     3. **Query the database and process the results**
+
+        Here, I'm executing the query once for each of four artist to get and print
+        their artist ids.
+
     4. **Disconnect from the database**
+
+        Just as we would with the `DBI`
 
     Find the script and run it:
 
@@ -699,6 +721,10 @@ will apply to it.
         ----
         Name: Rush
         ArtistId: 128
+
+    Notice that we got nothing back for `"Darling West"`? That's because (no
+    matter how excellent they are), they aren't in our database, and we can't
+    apply transformations to nothing.
 
 # COPYRIGHT AND LICENSE
 
