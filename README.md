@@ -613,7 +613,7 @@ Recall that there are two kinds of iterator, and two methods to construct
 each:
 
     Basic Iterators              |  Fancy Iterators
-    ---------------------------------------------------------------
+    -----------------------------|------------------------------
     $itr = $dbh->iterate(        |  $itr = $dbh->results(
         $query,                  |      $query,
         [undef|\%attr,]          |      [undef|\%attr,]
