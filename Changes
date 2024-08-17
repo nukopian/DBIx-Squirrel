@@ -1,10 +1,12 @@
 Revision history for DBIx-Squirrel
 
-1.2.9   YYYY-MM-DD HH:MM
+1.2.9   2024-08-17 22:50
         This release is comprised of the following changes:
         - Reorganised the examples folder and renamed an example script.
         - Added some canned transforms.
-        - Added a new example script.
+        - Added new example script (examples/transformations/02.pl).
+        - Added DBD::SQLite to test dependencies which AutoPrereqs misses,
+          with thanks to Slaven Rezić (SREZIC) for the alert.
 1.2.8   2024-08-16 18:45
         Resolved some very minor issues:
         - Fixed some documentation issues.
