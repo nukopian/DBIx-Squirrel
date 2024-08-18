@@ -1,7 +1,8 @@
 Revision history for DBIx-Squirrel
 
 1.2.11  2024-08-18 HH:MM
-        - Next release
+        - Fixed typos.
+        - Did some internal refactoring.
 1.2.10  2024-08-17 17:35
         - Fixed minor typos in POD.
         - Did some internal refactoring.
