@@ -127,9 +127,9 @@ sub finish {
     $attr->{executed}     = !!0;
     $attr->{rows_fetched} = 0;
     $attr->{buffer}       = undef;
-    $attr->{buf_inc}      = DEFAULT_MAXROWS;
-    $attr->{buf_mul}      = BUF_MULT && BUF_MULT < 11 ? BUF_MULT : 0;
-    $attr->{buf_lim}      = BUF_MAXROWS || $attr->{buf_inc};
+    $attr->{buf_incr_by}  = DEFAULT_MAXROWS;
+    $attr->{buf_mult_by}  = BUF_MULT && BUF_MULT < 11 ? BUF_MULT : 0;
+    $attr->{buf_limit}    = BUF_MAXROWS || $attr->{buf_incr_by};
     return do {$_ = $self};
 }
 
@@ -156,36 +156,26 @@ sub _transform {
     return transform($self->_private_attributes->{callbacks}, @_);
 }
 
-sub _auto_manage_maxrows {
+sub _auto_level_maxrows {
     my($attr, $self) = shift->_private_attributes;
-    return
-      unless my $limit = $attr->{buf_lim};
-    my $dirty;
-    my $maxrows = $attr->{maxrows};
-    my $new_mr  = do {
-        if (my $mul = $attr->{buf_mul}) {
-            if ($mul > 1) {
-                $dirty = !!1;
-                $maxrows * $mul;
-            }
-            else {
-                if (my $inc = $attr->{buf_inc}) {
-                    $dirty = !!1;
-                    $maxrows + $inc;
-                }
-            }
+    return !!0
+      unless $attr->{buf_limit};
+    my $new_maxrows = do {
+        if ($attr->{buf_mult_by} && $attr->{buf_mult_by} > 1) {
+            $attr->{maxrows} * $attr->{buf_mult_by};
+        }
+        elsif ($attr->{buf_incr_by} > 0) {
+            $attr->{maxrows} + $attr->{buf_incr_by};
         }
         else {
-            if (my $inc = $attr->{buf_inc}) {
-                $dirty = !!1;
-                $maxrows + $inc;
-            }
+            $attr->{maxrows};
         }
     };
-    if ($dirty && $new_mr <= $limit) {
-        $attr->{maxrows} = $new_mr;
+    if ($attr->{maxrows} < $new_maxrows < $attr->{buf_limit}) {
+        $attr->{maxrows} = $new_maxrows;
+        return !!1;
     }
-    return $dirty;
+    return !!0;
 }
 
 {
@@ -229,7 +219,7 @@ sub _auto_manage_maxrows {
 
 sub _fetch {
     my($attr, $self) = shift->_private_attributes;
-    my($sth, $slice, $maxrows, $buf_lim) = @{$attr}{qw/st slice maxrows buf_lim/};
+    my($sth, $slice, $maxrows, $buf_limit) = @{$attr}{qw/st slice maxrows buf_limit/};
     unless ($sth && $sth->{Active}) {
         $attr->{finished} = !!1;
         return;
@@ -246,9 +236,9 @@ sub _fetch {
     else {
         $attr->{buffer} = $r;
     }
-    if ($c == $maxrows && $maxrows < $buf_lim) {
-        ($maxrows, $buf_lim) = @{$attr}{qw/maxrows buf_lim/}
-          if $self->_auto_manage_maxrows;
+    if ($c == $maxrows && $maxrows < $buf_limit) {
+        ($maxrows, $buf_limit) = @{$attr}{qw/maxrows buf_limit/}
+          if $self->_auto_level_maxrows;
     }
     return do {$attr->{rows_fetched} += $c};
 }
