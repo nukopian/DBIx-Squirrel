@@ -100,6 +100,10 @@ sub execute {
     return do {$_ = undef};
 }
 
+sub executed {
+    return shift->_private_attributes->{executed};
+}
+
 sub find {
     my($attr, $self) = shift->_private_attributes;
     $self->reset()
@@ -131,6 +135,14 @@ sub finish {
     $attr->{buf_mult_by}  = BUF_MULT && BUF_MULT < 11 ? BUF_MULT : 0;
     $attr->{buf_limit}    = BUF_MAXROWS || $attr->{buf_incr_by};
     return do {$_ = $self};
+}
+
+sub finished {
+    return shift->_private_attributes->{finished};
+}
+
+BEGIN {
+    *done = \&finished;
 }
 
 sub first {
@@ -276,6 +288,10 @@ sub next {
     return do {$_ = $self->_fetch_row};
 }
 
+sub pending_execution {
+    return !shift->_private_attributes->{executed};
+}
+
 sub remaining {
     my($attr, $self) = shift->_private_attributes;
     my @rows;
@@ -343,6 +359,14 @@ sub reset {
     return do {$_ = $self->finish};
 }
 
+sub results {
+    return shift->sth->results(@_);
+}
+
+BEGIN {
+    *resultset = *rs = \&results;
+}
+
 sub single {
     my($attr, $self) = shift->_private_attributes;
     $self->reset()
@@ -366,6 +390,18 @@ BEGIN {
     *one = *single;
 }
 
+sub statement_handle {
+    return shift->_private_attributes->{st};
+}
+
+BEGIN {
+    *sth = \&statement_handle;
+}
+
+sub unfinished {
+    return !shift->_private_attributes->{finished};
+}
+
 sub DESTROY {
     return
       if ${^GLOBAL_PHASE} eq 'DESTRUCT';
@@ -374,15 +410,6 @@ sub DESTROY {
     $self->finish;
     $self->_private_attributes(undef);
     return;
-}
-
-BEGIN {
-    *results          = *rs           = sub {shift->sth->rs(@_)};
-    *statement_handle = *sth          = sub {shift->_private_attributes->{st}};
-    *done             = *finished     = sub {shift->_private_attributes->{finished}};
-    *not_done         = *not_finished = sub {!shift->_private_attributes->{finished}};
-    *not_pending      = *executed     = sub {shift->_private_attributes->{executed}};
-    *pending          = *not_executed = sub {!shift->_private_attributes->{executed}};
 }
 
 1;
