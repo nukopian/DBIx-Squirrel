@@ -3,7 +3,6 @@ use Modern::Perl;
 package    # hide from PAUSE
   DBIx::Squirrel::it;
 
-
 BEGIN {
     require DBIx::Squirrel
       unless defined($DBIx::Squirrel::VERSION);
@@ -31,7 +30,6 @@ sub BUF_MULT () {$DBIx::Squirrel::it::BUF_MULT}
 
 sub BUF_MAXROWS () {$DBIx::Squirrel::it::BUF_MAXROWS}
 
-
 sub new {
     my($callbacks, $class_or_self, $sth, @bindvals) = cbargs(@_);
     return
@@ -58,7 +56,6 @@ sub new {
     return do {$_ = $self};
 }
 
-
 sub all {
     my $self = shift;
     my @rows;
@@ -69,7 +66,6 @@ sub all {
     return \@rows;
 }
 
-
 sub count {
     my $self  = shift;
     my $count = 0;
@@ -77,11 +73,9 @@ sub count {
     return do {$_ = $count};
 }
 
-
 sub count_all {
     return do {$_ = scalar(@{shift->all(@_)})};
 }
-
 
 sub execute {
     my($attr, $self) = shift->_private_attributes;
@@ -106,7 +100,6 @@ sub execute {
     return do {$_ = undef};
 }
 
-
 sub find {
     my($attr, $self) = shift->_private_attributes;
     $self->reset()
@@ -124,7 +117,6 @@ sub find {
     return do {$_ = $row};
 }
 
-
 sub finish {
     my($attr, $self) = shift->_private_attributes;
     if ($attr->{st}) {
@@ -141,7 +133,6 @@ sub finish {
     return do {$_ = $self};
 }
 
-
 sub first {
     my($attr, $self) = shift->_private_attributes;
     if (@_ || $attr->{executed} || $attr->{st}{Active}) {
@@ -153,7 +144,6 @@ sub first {
     return do {$_ = $row};
 }
 
-
 sub iterate {
     my $self = shift;
     return
@@ -161,12 +151,10 @@ sub iterate {
     return do {$_ = $self};
 }
 
-
 sub _transform {
     my $self = shift;
     return transform($self->_private_attributes->{callbacks}, @_);
 }
-
 
 sub _auto_manage_maxrows {
     my($attr, $self) = shift->_private_attributes;
@@ -202,7 +190,6 @@ sub _auto_manage_maxrows {
 
 {
     my %attr_by_id;
-
 
     sub _private_attributes {
         my $self = shift;
@@ -240,7 +227,6 @@ sub _auto_manage_maxrows {
     }
 }
 
-
 sub _fetch {
     my($attr, $self) = shift->_private_attributes;
     my($sth, $slice, $maxrows, $buf_lim) = @{$attr}{qw/st slice maxrows buf_lim/};
@@ -267,12 +253,10 @@ sub _fetch {
     return do {$attr->{rows_fetched} += $c};
 }
 
-
 sub _is_empty {
     my $attr = shift->_private_attributes;
     return !@{$attr->{buffer}};
 }
-
 
 sub _no_more_rows {
     my($attr, $self) = shift->_private_attributes;
@@ -280,7 +264,6 @@ sub _no_more_rows {
       unless $attr->{executed};
     return $attr->{finished};
 }
-
 
 sub _fetch_row {
     my($attr, $self) = shift->_private_attributes;
@@ -296,14 +279,12 @@ sub _fetch_row {
     return $head;
 }
 
-
 sub next {
     my $self = shift;
     $self->_slice_maxrows(@_)
       if @_;
     return do {$_ = $self->_fetch_row};
 }
-
 
 sub remaining {
     my($attr, $self) = shift->_private_attributes;
@@ -320,7 +301,6 @@ sub remaining {
     return \@rows;
 }
 
-
 sub _maxrows {
     my $self = shift;
     throw E_BAD_MAXROWS
@@ -328,7 +308,6 @@ sub _maxrows {
     $self->{MaxRows} = int(shift || DEFAULT_MAXROWS);
     return $self->_private_attributes({maxrows => $self->{MaxRows}});
 }
-
 
 sub _slice {
     my $self = shift;
@@ -354,7 +333,6 @@ sub _slice {
     return $self->_private_attributes({slice => $self->{Slice}});
 }
 
-
 sub _slice_maxrows {
     my $self = shift;
     return $self
@@ -364,11 +342,9 @@ sub _slice_maxrows {
     return $self->_maxrows(shift)->_slice(shift);
 }
 
-
 BEGIN {
     *_maxrows_slice = *_slice_maxrows;    # Don't make me think!
 }
-
 
 sub reset {
     my $self = shift;
@@ -376,7 +352,6 @@ sub reset {
       if @_;
     return do {$_ = $self->finish};
 }
-
 
 sub single {
     my($attr, $self) = shift->_private_attributes;
@@ -397,11 +372,9 @@ sub single {
     return do {$_ = $row};
 }
 
-
 BEGIN {
     *one = *single;
 }
-
 
 sub DESTROY {
     return
@@ -412,7 +385,6 @@ sub DESTROY {
     $self->_private_attributes(undef);
     return;
 }
-
 
 BEGIN {
     *results          = *rs           = sub {shift->sth->rs(@_)};
