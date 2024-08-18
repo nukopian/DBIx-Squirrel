@@ -15,7 +15,7 @@ use namespace::autoclean;
 use DBIx::Squirrel::util qw/throw whine/;
 
 use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';
-use constant W_CHECK_BIND_VALS     => 'Check bind values match placeholder scheme';
+use constant W_ODD_NUMBER_OF_ARGS  => 'Check bind values match placeholder scheme';
 
 
 sub _private_attributes {
@@ -88,30 +88,29 @@ sub bind_param {
 
 sub _map_placeholders_to_values {
     my $placeholders = shift;
-    my $mappings     = do {
+    my @mappings     = do {
         if (_placeholders_are_positional($placeholders)) {
-            [map {($placeholders->{$_} => $_[$_ - 1])} keys(%{$placeholders})];
+            map {($placeholders->{$_} => $_[$_ - 1])} keys(%{$placeholders});
         }
         else {
-            my @mappings = do {
-                if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                    @{$_[0]};
-                }
-                elsif (UNIVERSAL::isa($_[0], 'HASH')) {
-                    %{$_[0]};
-                }
-                else {
-                    @_;
-                }
-            };
-            whine W_CHECK_BIND_VALS
-              unless @mappings % 2 == 0;
-            \@mappings;
+            if (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                whine W_ODD_NUMBER_OF_ARGS
+                  unless @{$_[0]} % 2 == 0;
+                @{$_[0]};
+            }
+            elsif (UNIVERSAL::isa($_[0], 'HASH')) {
+                %{$_[0]};
+            }
+            else {
+                whine W_ODD_NUMBER_OF_ARGS
+                  unless @_ % 2 == 0;
+                @_;
+            }
         }
     };
-    return @{$mappings}
+    return @mappings
       if wantarray;
-    return $mappings;
+    return \@mappings;
 }
 
 
