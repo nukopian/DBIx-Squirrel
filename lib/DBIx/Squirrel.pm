@@ -910,7 +910,7 @@ Just as we would with the C<DBI>.
 
 Find the script and run it:
 
-    $ perl -Ilib examples/transformations/1.pl
+    $ perl -Ilib examples/transformations/01.pl
     ----
     Name: AC/DC
     ArtistId: 1
@@ -922,8 +922,8 @@ Find the script and run it:
     ArtistId: 128
 
 Notice that we got nothing back for one of our artists? That's because
-the artist in question is not in our database, and we cannot apply a
-transformation to nothing.
+the artist in question is not in our database and we cannot apply a
+transformation to nothing, so nothing is returned.
 
 =back
 
