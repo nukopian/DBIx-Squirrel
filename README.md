@@ -37,7 +37,7 @@ version 1.2.11
     db(DBIx::Squirrel->connect($dsn, $user, $pass, \%attr));
 
     # First, we need to associate "product" with a result set, then use
-    # "product" to reference itt in future. The next time arguments are
+    # "product" to reference it in future. The next time arguments are
     # passed, they are treated as bind-values when the statement is
     # executed.
     #
