@@ -88,6 +88,36 @@ sub bind_param {
 
 sub _map_placeholders_to_values {
     my $placeholders = shift;
+    my @mappings     = do {
+        if (_placeholders_are_positional($placeholders)) {
+            map {($placeholders->{$_} => $_[$_ - 1])} keys(%{$placeholders});
+        }
+        else {
+            if (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                whine W_CHECK_BIND_VALS
+                  unless @{$_[0]} % 2 == 0;
+                @{$_[0]};
+            }
+            elsif (UNIVERSAL::isa($_[0], 'HASH')) {
+                whine W_CHECK_BIND_VALS
+                  unless @{[%{$_[0]}]} % 2 == 0;
+                %{$_[0]};
+            }
+            else {
+                whine W_CHECK_BIND_VALS
+                  unless @_ % 2 == 0;
+                @_;
+            }
+        }
+    };
+    return @mappings
+      if wantarray;
+    return \@mappings;
+}
+
+
+sub _map_placeholders_to_values_old {
+    my $placeholders = shift;
     my $mappings     = do {
         if (_placeholders_are_positional($placeholders)) {
             [map {($placeholders->{$_} => $_[$_ - 1])} keys(%{$placeholders})];
