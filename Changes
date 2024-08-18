@@ -1,12 +1,14 @@
 Revision history for DBIx-Squirrel
 
+1.2.11  2024-08-18 HH:MM
+        - Next release
 1.2.10  2024-08-17 17:35
-        - Fix some very minor typos in POD.
-        - Some internal refactoring.
-        - Updated dist.ini to no longer use Dist::Zilla Readme plugin; we will provide our own README.
-        - Updated st.h bind_param method; it no longer drops the third argument (bind attributes) before
+        - Fixed minor typos in POD.
+        - Did some internal refactoring.
+        - Updated dist.ini: no longer using Dist::Zilla Readme plugin to produce README.
+        - Updated st.h: bind_param method no longer drops the third argument (bind attributes) before
           handing-off to &DBI::st::bind_value.
-        - Code formatting: no longer quoting hash keys matching /^\w+$/.
+        - No longer quoting hash keys matching /^\w+$/.
 1.2.9   2024-08-17 22:50
         - Reorganised the examples folder and renamed an example script.
         - Added some canned transforms.
