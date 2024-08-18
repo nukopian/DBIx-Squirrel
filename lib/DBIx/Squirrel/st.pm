@@ -22,26 +22,26 @@ sub _private_attributes {
     my $self = shift;
     return
       unless ref($self);
-    $self->{'private_ekorn'} = {}
-      unless defined($self->{'private_ekorn'});
+    $self->{private_ekorn} = {}
+      unless defined($self->{private_ekorn});
     unless (@_) {
-        return $self->{'private_ekorn'}, $self
+        return $self->{private_ekorn}, $self
           if wantarray;
-        return $self->{'private_ekorn'};
+        return $self->{private_ekorn};
     }
     unless (defined($_[0])) {
-        delete $self->{'private_ekorn'};
+        delete $self->{private_ekorn};
         shift;
     }
     if (@_) {
         if (UNIVERSAL::isa($_[0], 'HASH')) {
-            $self->{'private_ekorn'} = {%{$self->{'private_ekorn'}}, %{$_[0]}};
+            $self->{private_ekorn} = {%{$self->{private_ekorn}}, %{$_[0]}};
         }
         elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
-            $self->{'private_ekorn'} = {%{$self->{'private_ekorn'}}, @{$_[0]}};
+            $self->{private_ekorn} = {%{$self->{private_ekorn}}, @{$_[0]}};
         }
         else {
-            $self->{'private_ekorn'} = {%{$self->{'private_ekorn'}}, @_};
+            $self->{private_ekorn} = {%{$self->{private_ekorn}}, @_};
         }
     }
     return $self;
@@ -50,7 +50,7 @@ sub _private_attributes {
 
 sub prepare {
     my $self = shift;
-    return $self->{'Database'}->prepare($self->{'Statement'}, @_);
+    return $self->{Database}->prepare($self->{Statement}, @_);
 }
 
 
@@ -58,9 +58,9 @@ sub bind_param {
     my($attr, $self) = shift->_private_attributes;
     my($bind_param, $bind_value, @bind_attr) = @_;
     my @bind_param_args = do {
-        if (my $placeholders = $attr->{'Placeholders'}) {
+        if (my $placeholders = $attr->{Placeholders}) {
             if ($bind_param =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
-                $+{'bind_id'}, $bind_value, @bind_attr;
+                $+{bind_id}, $bind_value, @bind_attr;
             }
             else {
                 if ($bind_param =~ m/^[\:\$\?]/) {
@@ -132,14 +132,14 @@ sub _placeholders_are_positional {
 sub bind {
     my($attr, $self) = shift->_private_attributes;
     if (@_) {
-        my $placeholders = $attr->{'Placeholders'};
+        my $placeholders = $attr->{Placeholders};
         if ($placeholders && !_placeholders_are_positional($placeholders)) {
             if (my %kv = @{_map_placeholders_to_values($placeholders, @_)}) {
                 while (my($k, $v) = each(%kv)) {
                     if ($k =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
                         throw E_INVALID_PLACEHOLDER, $k
-                          unless $+{'bind_id'};
-                        $self->bind_param($+{'bind_id'}, $v);
+                          unless $+{bind_id};
+                        $self->bind_param($+{bind_id}, $v);
                     }
                     else {
                         $self->bind_param($k, $v);
@@ -167,7 +167,7 @@ sub bind {
 sub execute {
     my $self = shift;
     $self->finish
-      if $DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE && $self->{'Active'};
+      if $DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE && $self->{Active};
     $self->bind(@_)
       if @_;
     return $self->SUPER::execute;
@@ -177,7 +177,7 @@ sub execute {
 BEGIN {
     *iterate = *iterator  = *it = sub {DBIx::Squirrel::it->new(@_)};
     *results = *resultset = *rs = sub {DBIx::Squirrel::rs->new(@_)};
-    *itor    = sub {shift->_private_attributes->{'Iterator'}};
+    *itor    = sub {shift->_private_attributes->{Iterator}};
 }
 
 1;
