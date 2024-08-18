@@ -1,7 +1,8 @@
 Revision history for DBIx-Squirrel
 
-1.2.10  2024-08-17 13:00
+1.2.10  2024-08-17 17:35
         - Fix some very minor typos in POD.
+        - Some internal refactoring.
         - Updated dist.ini to no longer use Dist::Zilla Readme plugin; we will provide our own README.
         - Updated st.h bind_param method; it no longer drops the third argument (bind attributes) before
           handing-off to &DBI::st::bind_value.
@@ -10,8 +11,7 @@ Revision history for DBIx-Squirrel
         - Reorganised the examples folder and renamed an example script.
         - Added some canned transforms.
         - Added new example script (examples/transformations/02.pl).
-        - Added DBD::SQLite to test dependencies which AutoPrereqs misses,
-          with thanks to Slaven Rezić (SREZIC) for the alert.
+        - Added DBD::SQLite to test dependencies, with thanks to Slaven Rezić (SREZIC) for the alert.
 1.2.8   2024-08-16 18:45
         - Fixed some documentation issues.
         - Removed a redundant line from sample script (examples/transformations_1.pl).
