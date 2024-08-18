@@ -123,9 +123,9 @@ sub _placeholders_are_positional {
     my $total_count                     = @placeholders;
     my $count                           = grep {m/^[\:\$\?]\d+$/} @placeholders;
     my $all_placeholders_are_positional = $count == $total_count;
-    return
-      unless $all_placeholders_are_positional;
-    return $placeholders;
+    return $placeholders
+      if $all_placeholders_are_positional;
+    return;
 }
 
 
