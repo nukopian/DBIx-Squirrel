@@ -288,10 +288,6 @@ sub next {
     return do {$_ = $self->_fetch_row};
 }
 
-sub pending_execution {
-    return !shift->_private->{executed};
-}
-
 sub remaining {
     my($attr, $self) = shift->_private;
     my @rows;
@@ -396,10 +392,6 @@ sub statement_handle {
 
 BEGIN {
     *sth = \&statement_handle;
-}
-
-sub unfinished {
-    return !shift->_private->{finished};
 }
 
 sub DESTROY {
