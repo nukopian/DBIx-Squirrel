@@ -28,10 +28,12 @@ our @T_DB_CONNECT_ARGS = (
         "dbi:SQLite:dbname=$T_DATABASE",
         "",
         "",
-        {   AutoCommit     => !!0,
-            PrintError     => !!0,
-            RaiseError     => !!1,
-            sqlite_unicode => !!1,
+        {   AutoCommit                 => !!0,
+            PrintError                 => !!0,
+            RaiseError                 => !!1,
+            sqlite_unicode             => !!1,
+            sqlite_see_if_its_a_number => !!1,
+            sqlite_open_flags          => SQLITE_OPEN_READONLY,
         },
     )
 );
