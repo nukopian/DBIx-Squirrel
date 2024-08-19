@@ -45,11 +45,6 @@ sub _private_attributes {
     return $self;
 }
 
-sub prepare {
-    my $self = shift;
-    return $self->{Database}->prepare($self->{Statement}, @_);
-}
-
 sub bind_param {
     my($attr, $self) = shift->_private_attributes;
     my($bind_param, $bind_value, @bind_attr) = @_;
