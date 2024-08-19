@@ -16,7 +16,7 @@ use DBIx::Squirrel::util qw/throw whine/;
 use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';
 use constant W_ODD_NUMBER_OF_ARGS  => 'Check bind values match placeholder scheme';
 
-sub _private_attributes {
+sub _private {
     my $self = shift;
     return
       unless ref($self);
