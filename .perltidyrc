@@ -38,7 +38,7 @@
 -otr
 -valign
 --noblanks-before-comments
---blank-lines-before-subs=2
+--blank-lines-before-subs=1
 --noblanks-before-blocks
 --want-trailing-commas=m
 --add-trailing-commas
