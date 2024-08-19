@@ -719,9 +719,9 @@ will apply to it.
 
 # REFERENCE
 
-This section describes the `DBIx::Squirrel` interface and covers new
-features not present in the `DBI`, as well as `DBI` features whose
-behaviours (but not outcomes) have been altered by `DBIx::Squirrel`.
+This section describes the `DBIx::Squirrel` interface. It covers new
+features not present in the `DBI`, as well as existing `DBI` features
+whose behaviour have been altered by `DBIx::Squirrel`.
 
 ## Database Handle Methods
 

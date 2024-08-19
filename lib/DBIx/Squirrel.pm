@@ -925,9 +925,9 @@ transformation to nothing, so nothing is returned.
 
 =head1 REFERENCE
 
-This section describes the C<DBIx::Squirrel> interface and covers new
-features not present in the C<DBI>, as well as C<DBI> features whose
-behaviours (but not outcomes) have been altered by C<DBIx::Squirrel>.
+This section describes the C<DBIx::Squirrel> interface. It covers new
+features not present in the C<DBI>, as well as existing C<DBI> features
+whose behaviour have been altered by C<DBIx::Squirrel>.
 
 =head2 Database Handle Methods
 
