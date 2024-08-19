@@ -183,7 +183,7 @@ sub _auto_level_maxrows {
             $attr->{maxrows};
         }
     };
-    if ($attr->{maxrows} < $new_maxrows < $attr->{buf_limit}) {
+    if ($attr->{maxrows} < $new_maxrows && $new_maxrows < $attr->{buf_limit}) {
         $attr->{maxrows} = $new_maxrows;
         return !!1;
     }
