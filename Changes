@@ -1,6 +1,7 @@
 Revision history for DBIx-Squirrel
 
 1.3.0   2024-08-19 13:35
+        - Changes to POD.
         - Some internal refactoring.
         - Fixed db.h: simplified design and de-coupled from SQL::Abstract by removing methods I
           added that should never have been added in there in the first place! The end-user is in 
