@@ -92,15 +92,6 @@ sub prepare_cached {
     return $sth;
 }
 
-sub execute {
-    my $self      = shift;
-    my $statement = shift;
-    my($res, $sth) = $self->do($statement, @_);
-    return $sth, $res
-      if wantarray;
-    return $sth;
-}
-
 sub do {
     my $self      = shift;
     my $statement = shift;
