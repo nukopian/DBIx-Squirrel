@@ -128,80 +128,86 @@ sub do {
     return $sth->execute(@_);
 }
 
-BEGIN {
-    *iterate = *iterator = *it = sub {
-        my $self      = shift;
-        my $statement = shift;
-        my $sth       = do {
-            if (@_) {
-                if (ref($_[0])) {
-                    if (UNIVERSAL::isa($_[0], 'HASH')) {
-                        my $statement_attributes = shift;
-                        $self->prepare($statement, $statement_attributes);
-                    }
-                    elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                        $self->prepare($statement);
-                    }
-                    elsif (UNIVERSAL::isa($_[0], 'CODE')) {
-                        $self->prepare($statement);
-                    }
-                    else {
-                        throw E_EXP_REF;
-                    }
+sub iterate {
+    my $self      = shift;
+    my $statement = shift;
+    my $sth       = do {
+        if (@_) {
+            if (ref($_[0])) {
+                if (UNIVERSAL::isa($_[0], 'HASH')) {
+                    my $statement_attributes = shift;
+                    $self->prepare($statement, $statement_attributes);
+                }
+                elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                    $self->prepare($statement);
+                }
+                elsif (UNIVERSAL::isa($_[0], 'CODE')) {
+                    $self->prepare($statement);
                 }
                 else {
-                    if (defined($_[0])) {
-                        $self->prepare($statement);
-                    }
-                    else {
-                        shift;
-                        $self->prepare($statement, undef);
-                    }
+                    throw E_EXP_REF;
                 }
             }
             else {
-                $self->prepare($statement);
+                if (defined($_[0])) {
+                    $self->prepare($statement);
+                }
+                else {
+                    shift;
+                    $self->prepare($statement, undef);
+                }
             }
-        };
-        return $sth->iterate(@_);
+        }
+        else {
+            $self->prepare($statement);
+        }
     };
+    return $sth->iterate(@_);
+}
 
-    *results = *resultset = *rs = sub {
-        my $self      = shift;
-        my $statement = shift;
-        my $sth       = do {
-            if (@_) {
-                if (ref $_[0]) {
-                    if (UNIVERSAL::isa($_[0], 'HASH')) {
-                        my $statement_attributes = shift;
-                        $self->prepare($statement, $statement_attributes);
-                    }
-                    elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                        $self->prepare($statement);
-                    }
-                    elsif (UNIVERSAL::isa($_[0], 'CODE')) {
-                        $self->prepare($statement);
-                    }
-                    else {
-                        throw E_EXP_REF;
-                    }
+BEGIN {
+    *iterator = *it = \&iterate;
+}
+
+sub results {
+    my $self      = shift;
+    my $statement = shift;
+    my $sth       = do {
+        if (@_) {
+            if (ref $_[0]) {
+                if (UNIVERSAL::isa($_[0], 'HASH')) {
+                    my $statement_attributes = shift;
+                    $self->prepare($statement, $statement_attributes);
+                }
+                elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                    $self->prepare($statement);
+                }
+                elsif (UNIVERSAL::isa($_[0], 'CODE')) {
+                    $self->prepare($statement);
                 }
                 else {
-                    if (defined($_[0])) {
-                        $self->prepare($statement);
-                    }
-                    else {
-                        shift;
-                        $self->prepare($statement, undef);
-                    }
+                    throw E_EXP_REF;
                 }
             }
             else {
-                $self->prepare($statement);
+                if (defined($_[0])) {
+                    $self->prepare($statement);
+                }
+                else {
+                    shift;
+                    $self->prepare($statement, undef);
+                }
             }
-        };
-        return $sth->results(@_);
+        }
+        else {
+            $self->prepare($statement);
+        }
     };
+    return $sth->results(@_);
+}
+
+BEGIN {
+    *resultset = *rs = \&results;
 }
 
 1;
