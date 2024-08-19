@@ -159,10 +159,20 @@ sub execute {
     return $self->SUPER::execute;
 }
 
+sub iterate {
+    return DBIx::Squirrel::it->new(@_);
+}
+
 BEGIN {
-    *iterate = *iterator  = *it = sub {DBIx::Squirrel::it->new(@_)};
-    *results = *resultset = *rs = sub {DBIx::Squirrel::rs->new(@_)};
-    *itor    = sub {shift->_private->{Iterator}};
+    *iterator = *it = \&iterate;
+}
+
+sub results {
+    return DBIx::Squirrel::rs->new(@_);
+}
+
+BEGIN {
+    *resultset = *rs = \&results;
 }
 
 1;
