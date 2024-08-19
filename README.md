@@ -4,7 +4,7 @@ DBIx::Squirrel - A `DBI` extension
 
 # VERSION
 
-version 1.2.12
+version 1.3.0
 
 # SYNOPSIS
 
@@ -716,6 +716,84 @@ will apply to it.
     Notice that we got nothing back for one of our artists? That's because
     the artist in question is not in our database and we cannot apply a
     transformation to nothing, so nothing is returned.
+
+# REFERENCE
+
+This section describes the `DBIx::Squirrel` interface and covers new
+features not present in the `DBI`, as well as `DBI` features whose
+behaviours (but not outcomes) have been altered by `DBIx::Squirrel`.
+
+## Database Handle Methods
+
+### do
+
+### iterate
+
+### prepare
+
+### prepare\_cached
+
+### results
+
+## Statement Handle Methods
+
+### bind
+
+### bind\_param
+
+### execute
+
+### iterate
+
+### results
+
+## Iterator Objects
+
+### all
+
+### count
+
+### count\_all
+
+### done
+
+Alias _(see `finished`)_.
+
+### execute
+
+### executed
+
+### find
+
+### finish
+
+### finished
+
+### first
+
+### iterate
+
+### new
+
+### next
+
+### one
+
+Alias _(see `single`)_.
+
+### remaining
+
+### reset
+
+### results
+
+### single
+
+### statement\_handle
+
+### sth
+
+Alias _(see `statement_handle`)_.
 
 # COPYRIGHT AND LICENSE
 

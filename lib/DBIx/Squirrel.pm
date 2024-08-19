@@ -923,6 +923,84 @@ transformation to nothing, so nothing is returned.
 
 =back
 
+=head1 REFERENCE
+
+This section describes the C<DBIx::Squirrel> interface and covers new
+features not present in the C<DBI>, as well as C<DBI> features whose
+behaviours (but not outcomes) have been altered by C<DBIx::Squirrel>.
+
+=head2 Database Handle Methods
+
+=head3 do
+
+=head3 iterate
+
+=head3 prepare
+
+=head3 prepare_cached
+
+=head3 results
+
+=head2 Statement Handle Methods
+
+=head3 bind
+
+=head3 bind_param
+
+=head3 execute
+
+=head3 iterate
+
+=head3 results
+
+=head2 Iterator Objects
+
+=head3 all
+
+=head3 count
+
+=head3 count_all
+
+=head3 done
+
+Alias I<(see C<finished>)>.
+
+=head3 execute
+
+=head3 executed
+
+=head3 find
+
+=head3 finish
+
+=head3 finished
+
+=head3 first
+
+=head3 iterate
+
+=head3 new
+
+=head3 next
+
+=head3 one
+
+Alias I<(see C<single>)>.
+
+=head3 remaining
+
+=head3 reset
+
+=head3 results
+
+=head3 single
+
+=head3 statement_handle
+
+=head3 sth
+
+Alias I<(see C<statement_handle>)>.
+
 =head1 COPYRIGHT AND LICENSE
 
 The DBIx::Squirrel module is Copyright (c) 2020-2014 Iain Campbell.
