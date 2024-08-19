@@ -1,7 +1,9 @@
 Revision history for DBIx-Squirrel
 
 1.2.12  2024-08-19 13:35
-        
+        - Refactored db.h: simplified design and de-coupled from SQL::Abstract by removing methods I
+          added that should never have been added in there in the first place! The end-user is in 
+          a better position than I to decide when how SQL::Abstract should be integrated.
 1.2.11  2024-08-18 13:15
         - Fixed typos.
         - Did some internal refactoring.
