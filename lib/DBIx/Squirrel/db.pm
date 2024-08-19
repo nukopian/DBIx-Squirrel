@@ -22,7 +22,7 @@ sub _root_class {
     return $root_class;
 }
 
-sub _private_attributes {
+sub _private {
     my $self = shift;
     return
       unless ref($self);
@@ -63,7 +63,7 @@ sub prepare {
     return
       unless defined($sth);
     bless $sth, $self->_root_class . '::st';
-    $sth->_private_attributes({
+    $sth->_private({
         Placeholders        => $placeholders,
         NormalisedStatement => $normalised_statement,
         OriginalStatement   => $original_statement,
@@ -82,7 +82,7 @@ sub prepare_cached {
     return
       unless defined($sth);
     bless $sth, $self->_root_class . '::st';
-    $sth->_private_attributes({
+    $sth->_private({
         Placeholders        => $placeholders,
         NormalisedStatement => $normalised_statement,
         OriginalStatement   => $original_statement,

@@ -45,9 +45,9 @@ sub new {
         }
     }
     $self->finish;
-    $self->_private_attributes({
+    $self->_private({
         id        => 0+ $self,
-        st        => $sth->_private_attributes({Iterator => $self}),
+        st        => $sth->_private({Iterator => $self}),
         bindvals  => [@bindvals],
         callbacks => $callbacks,
         slice     => $self->_slice->{Slice},
@@ -78,7 +78,7 @@ sub count_all {
 }
 
 sub execute {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     my $sth = $attr->{st};
     return
       unless $sth;
@@ -101,11 +101,11 @@ sub execute {
 }
 
 sub executed {
-    return shift->_private_attributes->{executed};
+    return shift->_private->{executed};
 }
 
 sub find {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     $self->reset()
       if @_;
     my $row;
@@ -122,7 +122,7 @@ sub find {
 }
 
 sub finish {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     if ($attr->{st}) {
         $attr->{st}->finish
           if $attr->{st}{Active};
@@ -138,7 +138,7 @@ sub finish {
 }
 
 sub finished {
-    return shift->_private_attributes->{finished};
+    return shift->_private->{finished};
 }
 
 BEGIN {
@@ -146,7 +146,7 @@ BEGIN {
 }
 
 sub first {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     if (@_ || $attr->{executed} || $attr->{st}{Active}) {
         $self->reset(@_);
     }
@@ -165,11 +165,11 @@ sub iterate {
 
 sub _transform {
     my $self = shift;
-    return transform($self->_private_attributes->{callbacks}, @_);
+    return transform($self->_private->{callbacks}, @_);
 }
 
 sub _auto_level_maxrows {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     return !!0
       unless $attr->{buf_limit};
     my $new_maxrows = do {
@@ -193,7 +193,7 @@ sub _auto_level_maxrows {
 {
     my %attr_by_id;
 
-    sub _private_attributes {
+    sub _private {
         my $self = shift;
         return
           unless ref($self);
@@ -230,7 +230,7 @@ sub _auto_level_maxrows {
 }
 
 sub _fetch {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     my($sth, $slice, $maxrows, $buf_limit) = @{$attr}{qw/st slice maxrows buf_limit/};
     unless ($sth && $sth->{Active}) {
         $attr->{finished} = !!1;
@@ -256,19 +256,19 @@ sub _fetch {
 }
 
 sub _is_empty {
-    my $attr = shift->_private_attributes;
+    my $attr = shift->_private;
     return !@{$attr->{buffer}};
 }
 
 sub _no_more_rows {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     $self->execute
       unless $attr->{executed};
     return $attr->{finished};
 }
 
 sub _fetch_row {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     return
       if $self->_no_more_rows;
     return
@@ -289,11 +289,11 @@ sub next {
 }
 
 sub pending_execution {
-    return !shift->_private_attributes->{executed};
+    return !shift->_private->{executed};
 }
 
 sub remaining {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     my @rows;
     unless ($self->_no_more_rows) {
         until ($attr->{finished}) {
@@ -312,7 +312,7 @@ sub _maxrows {
     throw E_BAD_MAXROWS
       if ref($_[0]);
     $self->{MaxRows} = int(shift || DEFAULT_MAXROWS);
-    return $self->_private_attributes({maxrows => $self->{MaxRows}});
+    return $self->_private({maxrows => $self->{MaxRows}});
 }
 
 sub _slice {
@@ -320,7 +320,7 @@ sub _slice {
     unless (@_) {
         $self->{Slice} = DEFAULT_SLICE
           unless defined($self->{Slice});
-        return $self->_private_attributes({slice => $self->{Slice}});
+        return $self->_private({slice => $self->{Slice}});
     }
     if (defined($_[0])) {
         if (UNIVERSAL::isa($_[0], 'ARRAY')) {
@@ -336,7 +336,7 @@ sub _slice {
     else {
         $self->{Slice} = DEFAULT_SLICE;
     }
-    return $self->_private_attributes({slice => $self->{Slice}});
+    return $self->_private({slice => $self->{Slice}});
 }
 
 sub _slice_maxrows {
@@ -368,7 +368,7 @@ BEGIN {
 }
 
 sub single {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     $self->reset()
       if @_;
     my $row;
@@ -391,7 +391,7 @@ BEGIN {
 }
 
 sub statement_handle {
-    return shift->_private_attributes->{st};
+    return shift->_private->{st};
 }
 
 BEGIN {
@@ -399,7 +399,7 @@ BEGIN {
 }
 
 sub unfinished {
-    return !shift->_private_attributes->{finished};
+    return !shift->_private->{finished};
 }
 
 sub DESTROY {
@@ -408,7 +408,7 @@ sub DESTROY {
     local($., $@, $!, $^E, $?, $_);
     my $self = shift;
     $self->finish;
-    $self->_private_attributes(undef);
+    $self->_private(undef);
     return;
 }
 

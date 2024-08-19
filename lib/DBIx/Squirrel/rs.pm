@@ -15,7 +15,7 @@ use Scalar::Util qw/weaken/;
 use Sub::Name;
 
 sub _fetch_row {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     return
       if $self->_no_more_rows;
     return
@@ -57,7 +57,7 @@ sub _undef_autoloaded_accessors {
 }
 
 sub _slice {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     my $slice = shift;
     my $old   = defined($attr->{slice}) ? $attr->{slice} : '';
     $self->SUPER::_slice($slice);
