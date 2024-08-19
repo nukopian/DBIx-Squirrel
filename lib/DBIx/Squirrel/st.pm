@@ -45,37 +45,6 @@ sub _private {
     return $self;
 }
 
-sub bind_param {
-    my($attr, $self) = shift->_private_attributes;
-    my($bind_param, $bind_value, @bind_attr) = @_;
-    my @bind_param_args = do {
-        if (my $placeholders = $attr->{Placeholders}) {
-            if ($bind_param =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
-                $+{bind_id}, $bind_value, @bind_attr;
-            }
-            else {
-                if ($bind_param =~ m/^[\:\$\?]/) {
-                    map  {($_, $bind_value, @bind_attr)}
-                    grep {$placeholders->{$_} eq $bind_param}
-                      keys(%{$placeholders});
-                }
-                else {
-                    map  {($_, $bind_value, @bind_attr)}
-                    grep {$placeholders->{$_} eq ":$bind_param"}
-                      keys(%{$placeholders});
-                }
-            }
-        }
-        else {
-            $bind_param, $bind_value, @bind_attr;
-        }
-    };
-    return unless $self->SUPER::bind_param(@bind_param_args);
-    return @bind_param_args
-      if wantarray;
-    return \@bind_param_args;
-}
-
 sub _map_placeholders_to_values {
     my $placeholders = shift;
     my @mappings     = do {
@@ -116,8 +85,39 @@ sub _placeholders_are_positional {
     return;
 }
 
+sub bind_param {
+    my($attr, $self) = shift->_private;
+    my($bind_param, $bind_value, @bind_attr) = @_;
+    my @bind_param_args = do {
+        if (my $placeholders = $attr->{Placeholders}) {
+            if ($bind_param =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
+                $+{bind_id}, $bind_value, @bind_attr;
+            }
+            else {
+                if ($bind_param =~ m/^[\:\$\?]/) {
+                    map  {($_, $bind_value, @bind_attr)}
+                    grep {$placeholders->{$_} eq $bind_param}
+                      keys(%{$placeholders});
+                }
+                else {
+                    map  {($_, $bind_value, @bind_attr)}
+                    grep {$placeholders->{$_} eq ":$bind_param"}
+                      keys(%{$placeholders});
+                }
+            }
+        }
+        else {
+            $bind_param, $bind_value, @bind_attr;
+        }
+    };
+    return unless $self->SUPER::bind_param(@bind_param_args);
+    return @bind_param_args
+      if wantarray;
+    return \@bind_param_args;
+}
+
 sub bind {
-    my($attr, $self) = shift->_private_attributes;
+    my($attr, $self) = shift->_private;
     if (@_) {
         my $placeholders = $attr->{Placeholders};
         if ($placeholders && !_placeholders_are_positional($placeholders)) {
@@ -162,7 +162,7 @@ sub execute {
 BEGIN {
     *iterate = *iterator  = *it = sub {DBIx::Squirrel::it->new(@_)};
     *results = *resultset = *rs = sub {DBIx::Squirrel::rs->new(@_)};
-    *itor    = sub {shift->_private_attributes->{Iterator}};
+    *itor    = sub {shift->_private->{Iterator}};
 }
 
 1;
