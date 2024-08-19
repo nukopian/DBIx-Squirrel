@@ -12,10 +12,7 @@ BEGIN {
 }
 
 use namespace::autoclean;
-use SQL::Abstract;
 use DBIx::Squirrel::util qw/:constants :sql throw/;
-
-use constant E_BAD_SQL_ABSTRACT_METHOD => 'Unimplemented SQL::Abstract method';
 
 sub _root_class {
     my $root_class = ref($_[0]) || $_[0];
@@ -54,38 +51,6 @@ sub _private_attributes {
         }
     }
     return $self;
-}
-
-our $SQL_ABSTRACT = SQL::Abstract->new;
-
-sub abstract {
-    my $self        = shift;
-    my $method_name = shift;
-    my $method      = $SQL_ABSTRACT->can($method_name);
-    throw E_BAD_SQL_ABSTRACT_METHOD
-      unless $method;
-    return $self->do($method->($SQL_ABSTRACT, @_));
-}
-
-sub delete {
-    my $self = shift;
-    return scalar $self->abstract('delete', @_);
-}
-
-sub insert {
-    my $self = shift;
-    return scalar $self->abstract('insert', @_);
-}
-
-sub update {
-    my $self = shift;
-    return scalar $self->abstract('update', @_);
-}
-
-sub select {
-    my $self = shift;
-    my(undef, $result,) = $self->abstract('select', @_);
-    return $result;
 }
 
 sub prepare {
