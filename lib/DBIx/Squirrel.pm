@@ -923,7 +923,7 @@ transformation to nothing, so nothing is returned.
 
 =back
 
-=head1 REFERENCE
+=head2 REFERENCE
 
 This section describes the C<DBIx::Squirrel> interface.
 
@@ -939,9 +939,9 @@ safely assume that the C<DBI> documentation still applies.
 Other parts of the C<DBI> interface remain unaltered, as well as being
 accessible via C<DBIx::Squirrel>.
 
-=head2 DBIx::Squirrel Class Methods
+=head3 DBIx::Squirrel Class Methods
 
-=head3 C<connect> *
+=head4 C<connect> *
 
     $dbh = DBIx::Squirrel->connect($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
@@ -952,16 +952,16 @@ accessible via C<DBIx::Squirrel>.
     $clone_dbh = DBIx::Squirrel->connect($dbh, \%attr)
                 or die $DBIx::Squirrel::errstr;
 
-=head3 C<connect_cached> *
+=head4 C<connect_cached> *
 
     $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
     $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password, \%attr)
                 or die $DBIx::Squirrel::errstr;
 
-=head2 Database Handle Methods
+=head3 Database Handle Methods
 
-=head3 C<do> *
+=head4 C<do> *
 
     $rows = $dbh->do($statement)
                 or die $dbh->errstr;
@@ -1012,7 +1012,7 @@ the statement, as well as the statement handle:
     ($rows, $sth) = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
 
-=head3 C<iterate>
+=head4 C<iterate>
 
     $itor = $dbh->iterate($statement)
                 or die $dbh->errstr;
@@ -1055,7 +1055,7 @@ the statement, as well as the statement handle:
     $itor = $dbh->iterate($statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
-=head3 C<prepare> *
+=head4 C<prepare> *
 
     $sth = $dbh->prepare($statement)          or die $dbh->errstr;
     $sth = $dbh->prepare($statement, \%attr)  or die $dbh->errstr;
@@ -1071,7 +1071,7 @@ Statement-strings will be "normalised" to use the legacy C<?> style, before
 being handed-off to the C<DBI> method of the same name. In spite of this,
 you should still use key-value bindings if you opted for named placeholders.
 
-=head3 C<prepare_cached> *
+=head4 C<prepare_cached> *
 
     $sth = $dbh->prepare_cached($statement)
     $sth = $dbh->prepare_cached($statement, \%attr)
@@ -1090,7 +1090,7 @@ you should still use key-value bindings if you opted for named placeholders.
 
 It is the normalised form of the statement that is cached by the C<DBI>.
 
-=head3 C<results>
+=head4 C<results>
 
     $itor = $dbh->results($statement)
                 or die $dbh->errstr;
@@ -1133,15 +1133,15 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $itor = $dbh->results($statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
-=head2 Statement Handle Methods
+=head3 Statement Handle Methods
 
-=head3 C<bind>
+=head4 C<bind>
 
-=head3 C<bind_param> *
+=head4 C<bind_param> *
 
-=head3 C<execute> *
+=head4 C<execute> *
 
-=head3 C<iterate>
+=head4 C<iterate>
 
     $itor = $sth->iterate()
                 or die $dbh->errstr;
@@ -1164,7 +1164,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $itor = $sth->iterate(\%bind_mappings, @transforms)
                 or die ...;
 
-=head3 C<results>
+=head4 C<results>
 
     $itor = $sth->results()
                 or die $dbh->errstr;
@@ -1187,53 +1187,51 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $itor = $sth->results(\%bind_mappings, @transforms)
                 or die ...;
 
-=head2 Iterator Objects
+=head3 Iterator Objects
 
-=head3 C<all>
+=head4 C<all>
 
-=head3 C<countall>
+=head4 C<countall>
 
-=head3 C<countnext>
+=head4 C<countnext>
 
-=head3 C<done>
+=head4 C<done>
 
 Alias I<(see C<finished>)>.
 
-=head3 C<execute>
+=head4 C<execute>
 
-=head3 C<executed>
+=head4 C<executed>
 
-=head3 C<find>
+=head4 C<find>
 
-=head3 C<finish>
+=head4 C<finish>
 
-=head3 C<finished>
+=head4 C<finished>
 
-=head3 C<first>
+=head4 C<first>
 
-=head3 C<iterate>
+=head4 C<iterate>
 
-=head3 C<new>
+=head4 C<next>
 
-=head3 C<next>
-
-=head3 C<one>
+=head4 C<one>
 
 Alias I<(see C<single>)>.
 
-=head3 C<remaining>
+=head4 C<remaining>
 
-=head3 C<reset>
+=head4 C<reset>
 
-=head3 C<results>
+=head4 C<results>
 
-=head3 C<rows>
+=head4 C<rows>
 
-=head3 C<single>
+=head4 C<single>
 
-=head3 C<statement_handle>
+=head4 C<statement_handle>
 
-=head3 C<sth>
+=head4 C<sth>
 
 Alias I<(see C<statement_handle>)>.
 

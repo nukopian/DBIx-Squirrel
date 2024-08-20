@@ -717,7 +717,7 @@ will apply to it.
     the artist in question is not in our database and we cannot apply a
     transformation to nothing, so nothing is returned.
 
-# REFERENCE
+## REFERENCE
 
 This section describes the `DBIx::Squirrel` interface.
 
@@ -733,9 +733,9 @@ safely assume that the `DBI` documentation still applies.
 Other parts of the `DBI` interface remain unaltered, as well as being
 accessible via `DBIx::Squirrel`.
 
-## DBIx::Squirrel Class Methods
+### DBIx::Squirrel Class Methods
 
-### `connect` \*
+#### `connect` \*
 
     $dbh = DBIx::Squirrel->connect($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
@@ -746,16 +746,16 @@ accessible via `DBIx::Squirrel`.
     $clone_dbh = DBIx::Squirrel->connect($dbh, \%attr)
                 or die $DBIx::Squirrel::errstr;
 
-### `connect_cached` \*
+#### `connect_cached` \*
 
     $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
     $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password, \%attr)
                 or die $DBIx::Squirrel::errstr;
 
-## Database Handle Methods
+### Database Handle Methods
 
-### `do` \*
+#### `do` \*
 
     $rows = $dbh->do($statement)
                 or die $dbh->errstr;
@@ -806,7 +806,7 @@ the statement, as well as the statement handle:
     ($rows, $sth) = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
 
-### `iterate`
+#### `iterate`
 
     $itor = $dbh->iterate($statement)
                 or die $dbh->errstr;
@@ -849,7 +849,7 @@ the statement, as well as the statement handle:
     $itor = $dbh->iterate($statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
-### `prepare` \*
+#### `prepare` \*
 
     $sth = $dbh->prepare($statement)          or die $dbh->errstr;
     $sth = $dbh->prepare($statement, \%attr)  or die $dbh->errstr;
@@ -865,7 +865,7 @@ Statement-strings will be "normalised" to use the legacy `?` style, before
 being handed-off to the `DBI` method of the same name. In spite of this,
 you should still use key-value bindings if you opted for named placeholders.
 
-### `prepare_cached` \*
+#### `prepare_cached` \*
 
     $sth = $dbh->prepare_cached($statement)
     $sth = $dbh->prepare_cached($statement, \%attr)
@@ -884,7 +884,7 @@ you should still use key-value bindings if you opted for named placeholders.
 
 It is the normalised form of the statement that is cached by the `DBI`.
 
-### `results`
+#### `results`
 
     $itor = $dbh->results($statement)
                 or die $dbh->errstr;
@@ -927,15 +927,15 @@ It is the normalised form of the statement that is cached by the `DBI`.
     $itor = $dbh->results($statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
-## Statement Handle Methods
+### Statement Handle Methods
 
-### `bind`
+#### `bind`
 
-### `bind_param` \*
+#### `bind_param` \*
 
-### `execute` \*
+#### `execute` \*
 
-### `iterate`
+#### `iterate`
 
     $itor = $sth->iterate()
                 or die $dbh->errstr;
@@ -958,7 +958,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
     $itor = $sth->iterate(\%bind_mappings, @transforms)
                 or die ...;
 
-### `results`
+#### `results`
 
     $itor = $sth->results()
                 or die $dbh->errstr;
@@ -981,53 +981,51 @@ It is the normalised form of the statement that is cached by the `DBI`.
     $itor = $sth->results(\%bind_mappings, @transforms)
                 or die ...;
 
-## Iterator Objects
+### Iterator Objects
 
-### `all`
+#### `all`
 
-### `countall`
+#### `countall`
 
-### `countnext`
+#### `countnext`
 
-### `done`
+#### `done`
 
 Alias _(see `finished`)_.
 
-### `execute`
+#### `execute`
 
-### `executed`
+#### `executed`
 
-### `find`
+#### `find`
 
-### `finish`
+#### `finish`
 
-### `finished`
+#### `finished`
 
-### `first`
+#### `first`
 
-### `iterate`
+#### `iterate`
 
-### `new`
+#### `next`
 
-### `next`
-
-### `one`
+#### `one`
 
 Alias _(see `single`)_.
 
-### `remaining`
+#### `remaining`
 
-### `reset`
+#### `reset`
 
-### `results`
+#### `results`
 
-### `rows`
+#### `rows`
 
-### `single`
+#### `single`
 
-### `statement_handle`
+#### `statement_handle`
 
-### `sth`
+#### `sth`
 
 Alias _(see `statement_handle`)_.
 
