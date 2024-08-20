@@ -65,16 +65,16 @@
     <ul>
       <li><a href="#DBIx::Squirrel-Class-Methods">DBIx::Squirrel Class Methods</a>
         <ul>
-          <li><a href="#connect-uFE61">connect \uFE61</a></li>
-          <li><a href="#connect_cached">connect_cached</a></li>
+          <li><a href="#connect">connect *</a></li>
+          <li><a href="#connect_cached">connect_cached *</a></li>
         </ul>
       </li>
       <li><a href="#Database-Handle-Methods">Database Handle Methods</a>
         <ul>
-          <li><a href="#do">do</a></li>
+          <li><a href="#do">do *</a></li>
           <li><a href="#iterate">iterate</a></li>
-          <li><a href="#prepare">prepare</a></li>
-          <li><a href="#prepare_cached">prepare_cached</a></li>
+          <li><a href="#prepare">prepare *</a></li>
+          <li><a href="#prepare_cached">prepare_cached *</a></li>
           <li><a href="#results">results</a></li>
         </ul>
       </li>
@@ -823,7 +823,7 @@ ArtistId: 128</code></pre>
 
 <p>This section describes the <code>DBIx::Squirrel</code> interface.</p>
 
-<p>Many of the methods presented below (\uFE61) may seem familiar to the experienced <code>DBI</code> user, and they should. They are documented here because <code>DBIx::Squirrel</code> makes subtle changes to their interfaces.</p>
+<p>Many of the methods presented below (*) may seem familiar to the experienced <code>DBI</code> user, and they should. They are documented here because <code>DBIx::Squirrel</code> makes subtle changes to their interfaces.</p>
 
 <p>Such changes are additive and unobtrusive in nature, in most cases, resulting in additional calling forms rather than changes in outcome, or how the method is used. Unless a documented deviation from standard <code>DBI</code> behaviour exists, it may be assumed that the <code>DBI</code> documentation is still valid.</p>
 
@@ -831,7 +831,7 @@ ArtistId: 128</code></pre>
 
 <h2 id="DBIx::Squirrel-Class-Methods">DBIx::Squirrel Class Methods</h2>
 
-<h3 id="connect-uFE61"><code>connect</code> \uFE61</h3>
+<h3 id="connect"><code>connect</code> *</h3>
 
 <pre><code>$dbh = DBIx::Squirrel-&gt;connect($data_source, $username, $password)
             or die $DBIx::Squirrel::errstr;
@@ -842,7 +842,7 @@ $clone_dbh = DBIx::Squirrel-&gt;connect($dbh)
 $clone_dbh = DBIx::Squirrel-&gt;connect($dbh, \%attr)
             or die $DBIx::Squirrel::errstr;</code></pre>
 
-<h3 id="connect_cached"><code>connect_cached</code></h3>
+<h3 id="connect_cached"><code>connect_cached</code> *</h3>
 
 <pre><code>$dbh = DBIx::Squirrel-&gt;connect_cached($data_source, $username, $password)
             or die $DBIx::Squirrel::errstr;
@@ -851,9 +851,7 @@ $dbh = DBIx::Squirrel-&gt;connect_cached($data_source, $username, $password, \%a
 
 <h2 id="Database-Handle-Methods">Database Handle Methods</h2>
 
-<h3 id="do"><code>do</code></h3>
-
-<p>Calling <code>do</code> in scalar-context works just as it does in the <code>DBI</code>, although there are a few more calling forms:</p>
+<h3 id="do"><code>do</code> *</h3>
 
 <pre><code>$rows = $dbh-&gt;do($statement)
             or die $dbh-&gt;errstr;
@@ -876,7 +874,7 @@ $rows = $dbh-&gt;do($statement, \@bind_values)
 $rows = $dbh-&gt;do($statement, undef, \%bind_mappings)
             or die ...;</code></pre>
 
-<p>Calling <code>do</code> in list-context is a new behaviour and returns a list comprised of the number of rows affected by the statement followed by the statement handle:</p>
+<p>Calling <code>do</code> in scalar-context works just as it does in the <code>DBI</code>, although there are a few more calling forms. Calling <code>do</code> in list-context, however, is new behaviour resulting in a list comprised of the number of rows affected by the statement followed by the statement handle:</p>
 
 <pre><code>($rows, $sth) = $dbh-&gt;do($statement)
             or die $dbh-&gt;errstr;
@@ -901,32 +899,110 @@ $rows = $dbh-&gt;do($statement, undef, \%bind_mappings)
 
 <h3 id="iterate"><code>iterate</code></h3>
 
-<pre><code>$rows = $dbh-&gt;do($statement)
+<pre><code>$itor = $dbh-&gt;iterate($statement)
             or die $dbh-&gt;errstr;
-$rows = $dbh-&gt;do($statement, \%attr)
+$itor = $dbh-&gt;iterate($statement, @transforms)
+            or die $dbh-&gt;errstr;
+$itor = $dbh-&gt;iterate($statement, \%attr)
             or die ...;
-$rows = $dbh-&gt;do($statement, \%attr, @bind_values)
+$itor = $dbh-&gt;iterate($statement, \%attr, @transforms)
             or die ...;
-$rows = $dbh-&gt;do($statement, \%attr, %bind_mappings)
+$itor = $dbh-&gt;iterate($statement, \%attr, @bind_values)
             or die ...;
-$rows = $dbh-&gt;do($statement, \%attr, \@bind_values)
+$itor = $dbh-&gt;iterate($statement, \%attr, @bind_values, @transforms)
             or die ...;
-$rows = $dbh-&gt;do($statement, \%attr, \%bind_mappings)
+$itor = $dbh-&gt;iterate($statement, \%attr, %bind_mappings)
             or die ...;
-$rows = $dbh-&gt;do($statement, @bind_values)
+$itor = $dbh-&gt;iterate($statement, \%attr, %bind_mappings, @transforms)
             or die ...;
-$rows = $dbh-&gt;do($statement, %bind_mappings)
+$itor = $dbh-&gt;iterate($statement, \%attr, \@bind_values)
             or die ...;
-$rows = $dbh-&gt;do($statement, \@bind_values)
+$itor = $dbh-&gt;iterate($statement, \%attr, [@bind_values, @transforms])
             or die ...;
-$rows = $dbh-&gt;do($statement, undef, \%bind_mappings)
+$itor = $dbh-&gt;iterate($statement, \%attr, \%bind_mappings)
+            or die ...;
+$itor = $dbh-&gt;iterate($statement, \%attr, \%bind_mappings, @transforms)
+            or die ...;
+$itor = $dbh-&gt;iterate($statement, @bind_values)
+            or die ...;
+$itor = $dbh-&gt;iterate($statement, @bind_values, @transforms)
+            or die ...;
+$itor = $dbh-&gt;iterate($statement, %bind_mappings)
+            or die ...;
+$itor = $dbh-&gt;iterate($statement, %bind_mappings, @transforms)
+            or die ...;
+$itor = $dbh-&gt;iterate($statement, \@bind_values)
+            or die ...;
+$itor = $dbh-&gt;iterate($statement, [@bind_values, @transforms])
+            or die ...;
+$itor = $dbh-&gt;iterate($statement, undef, \%bind_mappings)
+            or die ...;
+$itor = $dbh-&gt;iterate($statement, undef, \%bind_mappings, @transforms)
             or die ...;</code></pre>
 
-<h3 id="prepare"><code>prepare</code></h3>
+<h3 id="prepare"><code>prepare</code> *</h3>
 
-<h3 id="prepare_cached"><code>prepare_cached</code></h3>
+<pre><code>$sth = $dbh-&gt;prepare($statement)          or die $dbh-&gt;errstr;
+$sth = $dbh-&gt;prepare($statement, \%attr)  or die $dbh-&gt;errstr;</code></pre>
+
+<p>The <code>prepare</code> method interface is identical in form to that provided by the <code>DBI</code>. You are, however, permitted to use one of a number of placeholder styles (<code>:name</code>, <code>:number</code>, <code>$number</code>, <code>?number</code>, <code>?</code>) within the <code>$statement</code> string.</p>
+
+<p>Your statement will be &quot;normalised&quot; to use the legacy <code>?</code> style before being handed-off to the <code>DBI</code> method of the same name. In spite of this, you should still use key-value bindings if your opted for named placeholders.</p>
+
+<h3 id="prepare_cached"><code>prepare_cached</code> *</h3>
+
+<pre><code>$sth = $dbh-&gt;prepare_cached($statement)
+$sth = $dbh-&gt;prepare_cached($statement, \%attr)
+$sth = $dbh-&gt;prepare_cached($statement, \%attr, $if_active)</code></pre>
+
+<p>The <code>prepare_cached</code> method interface is identical in form to that provided by the <code>DBI</code>. You are, however, permitted to use one of a number of placeholder styles (<code>:name</code>, <code>:number</code>, <code>$number</code>, <code>?number</code>, <code>?</code>) within the <code>$statement</code> string.</p>
+
+<p>Your statement will be &quot;normalised&quot; to use the legacy <code>?</code> style before being handed-off to the <code>DBI</code> method of the same name. In spite of this, you should still use key-value bindings if your opted for named placeholders.</p>
+
+<p>It is the normalised form of the statement that is cached.</p>
 
 <h3 id="results"><code>results</code></h3>
+
+<pre><code>$itor = $dbh-&gt;results($statement)
+            or die $dbh-&gt;errstr;
+$itor = $dbh-&gt;results($statement, @transforms)
+            or die $dbh-&gt;errstr;
+$itor = $dbh-&gt;results($statement, \%attr)
+            or die ...;
+$itor = $dbh-&gt;results($statement, \%attr, @transforms)
+            or die ...;
+$itor = $dbh-&gt;results($statement, \%attr, @bind_values)
+            or die ...;
+$itor = $dbh-&gt;results($statement, \%attr, @bind_values, @transforms)
+            or die ...;
+$itor = $dbh-&gt;results($statement, \%attr, %bind_mappings)
+            or die ...;
+$itor = $dbh-&gt;results($statement, \%attr, %bind_mappings, @transforms)
+            or die ...;
+$itor = $dbh-&gt;results($statement, \%attr, \@bind_values)
+            or die ...;
+$itor = $dbh-&gt;results($statement, \%attr, [@bind_values, @transforms])
+            or die ...;
+$itor = $dbh-&gt;results($statement, \%attr, \%bind_mappings)
+            or die ...;
+$itor = $dbh-&gt;results($statement, \%attr, \%bind_mappings, @transforms)
+            or die ...;
+$itor = $dbh-&gt;results($statement, @bind_values)
+            or die ...;
+$itor = $dbh-&gt;results($statement, @bind_values, @transforms)
+            or die ...;
+$itor = $dbh-&gt;results($statement, %bind_mappings)
+            or die ...;
+$itor = $dbh-&gt;results($statement, %bind_mappings, @transforms)
+            or die ...;
+$itor = $dbh-&gt;results($statement, \@bind_values)
+            or die ...;
+$itor = $dbh-&gt;results($statement, [@bind_values, @transforms])
+            or die ...;
+$itor = $dbh-&gt;results($statement, undef, \%bind_mappings)
+            or die ...;
+$itor = $dbh-&gt;results($statement, undef, \%bind_mappings, @transforms)
+            or die ...;</code></pre>
 
 <h2 id="Statement-Handle-Methods">Statement Handle Methods</h2>
 

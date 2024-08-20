@@ -721,9 +721,9 @@ will apply to it.
 
 This section describes the `DBIx::Squirrel` interface.
 
-Many of the methods presented below (\\uFE61) may seem familiar to the
-experienced `DBI` user, and they should. They are documented here because
-`DBIx::Squirrel` makes subtle changes to their interfaces.
+Many of the methods presented below (\*) may seem familiar to the experienced
+`DBI` user, and they should. They are documented here because `DBIx::Squirrel`
+makes subtle changes to their interfaces.
 
 Such changes are additive and unobtrusive in nature, in most cases, resulting
 in additional calling forms rather than changes in outcome, or how the method
@@ -735,7 +735,7 @@ via `DBIx::Squirrel`.
 
 ## DBIx::Squirrel Class Methods
 
-### `connect` \\uFE61
+### `connect` \*
 
     $dbh = DBIx::Squirrel->connect($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
@@ -746,7 +746,7 @@ via `DBIx::Squirrel`.
     $clone_dbh = DBIx::Squirrel->connect($dbh, \%attr)
                 or die $DBIx::Squirrel::errstr;
 
-### `connect_cached`
+### `connect_cached` \*
 
     $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
@@ -755,10 +755,7 @@ via `DBIx::Squirrel`.
 
 ## Database Handle Methods
 
-### `do`
-
-Calling `do` in scalar-context works just as it does in the `DBI`, although
-there are a few more calling forms:
+### `do` \*
 
     $rows = $dbh->do($statement)
                 or die $dbh->errstr;
@@ -781,9 +778,10 @@ there are a few more calling forms:
     $rows = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
 
-Calling `do` in list-context is a new behaviour and returns a list comprised
-of the number of rows affected by the statement followed by the statement
-handle:
+Calling `do` in scalar-context works just as it does in the `DBI`, although
+there are a few more calling forms. Calling `do` in list-context, however,
+is new behaviour resulting in a list comprised of the number of rows
+affected by the statement followed by the statement handle:
 
     ($rows, $sth) = $dbh->do($statement)
                 or die $dbh->errstr;
@@ -808,32 +806,120 @@ handle:
 
 ### `iterate`
 
-    $rows = $dbh->do($statement)
+    $itor = $dbh->iterate($statement)
                 or die $dbh->errstr;
-    $rows = $dbh->do($statement, \%attr)
+    $itor = $dbh->iterate($statement, @transforms)
+                or die $dbh->errstr;
+    $itor = $dbh->iterate($statement, \%attr)
                 or die ...;
-    $rows = $dbh->do($statement, \%attr, @bind_values)
+    $itor = $dbh->iterate($statement, \%attr, @transforms)
                 or die ...;
-    $rows = $dbh->do($statement, \%attr, %bind_mappings)
+    $itor = $dbh->iterate($statement, \%attr, @bind_values)
                 or die ...;
-    $rows = $dbh->do($statement, \%attr, \@bind_values)
+    $itor = $dbh->iterate($statement, \%attr, @bind_values, @transforms)
                 or die ...;
-    $rows = $dbh->do($statement, \%attr, \%bind_mappings)
+    $itor = $dbh->iterate($statement, \%attr, %bind_mappings)
                 or die ...;
-    $rows = $dbh->do($statement, @bind_values)
+    $itor = $dbh->iterate($statement, \%attr, %bind_mappings, @transforms)
                 or die ...;
-    $rows = $dbh->do($statement, %bind_mappings)
+    $itor = $dbh->iterate($statement, \%attr, \@bind_values)
                 or die ...;
-    $rows = $dbh->do($statement, \@bind_values)
+    $itor = $dbh->iterate($statement, \%attr, [@bind_values, @transforms])
                 or die ...;
-    $rows = $dbh->do($statement, undef, \%bind_mappings)
+    $itor = $dbh->iterate($statement, \%attr, \%bind_mappings)
+                or die ...;
+    $itor = $dbh->iterate($statement, \%attr, \%bind_mappings, @transforms)
+                or die ...;
+    $itor = $dbh->iterate($statement, @bind_values)
+                or die ...;
+    $itor = $dbh->iterate($statement, @bind_values, @transforms)
+                or die ...;
+    $itor = $dbh->iterate($statement, %bind_mappings)
+                or die ...;
+    $itor = $dbh->iterate($statement, %bind_mappings, @transforms)
+                or die ...;
+    $itor = $dbh->iterate($statement, \@bind_values)
+                or die ...;
+    $itor = $dbh->iterate($statement, [@bind_values, @transforms])
+                or die ...;
+    $itor = $dbh->iterate($statement, undef, \%bind_mappings)
+                or die ...;
+    $itor = $dbh->iterate($statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
-### `prepare`
+### `prepare` \*
 
-### `prepare_cached`
+    $sth = $dbh->prepare($statement)          or die $dbh->errstr;
+    $sth = $dbh->prepare($statement, \%attr)  or die $dbh->errstr;
+
+The `prepare` method interface is identical in form to that provided by the
+`DBI`. You are, however, permitted to use one of a number of placeholder
+styles (`:name`, `:number`, `$number`, `?number`, `?`) within the
+`$statement` string.
+
+Your statement will be "normalised" to use the legacy `?` style before being
+handed-off to the `DBI` method of the same name. In spite of this, you should
+still use key-value bindings if your opted for named placeholders.
+
+### `prepare_cached` \*
+
+    $sth = $dbh->prepare_cached($statement)
+    $sth = $dbh->prepare_cached($statement, \%attr)
+    $sth = $dbh->prepare_cached($statement, \%attr, $if_active)
+
+The `prepare_cached` method interface is identical in form to that provided
+by the `DBI`. You are, however, permitted to use one of a number of placeholder
+styles (`:name`, `:number`, `$number`, `?number`, `?`) within the
+`$statement` string.
+
+Your statement will be "normalised" to use the legacy `?` style before being
+handed-off to the `DBI` method of the same name. In spite of this, you should
+still use key-value bindings if your opted for named placeholders.
+
+It is the normalised form of the statement that is cached.
 
 ### `results`
+
+    $itor = $dbh->results($statement)
+                or die $dbh->errstr;
+    $itor = $dbh->results($statement, @transforms)
+                or die $dbh->errstr;
+    $itor = $dbh->results($statement, \%attr)
+                or die ...;
+    $itor = $dbh->results($statement, \%attr, @transforms)
+                or die ...;
+    $itor = $dbh->results($statement, \%attr, @bind_values)
+                or die ...;
+    $itor = $dbh->results($statement, \%attr, @bind_values, @transforms)
+                or die ...;
+    $itor = $dbh->results($statement, \%attr, %bind_mappings)
+                or die ...;
+    $itor = $dbh->results($statement, \%attr, %bind_mappings, @transforms)
+                or die ...;
+    $itor = $dbh->results($statement, \%attr, \@bind_values)
+                or die ...;
+    $itor = $dbh->results($statement, \%attr, [@bind_values, @transforms])
+                or die ...;
+    $itor = $dbh->results($statement, \%attr, \%bind_mappings)
+                or die ...;
+    $itor = $dbh->results($statement, \%attr, \%bind_mappings, @transforms)
+                or die ...;
+    $itor = $dbh->results($statement, @bind_values)
+                or die ...;
+    $itor = $dbh->results($statement, @bind_values, @transforms)
+                or die ...;
+    $itor = $dbh->results($statement, %bind_mappings)
+                or die ...;
+    $itor = $dbh->results($statement, %bind_mappings, @transforms)
+                or die ...;
+    $itor = $dbh->results($statement, \@bind_values)
+                or die ...;
+    $itor = $dbh->results($statement, [@bind_values, @transforms])
+                or die ...;
+    $itor = $dbh->results($statement, undef, \%bind_mappings)
+                or die ...;
+    $itor = $dbh->results($statement, undef, \%bind_mappings, @transforms)
+                or die ...;
 
 ## Statement Handle Methods
 
