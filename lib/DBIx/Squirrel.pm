@@ -934,10 +934,10 @@ makes subtle changes to their interfaces.
 Such changes are additive and unobtrusive in nature, in most cases, resulting
 in additional calling forms rather than changes in outcome, or how the method
 is used. Unless a documented deviation from standard C<DBI> behaviour exists,
-it may be assumed that the C<DBI> documentation is still valid.
+it may be safely assumed that the C<DBI> documentation still applies.
 
-Other parts of the C<DBI> interface remain unaltered and are also accessible
-via C<DBIx::Squirrel>.
+Other parts of the C<DBI> interface remain unaltered, as well as being
+accessible via C<DBIx::Squirrel>.
 
 =head2 DBIx::Squirrel Class Methods
 
@@ -984,10 +984,12 @@ via C<DBIx::Squirrel>.
     $rows = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
 
-Calling C<do> in scalar-context works just as it does in the C<DBI>, although
-there are a few more calling forms. Calling C<do> in list-context, however,
-is new behaviour resulting in a list comprised of the number of rows
-affected by the statement followed by the statement handle:
+Calling C<do> in scalar-context works just as it does when using the C<DBI>,
+although there are a few more calling forms.
+
+Calling C<do> in list-context, however, is new behaviour resulting in a list
+comprised of the number of rows affected by the statement followed by the
+statement handle:
 
     ($rows, $sth) = $dbh->do($statement)
                 or die $dbh->errstr;

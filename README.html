@@ -825,9 +825,9 @@ ArtistId: 128</code></pre>
 
 <p>Many of the methods presented below (*) may seem familiar to the experienced <code>DBI</code> user, and they should. They are documented here because <code>DBIx::Squirrel</code> makes subtle changes to their interfaces.</p>
 
-<p>Such changes are additive and unobtrusive in nature, in most cases, resulting in additional calling forms rather than changes in outcome, or how the method is used. Unless a documented deviation from standard <code>DBI</code> behaviour exists, it may be assumed that the <code>DBI</code> documentation is still valid.</p>
+<p>Such changes are additive and unobtrusive in nature, in most cases, resulting in additional calling forms rather than changes in outcome, or how the method is used. Unless a documented deviation from standard <code>DBI</code> behaviour exists, it may be safely assumed that the <code>DBI</code> documentation still applies.</p>
 
-<p>Other parts of the <code>DBI</code> interface remain unaltered and are also accessible via <code>DBIx::Squirrel</code>.</p>
+<p>Other parts of the <code>DBI</code> interface remain unaltered, as well as being accessible via <code>DBIx::Squirrel</code>.</p>
 
 <h2 id="DBIx::Squirrel-Class-Methods">DBIx::Squirrel Class Methods</h2>
 
@@ -874,7 +874,9 @@ $rows = $dbh-&gt;do($statement, \@bind_values)
 $rows = $dbh-&gt;do($statement, undef, \%bind_mappings)
             or die ...;</code></pre>
 
-<p>Calling <code>do</code> in scalar-context works just as it does in the <code>DBI</code>, although there are a few more calling forms. Calling <code>do</code> in list-context, however, is new behaviour resulting in a list comprised of the number of rows affected by the statement followed by the statement handle:</p>
+<p>Calling <code>do</code> in scalar-context works just as it does when using the <code>DBI</code>, although there are a few more calling forms.</p>
+
+<p>Calling <code>do</code> in list-context, however, is new behaviour resulting in a list comprised of the number of rows affected by the statement followed by the statement handle:</p>
 
 <pre><code>($rows, $sth) = $dbh-&gt;do($statement)
             or die $dbh-&gt;errstr;

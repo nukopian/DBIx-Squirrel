@@ -728,10 +728,10 @@ makes subtle changes to their interfaces.
 Such changes are additive and unobtrusive in nature, in most cases, resulting
 in additional calling forms rather than changes in outcome, or how the method
 is used. Unless a documented deviation from standard `DBI` behaviour exists,
-it may be assumed that the `DBI` documentation is still valid.
+it may be safely assumed that the `DBI` documentation still applies.
 
-Other parts of the `DBI` interface remain unaltered and are also accessible
-via `DBIx::Squirrel`.
+Other parts of the `DBI` interface remain unaltered, as well as being
+accessible via `DBIx::Squirrel`.
 
 ## DBIx::Squirrel Class Methods
 
@@ -778,10 +778,12 @@ via `DBIx::Squirrel`.
     $rows = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
 
-Calling `do` in scalar-context works just as it does in the `DBI`, although
-there are a few more calling forms. Calling `do` in list-context, however,
-is new behaviour resulting in a list comprised of the number of rows
-affected by the statement followed by the statement handle:
+Calling `do` in scalar-context works just as it does when using the `DBI`,
+although there are a few more calling forms.
+
+Calling `do` in list-context, however, is new behaviour resulting in a list
+comprised of the number of rows affected by the statement followed by the
+statement handle:
 
     ($rows, $sth) = $dbh->do($statement)
                 or die $dbh->errstr;
