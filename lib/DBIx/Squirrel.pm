@@ -987,9 +987,9 @@ accessible via C<DBIx::Squirrel>.
 Calling C<do> in scalar-context works just as it does when using the C<DBI>,
 although there are a few more calling forms.
 
-Calling C<do> in list-context, however, is new behaviour resulting in a list
-comprised of the number of rows affected by the statement followed by the
-statement handle:
+Calling C<do> in list-context, however, is new behaviour and results in the
+return of a list comprised of the number of rows affected by the statement
+followed by the statement handle:
 
     ($rows, $sth) = $dbh->do($statement)
                 or die $dbh->errstr;

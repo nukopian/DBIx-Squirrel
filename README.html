@@ -876,7 +876,7 @@ $rows = $dbh-&gt;do($statement, undef, \%bind_mappings)
 
 <p>Calling <code>do</code> in scalar-context works just as it does when using the <code>DBI</code>, although there are a few more calling forms.</p>
 
-<p>Calling <code>do</code> in list-context, however, is new behaviour resulting in a list comprised of the number of rows affected by the statement followed by the statement handle:</p>
+<p>Calling <code>do</code> in list-context, however, is new behaviour and results in the return of a list comprised of the number of rows affected by the statement followed by the statement handle:</p>
 
 <pre><code>($rows, $sth) = $dbh-&gt;do($statement)
             or die $dbh-&gt;errstr;
