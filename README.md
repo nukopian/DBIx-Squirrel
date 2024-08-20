@@ -782,8 +782,8 @@ Calling `do` in scalar-context works just as it does when using the `DBI`,
 although there are a few more calling forms.
 
 Calling `do` in list-context, however, is new behaviour and results in the
-return of a list comprised of the number of rows affected by the statement
-followed by the statement handle:
+return of a list comprised of two elements: the number of rows affected by
+the statement, as well as the statement handle:
 
     ($rows, $sth) = $dbh->do($statement)
                 or die $dbh->errstr;
