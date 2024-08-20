@@ -853,6 +853,48 @@ $dbh = DBIx::Squirrel-&gt;connect_cached($data_source, $username, $password, \%a
 
 <h3 id="do"><code>do</code></h3>
 
+<pre><code>$rows = $dbh-&gt;do($statement)
+            or die $dbh-&gt;errstr;
+$rows = $dbh-&gt;do($statement, \%attr)
+            or die ...;
+$rows = $dbh-&gt;do($statement, \%attr, @bind_values)
+            or die ...;
+$rows = $dbh-&gt;do($statement, \%attr, %bind_mappings)
+            or die ...;
+$rows = $dbh-&gt;do($statement, \%attr, \@bind_values)
+            or die ...;
+$rows = $dbh-&gt;do($statement, \%attr, \%bind_mappings)
+            or die ...;
+$rows = $dbh-&gt;do($statement, @bind_values)
+            or die ...;
+$rows = $dbh-&gt;do($statement, %bind_mappings)
+            or die ...;
+$rows = $dbh-&gt;do($statement, \@bind_values)
+            or die ...;
+$rows = $dbh-&gt;do($statement, undef, \%bind_mappings)
+            or die ...;
+
+($rows, $sth) = $dbh-&gt;do($statement)
+            or die $dbh-&gt;errstr;
+($rows, $sth) = $dbh-&gt;do($statement, \%attr)
+            or die ...;
+($rows, $sth) = $dbh-&gt;do($statement, \%attr, @bind_values)
+            or die ...;
+($rows, $sth) = $dbh-&gt;do($statement, \%attr, %bind_mappings)
+            or die ...;
+($rows, $sth) = $dbh-&gt;do($statement, \%attr, \@bind_values)
+            or die ...;
+($rows, $sth) = $dbh-&gt;do($statement, \%attr, \%bind_mappings)
+            or die ...;
+($rows, $sth) = $dbh-&gt;do($statement, @bind_values)
+            or die ...;
+($rows, $sth) = $dbh-&gt;do($statement, %bind_mappings)
+            or die ...;
+($rows, $sth) = $dbh-&gt;do($statement, \@bind_values)
+            or die ...;
+($rows, $sth) = $dbh-&gt;do($statement, undef, \%bind_mappings)
+            or die ...;</code></pre>
+
 <h3 id="iterate"><code>iterate</code></h3>
 
 <h3 id="prepare"><code>prepare</code></h3>

@@ -963,6 +963,49 @@ via C<DBIx::Squirrel>.
 
 =head3 C<do>
 
+    $rows = $dbh->do($statement)
+                or die $dbh->errstr;
+    $rows = $dbh->do($statement, \%attr)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, @bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, %bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, \@bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, \%bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, @bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, %bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, \@bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, undef, \%bind_mappings)
+                or die ...;
+
+    ($rows, $sth) = $dbh->do($statement)
+                or die $dbh->errstr;
+    ($rows, $sth) = $dbh->do($statement, \%attr)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, \%attr, @bind_values)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, \%attr, %bind_mappings)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, \%attr, \@bind_values)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, \%attr, \%bind_mappings)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, @bind_values)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, %bind_mappings)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, \@bind_values)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, undef, \%bind_mappings)
+                or die ...;
+
+
 =head3 C<iterate>
 
 =head3 C<prepare>

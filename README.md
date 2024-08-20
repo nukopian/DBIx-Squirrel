@@ -757,6 +757,48 @@ via `DBIx::Squirrel`.
 
 ### `do`
 
+    $rows = $dbh->do($statement)
+                or die $dbh->errstr;
+    $rows = $dbh->do($statement, \%attr)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, @bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, %bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, \@bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, \%bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, @bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, %bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, \@bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, undef, \%bind_mappings)
+                or die ...;
+
+    ($rows, $sth) = $dbh->do($statement)
+                or die $dbh->errstr;
+    ($rows, $sth) = $dbh->do($statement, \%attr)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, \%attr, @bind_values)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, \%attr, %bind_mappings)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, \%attr, \@bind_values)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, \%attr, \%bind_mappings)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, @bind_values)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, %bind_mappings)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, \@bind_values)
+                or die ...;
+    ($rows, $sth) = $dbh->do($statement, undef, \%bind_mappings)
+                or die ...;
+
 ### `iterate`
 
 ### `prepare`
