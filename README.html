@@ -65,7 +65,7 @@
     <ul>
       <li><a href="#DBIx::Squirrel-Class-Methods">DBIx::Squirrel Class Methods</a>
         <ul>
-          <li><a href="#connect">connect</a></li>
+          <li><a href="#connect">connect &dagger;</a></li>
           <li><a href="#connect_cached">connect_cached</a></li>
         </ul>
       </li>
@@ -823,7 +823,7 @@ ArtistId: 128</code></pre>
 
 <p>This section describes the <code>DBIx::Squirrel</code> interface.</p>
 
-<p>Many of the methods presented below will no doubt seem familiar to experienced users of the <code>DBI</code>, and they should. They are documented here simple because <code>DBIx::Squirrel</code> makes subtle changes to their interfaces.</p>
+<p>Many of the methods presented below (&dagger;) may seem familiar to the experienced <code>DBI</code> user, and they should. They are documented here because <code>DBIx::Squirrel</code> makes subtle changes to their interfaces.</p>
 
 <p>Such changes are additive and unobtrusive in nature, in most cases, resulting in additional calling forms rather than changes in outcome, or how the method is used. Unless a documented deviation from standard <code>DBI</code> behaviour exists, it may be assumed that the <code>DBI</code> documentation is still valid.</p>
 
@@ -831,7 +831,7 @@ ArtistId: 128</code></pre>
 
 <h2 id="DBIx::Squirrel-Class-Methods">DBIx::Squirrel Class Methods</h2>
 
-<h3 id="connect"><code>connect</code></h3>
+<h3 id="connect"><code>connect</code> &dagger;</h3>
 
 <pre><code>$dbh = DBIx::Squirrel-&gt;connect($data_source, $username, $password)
             or die $DBIx::Squirrel::errstr;
@@ -900,6 +900,27 @@ $rows = $dbh-&gt;do($statement, undef, \%bind_mappings)
             or die ...;</code></pre>
 
 <h3 id="iterate"><code>iterate</code></h3>
+
+<pre><code>$rows = $dbh-&gt;do($statement)
+            or die $dbh-&gt;errstr;
+$rows = $dbh-&gt;do($statement, \%attr)
+            or die ...;
+$rows = $dbh-&gt;do($statement, \%attr, @bind_values)
+            or die ...;
+$rows = $dbh-&gt;do($statement, \%attr, %bind_mappings)
+            or die ...;
+$rows = $dbh-&gt;do($statement, \%attr, \@bind_values)
+            or die ...;
+$rows = $dbh-&gt;do($statement, \%attr, \%bind_mappings)
+            or die ...;
+$rows = $dbh-&gt;do($statement, @bind_values)
+            or die ...;
+$rows = $dbh-&gt;do($statement, %bind_mappings)
+            or die ...;
+$rows = $dbh-&gt;do($statement, \@bind_values)
+            or die ...;
+$rows = $dbh-&gt;do($statement, undef, \%bind_mappings)
+            or die ...;</code></pre>
 
 <h3 id="prepare"><code>prepare</code></h3>
 

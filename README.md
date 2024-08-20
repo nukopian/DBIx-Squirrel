@@ -721,8 +721,8 @@ will apply to it.
 
 This section describes the `DBIx::Squirrel` interface.
 
-Many of the methods presented below will no doubt seem familiar to experienced
-users of the `DBI`, and they should. They are documented here simple because
+Many of the methods presented below (†) may seem familiar to the
+experienced `DBI` user, and they should. They are documented here because
 `DBIx::Squirrel` makes subtle changes to their interfaces.
 
 Such changes are additive and unobtrusive in nature, in most cases, resulting
@@ -735,7 +735,7 @@ via `DBIx::Squirrel`.
 
 ## DBIx::Squirrel Class Methods
 
-### `connect`
+### `connect` †
 
     $dbh = DBIx::Squirrel->connect($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
@@ -807,6 +807,27 @@ handle:
                 or die ...;
 
 ### `iterate`
+
+    $rows = $dbh->do($statement)
+                or die $dbh->errstr;
+    $rows = $dbh->do($statement, \%attr)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, @bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, %bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, \@bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, \%bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, @bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, %bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, \@bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, undef, \%bind_mappings)
+                or die ...;
 
 ### `prepare`
 

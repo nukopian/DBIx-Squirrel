@@ -927,8 +927,8 @@ transformation to nothing, so nothing is returned.
 
 This section describes the C<DBIx::Squirrel> interface.
 
-Many of the methods presented below will no doubt seem familiar to experienced
-users of the C<DBI>, and they should. They are documented here simple because
+Many of the methods presented below (E<dagger>) may seem familiar to the
+experienced C<DBI> user, and they should. They are documented here because
 C<DBIx::Squirrel> makes subtle changes to their interfaces.
 
 Such changes are additive and unobtrusive in nature, in most cases, resulting
@@ -941,7 +941,7 @@ via C<DBIx::Squirrel>.
 
 =head2 DBIx::Squirrel Class Methods
 
-=head3 C<connect>
+=head3 C<connect> E<dagger>
 
     $dbh = DBIx::Squirrel->connect($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
@@ -1014,6 +1014,27 @@ handle:
 
 
 =head3 C<iterate>
+
+    $rows = $dbh->do($statement)
+                or die $dbh->errstr;
+    $rows = $dbh->do($statement, \%attr)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, @bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, %bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, \@bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, \%attr, \%bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, @bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, %bind_mappings)
+                or die ...;
+    $rows = $dbh->do($statement, \@bind_values)
+                or die ...;
+    $rows = $dbh->do($statement, undef, \%bind_mappings)
+                or die ...;
 
 =head3 C<prepare>
 
