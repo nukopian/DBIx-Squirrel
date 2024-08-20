@@ -1291,8 +1291,6 @@ Alias I<(see C<single>)>.
 
 =head4 C<reset>
 
-=head4 C<results>
-
 =head4 C<rows>
 
     $rv = $itor->rows();

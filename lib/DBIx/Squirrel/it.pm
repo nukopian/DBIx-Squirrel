@@ -337,14 +337,6 @@ sub reset {
     return do {$_ = $self->finish};
 }
 
-sub results {
-    return shift->sth->results(@_);
-}
-
-BEGIN {
-    *resultset = *rs = \&results;
-}
-
 sub rows {
     return shift->_private->{st}->rows;
 }
