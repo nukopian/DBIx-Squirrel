@@ -726,9 +726,9 @@ Many of the methods presented below (\*) may seem familiar to the experienced
 makes subtle changes to their interfaces.
 
 Such changes are additive and unobtrusive in nature, in most cases, resulting
-in additional calling forms rather than changes in outcome, or how the method
-is used. Unless a documented deviation from standard `DBI` behaviour exists,
-it may be safely assumed that the `DBI` documentation still applies.
+in additional calling forms rather than any change in the outcome. Unless a
+documented deviation from the standard `DBI` behaviour exists, one may
+safely assume that the `DBI` documentation still applies.
 
 Other parts of the `DBI` interface remain unaltered, as well as being
 accessible via `DBIx::Squirrel`.
