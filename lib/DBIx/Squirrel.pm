@@ -1012,7 +1012,6 @@ the statement, as well as the statement handle:
     ($rows, $sth) = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
 
-
 =head3 C<iterate>
 
     $itor = $dbh->iterate($statement)
@@ -1134,9 +1133,9 @@ It is the normalised form of the statement that is cached.
 
 =head3 C<bind>
 
-=head3 C<bind_param>
+=head3 C<bind_param> *
 
-=head3 C<execute>
+=head3 C<execute> *
 
 =head3 C<iterate>
 

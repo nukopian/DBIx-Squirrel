@@ -927,9 +927,9 @@ It is the normalised form of the statement that is cached.
 
 ### `bind`
 
-### `bind_param`
+### `bind_param` \*
 
-### `execute`
+### `execute` \*
 
 ### `iterate`
 
