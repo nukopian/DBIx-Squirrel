@@ -36,6 +36,8 @@ use constant E_EXP_STH       => 'Expected a statement handle';
 use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
 use constant E_BAD_CB_LIST   => 'Expected a reference to a list of code-references, a code-reference, or undefined';
 
+our $NORMALISE_SQL = !!1;
+
 sub throw {
     @_ = do {
         if (@_) {
@@ -101,7 +103,7 @@ sub study_statement {
 sub normalise_statement {
     my($trimmed_sql, $digest) = &get_trimmed_sql_and_digest;
     my $normalised = $trimmed_sql;
-    $normalised =~ s{[\:\$\?]\w+\b}{?}g if $DBIx::Squirrel::NORMALISE_SQL;
+    $normalised =~ s{[\:\$\?]\w+\b}{?}g if $NORMALISE_SQL;
     return $normalised unless wantarray;
     return $normalised, $trimmed_sql, $digest;
 }
