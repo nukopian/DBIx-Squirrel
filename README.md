@@ -719,79 +719,109 @@ will apply to it.
 
 # REFERENCE
 
-This section describes the `DBIx::Squirrel` interface. It covers new
-features not present in the `DBI`, as well as existing `DBI` features
-whose behaviour have been altered by `DBIx::Squirrel`.
+This section describes the `DBIx::Squirrel` interface.
+
+Many of the methods presented below will no doubt seem familiar to experienced
+users of the `DBI`, and they should. They are documented here simple because
+`DBIx::Squirrel` makes subtle changes to their interfaces.
+
+Such changes are additive and unobtrusive in nature, in most cases, resulting
+in additional calling forms rather than changes in outcome, or how the method
+is used. Unless a documented deviation from standard `DBI` behaviour exists,
+it may be assumed that the `DBI` documentation is still valid.
+
+Other parts of the `DBI` interface remain unaltered and are also accessible
+via `DBIx::Squirrel`.
+
+## DBIx::Squirrel Class Methods
+
+### `connect`
+
+    $dbh = DBIx::Squirrel->connect($data_source, $username, $password)
+                or die $DBIx::Squirrel::errstr;
+    $dbh = DBIx::Squirrel->connect($data_source, $username, $password, \%attr)
+                or die $DBIx::Squirrel::errstr;
+    $clone_dbh = DBIx::Squirrel->connect($dbh)
+                or die $DBIx::Squirrel::errstr;
+    $clone_dbh = DBIx::Squirrel->connect($dbh, \%attr)
+                or die $DBIx::Squirrel::errstr;
+
+### `connect_cached`
+
+    $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password)
+                or die $DBIx::Squirrel::errstr;
+    $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password, \%attr)
+                or die $DBIx::Squirrel::errstr;
 
 ## Database Handle Methods
 
-### do
+### `do`
 
-### iterate
+### `iterate`
 
-### prepare
+### `prepare`
 
-### prepare\_cached
+### `prepare_cached`
 
-### results
+### `results`
 
 ## Statement Handle Methods
 
-### bind
+### `bind`
 
-### bind\_param
+### `bind_param`
 
-### execute
+### `execute`
 
-### iterate
+### `iterate`
 
-### results
+### `results`
 
 ## Iterator Objects
 
-### all
+### `all`
 
-### count
+### `countall`
 
-### count\_all
+### `countnext`
 
-### done
+### `done`
 
 Alias _(see `finished`)_.
 
-### execute
+### `execute`
 
-### executed
+### `executed`
 
-### find
+### `find`
 
-### finish
+### `finish`
 
-### finished
+### `finished`
 
-### first
+### `first`
 
-### iterate
+### `iterate`
 
-### new
+### `new`
 
-### next
+### `next`
 
-### one
+### `one`
 
 Alias _(see `single`)_.
 
-### remaining
+### `remaining`
 
-### reset
+### `reset`
 
-### results
+### `results`
 
-### single
+### `single`
 
-### statement\_handle
+### `statement_handle`
 
-### sth
+### `sth`
 
 Alias _(see `statement_handle`)_.
 

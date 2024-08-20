@@ -63,6 +63,12 @@
   </li>
   <li><a href="#REFERENCE">REFERENCE</a>
     <ul>
+      <li><a href="#DBIx::Squirrel-Class-Methods">DBIx::Squirrel Class Methods</a>
+        <ul>
+          <li><a href="#connect">connect</a></li>
+          <li><a href="#connect_cached">connect_cached</a></li>
+        </ul>
+      </li>
       <li><a href="#Database-Handle-Methods">Database Handle Methods</a>
         <ul>
           <li><a href="#do">do</a></li>
@@ -84,8 +90,8 @@
       <li><a href="#Iterator-Objects">Iterator Objects</a>
         <ul>
           <li><a href="#all">all</a></li>
-          <li><a href="#count">count</a></li>
-          <li><a href="#count_all">count_all</a></li>
+          <li><a href="#countall">countall</a></li>
+          <li><a href="#countnext">countnext</a></li>
           <li><a href="#done">done</a></li>
           <li><a href="#execute1">execute</a></li>
           <li><a href="#executed">executed</a></li>
@@ -815,77 +821,103 @@ ArtistId: 128</code></pre>
 
 <h1 id="REFERENCE">REFERENCE</h1>
 
-<p>This section describes the <code>DBIx::Squirrel</code> interface. It covers new features not present in the <code>DBI</code>, as well as existing <code>DBI</code> features whose behaviour have been altered by <code>DBIx::Squirrel</code>.</p>
+<p>This section describes the <code>DBIx::Squirrel</code> interface.</p>
+
+<p>Many of the methods presented below will no doubt seem familiar to experienced users of the <code>DBI</code>, and they should. They are documented here simple because <code>DBIx::Squirrel</code> makes subtle changes to their interfaces.</p>
+
+<p>Such changes are additive and unobtrusive in nature, in most cases, resulting in additional calling forms rather than changes in outcome, or how the method is used. Unless a documented deviation from standard <code>DBI</code> behaviour exists, it may be assumed that the <code>DBI</code> documentation is still valid.</p>
+
+<p>Other parts of the <code>DBI</code> interface remain unaltered and are also accessible via <code>DBIx::Squirrel</code>.</p>
+
+<h2 id="DBIx::Squirrel-Class-Methods">DBIx::Squirrel Class Methods</h2>
+
+<h3 id="connect"><code>connect</code></h3>
+
+<pre><code>$dbh = DBIx::Squirrel-&gt;connect($data_source, $username, $password)
+            or die $DBIx::Squirrel::errstr;
+$dbh = DBIx::Squirrel-&gt;connect($data_source, $username, $password, \%attr)
+            or die $DBIx::Squirrel::errstr;
+$clone_dbh = DBIx::Squirrel-&gt;connect($dbh)
+            or die $DBIx::Squirrel::errstr;
+$clone_dbh = DBIx::Squirrel-&gt;connect($dbh, \%attr)
+            or die $DBIx::Squirrel::errstr;</code></pre>
+
+<h3 id="connect_cached"><code>connect_cached</code></h3>
+
+<pre><code>$dbh = DBIx::Squirrel-&gt;connect_cached($data_source, $username, $password)
+            or die $DBIx::Squirrel::errstr;
+$dbh = DBIx::Squirrel-&gt;connect_cached($data_source, $username, $password, \%attr)
+            or die $DBIx::Squirrel::errstr;</code></pre>
 
 <h2 id="Database-Handle-Methods">Database Handle Methods</h2>
 
-<h3 id="do">do</h3>
+<h3 id="do"><code>do</code></h3>
 
-<h3 id="iterate">iterate</h3>
+<h3 id="iterate"><code>iterate</code></h3>
 
-<h3 id="prepare">prepare</h3>
+<h3 id="prepare"><code>prepare</code></h3>
 
-<h3 id="prepare_cached">prepare_cached</h3>
+<h3 id="prepare_cached"><code>prepare_cached</code></h3>
 
-<h3 id="results">results</h3>
+<h3 id="results"><code>results</code></h3>
 
 <h2 id="Statement-Handle-Methods">Statement Handle Methods</h2>
 
-<h3 id="bind">bind</h3>
+<h3 id="bind"><code>bind</code></h3>
 
-<h3 id="bind_param">bind_param</h3>
+<h3 id="bind_param"><code>bind_param</code></h3>
 
-<h3 id="execute">execute</h3>
+<h3 id="execute"><code>execute</code></h3>
 
-<h3 id="iterate1">iterate</h3>
+<h3 id="iterate1"><code>iterate</code></h3>
 
-<h3 id="results1">results</h3>
+<h3 id="results1"><code>results</code></h3>
 
 <h2 id="Iterator-Objects">Iterator Objects</h2>
 
-<h3 id="all">all</h3>
+<h3 id="all"><code>all</code></h3>
 
-<h3 id="count">count</h3>
+<h3 id="countall"><code>countall</code></h3>
 
-<h3 id="count_all">count_all</h3>
+<h3 id="countnext"><code>countnext</code></h3>
 
-<h3 id="done">done</h3>
+<h3 id="done"><code>done</code></h3>
 
 <p>Alias <i>(see <code>finished</code>)</i>.</p>
 
-<h3 id="execute1">execute</h3>
+<h3 id="execute1"><code>execute</code></h3>
 
-<h3 id="executed">executed</h3>
+<h3 id="executed"><code>executed</code></h3>
 
-<h3 id="find">find</h3>
+<h3 id="find"><code>find</code></h3>
 
-<h3 id="finish">finish</h3>
+<h3 id="finish"><code>finish</code></h3>
 
-<h3 id="finished">finished</h3>
+<h3 id="finished"><code>finished</code></h3>
 
-<h3 id="first">first</h3>
+<h3 id="first"><code>first</code></h3>
 
-<h3 id="iterate2">iterate</h3>
+<h3 id="iterate2"><code>iterate</code></h3>
 
-<h3 id="new">new</h3>
+<h3 id="new"><code>new</code></h3>
 
-<h3 id="next">next</h3>
+<h3 id="next"><code>next</code></h3>
 
-<h3 id="one">one</h3>
+<h3 id="one"><code>one</code></h3>
 
 <p>Alias <i>(see <code>single</code>)</i>.</p>
 
-<h3 id="remaining">remaining</h3>
+<h3 id="remaining"><code>remaining</code></h3>
 
-<h3 id="reset">reset</h3>
+<h3 id="reset"><code>reset</code></h3>
 
-<h3 id="results2">results</h3>
+<h3 id="results2"><code>results</code></h3>
 
-<h3 id="single">single</h3>
+<h3 id="single"><code>single</code></h3>
 
-<h3 id="statement_handle">statement_handle</h3>
+<h3 id="statement_handle"><code>statement_handle</code></h3>
 
-<h3 id="sth">sth</h3>
+<h3 id="sth"><code>sth</code></h3>
 
 <p>Alias <i>(see <code>statement_handle</code>)</i>.</p>
 

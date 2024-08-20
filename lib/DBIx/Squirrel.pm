@@ -925,79 +925,109 @@ transformation to nothing, so nothing is returned.
 
 =head1 REFERENCE
 
-This section describes the C<DBIx::Squirrel> interface. It covers new
-features not present in the C<DBI>, as well as existing C<DBI> features
-whose behaviour have been altered by C<DBIx::Squirrel>.
+This section describes the C<DBIx::Squirrel> interface.
+
+Many of the methods presented below will no doubt seem familiar to experienced
+users of the C<DBI>, and they should. They are documented here simple because
+C<DBIx::Squirrel> makes subtle changes to their interfaces.
+
+Such changes are additive and unobtrusive in nature, in most cases, resulting
+in additional calling forms rather than changes in outcome, or how the method
+is used. Unless a documented deviation from standard C<DBI> behaviour exists,
+it may be assumed that the C<DBI> documentation is still valid.
+
+Other parts of the C<DBI> interface remain unaltered and are also accessible
+via C<DBIx::Squirrel>.
+
+=head2 DBIx::Squirrel Class Methods
+
+=head3 C<connect>
+
+    $dbh = DBIx::Squirrel->connect($data_source, $username, $password)
+                or die $DBIx::Squirrel::errstr;
+    $dbh = DBIx::Squirrel->connect($data_source, $username, $password, \%attr)
+                or die $DBIx::Squirrel::errstr;
+    $clone_dbh = DBIx::Squirrel->connect($dbh)
+                or die $DBIx::Squirrel::errstr;
+    $clone_dbh = DBIx::Squirrel->connect($dbh, \%attr)
+                or die $DBIx::Squirrel::errstr;
+
+=head3 C<connect_cached>
+
+    $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password)
+                or die $DBIx::Squirrel::errstr;
+    $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password, \%attr)
+                or die $DBIx::Squirrel::errstr;
 
 =head2 Database Handle Methods
 
-=head3 do
+=head3 C<do>
 
-=head3 iterate
+=head3 C<iterate>
 
-=head3 prepare
+=head3 C<prepare>
 
-=head3 prepare_cached
+=head3 C<prepare_cached>
 
-=head3 results
+=head3 C<results>
 
 =head2 Statement Handle Methods
 
-=head3 bind
+=head3 C<bind>
 
-=head3 bind_param
+=head3 C<bind_param>
 
-=head3 execute
+=head3 C<execute>
 
-=head3 iterate
+=head3 C<iterate>
 
-=head3 results
+=head3 C<results>
 
 =head2 Iterator Objects
 
-=head3 all
+=head3 C<all>
 
-=head3 count
+=head3 C<countall>
 
-=head3 count_all
+=head3 C<countnext>
 
-=head3 done
+=head3 C<done>
 
 Alias I<(see C<finished>)>.
 
-=head3 execute
+=head3 C<execute>
 
-=head3 executed
+=head3 C<executed>
 
-=head3 find
+=head3 C<find>
 
-=head3 finish
+=head3 C<finish>
 
-=head3 finished
+=head3 C<finished>
 
-=head3 first
+=head3 C<first>
 
-=head3 iterate
+=head3 C<iterate>
 
-=head3 new
+=head3 C<new>
 
-=head3 next
+=head3 C<next>
 
-=head3 one
+=head3 C<one>
 
 Alias I<(see C<single>)>.
 
-=head3 remaining
+=head3 C<remaining>
 
-=head3 reset
+=head3 C<reset>
 
-=head3 results
+=head3 C<results>
 
-=head3 single
+=head3 C<single>
 
-=head3 statement_handle
+=head3 C<statement_handle>
 
-=head3 sth
+=head3 C<sth>
 
 Alias I<(see C<statement_handle>)>.
 
