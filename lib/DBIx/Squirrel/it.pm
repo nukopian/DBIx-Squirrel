@@ -269,7 +269,6 @@ sub new {
             $self->{$k} = $sth->{$k};
         }
     }
-    $self->finish;
     $self->_private({
         id        => 0+ $self,
         st        => $sth->_private({Iterator => $self}),
@@ -278,6 +277,7 @@ sub new {
         slice     => $self->_slice->{Slice},
         maxrows   => $self->_maxrows->{MaxRows},
     });
+    $self->finish;
     return do {$_ = $self};
 }
 
