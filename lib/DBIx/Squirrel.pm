@@ -461,7 +461,7 @@ The C<DBIx::Squirrel> package extends the C<DBI> by providing a few extra
 conveniences that are subtle and additive in nature, and, hopefully, quite
 useful.
 
-=head2 Importing the package
+=head2 IMPORTING
 
 In the simplest case, just import the package as you would any other:
 
@@ -593,7 +593,7 @@ to dip a toe in the water ahead of time:
 
 =back
 
-=head2 Connecting to databases
+=head2 CONNECTING TO DATABASES
 
 Connecting to a database using C<DBIx::Squirrel> may be done exactly as it
 would when using the C<DBI>'s C<connect_cached> and C<connect> methods.
@@ -610,7 +610,7 @@ that is blessed using the same class that invoked the C<connect> method.
 The method will allow you to clone database connections created by the
 C<DBI> and any subclasses (C<DBIx::Squirrel> being one).
 
-=head2 Preparing statements
+=head2 PREPARING STATEMENTS
 
 Preparing a statement using C<DBIx::Squirrel> may be done exactly as
 it would be done using the C<DBI>'s C<prepare_cached> and C<prepare>
@@ -699,7 +699,7 @@ Oracle named placeholders (C<:name>):
 
 =back
 
-=head2 Iterators
+=head2 ITERATORS
 
 In addition to statement objects, C<DBIx::Squirrel> provides two kinds
 of iterator:
@@ -764,7 +764,7 @@ created the first time they are used.
 The C<results> methods may be replaced by either of the C<rs> or C<resultset>
 aliases, if preferred.
 
-=head2 Transforming results
+=head2 TRANSFORMING RESULTS
 
 All C<DBIx::Squirrel> iterators support an optional processing step called
 I<transformation>.

@@ -326,7 +326,7 @@ The `DBIx::Squirrel` package extends the `DBI` by providing a few extra
 conveniences that are subtle and additive in nature, and, hopefully, quite
 useful.
 
-## Importing the package
+## IMPORTING
 
 In the simplest case, just import the package as you would any other:
 
@@ -439,7 +439,7 @@ to dip a toe in the water ahead of time:
             print $_->Name, "\n";
         };
 
-## Connecting to databases
+## CONNECTING TO DATABASES
 
 Connecting to a database using `DBIx::Squirrel` may be done exactly as it
 would when using the `DBI`'s `connect_cached` and `connect` methods.
@@ -456,7 +456,7 @@ that is blessed using the same class that invoked the `connect` method.
 The method will allow you to clone database connections created by the
 `DBI` and any subclasses (`DBIx::Squirrel` being one).
 
-## Preparing statements
+## PREPARING STATEMENTS
 
 Preparing a statement using `DBIx::Squirrel` may be done exactly as
 it would be done using the `DBI`'s `prepare_cached` and `prepare`
@@ -525,7 +525,7 @@ style (`?`) supported by all drivers.
         $res = $sth->execute({Name => 'Aerosmith'});
         $res = $sth->execute({':Name' => 'Aerosmith'});
 
-## Iterators
+## ITERATORS
 
 In addition to statement objects, `DBIx::Squirrel` provides two kinds
 of iterator:
@@ -585,7 +585,7 @@ created the first time they are used.
 The `results` methods may be replaced by either of the `rs` or `resultset`
 aliases, if preferred.
 
-## Transforming results
+## TRANSFORMING RESULTS
 
 All `DBIx::Squirrel` iterators support an optional processing step called
 _transformation_.

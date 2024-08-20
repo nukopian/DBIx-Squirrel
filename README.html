@@ -17,7 +17,7 @@
   <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
   <li><a href="#DESCRIPTION">DESCRIPTION</a>
     <ul>
-      <li><a href="#Importing-the-package">Importing the package</a>
+      <li><a href="#IMPORTING">IMPORTING</a>
         <ul>
           <li><a href="#Database-Entity-Helper-Functions">Database Entity Helper Functions</a>
             <ul>
@@ -26,12 +26,12 @@
           </li>
         </ul>
       </li>
-      <li><a href="#Connecting-to-databases">Connecting to databases</a>
+      <li><a href="#CONNECTING-TO-DATABASES">CONNECTING TO DATABASES</a>
         <ul>
           <li><a href="#Cloning-database-connections">Cloning database connections</a></li>
         </ul>
       </li>
-      <li><a href="#Preparing-statements">Preparing statements</a>
+      <li><a href="#PREPARING-STATEMENTS">PREPARING STATEMENTS</a>
         <ul>
           <li><a href="#Placeholders">Placeholders</a>
             <ul>
@@ -40,7 +40,7 @@
           </li>
         </ul>
       </li>
-      <li><a href="#Iterators">Iterators</a>
+      <li><a href="#ITERATORS">ITERATORS</a>
         <ul>
           <li><a href="#Basic-Iterators">Basic Iterators</a>
             <ul>
@@ -54,7 +54,7 @@
           </li>
         </ul>
       </li>
-      <li><a href="#Transforming-results">Transforming results</a>
+      <li><a href="#TRANSFORMING-RESULTS">TRANSFORMING RESULTS</a>
         <ul>
           <li><a href="#Examples2">Examples</a></li>
         </ul>
@@ -443,7 +443,7 @@ $id = $itr-&gt;iterate(&#39;Acme Rocket&#39;)-&gt;single;</code></pre>
 
 <p>The <code>DBIx::Squirrel</code> package extends the <code>DBI</code> by providing a few extra conveniences that are subtle and additive in nature, and, hopefully, quite useful.</p>
 
-<h2 id="Importing-the-package">Importing the package</h2>
+<h2 id="IMPORTING">IMPORTING</h2>
 
 <p>In the simplest case, just import the package as you would any other:</p>
 
@@ -548,7 +548,7 @@ while ( artists-&gt;next ) {
 </li>
 </ul>
 
-<h2 id="Connecting-to-databases">Connecting to databases</h2>
+<h2 id="CONNECTING-TO-DATABASES">CONNECTING TO DATABASES</h2>
 
 <p>Connecting to a database using <code>DBIx::Squirrel</code> may be done exactly as it would when using the <code>DBI</code>&#39;s <code>connect_cached</code> and <code>connect</code> methods.</p>
 
@@ -560,7 +560,7 @@ while ( artists-&gt;next ) {
 
 <p>This form clones another connection object and returns a brand new object that is blessed using the same class that invoked the <code>connect</code> method. The method will allow you to clone database connections created by the <code>DBI</code> and any subclasses (<code>DBIx::Squirrel</code> being one).</p>
 
-<h2 id="Preparing-statements">Preparing statements</h2>
+<h2 id="PREPARING-STATEMENTS">PREPARING STATEMENTS</h2>
 
 <p>Preparing a statement using <code>DBIx::Squirrel</code> may be done exactly as it would be done using the <code>DBI</code>&#39;s <code>prepare_cached</code> and <code>prepare</code> methods.</p>
 
@@ -638,7 +638,7 @@ $res = $sth-&gt;execute({&#39;:Name&#39; =&gt; &#39;Aerosmith&#39;});</code></pr
 </li>
 </ul>
 
-<h2 id="Iterators">Iterators</h2>
+<h2 id="ITERATORS">ITERATORS</h2>
 
 <p>In addition to statement objects, <code>DBIx::Squirrel</code> provides two kinds of iterator:</p>
 
@@ -694,7 +694,7 @@ $itr = $sth-&gt;results(
 
 <p>The <code>results</code> methods may be replaced by either of the <code>rs</code> or <code>resultset</code> aliases, if preferred.</p>
 
-<h2 id="Transforming-results">Transforming results</h2>
+<h2 id="TRANSFORMING-RESULTS">TRANSFORMING RESULTS</h2>
 
 <p>All <code>DBIx::Squirrel</code> iterators support an optional processing step called <i>transformation</i>.</p>
 
