@@ -1061,13 +1061,15 @@ the statement, as well as the statement handle:
     $sth = $dbh->prepare($statement, \%attr)  or die $dbh->errstr;
 
 The C<prepare> method interface is identical in form to that provided by the
-C<DBI>. You are, however, permitted to use one of a number of placeholder
-styles (C<:name>, C<:number>, C<$number>, C<?number>, C<?>) within the
-C<$statement> string.
+C<DBI>.
 
-Your statement will be "normalised" to use the legacy C<?> style before being
-handed-off to the C<DBI> method of the same name. In spite of this, you should
-still use key-value bindings if your opted for named placeholders.
+C<DBIx::Squirrel> permitted the use of one of a number of valid placeholder
+styles (C<:name>, C<:number>, C<$number>, C<?number>, C<?>) within the
+statement-string.
+
+Statement-strings will be "normalised" to use the legacy C<?> style, before
+being handed-off to the C<DBI> method of the same name. In spite of this,
+you should still use key-value bindings if your opted for named placeholders.
 
 =head3 C<prepare_cached> *
 
@@ -1076,15 +1078,17 @@ still use key-value bindings if your opted for named placeholders.
     $sth = $dbh->prepare_cached($statement, \%attr, $if_active)
 
 The C<prepare_cached> method interface is identical in form to that provided
-by the C<DBI>. You are, however, permitted to use one of a number of placeholder
+by the C<DBI>. 
+
+C<DBIx::Squirrel> permitted the use of one of a number of valid placeholder
 styles (C<:name>, C<:number>, C<$number>, C<?number>, C<?>) within the
-C<$statement> string.
+statement-string.
 
-Your statement will be "normalised" to use the legacy C<?> style before being
-handed-off to the C<DBI> method of the same name. In spite of this, you should
-still use key-value bindings if your opted for named placeholders.
+Statement-strings will be "normalised" to use the legacy C<?> style, before
+being handed-off to the C<DBI> method of the same name. In spite of this,
+you should still use key-value bindings if your opted for named placeholders.
 
-It is the normalised form of the statement that is cached.
+It is the normalised form of the statement that is cached by the C<DBI>.
 
 =head3 C<results>
 
