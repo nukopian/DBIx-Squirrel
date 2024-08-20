@@ -348,11 +348,11 @@ BEGIN {
     *DBIx::Squirrel::state                        = *DBI::state;
     *DBIx::Squirrel::connect                      = *DBIx::Squirrel::dr::connect;
     *DBIx::Squirrel::connect_cached               = *DBIx::Squirrel::dr::connect_cached;
+    *DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE = *DBIx::Squirrel::st::FINISH_ACTIVE_BEFORE_EXECUTE;
     *DBIx::Squirrel::DEFAULT_SLICE                = *DBIx::Squirrel::it::DEFAULT_SLICE;
     *DBIx::Squirrel::DEFAULT_MAXROWS              = *DBIx::Squirrel::it::DEFAULT_MAXROWS;
     *DBIx::Squirrel::BUF_MULT                     = *DBIx::Squirrel::it::BUF_MULT;
     *DBIx::Squirrel::BUF_MAXROWS                  = *DBIx::Squirrel::it::BUF_MAXROWS;
-    $DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE = !!1;
     $DBIx::Squirrel::NORMALISE_SQL                = !!1;
     *DBIx::Squirrel::NORMALIZE_SQL                = *DBIx::Squirrel::NORMALISE_SQL;
 }

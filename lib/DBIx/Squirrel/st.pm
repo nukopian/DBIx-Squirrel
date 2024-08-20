@@ -16,6 +16,8 @@ use DBIx::Squirrel::util qw/throw whine/;
 use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';
 use constant W_ODD_NUMBER_OF_ARGS  => 'Check bind values match placeholder scheme';
 
+our $FINISH_ACTIVE_BEFORE_EXECUTE = !!1;
+
 sub _private {
     my $self = shift;
     return
@@ -153,7 +155,7 @@ sub bind {
 sub execute {
     my $self = shift;
     $self->finish
-      if $DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE && $self->{Active};
+      if $FINISH_ACTIVE_BEFORE_EXECUTE && $self->{Active};
     $self->bind(@_)
       if @_;
     return $self->SUPER::execute;
