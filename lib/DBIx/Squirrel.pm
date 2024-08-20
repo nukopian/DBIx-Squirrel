@@ -1063,7 +1063,7 @@ the statement, as well as the statement handle:
 The C<prepare> method interface is identical in form to that provided by the
 C<DBI>.
 
-C<DBIx::Squirrel> permitted the use of one of a number of valid placeholder
+C<DBIx::Squirrel> permits the use of one of a number of valid placeholder
 styles (C<:name>, C<:number>, C<$number>, C<?number>, C<?>) within the
 statement-string.
 
@@ -1080,7 +1080,7 @@ you should still use key-value bindings if your opted for named placeholders.
 The C<prepare_cached> method interface is identical in form to that provided
 by the C<DBI>. 
 
-C<DBIx::Squirrel> permitted the use of one of a number of valid placeholder
+C<DBIx::Squirrel> permits the use of one of a number of valid placeholder
 styles (C<:name>, C<:number>, C<$number>, C<?number>, C<?>) within the
 statement-string.
 

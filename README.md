@@ -857,7 +857,7 @@ the statement, as well as the statement handle:
 The `prepare` method interface is identical in form to that provided by the
 `DBI`.
 
-`DBIx::Squirrel` permitted the use of one of a number of valid placeholder
+`DBIx::Squirrel` permits the use of one of a number of valid placeholder
 styles (`:name`, `:number`, `$number`, `?number`, `?`) within the
 statement-string.
 
@@ -874,7 +874,7 @@ you should still use key-value bindings if your opted for named placeholders.
 The `prepare_cached` method interface is identical in form to that provided
 by the `DBI`. 
 
-`DBIx::Squirrel` permitted the use of one of a number of valid placeholder
+`DBIx::Squirrel` permits the use of one of a number of valid placeholder
 styles (`:name`, `:number`, `$number`, `?number`, `?`) within the
 statement-string.
 
