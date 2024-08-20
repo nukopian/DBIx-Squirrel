@@ -1069,7 +1069,7 @@ statement-string.
 
 Statement-strings will be "normalised" to use the legacy C<?> style, before
 being handed-off to the C<DBI> method of the same name. In spite of this,
-you should still use key-value bindings if your opted for named placeholders.
+you should still use key-value bindings if you opted for named placeholders.
 
 =head3 C<prepare_cached> *
 
@@ -1086,7 +1086,7 @@ statement-string.
 
 Statement-strings will be "normalised" to use the legacy C<?> style, before
 being handed-off to the C<DBI> method of the same name. In spite of this,
-you should still use key-value bindings if your opted for named placeholders.
+you should still use key-value bindings if you opted for named placeholders.
 
 It is the normalised form of the statement that is cached by the C<DBI>.
 

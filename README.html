@@ -951,7 +951,7 @@ $sth = $dbh-&gt;prepare($statement, \%attr)  or die $dbh-&gt;errstr;</code></pre
 
 <p><code>DBIx::Squirrel</code> permits the use of one of a number of valid placeholder styles (<code>:name</code>, <code>:number</code>, <code>$number</code>, <code>?number</code>, <code>?</code>) within the statement-string.</p>
 
-<p>Statement-strings will be &quot;normalised&quot; to use the legacy <code>?</code> style, before being handed-off to the <code>DBI</code> method of the same name. In spite of this, you should still use key-value bindings if your opted for named placeholders.</p>
+<p>Statement-strings will be &quot;normalised&quot; to use the legacy <code>?</code> style, before being handed-off to the <code>DBI</code> method of the same name. In spite of this, you should still use key-value bindings if you opted for named placeholders.</p>
 
 <h3 id="prepare_cached"><code>prepare_cached</code> *</h3>
 
@@ -963,7 +963,7 @@ $sth = $dbh-&gt;prepare_cached($statement, \%attr, $if_active)</code></pre>
 
 <p><code>DBIx::Squirrel</code> permits the use of one of a number of valid placeholder styles (<code>:name</code>, <code>:number</code>, <code>$number</code>, <code>?number</code>, <code>?</code>) within the statement-string.</p>
 
-<p>Statement-strings will be &quot;normalised&quot; to use the legacy <code>?</code> style, before being handed-off to the <code>DBI</code> method of the same name. In spite of this, you should still use key-value bindings if your opted for named placeholders.</p>
+<p>Statement-strings will be &quot;normalised&quot; to use the legacy <code>?</code> style, before being handed-off to the <code>DBI</code> method of the same name. In spite of this, you should still use key-value bindings if you opted for named placeholders.</p>
 
 <p>It is the normalised form of the statement that is cached by the <code>DBI</code>.</p>
 
