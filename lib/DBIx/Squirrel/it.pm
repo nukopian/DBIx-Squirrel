@@ -30,32 +30,6 @@ sub BUF_MULT () {$DBIx::Squirrel::it::BUF_MULT}
 
 sub BUF_MAXROWS () {$DBIx::Squirrel::it::BUF_MAXROWS}
 
-sub new {
-    my($callbacks, $class_or_self, $sth, @bindvals) = cbargs(@_);
-    return
-      unless UNIVERSAL::isa($sth, 'DBI::st');
-    my $self = {};
-    bless $self, ref($class_or_self) || $class_or_self;
-    for my $k (keys(%{$sth})) {
-        if (ref($sth->{$k})) {
-            weaken($self->{$k} = $sth->{$k});
-        }
-        else {
-            $self->{$k} = $sth->{$k};
-        }
-    }
-    $self->finish;
-    $self->_private({
-        id        => 0+ $self,
-        st        => $sth->_private({Iterator => $self}),
-        bindvals  => [@bindvals],
-        callbacks => $callbacks,
-        slice     => $self->_slice->{Slice},
-        maxrows   => $self->_maxrows->{MaxRows},
-    });
-    return do {$_ = $self};
-}
-
 sub all {
     my $self = shift;
     my @rows;
@@ -281,6 +255,32 @@ sub _fetch_row {
     return $head;
 }
 
+sub new {
+    my($callbacks, $class_or_self, $sth, @bindvals) = cbargs(@_);
+    return
+      unless UNIVERSAL::isa($sth, 'DBI::st');
+    my $self = {};
+    bless $self, ref($class_or_self) || $class_or_self;
+    for my $k (keys(%{$sth})) {
+        if (ref($sth->{$k})) {
+            weaken($self->{$k} = $sth->{$k});
+        }
+        else {
+            $self->{$k} = $sth->{$k};
+        }
+    }
+    $self->finish;
+    $self->_private({
+        id        => 0+ $self,
+        st        => $sth->_private({Iterator => $self}),
+        bindvals  => [@bindvals],
+        callbacks => $callbacks,
+        slice     => $self->_slice->{Slice},
+        maxrows   => $self->_maxrows->{MaxRows},
+    });
+    return do {$_ = $self};
+}
+
 sub next {
     my $self = shift;
     $self->_slice_maxrows(@_)
@@ -361,6 +361,10 @@ sub results {
 
 BEGIN {
     *resultset = *rs = \&results;
+}
+
+sub rows {
+    return shift->_private->{st}->rows;
 }
 
 sub single {
