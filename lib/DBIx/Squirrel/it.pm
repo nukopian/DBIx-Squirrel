@@ -50,6 +50,10 @@ sub countnext {
     return do {$_ = $count};
 }
 
+BEGIN {
+    *count = *countnext;
+}
+
 sub execute {
     my($attr, $self) = shift->_private;
     my $sth = $attr->{st};

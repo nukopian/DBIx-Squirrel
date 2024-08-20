@@ -1014,6 +1014,10 @@ When called in scalar-context, this method returns a reference to
 an array of all matching row objects. Where no rows were matched,
 `undef` will be returned.
 
+#### `count`
+
+Alias _(see `countnext`)_.
+
 #### `countall`
 
     $count = $itor->countall();

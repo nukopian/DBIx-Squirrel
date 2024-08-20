@@ -1220,6 +1220,10 @@ When called in scalar-context, this method returns a reference to
 an array of all matching row objects. Where no rows were matched,
 C<undef> will be returned.
 
+=head4 C<count>
+
+Alias I<(see C<countnext>)>.
+
 =head4 C<countall>
 
     $count = $itor->countall();

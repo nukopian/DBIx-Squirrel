@@ -88,6 +88,7 @@
           <li><a href="#Iterator-Objects">Iterator Objects</a>
             <ul>
               <li><a href="#all">all</a></li>
+              <li><a href="#count">count</a></li>
               <li><a href="#countall">countall</a></li>
               <li><a href="#countnext">countnext</a></li>
               <li><a href="#done">done</a></li>
@@ -1093,6 +1094,10 @@ $itor = $sth-&gt;results(\%bind_mappings, @transforms)
 <pre><code>$ary_ref | undef = $itor-&gt;all();</code></pre>
 
 <p>When called in scalar-context, this method returns a reference to an array of all matching row objects. Where no rows were matched, <code>undef</code> will be returned.</p>
+
+<h4 id="count"><code>count</code></h4>
+
+<p>Alias <i>(see <code>countnext</code>)</i>.</p>
 
 <h4 id="countall"><code>countall</code></h4>
 
