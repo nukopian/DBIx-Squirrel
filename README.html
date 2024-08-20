@@ -1014,9 +1014,27 @@ $itor = $dbh-&gt;results($statement, undef, \%bind_mappings, @transforms)
 
 <h4 id="bind"><code>bind</code></h4>
 
+<pre><code>$sth-&gt;bind(@bind_values);
+$sth-&gt;bind(\@bind_values);
+$sth-&gt;bind(%bind_mappings);
+$sth-&gt;bind(\%bind_mappings);</code></pre>
+
 <h4 id="bind_param"><code>bind_param</code> *</h4>
 
+<pre><code>$sth-&gt;bind_param($p_num, $bind_value);
+$sth-&gt;bind_param($p_num, $bind_value, \%attr);
+$sth-&gt;bind_param($p_num, $bind_value, $bind_type);
+$sth-&gt;bind_param($p_name, $bind_value);
+$sth-&gt;bind_param($p_name, $bind_value, \%attr);
+$sth-&gt;bind_param($p_name, $bind_value, $bind_type);</code></pre>
+
 <h4 id="execute"><code>execute</code> *</h4>
+
+<pre><code>$rv = $sth-&gt;execute();
+$rv = $sth-&gt;execute(@bind_values);
+$rv = $sth-&gt;execute(\@bind_values);
+$rv = $sth-&gt;execute(%bind_mappings);
+$rv = $sth-&gt;execute(\%bind_mappings);</code></pre>
 
 <h4 id="iterate1"><code>iterate</code></h4>
 
@@ -1068,9 +1086,29 @@ $itor = $sth-&gt;results(\%bind_mappings, @transforms)
 
 <h4 id="all"><code>all</code></h4>
 
+<pre><code>@ary = $itor-&gt;all();</code></pre>
+
+<p>When called in list-context, the <code>all</code> method returns an array of all matching row objects.</p>
+
+<pre><code>$ary_ref | undef = $itor-&gt;all();</code></pre>
+
+<p>When called in scalar-context, this method returns a reference to an array of all matching row objects. Where no rows were matched, <code>undef</code> will be returned.</p>
+
 <h4 id="countall"><code>countall</code></h4>
 
+<pre><code>$count = $itor-&gt;countall();</code></pre>
+
+<p>Returns the number of matching rows by calculating the size of the array that would be created when calling the <code>all</code> method.</p>
+
+<p>Of the two counting methods, this may be the fastest, but most memory-hungry.</p>
+
 <h4 id="countnext"><code>countnext</code></h4>
+
+<pre><code>$count = $itor-&gt;countnext();</code></pre>
+
+<p>Returns the number of matching rows by counting the number of times <code>next</code> can be called.</p>
+
+<p>Of the two counting methods, this may be the least memory-hungry.</p>
 
 <h4 id="done"><code>done</code></h4>
 
@@ -1078,7 +1116,15 @@ $itor = $sth-&gt;results(\%bind_mappings, @transforms)
 
 <h4 id="execute1"><code>execute</code></h4>
 
+<pre><code>$rv = $itor-&gt;execute());</code></pre>
+
+<p>Executes the iterator&#39;s underlying statemeent handle object.</p>
+
 <h4 id="executed"><code>executed</code></h4>
+
+<pre><code>$bool = $itor-&gt;executed();</code></pre>
+
+<p>Returns true (<code>!!1</code>) if the underlying statement has been executed, otherwise it returns false (<code>!!0</code>).</p>
 
 <h4 id="find"><code>find</code></h4>
 
@@ -1086,9 +1132,17 @@ $itor = $sth-&gt;results(\%bind_mappings, @transforms)
 
 <h4 id="finished"><code>finished</code></h4>
 
+<pre><code>$bool = $itor-&gt;finished();</code></pre>
+
+<p>Returns true (<code>!!1</code>) if all matching rows have been fetched, otherwise it returns false (<code>!!0</code>).</p>
+
 <h4 id="first"><code>first</code></h4>
 
 <h4 id="iterate2"><code>iterate</code></h4>
+
+<pre><code>$itor | undef = $itor-&gt;iterate());</code></pre>
+
+<p>Executes the iterator&#39;s underlying statemeent handle object, returning the iterator object reference if execution was successful, or <code>undef</code> if not.</p>
 
 <h4 id="next"><code>next</code></h4>
 
@@ -1104,9 +1158,17 @@ $itor = $sth-&gt;results(\%bind_mappings, @transforms)
 
 <h4 id="rows"><code>rows</code></h4>
 
+<pre><code>$rv = $itor-&gt;rows();</code></pre>
+
+<p>Returns the number of rows aftected by non-SELECT statements.</p>
+
 <h4 id="single"><code>single</code></h4>
 
 <h4 id="statement_handle"><code>statement_handle</code></h4>
+
+<pre><code>$sth = $itor-&gt;statement_handle();</code></pre>
+
+<p>Returns a reference to the statement handle object associated with the iterator.</p>
 
 <h4 id="sth"><code>sth</code></h4>
 

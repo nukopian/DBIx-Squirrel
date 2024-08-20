@@ -931,9 +931,27 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `bind`
 
+    $sth->bind(@bind_values);
+    $sth->bind(\@bind_values);
+    $sth->bind(%bind_mappings);
+    $sth->bind(\%bind_mappings);
+
 #### `bind_param` \*
 
+    $sth->bind_param($p_num, $bind_value);
+    $sth->bind_param($p_num, $bind_value, \%attr);
+    $sth->bind_param($p_num, $bind_value, $bind_type);
+    $sth->bind_param($p_name, $bind_value);
+    $sth->bind_param($p_name, $bind_value, \%attr);
+    $sth->bind_param($p_name, $bind_value, $bind_type);
+
 #### `execute` \*
+
+    $rv = $sth->execute();
+    $rv = $sth->execute(@bind_values);
+    $rv = $sth->execute(\@bind_values);
+    $rv = $sth->execute(%bind_mappings);
+    $rv = $sth->execute(\%bind_mappings);
 
 #### `iterate`
 
@@ -985,9 +1003,35 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `all`
 
+    @ary = $itor->all();
+
+When called in list-context, the `all` method returns an array
+of all matching row objects.
+
+    $ary_ref | undef = $itor->all();
+
+When called in scalar-context, this method returns a reference to
+an array of all matching row objects. Where no rows were matched,
+`undef` will be returned.
+
 #### `countall`
 
+    $count = $itor->countall();
+
+Returns the number of matching rows by calculating the size of the
+array that would be created when calling the `all` method.
+
+Of the two counting methods, this may be the fastest, but most
+memory-hungry.
+
 #### `countnext`
+
+    $count = $itor->countnext();
+
+Returns the number of matching rows by counting the number of times
+`next` can be called.
+
+Of the two counting methods, this may be the least memory-hungry.
 
 #### `done`
 
@@ -995,7 +1039,16 @@ Alias _(see `finished`)_.
 
 #### `execute`
 
+    $rv = $itor->execute());
+
+Executes the iterator's underlying statemeent handle object.
+
 #### `executed`
+
+    $bool = $itor->executed();
+
+Returns true (`!!1`) if the underlying statement has been executed,
+otherwise it returns false (`!!0`).
 
 #### `find`
 
@@ -1003,9 +1056,20 @@ Alias _(see `finished`)_.
 
 #### `finished`
 
+    $bool = $itor->finished();
+
+Returns true (`!!1`) if all matching rows have been fetched,
+otherwise it returns false (`!!0`).
+
 #### `first`
 
 #### `iterate`
+
+    $itor | undef = $itor->iterate());
+
+Executes the iterator's underlying statemeent handle object,
+returning the iterator object reference if execution was successful,
+or `undef` if not.
 
 #### `next`
 
@@ -1021,9 +1085,18 @@ Alias _(see `single`)_.
 
 #### `rows`
 
+    $rv = $itor->rows();
+
+Returns the number of rows aftected by non-SELECT statements.
+
 #### `single`
 
 #### `statement_handle`
+
+    $sth = $itor->statement_handle();
+
+Returns a reference to the statement handle object associated with
+the iterator.
 
 #### `sth`
 

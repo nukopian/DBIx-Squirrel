@@ -1137,9 +1137,27 @@ It is the normalised form of the statement that is cached by the C<DBI>.
 
 =head4 C<bind>
 
+    $sth->bind(@bind_values);
+    $sth->bind(\@bind_values);
+    $sth->bind(%bind_mappings);
+    $sth->bind(\%bind_mappings);
+
 =head4 C<bind_param> *
 
+    $sth->bind_param($p_num, $bind_value);
+    $sth->bind_param($p_num, $bind_value, \%attr);
+    $sth->bind_param($p_num, $bind_value, $bind_type);
+    $sth->bind_param($p_name, $bind_value);
+    $sth->bind_param($p_name, $bind_value, \%attr);
+    $sth->bind_param($p_name, $bind_value, $bind_type);
+
 =head4 C<execute> *
+
+    $rv = $sth->execute();
+    $rv = $sth->execute(@bind_values);
+    $rv = $sth->execute(\@bind_values);
+    $rv = $sth->execute(%bind_mappings);
+    $rv = $sth->execute(\%bind_mappings);
 
 =head4 C<iterate>
 
@@ -1191,9 +1209,35 @@ It is the normalised form of the statement that is cached by the C<DBI>.
 
 =head4 C<all>
 
+    @ary = $itor->all();
+
+When called in list-context, the C<all> method returns an array
+of all matching row objects.
+
+    $ary_ref | undef = $itor->all();
+
+When called in scalar-context, this method returns a reference to
+an array of all matching row objects. Where no rows were matched,
+C<undef> will be returned.
+
 =head4 C<countall>
 
+    $count = $itor->countall();
+
+Returns the number of matching rows by calculating the size of the
+array that would be created when calling the C<all> method.
+
+Of the two counting methods, this may be the fastest, but most
+memory-hungry.
+
 =head4 C<countnext>
+
+    $count = $itor->countnext();
+
+Returns the number of matching rows by counting the number of times
+C<next> can be called.
+
+Of the two counting methods, this may be the least memory-hungry.
 
 =head4 C<done>
 
@@ -1201,7 +1245,16 @@ Alias I<(see C<finished>)>.
 
 =head4 C<execute>
 
+    $rv = $itor->execute());
+
+Executes the iterator's underlying statemeent handle object.
+
 =head4 C<executed>
+
+    $bool = $itor->executed();
+
+Returns true (C<!!1>) if the underlying statement has been executed,
+otherwise it returns false (C<!!0>).
 
 =head4 C<find>
 
@@ -1209,9 +1262,20 @@ Alias I<(see C<finished>)>.
 
 =head4 C<finished>
 
+    $bool = $itor->finished();
+
+Returns true (C<!!1>) if all matching rows have been fetched,
+otherwise it returns false (C<!!0>).
+
 =head4 C<first>
 
 =head4 C<iterate>
+
+    $itor | undef = $itor->iterate());
+
+Executes the iterator's underlying statemeent handle object,
+returning the iterator object reference if execution was successful,
+or C<undef> if not.
 
 =head4 C<next>
 
@@ -1227,9 +1291,18 @@ Alias I<(see C<single>)>.
 
 =head4 C<rows>
 
+    $rv = $itor->rows();
+
+Returns the number of rows aftected by non-SELECT statements.
+
 =head4 C<single>
 
 =head4 C<statement_handle>
+
+    $sth = $itor->statement_handle();
+
+Returns a reference to the statement handle object associated with
+the iterator.
 
 =head4 C<sth>
 
