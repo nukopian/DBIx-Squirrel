@@ -603,10 +603,20 @@ sub test_the_basics {
         5,
         do {
             my $res = $sth->rs;
-            $res->count;
+            $res->countnext;
         },
     );
-    is_deeply $got, $exp, 'count'
+    is_deeply $got, $exp, 'countnext'
+      or dump_val {exp => $exp, got => $got};
+
+    ($exp, $got) = (
+        5,
+        do {
+            my $res = $sth->rs;
+            $res->countall;
+        },
+    );
+    is_deeply $got, $exp, 'countall'
       or dump_val {exp => $exp, got => $got};
 
     ($exp, $got) = (

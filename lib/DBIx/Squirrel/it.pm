@@ -66,15 +66,15 @@ sub all {
     return \@rows;
 }
 
-sub count {
+sub countall {
+    return do {$_ = scalar(@{shift->all(@_)})};
+}
+
+sub countnext {
     my $self  = shift;
     my $count = 0;
     $count += 1 while $self->next;
     return do {$_ = $count};
-}
-
-sub count_all {
-    return do {$_ = scalar(@{shift->all(@_)})};
 }
 
 sub execute {
