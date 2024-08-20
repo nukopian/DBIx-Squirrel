@@ -32,8 +32,7 @@ sub BUF_MAXROWS () {$DBIx::Squirrel::it::BUF_MAXROWS}
 
 sub all {
     my $self = shift;
-    return
-      unless $self->execute(@_);
+    return unless $self->execute(@_);
     my @rows = $self->first;
     push @rows, $self->remaining;
     return @rows if wantarray;
