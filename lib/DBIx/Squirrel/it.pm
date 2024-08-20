@@ -36,8 +36,7 @@ sub all {
       unless $self->execute(@_);
     my @rows = $self->first;
     push @rows, $self->remaining;
-    return @rows
-      if wantarray;
+    return @rows if wantarray;
     return \@rows;
 }
 
@@ -99,8 +98,7 @@ sub find {
 sub finish {
     my($attr, $self) = shift->_private;
     if ($attr->{st}) {
-        $attr->{st}->finish
-          if $attr->{st}{Active};
+        $attr->{st}->finish if $attr->{st}{Active};
     }
     $attr->{finished}     = !!0;
     $attr->{executed}     = !!0;
@@ -126,8 +124,7 @@ sub first {
         $self->reset(@_);
     }
     my $row = $self->_fetch_row;
-    $attr->{row_count} = 1
-      if $row;
+    $attr->{row_count} = 1 if $row;
     return do {$_ = $row};
 }
 
@@ -145,8 +142,7 @@ sub _transform {
 
 sub _auto_level_maxrows {
     my($attr, $self) = shift->_private;
-    return !!0
-      unless $attr->{buf_limit};
+    return !!0 unless $attr->{buf_limit};
     my $new_maxrows = do {
         if ($attr->{buf_mult_by} && $attr->{buf_mult_by} > 1) {
             $attr->{maxrows} * $attr->{buf_mult_by};
@@ -170,17 +166,14 @@ sub _auto_level_maxrows {
 
     sub _private {
         my $self = shift;
-        return
-          unless ref($self);
+        return unless ref($self);
         my $id   = 0+ $self;
         my $attr = do {
-            $attr_by_id{$id} = {}
-              unless defined($attr_by_id{$id});
+            $attr_by_id{$id} = {} unless defined($attr_by_id{$id});
             $attr_by_id{$id};
         };
         unless (@_) {
-            return $attr, $self
-              if wantarray;
+            return $attr, $self if wantarray;
             return $attr;
         }
         unless (defined($_[0])) {
@@ -188,8 +181,7 @@ sub _auto_level_maxrows {
             shift;
         }
         if (@_) {
-            $attr_by_id{$id} = {}
-              unless defined($attr_by_id{$id});
+            $attr_by_id{$id} = {} unless defined($attr_by_id{$id});
             if (UNIVERSAL::isa($_[0], 'HASH')) {
                 $attr_by_id{$id} = {%{$attr}, %{$_[0]}};
             }
@@ -223,9 +215,8 @@ sub _fetch {
     else {
         $attr->{buffer} = $r;
     }
-    if ($c == $maxrows && $maxrows < $buf_limit) {
-        ($maxrows, $buf_limit) = @{$attr}{qw/maxrows buf_limit/}
-          if $self->_auto_level_maxrows;
+    if ($c == $maxrows && $maxrows < $buf_limit && $self->_auto_level_maxrows()) {
+        ($maxrows, $buf_limit) = @{$attr}{qw/maxrows buf_limit/};
     }
     return do {$attr->{rows_fetched} += $c};
 }
@@ -237,29 +228,24 @@ sub _is_empty {
 
 sub _no_more_rows {
     my($attr, $self) = shift->_private;
-    $self->execute
-      unless $attr->{executed};
+    $self->execute unless $attr->{executed};
     return $attr->{finished};
 }
 
 sub _fetch_row {
     my($attr, $self) = shift->_private;
-    return
-      if $self->_no_more_rows;
-    return
-      if $self->_is_empty && !$self->_fetch;
+    return if $self->_no_more_rows;
+    return if $self->_is_empty && !$self->_fetch;
     my($head, @tail) = @{$attr->{buffer}};
     $attr->{buffer}     = \@tail;
     $attr->{row_count} += 1;
-    return $self->_transform($head)
-      if @{$attr->{callbacks}};
+    return $self->_transform($head) if @{$attr->{callbacks}};
     return $head;
 }
 
 sub new {
     my($callbacks, $class, $sth, @bindvals) = cbargs(@_);
-    return
-      unless UNIVERSAL::isa($sth, 'DBI::st');
+    return unless UNIVERSAL::isa($sth, 'DBI::st');
     my $self = {};
     bless $self, ref($class) || $class;
     for my $k (keys(%{$sth})) {
@@ -284,8 +270,7 @@ sub new {
 
 sub next {
     my $self = shift;
-    $self->_slice_maxrows(@_)
-      if @_;
+    $self->_slice_maxrows(@_) if @_;
     return do {$_ = $self->_fetch_row};
 }
 
@@ -299,15 +284,13 @@ sub remaining {
         $attr->{row_count} += scalar(@rows);
         $self->reset if $attr->{row_count};
     }
-    return @rows
-      if wantarray;
+    return @rows if wantarray;
     return \@rows;
 }
 
 sub _maxrows {
     my $self = shift;
-    throw E_BAD_MAXROWS
-      if ref($_[0]);
+    throw E_BAD_MAXROWS if ref($_[0]);
     $self->{MaxRows} = int(shift || DEFAULT_MAXROWS);
     return $self->_private({maxrows => $self->{MaxRows}});
 }
@@ -315,8 +298,7 @@ sub _maxrows {
 sub _slice {
     my $self = shift;
     unless (@_) {
-        $self->{Slice} = DEFAULT_SLICE
-          unless defined($self->{Slice});
+        $self->{Slice} = DEFAULT_SLICE unless defined($self->{Slice});
         return $self->_private({slice => $self->{Slice}});
     }
     if (defined($_[0])) {
@@ -338,10 +320,8 @@ sub _slice {
 
 sub _slice_maxrows {
     my $self = shift;
-    return $self
-      unless @_;
-    return $self->_slice(shift)->_maxrows(shift)
-      if ref($_[0]);
+    return $self unless @_;
+    return $self->_slice(shift)->_maxrows(shift) if ref($_[0]);
     return $self->_maxrows(shift)->_slice(shift);
 }
 
@@ -351,8 +331,7 @@ BEGIN {
 
 sub reset {
     my $self = shift;
-    $self->_slice_maxrows(@_)
-      if @_;
+    $self->_slice_maxrows(@_) if @_;
     return do {$_ = $self->finish};
 }
 
@@ -370,12 +349,10 @@ sub rows {
 
 sub single {
     my($attr, $self) = shift->_private;
-    $self->reset()
-      if @_;
+    $self->reset() if @_;
     my $row;
     if (my $count = $self->execute(@_)) {
-        whine W_MORE_ROWS
-          if $count > 1;
+        whine W_MORE_ROWS if $count > 1;
         if ($row = $self->_fetch_row()) {
             $attr->{row_count} = 1;
         }
@@ -400,8 +377,7 @@ BEGIN {
 }
 
 sub DESTROY {
-    return
-      if ${^GLOBAL_PHASE} eq 'DESTRUCT';
+    return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
     local($., $@, $!, $^E, $?, $_);
     my $self = shift;
     $self->finish;
