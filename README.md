@@ -721,7 +721,7 @@ will apply to it.
 
 This section describes the `DBIx::Squirrel` interface.
 
-Many of the methods presented below (\*) may seem familiar to the experienced
+Many of the methods (\*) presented below may seem familiar to the experienced
 `DBI` user, and they should. They are documented here because `DBIx::Squirrel`
 makes subtle changes to their interfaces.
 

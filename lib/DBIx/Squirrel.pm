@@ -927,7 +927,7 @@ transformation to nothing, so nothing is returned.
 
 This section describes the C<DBIx::Squirrel> interface.
 
-Many of the methods presented below (*) may seem familiar to the experienced
+Many of the methods (*) presented below may seem familiar to the experienced
 C<DBI> user, and they should. They are documented here because C<DBIx::Squirrel>
 makes subtle changes to their interfaces.
 
