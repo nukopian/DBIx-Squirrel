@@ -1143,7 +1143,49 @@ It is the normalised form of the statement that is cached by the C<DBI>.
 
 =head3 C<iterate>
 
+    $itor = $sth->iterate()
+                or die $dbh->errstr;
+    $itor = $sth->iterate(@bind_values)
+                or die ...;
+    $itor = $sth->iterate(@transforms)
+                or die $dbh->errstr;
+    $itor = $sth->iterate(@bind_values, @transforms)
+                or die ...;
+    $itor = $sth->iterate(%bind_mappings)
+                or die ...;
+    $itor = $sth->iterate(%bind_mappings, @transforms)
+                or die ...;
+    $itor = $sth->iterate(\@bind_values)
+                or die ...;
+    $itor = $sth->iterate([@bind_values, @transforms])
+                or die ...;
+    $itor = $sth->iterate(\%bind_mappings)
+                or die ...;
+    $itor = $sth->iterate(\%bind_mappings, @transforms)
+                or die ...;
+
 =head3 C<results>
+
+    $itor = $sth->results()
+                or die $dbh->errstr;
+    $itor = $sth->results(@bind_values)
+                or die ...;
+    $itor = $sth->results(@transforms)
+                or die $dbh->errstr;
+    $itor = $sth->results(@bind_values, @transforms)
+                or die ...;
+    $itor = $sth->results(%bind_mappings)
+                or die ...;
+    $itor = $sth->results(%bind_mappings, @transforms)
+                or die ...;
+    $itor = $sth->results(\@bind_values)
+                or die ...;
+    $itor = $sth->results([@bind_values, @transforms])
+                or die ...;
+    $itor = $sth->results(\%bind_mappings)
+                or die ...;
+    $itor = $sth->results(\%bind_mappings, @transforms)
+                or die ...;
 
 =head2 Iterator Objects
 

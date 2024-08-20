@@ -1021,7 +1021,49 @@ $itor = $dbh-&gt;results($statement, undef, \%bind_mappings, @transforms)
 
 <h3 id="iterate1"><code>iterate</code></h3>
 
+<pre><code>$itor = $sth-&gt;iterate()
+            or die $dbh-&gt;errstr;
+$itor = $sth-&gt;iterate(@bind_values)
+            or die ...;
+$itor = $sth-&gt;iterate(@transforms)
+            or die $dbh-&gt;errstr;
+$itor = $sth-&gt;iterate(@bind_values, @transforms)
+            or die ...;
+$itor = $sth-&gt;iterate(%bind_mappings)
+            or die ...;
+$itor = $sth-&gt;iterate(%bind_mappings, @transforms)
+            or die ...;
+$itor = $sth-&gt;iterate(\@bind_values)
+            or die ...;
+$itor = $sth-&gt;iterate([@bind_values, @transforms])
+            or die ...;
+$itor = $sth-&gt;iterate(\%bind_mappings)
+            or die ...;
+$itor = $sth-&gt;iterate(\%bind_mappings, @transforms)
+            or die ...;</code></pre>
+
 <h3 id="results1"><code>results</code></h3>
+
+<pre><code>$itor = $sth-&gt;results()
+            or die $dbh-&gt;errstr;
+$itor = $sth-&gt;results(@bind_values)
+            or die ...;
+$itor = $sth-&gt;results(@transforms)
+            or die $dbh-&gt;errstr;
+$itor = $sth-&gt;results(@bind_values, @transforms)
+            or die ...;
+$itor = $sth-&gt;results(%bind_mappings)
+            or die ...;
+$itor = $sth-&gt;results(%bind_mappings, @transforms)
+            or die ...;
+$itor = $sth-&gt;results(\@bind_values)
+            or die ...;
+$itor = $sth-&gt;results([@bind_values, @transforms])
+            or die ...;
+$itor = $sth-&gt;results(\%bind_mappings)
+            or die ...;
+$itor = $sth-&gt;results(\%bind_mappings, @transforms)
+            or die ...;</code></pre>
 
 <h2 id="Iterator-Objects">Iterator Objects</h2>
 
