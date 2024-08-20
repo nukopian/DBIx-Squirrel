@@ -256,11 +256,11 @@ sub _fetch_row {
 }
 
 sub new {
-    my($callbacks, $class_or_self, $sth, @bindvals) = cbargs(@_);
+    my($callbacks, $class, $sth, @bindvals) = cbargs(@_);
     return
       unless UNIVERSAL::isa($sth, 'DBI::st');
     my $self = {};
-    bless $self, ref($class_or_self) || $class_or_self;
+    bless $self, ref($class) || $class;
     for my $k (keys(%{$sth})) {
         if (ref($sth->{$k})) {
             weaken($self->{$k} = $sth->{$k});
