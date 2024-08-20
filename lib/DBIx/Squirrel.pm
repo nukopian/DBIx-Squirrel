@@ -963,6 +963,9 @@ via C<DBIx::Squirrel>.
 
 =head3 C<do>
 
+Calling C<do> in scalar-context works just as it does in the C<DBI>, although
+there are a few more calling forms:
+
     $rows = $dbh->do($statement)
                 or die $dbh->errstr;
     $rows = $dbh->do($statement, \%attr)
@@ -983,6 +986,10 @@ via C<DBIx::Squirrel>.
                 or die ...;
     $rows = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
+
+Calling C<do> in list-context is a new behaviour and returns a list comprised
+of the number of rows affected by the statement followed by the statement
+handle:
 
     ($rows, $sth) = $dbh->do($statement)
                 or die $dbh->errstr;

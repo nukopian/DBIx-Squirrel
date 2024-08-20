@@ -853,6 +853,8 @@ $dbh = DBIx::Squirrel-&gt;connect_cached($data_source, $username, $password, \%a
 
 <h3 id="do"><code>do</code></h3>
 
+<p>Calling <code>do</code> in scalar-context works just as it does in the <code>DBI</code>, although there are a few more calling forms:</p>
+
 <pre><code>$rows = $dbh-&gt;do($statement)
             or die $dbh-&gt;errstr;
 $rows = $dbh-&gt;do($statement, \%attr)
@@ -872,9 +874,11 @@ $rows = $dbh-&gt;do($statement, %bind_mappings)
 $rows = $dbh-&gt;do($statement, \@bind_values)
             or die ...;
 $rows = $dbh-&gt;do($statement, undef, \%bind_mappings)
-            or die ...;
+            or die ...;</code></pre>
 
-($rows, $sth) = $dbh-&gt;do($statement)
+<p>Calling <code>do</code> in list-context is a new behaviour and returns a list comprised of the number of rows affected by the statement followed by the statement handle:</p>
+
+<pre><code>($rows, $sth) = $dbh-&gt;do($statement)
             or die $dbh-&gt;errstr;
 ($rows, $sth) = $dbh-&gt;do($statement, \%attr)
             or die ...;

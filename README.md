@@ -757,6 +757,9 @@ via `DBIx::Squirrel`.
 
 ### `do`
 
+Calling `do` in scalar-context works just as it does in the `DBI`, although
+there are a few more calling forms:
+
     $rows = $dbh->do($statement)
                 or die $dbh->errstr;
     $rows = $dbh->do($statement, \%attr)
@@ -777,6 +780,10 @@ via `DBIx::Squirrel`.
                 or die ...;
     $rows = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
+
+Calling `do` in list-context is a new behaviour and returns a list comprised
+of the number of rows affected by the statement followed by the statement
+handle:
 
     ($rows, $sth) = $dbh->do($statement)
                 or die $dbh->errstr;
