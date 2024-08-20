@@ -932,7 +932,7 @@ C<DBI> user, and they should. They are documented here because C<DBIx::Squirrel>
 makes subtle changes to their interfaces.
 
 Such changes are additive and unobtrusive in nature, in most cases, resulting
-in additional calling forms rather than any change in the outcome. Unless a
+in additional calling forms rather than any change in outcome. Unless a
 documented deviation from the standard C<DBI> behaviour exists, one may
 safely assume that the C<DBI> documentation still applies.
 
