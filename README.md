@@ -979,6 +979,8 @@ Alias _(see `single`)_.
 
 ### `results`
 
+### `rows`
+
 ### `single`
 
 ### `statement_handle`

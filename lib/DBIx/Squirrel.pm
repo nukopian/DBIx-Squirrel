@@ -1185,6 +1185,8 @@ Alias I<(see C<single>)>.
 
 =head3 C<results>
 
+=head3 C<rows>
+
 =head3 C<single>
 
 =head3 C<statement_handle>
