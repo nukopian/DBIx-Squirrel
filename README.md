@@ -721,7 +721,7 @@ will apply to it.
 
 This section describes the `DBIx::Squirrel` interface.
 
-Many of the methods presented below (†) may seem familiar to the
+Many of the methods presented below (\\uFE61) may seem familiar to the
 experienced `DBI` user, and they should. They are documented here because
 `DBIx::Squirrel` makes subtle changes to their interfaces.
 
@@ -735,7 +735,7 @@ via `DBIx::Squirrel`.
 
 ## DBIx::Squirrel Class Methods
 
-### `connect` †
+### `connect` \\uFE61
 
     $dbh = DBIx::Squirrel->connect($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;

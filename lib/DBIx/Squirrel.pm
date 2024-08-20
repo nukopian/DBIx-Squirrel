@@ -927,7 +927,7 @@ transformation to nothing, so nothing is returned.
 
 This section describes the C<DBIx::Squirrel> interface.
 
-Many of the methods presented below (E<dagger>) may seem familiar to the
+Many of the methods presented below (\uFE61) may seem familiar to the
 experienced C<DBI> user, and they should. They are documented here because
 C<DBIx::Squirrel> makes subtle changes to their interfaces.
 
@@ -941,7 +941,7 @@ via C<DBIx::Squirrel>.
 
 =head2 DBIx::Squirrel Class Methods
 
-=head3 C<connect> E<dagger>
+=head3 C<connect> \uFE61
 
     $dbh = DBIx::Squirrel->connect($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
