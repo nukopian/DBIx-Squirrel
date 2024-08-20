@@ -1227,8 +1227,8 @@ C<undef> will be returned.
 Returns the number of matching rows by calculating the size of the
 array that would be created when calling the C<all> method.
 
-Of the two counting methods, this may be the fastest, but most
-memory-hungry.
+Of the two counting methods, this may be the fastest but it is also
+the most memory-hungry.
 
 =head4 C<countnext>
 

@@ -1021,8 +1021,8 @@ an array of all matching row objects. Where no rows were matched,
 Returns the number of matching rows by calculating the size of the
 array that would be created when calling the `all` method.
 
-Of the two counting methods, this may be the fastest, but most
-memory-hungry.
+Of the two counting methods, this may be the fastest but it is also
+the most memory-hungry.
 
 #### `countnext`
 
