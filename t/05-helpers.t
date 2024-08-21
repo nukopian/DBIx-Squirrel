@@ -1,6 +1,7 @@
 #!perl
 use Modern::Perl;
 use Carp qw/croak/;
+use Data::Dumper::Concise;
 use Test::More;
 
 BEGIN {
@@ -22,10 +23,11 @@ subtest 'associate "db" helper with database connection' => sub {
 };
 
 subtest 'resolve "db" helper; associate "st" helper with statement' => sub {
-    my $sth = db->prepare('SELECT COUNT(*) FROM artists WHERE Name=? LIMIT 1');
+    my $sth = db->prepare('SELECT 1');
     st($sth);
     isa_ok(st, 'DBIx::Squirrel::st');
-    is(st, $sth);
+    is(st,                   $sth);
+    is(st->{mock_statement}, 'SELECT 1');
 };
 
 subtest 'resolve "st" helper; associate "itor" helper with basic iterator' => sub {
@@ -40,6 +42,12 @@ subtest 'resolve "st" helper; associate "results" helper with result-set iterato
     results($results);
     isa_ok(results, 'DBIx::Squirrel::rs');
     is(results, $results);
+};
+
+subtest 'address "st" helper' => sub {
+    my $rv = st(123);
+    is_deeply(st->{mock_params}, [123]);
+    is($rv, '0E0');
 };
 
 done_testing();
