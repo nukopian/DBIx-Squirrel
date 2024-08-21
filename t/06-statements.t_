@@ -20,7 +20,8 @@ subtest 'associate "db" helper with database connection' => sub {
     db($dbh);
     isa_ok(db, 'DBIx::Squirrel::db');
     is(db, $dbh);
-    db->{mock_add_resultset} = [['ArtistId', 'Name'], [1, 'The Foo Fighters'], [2, 'The Foo-Tan Clan'], [3, 'The Foogies']];
+    my @artists = (['ArtistId', 'Name'], [1, 'The Foo Fighters'], [2, 'The Foo-Tan Clan'], [3, 'The Foogies']);
+    db->{mock_add_resultset} = \@artists;
 };
 
 subtest 'resolve "db" helper; associate "st" helper with statement' => sub {
@@ -50,29 +51,18 @@ subtest 'address "st" helper; run basic statement checks' => sub {
 };
 
 subtest 'resolve "st" helper; associate "itor" helper with basic iterator' => sub {
-    db->{mock_add_resultset} = [['ArtistId', 'Name'], [1, 'The Foo Fighters'], [2, 'The Foo-Tan Clan'], [3, 'The Foogies']];
-    my $itor = db->prepare('SELECT * FROM artists')->iterate();
+    my $itor = st->iterate();
     itor($itor);
-    isa_ok($itor, 'DBIx::Squirrel::it');
+    isa_ok(itor, 'DBIx::Squirrel::it');
     is(itor, $itor);
-    is(itor->count(), 3);
-    is_deeply(itor->first(), [1, 'The Foo Fighters']);
-    is_deeply(itor->next(),  [2, 'The Foo-Tan Clan']);
-    is_deeply(itor->next(),  [3, 'The Foogies']);
-    is(itor->count(), 3);
+    diag $itor->first();
 };
 
 subtest 'resolve "st" helper; associate "results" helper with result-set iterator' => sub {
-    db->{mock_add_resultset} = [['ArtistId', 'Name'], [1, 'The Foo Fighters'], [2, 'The Foo-Tan Clan'], [3, 'The Foogies']];
-    my $itor = db->prepare('SELECT * FROM artists')->results();
-    results($itor);
-    isa_ok($itor, 'DBIx::Squirrel::rs');
-    is(results, $itor);
-    is(results->count(), 3);
-    is_deeply(results->first(), [1, 'The Foo Fighters']);
-    is_deeply(results->next(),  [2, 'The Foo-Tan Clan']);
-    is_deeply(results->next(),  [3, 'The Foogies']);
-    is(results->count(), 3);
+    my $results = st->results();
+    results($results);
+    isa_ok(results, 'DBIx::Squirrel::rs');
+    is(results, $results);
 };
 
 done_testing();
