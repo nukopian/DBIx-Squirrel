@@ -20,14 +20,42 @@ subtest 'associate "db" helper with database connection' => sub {
     db($dbh);
     isa_ok(db, 'DBIx::Squirrel::db');
     is(db, $dbh);
+    my @artists = (['ArtistId', 'Name'], [1, 'The Foo Fighters'], [2, 'The Foo-Tan Clan'], [3, 'The Foogies']);
+    db->{mock_add_resultset} = \@artists;
 };
 
 subtest 'resolve "db" helper; associate "st" helper with statement' => sub {
-    my $sth = db->prepare('SELECT 1');
+    my $sth = db->prepare('SELECT * FROM artists');
     st($sth);
     isa_ok(st, 'DBIx::Squirrel::st');
     is(st,                   $sth);
-    is(st->{mock_statement}, 'SELECT 1');
+    is(st->{mock_statement}, 'SELECT * FROM artists');
+};
+
+subtest 'resolve "st" helper; run basic statement checks' => sub {
+    my $rv = st->execute();
+    is($rv, '0E0');
+    is_deeply(st->{mock_params},       []);
+    is_deeply(st->fetchall_arrayref(), [[1, 'The Foo Fighters'], [2, 'The Foo-Tan Clan'], [3, 'The Foogies']]);
+    st->execute();
+    is_deeply(
+        st->fetchall_arrayref({}),
+        [   {ArtistId => 1, Name => 'The Foo Fighters'},
+            {ArtistId => 2, Name => 'The Foo-Tan Clan'},
+            {ArtistId => 3, Name => 'The Foogies'},
+        ],
+    );
+};
+
+subtest 'address "st" helper; run basic statement checks' => sub {
+    my $rv = st([]);    # Statement takes no parameters; must coerce re-execution by passing []!
+    is_deeply(
+        st->fetchall_arrayref({}),
+        [   {ArtistId => 1, Name => 'The Foo Fighters'},
+            {ArtistId => 2, Name => 'The Foo-Tan Clan'},
+            {ArtistId => 3, Name => 'The Foogies'},
+        ],
+    );
 };
 
 subtest 'resolve "st" helper; associate "itor" helper with basic iterator' => sub {
@@ -42,12 +70,6 @@ subtest 'resolve "st" helper; associate "results" helper with result-set iterato
     results($results);
     isa_ok(results, 'DBIx::Squirrel::rs');
     is(results, $results);
-};
-
-subtest 'address "st" helper' => sub {
-    my $rv = st(123);
-    is_deeply(st->{mock_params}, [123]);
-    is($rv, '0E0');
 };
 
 done_testing();
