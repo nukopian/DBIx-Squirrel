@@ -110,11 +110,8 @@ sub count {
 sub execute {
     my($attr, $self) = shift->_private;
     my $sth = $attr->{st};
-    return
-      unless $sth;
-    $self->reset
-      if $attr->{executed} || $attr->{finished};
-    $attr->{executed} = !!1;
+    return unless $sth;
+    $self->reset if $attr->{executed} || $attr->{finished};
     if (defined($sth->execute(@_ ? @_ : @{$attr->{bindvals}}))) {
         $attr->{executed}  = !!1;
         $attr->{row_count} = 0;
@@ -126,7 +123,8 @@ sub execute {
         $attr->{finished} = !!1;
         return do {$_ = '0E0'};
     }
-    $attr->{finished} = !!1;
+    $attr->{executed} = !!0;
+    $attr->{finished} = !!0;
     return do {$_ = undef};
 }
 
@@ -136,8 +134,7 @@ sub executed {
 
 sub find {
     my($attr, $self) = shift->_private;
-    $self->reset()
-      if @_;
+    $self->reset();
     my $row;
     if ($self->execute(@_)) {
         if ($row = $self->_fetch_row()) {
@@ -277,7 +274,7 @@ sub remaining {
             push @rows, $self->_fetch_row();
         }
         $attr->{row_count} += scalar(@rows);
-        $self->reset if $attr->{row_count};
+        $self->reset;
     }
     return @rows if wantarray;
     return \@rows;
@@ -336,7 +333,7 @@ sub rows {
 
 sub single {
     my($attr, $self) = shift->_private;
-    $self->reset() if @_;
+    $self->reset();
     my $row;
     if (my $count = $self->execute(@_)) {
         whine W_MORE_ROWS if $count > 1;
