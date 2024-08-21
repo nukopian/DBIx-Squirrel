@@ -8,9 +8,9 @@ BEGIN {
       unless defined($DBIx::Squirrel::VERSION);
     $DBIx::Squirrel::it::VERSION         = $DBIx::Squirrel::VERSION;
     $DBIx::Squirrel::it::DEFAULT_SLICE   = [];                         # Faster!
-    $DBIx::Squirrel::it::DEFAULT_MAXROWS = 1;                          # Initial buffer size and autoscaling increment
+    $DBIx::Squirrel::it::DEFAULT_MAXROWS = 2;                          # Initial buffer size and autoscaling increment
     $DBIx::Squirrel::it::BUF_MULT        = 2;                          # Autoscaling factor, 0 to disable autoscaling together
-    $DBIx::Squirrel::it::BUF_MAXROWS     = 8;                          # Absolute maximum buffersize
+    $DBIx::Squirrel::it::BUF_MAXROWS     = 16;                         # Absolute maximum buffersize
 }
 
 use namespace::autoclean;
