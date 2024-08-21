@@ -355,6 +355,11 @@ BEGIN {
     *DBIx::Squirrel::BUF_MAXROWS                  = *DBIx::Squirrel::it::BUF_MAXROWS;
     *DBIx::Squirrel::NORMALISE_SQL                = *DBIx::Squirrel::util::NORMALISE_SQL;
     *DBIx::Squirrel::NORMALIZE_SQL                = *DBIx::Squirrel::util::NORMALISE_SQL;
+
+    unless (defined $DBIx::Squirrel::VERSION) {
+        my $v = "1.3.0";
+        *DBIx::Squirrel::VERSION = \$v;
+    }
 }
 
 use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
@@ -1078,7 +1083,7 @@ you should still use key-value bindings if you opted for named placeholders.
     $sth = $dbh->prepare_cached($statement, \%attr, $if_active)
 
 The C<prepare_cached> method interface is identical in form to that provided
-by the C<DBI>. 
+by the C<DBI>.
 
 C<DBIx::Squirrel> permits the use of one of a number of valid placeholder
 styles (C<:name>, C<:number>, C<$number>, C<?number>, C<?>) within the
