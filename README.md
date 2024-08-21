@@ -1004,6 +1004,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
 #### `all`
 
     @ary = $itor->all();
+    $ary_ref | undef = $itor->all();
 
 Executes the iterator's underlying statement handle object.
 
@@ -1013,8 +1014,6 @@ of all matching row objects.
 When called in scalar-context, this method returns a reference to
 an array of all matching row objects. Where no rows are matched,
 `undef` would be returned.
-
-    $ary_ref | undef = $itor->all();
 
 #### `count`
 
@@ -1086,6 +1085,7 @@ Alias _(see `single`)_.
 #### `remaining`
 
     @ary = $itor->remaining();
+    $ary_ref | undef = $itor->remaining();
 
 When called in list-context, the `all` method returns an array
 of all matching row objects remaining to be fetched.
@@ -1093,8 +1093,6 @@ of all matching row objects remaining to be fetched.
 When called in scalar-context, this method returns a reference to
 an array of all matching row objects remaining to be fetched. Where
 no rows are matched, `undef` would be returned.
-
-    $ary_ref | undef = $itor->remaining();
 
 #### `reset`
 
