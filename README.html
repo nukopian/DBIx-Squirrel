@@ -103,7 +103,6 @@
               <li><a href="#one">one</a></li>
               <li><a href="#remaining">remaining</a></li>
               <li><a href="#reset">reset</a></li>
-              <li><a href="#results2">results</a></li>
               <li><a href="#rows">rows</a></li>
               <li><a href="#single">single</a></li>
               <li><a href="#statement_handle">statement_handle</a></li>
@@ -1089,11 +1088,13 @@ $itor = $sth-&gt;results(\%bind_mappings, @transforms)
 
 <pre><code>@ary = $itor-&gt;all();</code></pre>
 
+<p>Executes the iterator&#39;s underlying statement handle object.</p>
+
 <p>When called in list-context, the <code>all</code> method returns an array of all matching row objects.</p>
 
-<pre><code>$ary_ref | undef = $itor-&gt;all();</code></pre>
+<p>When called in scalar-context, this method returns a reference to an array of all matching row objects. Where no rows are matched, <code>undef</code> would be returned.</p>
 
-<p>When called in scalar-context, this method returns a reference to an array of all matching row objects. Where no rows were matched, <code>undef</code> will be returned.</p>
+<pre><code>$ary_ref | undef = $itor-&gt;all();</code></pre>
 
 <h4 id="count"><code>count</code></h4>
 
@@ -1157,9 +1158,15 @@ $itor = $sth-&gt;results(\%bind_mappings, @transforms)
 
 <h4 id="remaining"><code>remaining</code></h4>
 
-<h4 id="reset"><code>reset</code></h4>
+<pre><code>@ary = $itor-&gt;remaining();</code></pre>
 
-<h4 id="results2"><code>results</code></h4>
+<p>When called in list-context, the <code>all</code> method returns an array of all matching row objects remaining to be fetched.</p>
+
+<p>When called in scalar-context, this method returns a reference to an array of all matching row objects remaining to be fetched. Where no rows are matched, <code>undef</code> would be returned.</p>
+
+<pre><code>$ary_ref | undef = $itor-&gt;remaining();</code></pre>
+
+<h4 id="reset"><code>reset</code></h4>
 
 <h4 id="rows"><code>rows</code></h4>
 

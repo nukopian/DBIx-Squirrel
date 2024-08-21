@@ -1211,14 +1211,16 @@ It is the normalised form of the statement that is cached by the C<DBI>.
 
     @ary = $itor->all();
 
+Executes the iterator's underlying statement handle object.
+
 When called in list-context, the C<all> method returns an array
 of all matching row objects.
 
-    $ary_ref | undef = $itor->all();
-
 When called in scalar-context, this method returns a reference to
-an array of all matching row objects. Where no rows were matched,
-C<undef> will be returned.
+an array of all matching row objects. Where no rows are matched,
+C<undef> would be returned.
+
+    $ary_ref | undef = $itor->all();
 
 =head4 C<count>
 
@@ -1288,6 +1290,17 @@ or C<undef> if not.
 Alias I<(see C<single>)>.
 
 =head4 C<remaining>
+
+    @ary = $itor->remaining();
+
+When called in list-context, the C<all> method returns an array
+of all matching row objects remaining to be fetched.
+
+When called in scalar-context, this method returns a reference to
+an array of all matching row objects remaining to be fetched. Where
+no rows are matched, C<undef> would be returned.
+
+    $ary_ref | undef = $itor->remaining();
 
 =head4 C<reset>
 
