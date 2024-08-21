@@ -30,28 +30,81 @@ sub BUF_MULT () {$DBIx::Squirrel::it::BUF_MULT}
 
 sub BUF_MAXROWS () {$DBIx::Squirrel::it::BUF_MAXROWS}
 
+{
+    my %attr_by_id;
+
+    sub _private {
+        my $self = shift;
+        return unless ref($self);
+        my $id   = 0+ $self;
+        my $attr = do {
+            $attr_by_id{$id} = {} unless defined($attr_by_id{$id});
+            $attr_by_id{$id};
+        };
+        unless (@_) {
+            return $attr, $self if wantarray;
+            return $attr;
+        }
+        unless (defined($_[0])) {
+            delete $attr_by_id{$id};
+            shift;
+        }
+        if (@_) {
+            $attr_by_id{$id} = {} unless defined($attr_by_id{$id});
+            if (UNIVERSAL::isa($_[0], 'HASH')) {
+                $attr_by_id{$id} = {%{$attr}, %{$_[0]}};
+            }
+            elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                $attr_by_id{$id} = {%{$attr}, @{$_[0]}};
+            }
+            else {
+                $attr_by_id{$id} = {%{$attr}, @_};
+            }
+        }
+        return $self;
+    }
+}
+
+sub new {
+    my($callbacks, $class, $sth, @bindvals) = cbargs(@_);
+    return unless UNIVERSAL::isa($sth, 'DBI::st');
+    my $self = {};
+    bless $self, ref($class) || $class;
+    for my $k (keys(%{$sth})) {
+        if (ref($sth->{$k})) {
+            weaken($self->{$k} = $sth->{$k});
+        }
+        else {
+            $self->{$k} = $sth->{$k};
+        }
+    }
+    $self->_private({
+        id        => 0+ $self,
+        st        => $sth->_private({Iterator => $self}),
+        bindvals  => [@bindvals],
+        callbacks => $callbacks,
+        slice     => $self->_slice->{Slice},
+        maxrows   => $self->_maxrows->{MaxRows},
+    });
+    $self->finish;
+    return do {$_ = $self};
+}
+
 sub all {
     my $self = shift;
-    return unless $self->execute(@_);
-    my @rows = $self->first;
-    push @rows, $self->remaining;
+    $self->reset();
+    my @rows = $self->first();
+    push @rows, $self->remaining();
     return @rows if wantarray;
     return \@rows;
 }
 
-sub countall {
-    return do {$_ = scalar(@{shift->all(@_)})};
-}
-
-sub countnext {
-    my $self  = shift;
+sub count {
+    my $self = shift;
+    $self->reset();
     my $count = 0;
-    $count += 1 while $self->next;
+    $count += 1 while $self->next();
     return do {$_ = $count};
-}
-
-BEGIN {
-    *count = *countnext;
 }
 
 sub execute {
@@ -163,41 +216,6 @@ sub _auto_level_maxrows {
     return !!0;
 }
 
-{
-    my %attr_by_id;
-
-    sub _private {
-        my $self = shift;
-        return unless ref($self);
-        my $id   = 0+ $self;
-        my $attr = do {
-            $attr_by_id{$id} = {} unless defined($attr_by_id{$id});
-            $attr_by_id{$id};
-        };
-        unless (@_) {
-            return $attr, $self if wantarray;
-            return $attr;
-        }
-        unless (defined($_[0])) {
-            delete $attr_by_id{$id};
-            shift;
-        }
-        if (@_) {
-            $attr_by_id{$id} = {} unless defined($attr_by_id{$id});
-            if (UNIVERSAL::isa($_[0], 'HASH')) {
-                $attr_by_id{$id} = {%{$attr}, %{$_[0]}};
-            }
-            elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                $attr_by_id{$id} = {%{$attr}, @{$_[0]}};
-            }
-            else {
-                $attr_by_id{$id} = {%{$attr}, @_};
-            }
-        }
-        return $self;
-    }
-}
-
 sub _fetch {
     my($attr, $self) = shift->_private;
     my($sth, $slice, $maxrows, $buf_limit) = @{$attr}{qw/st slice maxrows buf_limit/};
@@ -245,31 +263,6 @@ sub _fetch_row {
     return $head;
 }
 
-sub new {
-    my($callbacks, $class, $sth, @bindvals) = cbargs(@_);
-    return unless UNIVERSAL::isa($sth, 'DBI::st');
-    my $self = {};
-    bless $self, ref($class) || $class;
-    for my $k (keys(%{$sth})) {
-        if (ref($sth->{$k})) {
-            weaken($self->{$k} = $sth->{$k});
-        }
-        else {
-            $self->{$k} = $sth->{$k};
-        }
-    }
-    $self->_private({
-        id        => 0+ $self,
-        st        => $sth->_private({Iterator => $self}),
-        bindvals  => [@bindvals],
-        callbacks => $callbacks,
-        slice     => $self->_slice->{Slice},
-        maxrows   => $self->_maxrows->{MaxRows},
-    });
-    $self->finish;
-    return do {$_ = $self};
-}
-
 sub next {
     my $self = shift;
     $self->_slice_maxrows(@_) if @_;
@@ -279,9 +272,9 @@ sub next {
 sub remaining {
     my($attr, $self) = shift->_private;
     my @rows;
-    unless ($self->_no_more_rows) {
+    unless ($self->_no_more_rows()) {
         until ($attr->{finished}) {
-            push @rows, $self->_fetch_row;
+            push @rows, $self->_fetch_row();
         }
         $attr->{row_count} += scalar(@rows);
         $self->reset if $attr->{row_count};

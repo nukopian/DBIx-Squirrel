@@ -1228,26 +1228,10 @@ C<undef> would be returned.
 
 =head4 C<count>
 
-Alias I<(see C<countnext>)>.
+    $count = $itor->count();
 
-=head4 C<countall>
-
-    $count = $itor->countall();
-
-Returns the number of matching rows by calculating the size of the
-array that would be created when calling the C<all> method.
-
-Of the two counting methods, this may be the fastest but it is also
-the most memory-hungry.
-
-=head4 C<countnext>
-
-    $count = $itor->countnext();
-
-Returns the number of matching rows by counting the number of times
-C<next> can be called.
-
-Of the two counting methods, this may be the least memory-hungry.
+Returns the number of rows by counting the number of times C<next>
+can be called.
 
 =head4 C<done>
 
