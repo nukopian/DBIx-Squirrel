@@ -872,7 +872,7 @@ you should still use key-value bindings if you opted for named placeholders.
     $sth = $dbh->prepare_cached($statement, \%attr, $if_active)
 
 The `prepare_cached` method interface is identical in form to that provided
-by the `DBI`. 
+by the `DBI`.
 
 `DBIx::Squirrel` permits the use of one of a number of valid placeholder
 styles (`:name`, `:number`, `$number`, `?number`, `?`) within the
