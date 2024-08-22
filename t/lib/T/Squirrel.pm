@@ -1,11 +1,11 @@
 use Modern::Perl;
 
-package Test::DBIx::Squirrel;
+package T::Squirrel;
 
 BEGIN {
     require Exporter;
-    @Test::DBIx::Squirrel::ISA         = qw/Exporter/;
-    %Test::DBIx::Squirrel::EXPORT_TAGS = (var => [
+    @T::Squirrel::ISA         = qw/Exporter/;
+    %T::Squirrel::EXPORT_TAGS = (var => [
         qw/
           $TEST_LIB_DIR
           $TEST_DATA_DIR
@@ -23,9 +23,9 @@ BEGIN {
           @TEST_DB_CONNECT_ARGS
           /
     ]);
-    $Test::DBIx::Squirrel::EXPORT_TAGS{all} = [@{$Test::DBIx::Squirrel::EXPORT_TAGS{var}}];
-    @Test::DBIx::Squirrel::EXPORT_OK = @{$Test::DBIx::Squirrel::EXPORT_TAGS{all}};
-    @Test::DBIx::Squirrel::EXPORT = @{$Test::DBIx::Squirrel::EXPORT_TAGS{var}};
+    $T::Squirrel::EXPORT_TAGS{all} = [@{$T::Squirrel::EXPORT_TAGS{var}}];
+    @T::Squirrel::EXPORT_OK        = @{$T::Squirrel::EXPORT_TAGS{all}};
+    @T::Squirrel::EXPORT           = @{$T::Squirrel::EXPORT_TAGS{var}};
 }
 
 use Cwd qw/realpath/;
@@ -37,7 +37,7 @@ our $TEST_LIB_DIR = do {
     $module =~ s/\::/\//g;
     my $path = __FILE__;
     $path =~ s/\/$module\.pm$//i;
-    realpath($path);
+    realpath("$path");
 };
 our $TEST_DATA_DIR = realpath("$TEST_LIB_DIR/../data");
 

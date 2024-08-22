@@ -1,5 +1,5 @@
-#!perl
 use Modern::Perl;
+use open ':std', ':encoding(utf8)';
 use Test::More;
 
 BEGIN {

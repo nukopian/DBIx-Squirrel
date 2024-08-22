@@ -47,10 +47,10 @@ sub _private {
     return $self;
 }
 
-sub _map_placeholders_to_values {
+sub _placeholder_mappings {
     my $placeholders = shift;
     my @mappings     = do {
-        if (_placeholders_are_positional($placeholders)) {
+        if (_positional_placeholders($placeholders)) {
             map {($placeholders->{$_} => $_[$_ - 1])} keys(%{$placeholders});
         }
         else {
@@ -74,16 +74,16 @@ sub _map_placeholders_to_values {
     return \@mappings;
 }
 
-sub _placeholders_are_positional {
+sub _positional_placeholders {
     my $placeholders = shift;
     return
       unless UNIVERSAL::isa($placeholders, 'HASH');
     my @placeholders                    = values(%{$placeholders});
     my $total_count                     = @placeholders;
     my $count                           = grep {m/^[\:\$\?]\d+$/} @placeholders;
-    my $all_placeholders_are_positional = $count == $total_count;
+    my $all_positional_placeholders = $count == $total_count;
     return $placeholders
-      if $all_placeholders_are_positional;
+      if $all_positional_placeholders;
     return;
 }
 
@@ -122,8 +122,8 @@ sub bind {
     my($attr, $self) = shift->_private;
     if (@_) {
         my $placeholders = $attr->{Placeholders};
-        if ($placeholders && !_placeholders_are_positional($placeholders)) {
-            if (my %kv = @{_map_placeholders_to_values($placeholders, @_)}) {
+        if ($placeholders && !_positional_placeholders($placeholders)) {
+            if (my %kv = @{_placeholder_mappings($placeholders, @_)}) {
                 while (my($k, $v) = each(%kv)) {
                     if ($k =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
                         throw E_INVALID_PLACEHOLDER, $k
@@ -154,10 +154,10 @@ sub bind {
 
 sub execute {
     my $self = shift;
-    $self->finish
-      if $FINISH_ACTIVE_BEFORE_EXECUTE && $self->{Active};
-    $self->bind(@_)
-      if @_;
+    if ($FINISH_ACTIVE_BEFORE_EXECUTE) {
+        $self->finish if $self->{Active};
+    }
+    $self->bind(@_) if @_;
     return $self->SUPER::execute;
 }
 

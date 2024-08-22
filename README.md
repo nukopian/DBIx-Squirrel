@@ -1017,54 +1017,16 @@ an array of all matching row objects. Where no rows are matched,
 
 #### `count`
 
-Alias _(see `countnext`)_.
+    $count = $itor->count();
 
-#### `countall`
-
-    $count = $itor->countall();
-
-Returns the number of matching rows by calculating the size of the
-array that would be created when calling the `all` method.
-
-Of the two counting methods, this may be the fastest but it is also
-the most memory-hungry.
-
-#### `countnext`
-
-    $count = $itor->countnext();
-
-Returns the number of matching rows by counting the number of times
-`next` can be called.
-
-Of the two counting methods, this may be the least memory-hungry.
-
-#### `done`
-
-Alias _(see `finished`)_.
+Returns the number of rows by counting the number of times `next`
+can be called.
 
 #### `execute`
 
     $rv = $itor->execute());
 
 Executes the iterator's underlying statemeent handle object.
-
-#### `executed`
-
-    $bool = $itor->executed();
-
-Returns true (`!!1`) if the underlying statement has been executed,
-otherwise it returns false (`!!0`).
-
-#### `find`
-
-#### `finish`
-
-#### `finished`
-
-    $bool = $itor->finished();
-
-Returns true (`!!1`) if all matching rows have been fetched,
-otherwise it returns false (`!!0`).
 
 #### `first`
 
@@ -1104,16 +1066,12 @@ Returns the number of rows aftected by non-SELECT statements.
 
 #### `single`
 
-#### `statement_handle`
+#### `sth`
 
-    $sth = $itor->statement_handle();
+    $sth = $itor->sth();
 
 Returns a reference to the statement handle object associated with
 the iterator.
-
-#### `sth`
-
-Alias _(see `statement_handle`)_.
 
 # COPYRIGHT AND LICENSE
 

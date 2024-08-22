@@ -350,9 +350,8 @@ BEGIN {
     *DBIx::Squirrel::connect_cached               = *DBIx::Squirrel::dr::connect_cached;
     *DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE = *DBIx::Squirrel::st::FINISH_ACTIVE_BEFORE_EXECUTE;
     *DBIx::Squirrel::DEFAULT_SLICE                = *DBIx::Squirrel::it::DEFAULT_SLICE;
-    *DBIx::Squirrel::DEFAULT_MAXROWS              = *DBIx::Squirrel::it::DEFAULT_MAXROWS;
-    *DBIx::Squirrel::BUF_MULT                     = *DBIx::Squirrel::it::BUF_MULT;
-    *DBIx::Squirrel::BUF_MAXROWS                  = *DBIx::Squirrel::it::BUF_MAXROWS;
+    *DBIx::Squirrel::DEFAULT_BUFFER_SIZE          = *DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE;
+    *DBIx::Squirrel::BUFFER_SIZE_LIMIT            = *DBIx::Squirrel::it::BUFFER_SIZE_LIMIT;
     *DBIx::Squirrel::NORMALISE_SQL                = *DBIx::Squirrel::util::NORMALISE_SQL;
     *DBIx::Squirrel::NORMALIZE_SQL                = *DBIx::Squirrel::util::NORMALISE_SQL;
 
@@ -1233,33 +1232,11 @@ C<undef> would be returned.
 Returns the number of rows by counting the number of times C<next>
 can be called.
 
-=head4 C<done>
-
-Alias I<(see C<finished>)>.
-
 =head4 C<execute>
 
     $rv = $itor->execute());
 
 Executes the iterator's underlying statemeent handle object.
-
-=head4 C<executed>
-
-    $bool = $itor->executed();
-
-Returns true (C<!!1>) if the underlying statement has been executed,
-otherwise it returns false (C<!!0>).
-
-=head4 C<find>
-
-=head4 C<finish>
-
-=head4 C<finished>
-
-    $bool = $itor->finished();
-
-Returns true (C<!!1>) if all matching rows have been fetched,
-otherwise it returns false (C<!!0>).
 
 =head4 C<first>
 
@@ -1299,16 +1276,12 @@ Returns the number of rows aftected by non-SELECT statements.
 
 =head4 C<single>
 
-=head4 C<statement_handle>
+=head4 C<sth>
 
-    $sth = $itor->statement_handle();
+    $sth = $itor->sth();
 
 Returns a reference to the statement handle object associated with
 the iterator.
-
-=head4 C<sth>
-
-Alias I<(see C<statement_handle>)>.
 
 =head1 COPYRIGHT AND LICENSE
 

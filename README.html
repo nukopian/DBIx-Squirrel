@@ -89,14 +89,7 @@
             <ul>
               <li><a href="#all">all</a></li>
               <li><a href="#count">count</a></li>
-              <li><a href="#countall">countall</a></li>
-              <li><a href="#countnext">countnext</a></li>
-              <li><a href="#done">done</a></li>
               <li><a href="#execute1">execute</a></li>
-              <li><a href="#executed">executed</a></li>
-              <li><a href="#find">find</a></li>
-              <li><a href="#finish">finish</a></li>
-              <li><a href="#finished">finished</a></li>
               <li><a href="#first">first</a></li>
               <li><a href="#iterate2">iterate</a></li>
               <li><a href="#next">next</a></li>
@@ -105,7 +98,6 @@
               <li><a href="#reset">reset</a></li>
               <li><a href="#rows">rows</a></li>
               <li><a href="#single">single</a></li>
-              <li><a href="#statement_handle">statement_handle</a></li>
               <li><a href="#sth">sth</a></li>
             </ul>
           </li>
@@ -1097,49 +1089,15 @@ $ary_ref | undef = $itor-&gt;all();</code></pre>
 
 <h4 id="count"><code>count</code></h4>
 
-<p>Alias <i>(see <code>countnext</code>)</i>.</p>
+<pre><code>$count = $itor-&gt;count();</code></pre>
 
-<h4 id="countall"><code>countall</code></h4>
-
-<pre><code>$count = $itor-&gt;countall();</code></pre>
-
-<p>Returns the number of matching rows by calculating the size of the array that would be created when calling the <code>all</code> method.</p>
-
-<p>Of the two counting methods, this may be the fastest but it is also the most memory-hungry.</p>
-
-<h4 id="countnext"><code>countnext</code></h4>
-
-<pre><code>$count = $itor-&gt;countnext();</code></pre>
-
-<p>Returns the number of matching rows by counting the number of times <code>next</code> can be called.</p>
-
-<p>Of the two counting methods, this may be the least memory-hungry.</p>
-
-<h4 id="done"><code>done</code></h4>
-
-<p>Alias <i>(see <code>finished</code>)</i>.</p>
+<p>Returns the number of rows by counting the number of times <code>next</code> can be called.</p>
 
 <h4 id="execute1"><code>execute</code></h4>
 
 <pre><code>$rv = $itor-&gt;execute());</code></pre>
 
 <p>Executes the iterator&#39;s underlying statemeent handle object.</p>
-
-<h4 id="executed"><code>executed</code></h4>
-
-<pre><code>$bool = $itor-&gt;executed();</code></pre>
-
-<p>Returns true (<code>!!1</code>) if the underlying statement has been executed, otherwise it returns false (<code>!!0</code>).</p>
-
-<h4 id="find"><code>find</code></h4>
-
-<h4 id="finish"><code>finish</code></h4>
-
-<h4 id="finished"><code>finished</code></h4>
-
-<pre><code>$bool = $itor-&gt;finished();</code></pre>
-
-<p>Returns true (<code>!!1</code>) if all matching rows have been fetched, otherwise it returns false (<code>!!0</code>).</p>
 
 <h4 id="first"><code>first</code></h4>
 
@@ -1174,15 +1132,11 @@ $ary_ref | undef = $itor-&gt;remaining();</code></pre>
 
 <h4 id="single"><code>single</code></h4>
 
-<h4 id="statement_handle"><code>statement_handle</code></h4>
-
-<pre><code>$sth = $itor-&gt;statement_handle();</code></pre>
-
-<p>Returns a reference to the statement handle object associated with the iterator.</p>
-
 <h4 id="sth"><code>sth</code></h4>
 
-<p>Alias <i>(see <code>statement_handle</code>)</i>.</p>
+<pre><code>$sth = $itor-&gt;sth();</code></pre>
+
+<p>Returns a reference to the statement handle object associated with the iterator.</p>
 
 <h1 id="COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</h1>
 

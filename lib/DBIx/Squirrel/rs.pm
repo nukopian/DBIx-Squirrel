@@ -19,12 +19,12 @@ sub _fetch_row {
     return
       if $self->_no_more_rows;
     return
-      if $self->_is_empty and not $self->_fetch;
+      if $self->_buffer_empty and not $self->_charge_buffer;
     my($head, @tail) = @{$attr->{buffer}};
     $attr->{buffer}     = \@tail;
     $attr->{row_count} += 1;
     return $self->_transform($self->_rebless($head))
-      if @{$attr->{callbacks}};
+      if @{$attr->{transforms}};
     return $self->_rebless($head);
 }
 
@@ -56,11 +56,11 @@ sub _undef_autoloaded_accessors {
     return $self;
 }
 
-sub _slice {
+sub slice {
     my($attr, $self) = shift->_private;
     my $slice = shift;
     my $old   = defined($attr->{slice}) ? $attr->{slice} : '';
-    $self->SUPER::_slice($slice);
+    $self->SUPER::slice($slice);
     if (my $new = defined($attr->{slice}) ? $attr->{slice} : '') {
         $self->_undef_autoloaded_accessors
           if ref($new) ne ref($old) && %{$self->row_class . '::'};
