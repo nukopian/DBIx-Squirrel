@@ -16,7 +16,7 @@ use namespace::autoclean;
 use Data::Alias  qw/alias/;
 use Scalar::Util qw/weaken/;
 use Sub::Name;
-use DBIx::Squirrel::util qw/throw transform whine/;
+use DBIx::Squirrel::util qw/part_args throw transform whine/;
 
 use constant E_BAD_STH         => 'Expected a statement handle object';
 use constant E_BAD_SLICE       => 'Slice must be a reference to an ARRAY or HASH';
@@ -77,7 +77,7 @@ sub DESTROY {
 
 sub new {
     my $class = ref($_[0]) ? ref(shift) : shift;
-    my($transforms, $sth, @bind_values) = DBIx::Squirrel::util::part_args(@_);
+    my($transforms, $sth, @bind_values) = part_args(@_);
     throw E_BAD_STH unless UNIVERSAL::isa($sth, 'DBIx::Squirrel::st');
     my $self = bless({}, $class);
     alias $self->{$_} = $sth->{$_} foreach qw/
@@ -296,7 +296,7 @@ sub count {
 sub execute {
     my($attr, $self) = shift->_private;
     my $sth = $attr->{sth};
-    my($transforms, @bind_values) = DBIx::Squirrel::util::part_args(@_);
+    my($transforms, @bind_values) = part_args(@_);
     if (@{$transforms}) {
         $attr->{transforms} = $transforms;
     }
