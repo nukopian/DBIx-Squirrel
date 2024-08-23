@@ -3,6 +3,8 @@ use Modern::Perl;
 package    # hide from PAUSE
   DBIx::Squirrel::st;
 
+use namespace::autoclean;
+
 BEGIN {
     require DBIx::Squirrel
       unless defined($DBIx::Squirrel::VERSION);
@@ -10,7 +12,6 @@ BEGIN {
     @DBIx::Squirrel::st::ISA     = 'DBI::st';
 }
 
-use namespace::autoclean;
 use DBIx::Squirrel::util qw/throw whine/;
 
 use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';
@@ -78,9 +79,9 @@ sub _positional_placeholders {
     my $placeholders = shift;
     return
       unless UNIVERSAL::isa($placeholders, 'HASH');
-    my @placeholders                    = values(%{$placeholders});
-    my $total_count                     = @placeholders;
-    my $count                           = grep {m/^[\:\$\?]\d+$/} @placeholders;
+    my @placeholders                = values(%{$placeholders});
+    my $total_count                 = @placeholders;
+    my $count                       = grep {m/^[\:\$\?]\d+$/} @placeholders;
     my $all_positional_placeholders = $count == $total_count;
     return $placeholders
       if $all_positional_placeholders;

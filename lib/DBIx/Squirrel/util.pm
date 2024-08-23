@@ -3,6 +3,13 @@ use Modern::Perl;
 package    # hide from PAUSE
   DBIx::Squirrel::util;
 
+use Carp;
+use Data::Dumper::Concise;
+use Digest::SHA qw/sha256_base64/;
+use Memoize;
+use Scalar::Util;
+use Sub::Name;
+
 BEGIN {
     require Exporter;
     @DBIx::Squirrel::util::ISA         = 'Exporter';
@@ -23,13 +30,6 @@ BEGIN {
         ]
     };
 }
-
-use Carp ();
-use Data::Dumper::Concise;
-use Digest::SHA qw/sha256_base64/;
-use Memoize;
-use Scalar::Util ();
-use Sub::Name    ();
 
 use constant E_EXP_STATEMENT => 'Expected a statement';
 use constant E_EXP_STH       => 'Expected a statement handle';

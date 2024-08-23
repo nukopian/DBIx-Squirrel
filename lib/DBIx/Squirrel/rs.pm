@@ -3,16 +3,16 @@ use Modern::Perl;
 package    # hide from PAUSE
   DBIx::Squirrel::rs;
 
+use namespace::autoclean;
+use Scalar::Util qw/weaken/;
+use Sub::Name;
+
 BEGIN {
     require DBIx::Squirrel
       unless defined($DBIx::Squirrel::VERSION);
     $DBIx::Squirrel::rs::VERSION = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::rs::ISA     = 'DBIx::Squirrel::it';
 }
-
-use namespace::autoclean;
-use Scalar::Util qw/weaken/;
-use Sub::Name;
 
 sub _fetch_row {
     my($attr, $self) = shift->_private;
