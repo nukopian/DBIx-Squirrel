@@ -43,8 +43,7 @@ sub _rebless {
             weaken(my $results = $self);
             subname($results_fn => sub {$results});
         };
-        my $result_class = $self->result_class;
-        @{$row_class . '::ISA'} = ($result_class);
+        @{$row_class . '::ISA'} = ($self->result_class);
     }
     return $row_class->new(shift);
 }
