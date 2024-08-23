@@ -77,7 +77,7 @@ sub DESTROY {
 
 sub new {
     my $class = ref($_[0]) ? ref(shift) : shift;
-    my($transforms, $sth, @bind_values) = DBIx::Squirrel::util::cbargs(@_);
+    my($transforms, $sth, @bind_values) = DBIx::Squirrel::util::part_args(@_);
     throw E_BAD_STH unless UNIVERSAL::isa($sth, 'DBIx::Squirrel::st');
     my $self = bless({}, $class);
     alias $self->{$_} = $sth->{$_} foreach qw/

@@ -160,12 +160,12 @@ sub hash_sql_string {
     };
 }
 
-sub cbargs {
-    return cbargs_using([], @_);
+sub part_args {
+    return part_args_using([], @_);
 }
 
-sub cbargs_using {
-    my($c, @t) = do {
+sub part_args_using {
+    my($coderefs, @args) = do {
         if (defined($_[0])) {
             if (UNIVERSAL::isa($_[0], 'ARRAY')) {
                 @_;
@@ -182,8 +182,8 @@ sub cbargs_using {
             [], @_;
         }
     };
-    unshift @{$c}, pop @t while UNIVERSAL::isa($t[$#t], 'CODE');
-    return $c, @t;
+    unshift @{$coderefs}, pop @args while UNIVERSAL::isa($args[$#args], 'CODE');
+    return $coderefs, @args;
 }
 
 our $_result;
