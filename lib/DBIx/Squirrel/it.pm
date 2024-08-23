@@ -136,9 +136,8 @@ sub _buffer_empty {
 # Where rows are buffered until fetched.
 sub _buffer_init {
     my($attr, $self) = shift->_private;
-    my $key = 'buffer';
     if ($self->{NUM_OF_FIELDS}) {
-        $attr->{$key} = @_ ? shift : [];
+        $attr->{buffer} = @_ ? shift : [];
     }
     return $self;
 }
@@ -153,9 +152,8 @@ sub _buffer_size_adjust {
 # How many rows to buffer at a time.
 sub _buffer_size_init {
     my($attr, $self) = shift->_private;
-    my $key = 'buffer_size';
     if ($self->{NUM_OF_FIELDS}) {
-        $attr->{$key} = @_ ? shift : DEFAULT_BUFFER_SIZE;
+        $attr->{buffer_size} = DEFAULT_BUFFER_SIZE;
     }
     return $self;
 }
@@ -163,9 +161,8 @@ sub _buffer_size_init {
 # The total number of rows fetched since execute was called.
 sub _results_count_init {
     my($attr, $self) = shift->_private;
-    my $key = 'results_count';
     if ($self->{NUM_OF_FIELDS}) {
-        $attr->{$key} = @_ ? shift : 0;
+        $attr->{results_count} = 0;
     }
     return $self;
 }
