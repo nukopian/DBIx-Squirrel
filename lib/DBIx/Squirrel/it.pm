@@ -192,7 +192,8 @@ sub _init_state {
 
 # Where rows are buffered until fetched.
 sub _init_buffer {
-    my($attr, $self, $key) = (shift->_private, 'buffer');
+    my($attr, $self) = shift->_private;
+    my $key = 'buffer';
     if ($self->{NUM_OF_FIELDS}) {
         $attr->{$key} = @_ ? shift : [];
     }
@@ -201,7 +202,8 @@ sub _init_buffer {
 
 # Where excess results produced by transforms wait for collection.
 sub _init_excess {
-    my($attr, $self, $key) = (shift->_private, 'excess');
+    my($attr, $self) = shift->_private;
+    my $key = 'excess';
     if ($self->{NUM_OF_FIELDS}) {
         $attr->{$key} = @_ ? shift : [];
     }
@@ -210,7 +212,8 @@ sub _init_excess {
 
 # How many rows to buffer at a time.
 sub _init_buffer_size {
-    my($attr, $self, $key) = (shift->_private, 'buffer_size');
+    my($attr, $self) = shift->_private;
+    my $key = 'buffer_size';
     if ($self->{NUM_OF_FIELDS}) {
         $attr->{$key} = @_ ? shift : DEFAULT_BUFFER_SIZE;
     }
@@ -220,7 +223,8 @@ sub _init_buffer_size {
 # The total number of rows fetched (not buffered) since the last time the
 # execute method was called.
 sub _init_count_fetched {
-    my($attr, $self, $key) = (shift->_private, 'count_fetched');
+    my($attr, $self) = shift->_private;
+    my $key = 'count_fetched';
     if ($self->{NUM_OF_FIELDS}) {
         $attr->{$key} = @_ ? shift : 0;
     }
