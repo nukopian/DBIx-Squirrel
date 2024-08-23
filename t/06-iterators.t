@@ -8,38 +8,46 @@ use lib "$Bin/lib";
 
 BEGIN {
     use_ok('DBIx::Squirrel', database_entities => [qw/db artist artists/]) || print "Bail out!\n";
-    use_ok('T::Squirrel')                                                  || print "Bail out!\n";
+    use_ok('T::Squirrel',    qw/:var diagdump/)                            || print "Bail out!\n";
 }
 
 diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 
-sub foo {$_[0]}
+# Filter out artists whose ArtistId is outside the 128...131 range.
+sub filter {($_->[0] < 128 or $_->[0] > 131) ? () : $_}
+
+# Inject some additional (pending) results for the artist whose ArtistId is 128,
+# else just return the artist's Name-field.
+sub artist_name {($_->[0] == 128) ? ($_->[1], 'Envy of None', 'Alex Lifeson') : $_->[1]}
 
 subtest 'basic checks' => sub {
     db(DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS));
     artist(db->iterate('SELECT * FROM artists WHERE ArtistId=? LIMIT 1'));
-    artists(db->iterate('SELECT * FROM artists ORDER BY ArtistId LIMIT 5'));
-    my $artist  = artist->_private;
-    my $artists = artists->_private;
+    my $artist = artist->_private;
 
-    is_deeply($artist->{init_bind_values}, [], 'init_bind_values ok');
+    is_deeply($artist->{bind_values_initial}, [], 'bind_values_initial ok');
     ok(!exists($artist->{bind_values}), 'bind_values ok');
-    is_deeply($artist->{init_transforms}, [], 'init_transforms ok');
+    is_deeply($artist->{transforms_initial}, [], 'transforms_initial ok');
     ok(!exists($artist->{transforms}), 'transforms ok');
 
     artist->iterate(128);
-    is_deeply($artist->{init_bind_values}, [],                         'init_bind_values ok');
-    is_deeply($artist->{bind_values},      [128],                      'bind_values ok');
-    is_deeply($artist->{init_transforms},  [],                         'init_transforms ok');
-    is_deeply($artist->{transforms},       $artist->{init_transforms}, 'transforms ok');
+    is_deeply($artist->{bind_values_initial}, [],                            'bind_values_initial ok');
+    is_deeply($artist->{bind_values},         [128],                         'bind_values ok');
+    is_deeply($artist->{transforms_initial},  [],                            'transforms_initial ok');
+    is_deeply($artist->{transforms},          $artist->{transforms_initial}, 'transforms ok');
 
-    artist->iterate(128, \&foo)->next;
-    is_deeply($artist->{init_bind_values}, [],      'init_bind_values ok');
-    is_deeply($artist->{bind_values},      [128],   'bind_values ok');
-    is_deeply($artist->{init_transforms},  [],      'init_transforms ok');
-    is_deeply($artist->{transforms},       [\&foo], 'transforms ok');
+    artist->iterate(128)->next;
+    is_deeply($artist->{bind_values_initial}, [],    'bind_values_initial ok');
+    is_deeply($artist->{bind_values},         [128], 'bind_values ok');
 
-    artists->slice([])->iterate(\&foo)->all;
+    artists(db->iterate('SELECT * FROM artists ORDER BY ArtistId' => \&filter => \&artist_name));
+    my $artists = artists->_private;
+
+    my $results  = artists->all;
+    my $expected = ['Rush', 'Envy of None', 'Alex Lifeson', 'Simply Red', 'Skank', 'Smashing Pumpkins'];
+    is_deeply($results, $expected, 'iteration, filtering, injection ok');
+    
+    diagdump({artists => artists, state => $artists, results => $results});
 };
 
 done_testing();
