@@ -167,7 +167,9 @@ sub iterate {
 }
 
 BEGIN {
-    *iterator = *it = \&iterate;
+    *iterator = subname(iterator => \&iterate);
+    *itor     = subname(itor     => \&iterate);
+    *it       = subname(it       => \&iterate);
 }
 
 sub results {
@@ -175,7 +177,9 @@ sub results {
 }
 
 BEGIN {
-    *resultset = *rs = \&results;
+    *resultset = subname(resultset => \&results);
+    *rset      = subname(rset      => \&results);
+    *rs        = subname(rs        => \&results);
 }
 
 1;
