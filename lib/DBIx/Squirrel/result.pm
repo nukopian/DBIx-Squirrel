@@ -39,17 +39,17 @@ sub get_column {
     return unless defined($name);
     if (UNIVERSAL::isa($self, 'ARRAY')) {
         throw E_STH_EXPIRED unless my $sth = $self->rs->sth;
-        my $idx = $sth->{NAME_lc_hash}{lc($name)};
-        throw E_UNKNOWN_COLUMN, $name unless defined($idx);
-        return $self->[$idx];
+        my $n = $sth->{NAME_lc_hash}{lc($name)};
+        throw E_UNKNOWN_COLUMN, $name unless defined($n);
+        return $self->[$n];
     }
     else {
         throw E_BAD_OBJECT unless UNIVERSAL::isa($self, 'HASH');
         return $self->{$name} if exists($self->{$name});
         local($_);
-        my($idx) = grep {lc eq $_[1]} keys(%{$self});
-        throw E_UNKNOWN_COLUMN, $name unless defined($idx);
-        return $self->{$idx};
+        my($n) = grep {lc eq $_[1]} keys(%{$self});
+        throw E_UNKNOWN_COLUMN, $name unless defined($n);
+        return $self->{$n};
     }
 }
 
@@ -78,9 +78,9 @@ sub AUTOLOAD {
         # to have the resulting accessor be as fast as it can be!
         if (UNIVERSAL::isa($self, 'ARRAY')) {
             throw E_STH_EXPIRED unless my $sth = $self->rs->sth;
-            my $idx = $sth->{NAME_lc_hash}{lc($name)};
-            throw E_UNKNOWN_COLUMN, $name unless defined($idx);
-            sub {$_[0][$idx]};
+            my $n = $sth->{NAME_lc_hash}{lc($name)};
+            throw E_UNKNOWN_COLUMN, $name unless defined($n);
+            sub {$_[0][$n]};
         }
         elsif (UNIVERSAL::isa($self, 'HASH')) {
             if (exists($self->{$name})) {
@@ -88,9 +88,9 @@ sub AUTOLOAD {
             }
             else {
                 local($_);
-                my($idx) = grep {lc eq $name} keys(%{$self});
-                throw E_UNKNOWN_COLUMN, $name unless defined($idx);
-                sub {$_[0]{$idx}};
+                my($n) = grep {lc eq $name} keys(%{$self});
+                throw E_UNKNOWN_COLUMN, $name unless defined($n);
+                sub {$_[0]{$n}};
             }
         }
         else {
