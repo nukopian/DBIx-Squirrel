@@ -7,9 +7,9 @@ BEGIN {
     require Exporter;
     @DBIx::Squirrel::util::ISA         = 'Exporter';
     %DBIx::Squirrel::util::EXPORT_TAGS = (
-        constants   => ['E_EXP_STATEMENT', 'E_EXP_STH',    'E_EXP_REF',],
-        diagnostics => ['Dumper',          'throw',        'whine',],
-        transform   => ['cbargs',          'cbargs_using', 'transform',],
+        constants   => ['E_EXP_STATEMENT', 'E_EXP_STH',       'E_EXP_REF',],
+        diagnostics => ['Dumper',          'throw',           'whine',],
+        transform   => ['part_args',       'part_args_using', 'transform',],
         sql => ['get_trimmed_sql_and_digest', 'normalise_statement', 'study_statement', 'trim_sql_string', 'hash_sql_string',],
     );
     @DBIx::Squirrel::util::EXPORT_OK = @{
@@ -212,7 +212,7 @@ sub transform {
         }
     }
     return @_         if wantarray;
-    return scalar(@_) if @_ > 1;
+    return scalar(@_) if @_;
     return do {$_ = $_[0]};
 }
 
