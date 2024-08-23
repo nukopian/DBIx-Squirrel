@@ -48,10 +48,23 @@ sub _private {
     return $self;
 }
 
-sub _placeholder_mappings {
+sub _placeholders_confirm_positional {
+    my $placeholders = shift;
+    return
+      unless UNIVERSAL::isa($placeholders, 'HASH');
+    my @placeholders                        = values(%{$placeholders});
+    my $total_count                         = @placeholders;
+    my $count                               = grep {m/^[\:\$\?]\d+$/} @placeholders;
+    my $all_placeholders_confirm_positional = $count == $total_count;
+    return $placeholders
+      if $all_placeholders_confirm_positional;
+    return;
+}
+
+sub _placeholders_map_to_values {
     my $placeholders = shift;
     my @mappings     = do {
-        if (_positional_placeholders($placeholders)) {
+        if (_placeholders_confirm_positional($placeholders)) {
             map {($placeholders->{$_} => $_[$_ - 1])} keys(%{$placeholders});
         }
         else {
@@ -75,17 +88,38 @@ sub _placeholder_mappings {
     return \@mappings;
 }
 
-sub _positional_placeholders {
-    my $placeholders = shift;
-    return
-      unless UNIVERSAL::isa($placeholders, 'HASH');
-    my @placeholders                = values(%{$placeholders});
-    my $total_count                 = @placeholders;
-    my $count                       = grep {m/^[\:\$\?]\d+$/} @placeholders;
-    my $all_positional_placeholders = $count == $total_count;
-    return $placeholders
-      if $all_positional_placeholders;
-    return;
+sub bind {
+    my($attr, $self) = shift->_private;
+    if (@_) {
+        my $placeholders = $attr->{Placeholders};
+        if ($placeholders && !_placeholders_confirm_positional($placeholders)) {
+            if (my %kv = @{_placeholders_map_to_values($placeholders, @_)}) {
+                while (my($k, $v) = each(%kv)) {
+                    if ($k =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
+                        throw E_INVALID_PLACEHOLDER, $k
+                          unless $+{bind_id};
+                        $self->bind_param($+{bind_id}, $v);
+                    }
+                    else {
+                        $self->bind_param($k, $v);
+                    }
+                }
+            }
+        }
+        else {
+            if (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                for my $bind_id (1 .. scalar(@{$_[0]})) {
+                    $self->bind_param($bind_id, $_[0][$bind_id - 1]);
+                }
+            }
+            else {
+                for my $bind_id (1 .. scalar(@_)) {
+                    $self->bind_param($bind_id, $_[$bind_id - 1]);
+                }
+            }
+        }
+    }
+    return $self;
 }
 
 sub bind_param {
@@ -117,40 +151,6 @@ sub bind_param {
     return @bind_param_args
       if wantarray;
     return \@bind_param_args;
-}
-
-sub bind {
-    my($attr, $self) = shift->_private;
-    if (@_) {
-        my $placeholders = $attr->{Placeholders};
-        if ($placeholders && !_positional_placeholders($placeholders)) {
-            if (my %kv = @{_placeholder_mappings($placeholders, @_)}) {
-                while (my($k, $v) = each(%kv)) {
-                    if ($k =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
-                        throw E_INVALID_PLACEHOLDER, $k
-                          unless $+{bind_id};
-                        $self->bind_param($+{bind_id}, $v);
-                    }
-                    else {
-                        $self->bind_param($k, $v);
-                    }
-                }
-            }
-        }
-        else {
-            if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                for my $bind_id (1 .. scalar(@{$_[0]})) {
-                    $self->bind_param($bind_id, $_[0][$bind_id - 1]);
-                }
-            }
-            else {
-                for my $bind_id (1 .. scalar(@_)) {
-                    $self->bind_param($bind_id, $_[$bind_id - 1]);
-                }
-            }
-        }
-    }
-    return $self;
 }
 
 sub execute {

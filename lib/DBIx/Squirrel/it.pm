@@ -16,7 +16,7 @@ use namespace::autoclean;
 use Data::Alias  qw/alias/;
 use Scalar::Util qw/weaken/;
 use Sub::Name;
-use DBIx::Squirrel::util qw/throw whine/;
+use DBIx::Squirrel::util qw/throw transform whine/;
 
 use constant E_BAD_STH         => 'Expected a statement handle object';
 use constant E_BAD_SLICE       => 'Slice must be a reference to an ARRAY or HASH';
@@ -177,16 +177,11 @@ sub _results_fetch {
     if ($self->_buffer_empty) {
         return unless $self->_buffer_charge;
     }
-    my @results;
-    if (!!@{$attr->{transforms}}) {
-        push @results, map {DBIx::Squirrel::util::transform($attr->{transforms}, $_)} shift(@{$attr->{buffer}});
-        goto &_results_fetch unless @results;
-    }
-    else {
-        push @results, shift(@{$attr->{buffer}});
-    }
-    my $result = shift(@results);
-    $self->_results_pending_push(\@results) if @results;
+    my $result = shift(@{$attr->{buffer}});
+    my($results, $transformed) = $self->_results_transform($result);
+    goto &_results_fetch if $transformed && !@{$results};
+    $result = shift(@{$results});
+    $self->_results_pending_push($results) if @{$results};
     $attr->{results_first} = $result unless $attr->{results_count}++;
     $attr->{results_last}  = $result;
     return do {$_ = $result};
@@ -215,6 +210,25 @@ sub _results_pending_push {
     $attr->{results_pending} = [] unless defined($attr->{results_pending});
     push @{$attr->{results_pending}}, @{$results};
     return $self;
+}
+
+sub _results_prep_for_transform {
+    my($self, $result) = @_;
+    return $result;
+}
+
+sub _results_transform {
+    my($attr, $self) = shift->_private;
+    my $result_in = $self->_results_prep_for_transform(shift);
+    my @results_out;
+    if (!!@{$attr->{transforms}}) {
+        push @results_out, map {transform($attr->{transforms}, $self->_results_prep_for_transform($_))} $result_in;
+        return \@results_out, !!1 if wantarray;
+        return \@results_out;
+    }
+    push @results_out, $result_in;
+    return \@results_out, !!0 if wantarray;
+    return \@results_out;
 }
 
 sub _state_clear {
