@@ -20,7 +20,7 @@ sub filter {($_->[0] < 128 or $_->[0] > 131) ? () : $_}
 # else just return the artist's Name-field.
 sub artist_name {($_->[0] == 128) ? ($_->[1], 'Envy of None', 'Alex Lifeson') : $_->[1]}
 
-subtest 'basic checks' => sub {
+subtest 'basic iterator checks' => sub {
     db(DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS));
     artist(db->iterate('SELECT * FROM artists WHERE ArtistId=? LIMIT 1'));
     my $artist = artist->_private;
@@ -43,11 +43,11 @@ subtest 'basic checks' => sub {
     artists(db->iterate('SELECT * FROM artists ORDER BY ArtistId' => \&filter => \&artist_name));
     my $artists = artists->_private;
 
+    # This test will exercise buffer control, transformations, pending results injection and
+    # results filtering.
     my $results  = artists->all;
     my $expected = ['Rush', 'Envy of None', 'Alex Lifeson', 'Simply Red', 'Skank', 'Smashing Pumpkins'];
     is_deeply($results, $expected, 'iteration, filtering, injection ok');
-    
-    diagdump({artists => artists, state => $artists, results => $results});
 };
 
 done_testing();
