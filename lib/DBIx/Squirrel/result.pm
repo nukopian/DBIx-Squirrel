@@ -23,8 +23,7 @@ sub new {
 }
 
 sub result_class {
-    my $self = shift;
-    return $self->results->result_class;
+    return $_[0]->results->result_class;
 }
 
 BEGIN {
@@ -32,8 +31,7 @@ BEGIN {
 }
 
 sub row_class {
-    my $self = shift;
-    return $self->results->row_class;
+    return $_[0]->results->row_class;
 }
 
 sub get_column {
