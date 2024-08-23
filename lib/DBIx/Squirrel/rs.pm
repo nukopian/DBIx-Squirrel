@@ -38,17 +38,15 @@ sub _rebless {
     my $rs_fn        = $row_class . '::rs';
     unless (defined(&{$results_fn})) {
         undef &{$resultset_fn};
-        undef &{$results_fn};
         undef &{$rset_fn};
         undef &{$rs_fn};
         *{$resultset_fn} = *{$results_fn} = *{$rset_fn} = *{$rs_fn} = do {
             weaken(my $results = $self);
             subname($results_fn => sub {$results});
         };
-        @{$row_class . '::ISA'} = $result_class;
+        @{$row_class . '::ISA'} = ($result_class);
     }
-    my $result = shift;
-    return $row_class->new($result);
+    return $row_class->new(shift);
 }
 
 sub result_class {
