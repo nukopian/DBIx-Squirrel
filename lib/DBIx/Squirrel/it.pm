@@ -132,10 +132,10 @@ sub _clear_state {
         buffer
         buffer_size
         count_fetched
-        pending
         first_fetch
         last_execute
         last_fetch
+        pending
         /
     ) {
         delete $attr->{$_} if exists($attr->{$_});
