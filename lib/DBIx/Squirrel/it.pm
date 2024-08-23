@@ -23,6 +23,7 @@ use constant E_BAD_SLICE       => 'Slice must be a reference to an ARRAY or HASH
 use constant E_BAD_BUFFER_SIZE => 'Maximum row count must be an integer greater than zero';
 use constant E_EXP_BIND_VALUES => 'Expected bind values but none have been presented';
 use constant W_MORE_ROWS       => 'Query would yield more than one row';
+use constant E_EXP_ARRAY_REF   => 'Expected an ARRAY-REF';
 
 sub DEFAULT_SLICE () {$DBIx::Squirrel::it::DEFAULT_SLICE}
 
@@ -120,6 +121,7 @@ sub _adjust_buffer_size {
 
 sub _buffer_is_empty {
     my($attr, $self) = shift->_private;
+    undef $_;
     return $attr->{buffer} && @{$attr->{buffer}} < 1;
 }
 
@@ -130,7 +132,7 @@ sub _clear_state {
         buffer
         buffer_size
         count_fetched
-        excess
+        pending
         first_fetch
         last_execute
         last_fetch
@@ -143,28 +145,34 @@ sub _clear_state {
 
 sub _fetch {
     my($attr, $self) = $_[0]->_private;
-    if (@{$attr->{excess}} > 0) {
-        my $head = shift(@{$attr->{excess}});
-        $attr->{first_fetch} = $head unless $attr->{count_fetched}++;
-        $attr->{last_fetch}  = $head;
-        return do {$_ = $head};
-    }
+    return $self->_fetch_pending_result if $self->_has_pending_results;
     return unless $self->{Active};
     if ($self->_buffer_is_empty) {
-        undef $_;
         return unless $self->_fill_buffer;
-        undef $_;
         return if $self->_buffer_is_empty;
     }
-    my $transform = !!@{$attr->{transforms}};
-    my @results   = map {$transform ? $self->_transform($_) : $_} shift(@{$attr->{buffer}});
-    # Branch rather than recurse if our transformations yielded nothing.
-    goto &_fetch if $transform && @results < 1;
-    my($head, @tail) = @results;
-    push @{$attr->{excess}}, @tail if @tail > 0;
-    $attr->{first_fetch} = $head unless $attr->{count_fetched}++;
-    $attr->{last_fetch}  = $head;
-    return do {$_ = $head};
+    my @results;
+    if (!!@{$attr->{transforms}}) {
+        push @results, map {$self->_transform($_)} shift(@{$attr->{buffer}});
+        goto &_fetch unless @results;
+    }
+    else {
+        push @results, shift(@{$attr->{buffer}});
+    }
+    my $result = shift(@results);
+    $self->_fill_pending(\@results) if @results;
+    $attr->{first_fetch} = $result unless $attr->{count_fetched}++;
+    $attr->{last_fetch}  = $result;
+    return do {$_ = $result};
+}
+
+sub _fetch_pending_result {
+    my($attr, $self) = shift->_private;
+    return unless defined($attr->{pending});
+    my $result = shift(@{$attr->{pending}});
+    $attr->{first_fetch} = $result unless $attr->{count_fetched}++;
+    $attr->{last_fetch}  = $result;
+    return do {$_ = $result};
 }
 
 sub _fill_buffer {
@@ -178,14 +186,27 @@ sub _fill_buffer {
         $self->_adjust_buffer_size if @{$rows} >= $attr->{buffer_size};
     }
     $attr->{buffer} = [defined($attr->{buffer}) ? (@{$attr->{buffer}}, @{$rows}) : @{$rows}];
-    return scalar(@{$attr->{buffer}});
+    return do {$_ = scalar(@{$attr->{buffer}})};
+}
+
+sub _fill_pending {
+    my($attr, $self, $results) = shift->_private;
+    return $self unless @_;
+    push @{$attr->{pending}}, @{$results};
+    return $self;
+}
+
+sub _has_pending_results {
+    my($attr, $self) = shift->_private;
+    return unless defined($attr->{pending});
+    return !!@{$attr->{pending}};
 }
 
 sub _init_state {
     my($attr, $self) = shift->_private;
     $self->_init_buffer;
     $self->_init_buffer_size;
-    $self->_init_excess;
+    $self->_init_pending;
     $self->_init_count_fetched;
     return $self;
 }
@@ -200,13 +221,11 @@ sub _init_buffer {
     return $self;
 }
 
-# Where excess results produced by transforms wait for collection.
-sub _init_excess {
+# Where pending results produced by transforms wait for collection.
+sub _init_pending {
     my($attr, $self) = shift->_private;
-    my $key = 'excess';
-    if ($self->{NUM_OF_FIELDS}) {
-        $attr->{$key} = @_ ? shift : [];
-    }
+    my $key = 'pending';
+    $attr->{$key} = @_ ? shift : [];
     return $self;
 }
 
