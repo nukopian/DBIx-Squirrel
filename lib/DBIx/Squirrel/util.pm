@@ -7,9 +7,9 @@ BEGIN {
     require Exporter;
     @DBIx::Squirrel::util::ISA         = 'Exporter';
     %DBIx::Squirrel::util::EXPORT_TAGS = (
-        constants   => ['E_EXP_STATEMENT', 'E_EXP_STH',       'E_EXP_REF',],
-        diagnostics => ['Dumper',          'throw',           'whine',],
-        transform   => ['part_args',       'part_args_using', 'transform',],
+        constants   => ['E_EXP_STATEMENT', 'E_EXP_STH', 'E_EXP_REF',],
+        diagnostics => ['throw',     'whine',],
+        transform   => ['part_args', 'part_args_using', 'transform',],
         sql => ['get_trimmed_sql_and_digest', 'normalise_statement', 'study_statement', 'trim_sql_string', 'hash_sql_string',],
     );
     @DBIx::Squirrel::util::EXPORT_OK = @{
@@ -25,7 +25,6 @@ BEGIN {
 }
 
 use Carp;
-use Data::Dumper::Concise;
 use Digest::SHA qw/sha256_base64/;
 use Memoize;
 use Scalar::Util;
