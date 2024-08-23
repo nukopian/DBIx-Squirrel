@@ -57,9 +57,8 @@ BEGIN {
 }
 
 sub row_class {
-    my $self  = shift;
-    my $class = ref($self);
-    return sprintf($class . '::Ox%x', 0+ $self);
+    my $self = $_[0];
+    return sprintf('%s::Ox%x', ref($self), 0+ $self);
 }
 
 sub slice {
