@@ -70,7 +70,7 @@ sub DESTROY {
     return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
     local($., $@, $!, $^E, $?, $_);
     my $self = shift;
-    $self->finish;
+    $self->_state_clear;
     $self->_private(undef);
     return;
 }
