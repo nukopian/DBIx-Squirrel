@@ -3,8 +3,6 @@ use Modern::Perl;
 package    # hide from PAUSE
   DBIx::Squirrel::st;
 
-use namespace::autoclean;
-
 BEGIN {
     require DBIx::Squirrel
       unless defined($DBIx::Squirrel::VERSION);
@@ -12,6 +10,8 @@ BEGIN {
     @DBIx::Squirrel::st::ISA     = 'DBI::st';
 }
 
+use namespace::autoclean;
+use Sub::Name;
 use DBIx::Squirrel::util qw/throw whine/;
 
 use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';

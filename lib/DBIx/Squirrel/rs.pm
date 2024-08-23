@@ -3,10 +3,6 @@ use Modern::Perl;
 package    # hide from PAUSE
   DBIx::Squirrel::rs;
 
-use namespace::autoclean;
-use Scalar::Util qw/weaken/;
-use Sub::Name;
-
 BEGIN {
     require DBIx::Squirrel
       unless defined($DBIx::Squirrel::VERSION);
@@ -14,7 +10,11 @@ BEGIN {
     @DBIx::Squirrel::rs::ISA     = 'DBIx::Squirrel::it';
 }
 
-sub _fetch_row {
+use namespace::autoclean;
+use Scalar::Util qw/weaken/;
+use Sub::Name;
+
+sub _results_fetch_row {
     my($attr, $self) = shift->_private;
     return
       if $self->_no_more_rows;

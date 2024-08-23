@@ -3,15 +3,14 @@ use Modern::Perl;
 package    # hide from PAUSE
   DBIx::Squirrel::rc;
 
-use namespace::autoclean;
-use Sub::Name;
-
 BEGIN {
     require DBIx::Squirrel
       unless defined($DBIx::Squirrel::VERSION);
     $DBIx::Squirrel::rc::VERSION = $DBIx::Squirrel::VERSION;
 }
 
+use namespace::autoclean;
+use Sub::Name;
 use DBIx::Squirrel::util qw/throw/;
 
 use constant E_BAD_OBJECT     => 'A reference to either an array or hash was expected';

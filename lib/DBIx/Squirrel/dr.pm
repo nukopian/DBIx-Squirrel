@@ -3,14 +3,14 @@ use Modern::Perl;
 package    # hide from PAUSE
   DBIx::Squirrel::dr;
 
-use namespace::autoclean;
-
 BEGIN {
     require DBIx::Squirrel
       unless defined($DBIx::Squirrel::VERSION);
     $DBIx::Squirrel::dr::VERSION = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::dr::ISA     = 'DBI::dr';
 }
+
+use namespace::autoclean;
 
 sub _root_class {
     my $root_class = ref($_[0]) || $_[0];

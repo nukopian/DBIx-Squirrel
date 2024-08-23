@@ -3,10 +3,6 @@ use Modern::Perl;
 package    # hide from PAUSE
   DBIx::Squirrel::it;
 
-use namespace::autoclean;
-use Data::Alias  qw/alias/;
-use Scalar::Util qw/weaken/;
-
 BEGIN {
     require DBIx::Squirrel
       unless defined($DBIx::Squirrel::VERSION);
@@ -16,6 +12,10 @@ BEGIN {
     $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;                         # Absolute maximum buffersize
 }
 
+use namespace::autoclean;
+use Data::Alias  qw/alias/;
+use Scalar::Util qw/weaken/;
+use Sub::Name;
 use DBIx::Squirrel::util qw/throw whine/;
 
 use constant E_BAD_STH         => 'Expected a statement handle object';
