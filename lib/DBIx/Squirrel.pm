@@ -1225,6 +1225,12 @@ When called in scalar-context, this method returns a reference to
 an array of all matching row objects. Where no rows are matched,
 C<undef> would be returned.
 
+=head4 C<buffer_size>
+
+=head4 C<buffer_size_slice>
+
+Alias I<(see C<slice_buffer_size>)>.
+
 =head4 C<count>
 
     $count = $itor->count();
@@ -1247,6 +1253,8 @@ Executes the iterator's underlying statemeent handle object.
 Executes the iterator's underlying statemeent handle object,
 returning the iterator object reference if execution was successful,
 or C<undef> if not.
+
+=head4 C<last>
 
 =head4 C<next>
 
@@ -1275,6 +1283,10 @@ no rows are matched, C<undef> would be returned.
 Returns the number of rows aftected by non-SELECT statements.
 
 =head4 C<single>
+
+=head4 C<slice>
+
+=head4 C<slice_buffer_size>
 
 =head4 C<sth>
 

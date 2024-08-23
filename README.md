@@ -1015,6 +1015,12 @@ When called in scalar-context, this method returns a reference to
 an array of all matching row objects. Where no rows are matched,
 `undef` would be returned.
 
+#### `buffer_size`
+
+#### `buffer_size_slice`
+
+Alias _(see `slice_buffer_size`)_.
+
 #### `count`
 
     $count = $itor->count();
@@ -1037,6 +1043,8 @@ Executes the iterator's underlying statemeent handle object.
 Executes the iterator's underlying statemeent handle object,
 returning the iterator object reference if execution was successful,
 or `undef` if not.
+
+#### `last`
 
 #### `next`
 
@@ -1065,6 +1073,10 @@ no rows are matched, `undef` would be returned.
 Returns the number of rows aftected by non-SELECT statements.
 
 #### `single`
+
+#### `slice`
+
+#### `slice_buffer_size`
 
 #### `sth`
 

@@ -88,16 +88,21 @@
           <li><a href="#Iterator-Objects">Iterator Objects</a>
             <ul>
               <li><a href="#all">all</a></li>
+              <li><a href="#buffer_size">buffer_size</a></li>
+              <li><a href="#buffer_size_slice">buffer_size_slice</a></li>
               <li><a href="#count">count</a></li>
               <li><a href="#execute1">execute</a></li>
               <li><a href="#first">first</a></li>
               <li><a href="#iterate2">iterate</a></li>
+              <li><a href="#last">last</a></li>
               <li><a href="#next">next</a></li>
               <li><a href="#one">one</a></li>
               <li><a href="#remaining">remaining</a></li>
               <li><a href="#reset">reset</a></li>
               <li><a href="#rows">rows</a></li>
               <li><a href="#single">single</a></li>
+              <li><a href="#slice">slice</a></li>
+              <li><a href="#slice_buffer_size">slice_buffer_size</a></li>
               <li><a href="#sth">sth</a></li>
             </ul>
           </li>
@@ -1087,6 +1092,12 @@ $ary_ref | undef = $itor-&gt;all();</code></pre>
 
 <p>When called in scalar-context, this method returns a reference to an array of all matching row objects. Where no rows are matched, <code>undef</code> would be returned.</p>
 
+<h4 id="buffer_size"><code>buffer_size</code></h4>
+
+<h4 id="buffer_size_slice"><code>buffer_size_slice</code></h4>
+
+<p>Alias <i>(see <code>slice_buffer_size</code>)</i>.</p>
+
 <h4 id="count"><code>count</code></h4>
 
 <pre><code>$count = $itor-&gt;count();</code></pre>
@@ -1106,6 +1117,8 @@ $ary_ref | undef = $itor-&gt;all();</code></pre>
 <pre><code>$itor | undef = $itor-&gt;iterate());</code></pre>
 
 <p>Executes the iterator&#39;s underlying statemeent handle object, returning the iterator object reference if execution was successful, or <code>undef</code> if not.</p>
+
+<h4 id="last"><code>last</code></h4>
 
 <h4 id="next"><code>next</code></h4>
 
@@ -1131,6 +1144,10 @@ $ary_ref | undef = $itor-&gt;remaining();</code></pre>
 <p>Returns the number of rows aftected by non-SELECT statements.</p>
 
 <h4 id="single"><code>single</code></h4>
+
+<h4 id="slice"><code>slice</code></h4>
+
+<h4 id="slice_buffer_size"><code>slice_buffer_size</code></h4>
 
 <h4 id="sth"><code>sth</code></h4>
 
