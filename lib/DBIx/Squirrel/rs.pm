@@ -29,14 +29,13 @@ sub _results_prep_for_transform {
 
 sub _rebless {
     no strict 'refs';    ## no critic
-    my $self         = shift;
-    my $row_class    = $self->row_class;
-    my $result_class = $self->result_class;
-    my $resultset_fn = $row_class . '::resultset';
-    my $results_fn   = $row_class . '::results';
-    my $rset_fn      = $row_class . '::rset';
-    my $rs_fn        = $row_class . '::rs';
+    my $self       = shift;
+    my $row_class  = $self->row_class;
+    my $results_fn = $row_class . '::results';
     unless (defined(&{$results_fn})) {
+        my $resultset_fn = $row_class . '::resultset';
+        my $rset_fn      = $row_class . '::rset';
+        my $rs_fn        = $row_class . '::rs';
         undef &{$resultset_fn};
         undef &{$rset_fn};
         undef &{$rs_fn};
@@ -44,6 +43,7 @@ sub _rebless {
             weaken(my $results = $self);
             subname($results_fn => sub {$results});
         };
+        my $result_class = $self->result_class;
         @{$row_class . '::ISA'} = ($result_class);
     }
     return $row_class->new(shift);
