@@ -282,6 +282,13 @@ sub buffer_size {
     }
 }
 
+sub buffer_size_slice {
+    my $self = shift;
+    return $self->buffer_size, $self->slice unless @_;
+    return $self->slice(shift)->buffer_size(shift) if ref($_[0]);
+    return $self->buffer_size(shift)->slice(shift);
+}
+
 sub count {
     my($attr, $self) = shift->_private;
     unless ($self->{Active} || $attr->{results_count}) {
@@ -424,13 +431,9 @@ sub slice {
 
 sub slice_buffer_size {
     my $self = shift;
-    return ($self->slice, $self->buffer_size) unless @_;
+    return $self->slice, $self->buffer_size unless @_;
     return $self->slice(shift)->buffer_size(shift) if ref($_[0]);
     return $self->buffer_size(shift)->slice(shift);
-}
-
-BEGIN {
-    *buffer_size_slice = subname(buffer_size_slice => \&slice_buffer_size);
 }
 
 sub sth {

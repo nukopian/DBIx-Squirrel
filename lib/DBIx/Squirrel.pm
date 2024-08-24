@@ -1289,12 +1289,13 @@ Returns the number of rows aftected by non-SELECT statements.
 
 =head4 C<slice_buffer_size>
 
+    
+
 =head4 C<sth>
 
     $sth = $itor->sth();
 
-Returns a reference to the statement handle object associated with
-the iterator.
+Returns the iterator's statement handle object.
 
 =head1 COPYRIGHT AND LICENSE
 
