@@ -49,6 +49,8 @@ subtest 'basic results checks' => sub {
     my $results  = artists->all;
     my $expected = ['Rush', 'Envy of None', 'Alex Lifeson', 'Simply Red', 'Skank', 'Smashing Pumpkins'];
     is_deeply($results, $expected, 'iteration, filtering, injection ok');
+
+    done_testing();
 };
 
 done_testing();

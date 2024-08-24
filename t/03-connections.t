@@ -18,6 +18,8 @@ subtest 'connect to mock database' => sub {
     isa_ok($dbh, 'DBIx::Squirrel::db');
 
     $dbh->disconnect();
+
+    done_testing();
 };
 
 subtest 'connect to test database' => sub {
@@ -25,6 +27,8 @@ subtest 'connect to test database' => sub {
     isa_ok($dbh, 'DBIx::Squirrel::db');
 
     $dbh->disconnect();
+
+    done_testing();
 };
 
 subtest 'clone connection to mock database' => sub {
@@ -36,6 +40,8 @@ subtest 'clone connection to mock database' => sub {
 
     $clone->disconnect();
     $dbh->disconnect();
+
+    done_testing();
 };
 
 subtest 'clone connection to test database' => sub {
@@ -47,6 +53,8 @@ subtest 'clone connection to test database' => sub {
 
     $clone->disconnect();
     $dbh->disconnect();
+
+    done_testing();
 };
 
 subtest 'clone connection created by DBI to mock database' => sub {
@@ -56,6 +64,8 @@ subtest 'clone connection created by DBI to mock database' => sub {
 
     $clone->disconnect();
     $dbh->disconnect();
+
+    done_testing();
 };
 
 subtest 'clone connection created by DBI to test database' => sub {
@@ -65,6 +75,8 @@ subtest 'clone connection created by DBI to test database' => sub {
 
     $clone->disconnect();
     $dbh->disconnect();
+
+    done_testing();
 };
 
 done_testing();

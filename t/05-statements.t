@@ -64,6 +64,8 @@ subtest 'basic checks' => sub {
     is_deeply(artist->fetchrow_hashref, {ArtistId => 128, Name => 'Rush'}, 'first fetchrow_hashref ok');
     is_deeply(artist->fetchrow_hashref, undef,                             'second fetchrow_hashref undef ok');
     ok(!artist->{Active}, 'statement inactive ok');
+
+    done_testing();
 };
 
 done_testing();

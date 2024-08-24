@@ -8,4 +8,5 @@ BEGIN {
 }
 
 diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
+
 done_testing();
