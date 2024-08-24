@@ -12,6 +12,8 @@ Revision history for DBIx-Squirrel
             to work around the issue.
           - Testing under Perls <= 5.13 seems to require "done_testing()" for each sub-test, as well
             as at the end of the test script.
+          - Testing under Perls <= 5.11 does not support sub-test. I can live without them, so
+            have refactored the tests not to use them. Tests pass under Perl 5.10!
 1.3.0   2024-08-23 21:00
         - Ground-up rewrite of iterators and result-set code.
         - Ground-up rewrite and simplification of test code.
