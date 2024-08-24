@@ -156,7 +156,7 @@ sub _buffer_size_adjust {
 sub _buffer_size_init {
     my($attr, $self) = $_[0]->_private;
     if ($self->{NUM_OF_FIELDS}) {
-        $attr->{buffer_size} = DEFAULT_BUFFER_SIZE;
+        $attr->{buffer_size} ||= DEFAULT_BUFFER_SIZE;
     }
     return $self;
 }
@@ -164,7 +164,7 @@ sub _buffer_size_init {
 sub _buffer_size_fixed_init {
     my($attr, $self) = $_[0]->_private;
     if ($self->{NUM_OF_FIELDS}) {
-        $attr->{buffer_size_fixed} = !!0;
+        $attr->{buffer_size_fixed} ||= !!0;
     }
     return $self;
 }
@@ -244,7 +244,6 @@ sub _state_clear {
     foreach (
         qw/
         buffer
-        buffer_size
         execute_returned
         results_pending
         results_count
