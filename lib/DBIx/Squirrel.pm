@@ -1299,7 +1299,24 @@ The following package globals define the relevant default settings:
 
     $count = $itor->count();
 
-Returns the number of rows fetched.
+Returns the number of rows fetched so far.
+
+If the iterator's statement has not yet been executed, it will be and a count
+of all rows will be returned.
+
+=head4 C<count_all>
+
+    $count = $itor->count();
+
+Returns the total number of rows.
+
+If the iterator's statement has not yet been executed, it will be. Once the
+iterator's statement has been executed, any remaining rows will be fetched,
+included in the count, and then immediately discarded.
+
+B<BEWARE> that calling this method alters the iterator's state enough that
+calling C<next> won't return the row you expected. It should only be called
+only if you know that C<next> won't be called again.
 
 =head4 C<execute>
 

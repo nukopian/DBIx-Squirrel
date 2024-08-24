@@ -301,6 +301,9 @@ sub buffer_size_slice {
     return $self->buffer_size(shift)->slice(shift);
 }
 
+# TODO I think I can make this non-impacting by noting the current
+#      results_count and then resetting and fast-forwarding to that
+#      position after the count is produced.
 sub count {
     my($attr, $self) = shift->_private;
     unless ($self->{Active} || $attr->{results_count}) {
@@ -310,6 +313,21 @@ sub count {
         }
         while ($self->next) {;}
     }
+    return do {$_ = $attr->{results_count}};
+}
+
+# TODO I think I can make this non-impacting by noting the current
+#      results_count and then resetting and fast-forwarding to that
+#      position after the count is produced.
+sub count_all {
+    my($attr, $self) = shift->_private;
+    unless ($self->{Active} || $attr->{results_count}) {
+        unless (defined($self->execute(@_))) {
+            undef $_;
+            return;
+        }
+    }
+    while ($self->next) {;}
     return do {$_ = $attr->{results_count}};
 }
 
