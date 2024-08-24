@@ -15,18 +15,23 @@ BEGIN {
     );
     @DBIx::Squirrel::util::EXPORT_OK = @{
         $DBIx::Squirrel::util::EXPORT_TAGS{all} = [
-            qw/uniq result/,
+            qw/
+              global_destruct_phase
+              uniq
+              result
+              /,
             do {
                 my %seen;
                 grep {!$seen{$_}++}
-                  map {@{$DBIx::Squirrel::util::EXPORT_TAGS{$_}}} (qw/constants diagnostics sql transform/,);
+                  map {@{$DBIx::Squirrel::util::EXPORT_TAGS{$_}}} qw/constants diagnostics sql transform/,;
             },
         ]
     };
 }
 
-use Carp;
-use Digest::SHA qw/sha256_base64/;
+use Carp                     ();
+use Devel::GlobalDestruction ();
+use Digest::SHA              qw/sha256_base64/;
 use Memoize;
 use Scalar::Util;
 use Sub::Name;
@@ -37,6 +42,10 @@ use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
 use constant E_BAD_CB_LIST   => 'Expected a reference to a list of code-references, a code-reference, or undefined';
 
 our $NORMALISE_SQL = !!1;
+
+# Perl versions older than 5.14 do not support ${^GLOBAL_PHASE}, so provide
+# a shim that works around the wrinkle.
+sub global_destruct_phase {Devel::GlobalDestruction::in_global_destruction()}
 
 sub throw {
     @_ = do {

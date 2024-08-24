@@ -16,6 +16,21 @@ use Scalar::Util qw/weaken/;
 use Sub::Name;
 use DBIx::Squirrel::util qw/transform/;
 
+sub DESTROY {
+    no strict 'refs';    ## no critic
+    return if DBIx::Squirrel::util::global_destruct_phase();
+    local($., $@, $!, $^E, $?, $_);
+    my $self      = shift;
+    my $row_class = $self->row_class;
+    $self->_autoloaded_accessors_unload if %{$row_class . '::'};
+    undef &{$row_class . '::rs'};
+    undef &{$row_class . '::rset'};
+    undef &{$row_class . '::results'};
+    undef &{$row_class . '::resultset'};
+    undef *{$row_class};
+    return $self->SUPER::DESTROY;
+}
+
 sub _autoloaded_accessors_unload {
     no strict 'refs';    ## no critic
     my $self = shift;
@@ -73,21 +88,6 @@ sub slice {
         }
     }
     return $self;
-}
-
-sub DESTROY {
-    no strict 'refs';    ## no critic
-    return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
-    local($., $@, $!, $^E, $?, $_);
-    my $self      = shift;
-    my $row_class = $self->row_class;
-    $self->_autoloaded_accessors_unload if %{$row_class . '::'};
-    undef &{$row_class . '::rs'};
-    undef &{$row_class . '::rset'};
-    undef &{$row_class . '::results'};
-    undef &{$row_class . '::resultset'};
-    undef *{$row_class};
-    return $self->SUPER::DESTROY;
 }
 
 1;

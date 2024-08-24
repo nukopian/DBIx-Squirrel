@@ -68,7 +68,7 @@ sub BUFFER_SIZE_LIMIT () {$DBIx::Squirrel::it::BUFFER_SIZE_LIMIT}
 }
 
 sub DESTROY {
-    return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
+    return if DBIx::Squirrel::util::global_destruct_phase();
     local($., $@, $!, $^E, $?, $_);
     my $self = shift;
     $self->_state_clear;
