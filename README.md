@@ -1097,8 +1097,8 @@ following two iterator properties:
     The current size of the results buffer. That is, the current number of results
     that could be buffered-up by the iterator and ready to be fetched.
 
-To change these properties, simply provide new values. Passing them in either
-order is permissable.
+To change these properties, simply provide new values. You can provide them in
+either order, but you must provide both.
 
 #### `sth`
 

@@ -1312,8 +1312,8 @@ that could be buffered-up by the iterator and ready to be fetched.
 
 =back
 
-To change these properties, simply provide new values. Passing them in either
-order is permissable.
+To change these properties, simply provide new values. You can provide them in
+either order, but you must provide both.
 
 =head4 C<sth>
 
