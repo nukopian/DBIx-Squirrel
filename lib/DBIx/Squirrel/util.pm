@@ -185,6 +185,9 @@ sub part_args_using {
     return $coderefs, @args;
 }
 
+# Runtime scoping of $_result allows caller to import and use "result" instead
+# of "$_" during result transformation.
+
 our $_result;
 
 sub result {$_result}
