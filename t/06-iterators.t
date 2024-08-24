@@ -21,36 +21,32 @@ sub filter {($_->[0] < 128 or $_->[0] > 131) ? () : $_}
 # else just return the artist's Name-field.
 sub artist_name {($_->[0] == 128) ? ($_->[1], 'Envy of None', 'Alex Lifeson') : $_->[1]}
 
-subtest 'basic iterator checks' => sub {
-    db(DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS));
-    artist(db->iterate('SELECT * FROM artists WHERE ArtistId=? LIMIT 1'));
-    my $artist = artist->_private;
+db(DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS));
+artist(db->iterate('SELECT * FROM artists WHERE ArtistId=? LIMIT 1'));
+my $artist = artist->_private;
 
-    is_deeply($artist->{bind_values_initial}, [], 'bind_values_initial ok');
-    ok(!exists($artist->{bind_values}), 'bind_values ok');
-    is_deeply($artist->{transforms_initial}, [], 'transforms_initial ok');
-    ok(!exists($artist->{transforms}), 'transforms ok');
+is_deeply($artist->{bind_values_initial}, [], 'bind_values_initial ok');
+ok(!exists($artist->{bind_values}), 'bind_values ok');
+is_deeply($artist->{transforms_initial}, [], 'transforms_initial ok');
+ok(!exists($artist->{transforms}), 'transforms ok');
 
-    artist->iterate(128);
-    is_deeply($artist->{bind_values_initial}, [],                            'bind_values_initial ok');
-    is_deeply($artist->{bind_values},         [128],                         'bind_values ok');
-    is_deeply($artist->{transforms_initial},  [],                            'transforms_initial ok');
-    is_deeply($artist->{transforms},          $artist->{transforms_initial}, 'transforms ok');
+artist->iterate(128);
+is_deeply($artist->{bind_values_initial}, [],                            'bind_values_initial ok');
+is_deeply($artist->{bind_values},         [128],                         'bind_values ok');
+is_deeply($artist->{transforms_initial},  [],                            'transforms_initial ok');
+is_deeply($artist->{transforms},          $artist->{transforms_initial}, 'transforms ok');
 
-    artist->iterate(128)->next;
-    is_deeply($artist->{bind_values_initial}, [],    'bind_values_initial ok');
-    is_deeply($artist->{bind_values},         [128], 'bind_values ok');
+artist->iterate(128)->next;
+is_deeply($artist->{bind_values_initial}, [],    'bind_values_initial ok');
+is_deeply($artist->{bind_values},         [128], 'bind_values ok');
 
-    artists(db->iterate('SELECT * FROM artists ORDER BY ArtistId' => \&filter => \&artist_name));
-    my $artists = artists->_private;
+artists(db->iterate('SELECT * FROM artists ORDER BY ArtistId' => \&filter => \&artist_name));
+my $artists = artists->_private;
 
-    # This test will exercise buffer control, transformations, pending results injection and
-    # results filtering.
-    my $results  = artists->all;
-    my $expected = ['Rush', 'Envy of None', 'Alex Lifeson', 'Simply Red', 'Skank', 'Smashing Pumpkins'];
-    is_deeply($results, $expected, 'iteration, filtering, injection ok');
-
-    done_testing();
-};
+# This test will exercise buffer control, transformations, pending results injection and
+# results filtering.
+my $results  = artists->all;
+my $expected = ['Rush', 'Envy of None', 'Alex Lifeson', 'Simply Red', 'Skank', 'Smashing Pumpkins'];
+is_deeply($results, $expected, 'iteration, filtering, injection ok');
 
 done_testing();

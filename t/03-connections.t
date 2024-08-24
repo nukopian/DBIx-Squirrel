@@ -13,70 +13,41 @@ BEGIN {
 
 diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 
-subtest 'connect to mock database' => sub {
-    my $dbh = DBIx::Squirrel->connect(@MOCK_DB_CONNECT_ARGS);
-    isa_ok($dbh, 'DBIx::Squirrel::db');
+my $dbh;
+my $clone;
 
-    $dbh->disconnect();
+$dbh = DBIx::Squirrel->connect(@MOCK_DB_CONNECT_ARGS);
+isa_ok($dbh, 'DBIx::Squirrel::db');
+$dbh->disconnect();
 
-    done_testing();
-};
+$dbh = DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS);
+isa_ok($dbh, 'DBIx::Squirrel::db');
+$dbh->disconnect();
 
-subtest 'connect to test database' => sub {
-    my $dbh = DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS);
-    isa_ok($dbh, 'DBIx::Squirrel::db');
+$dbh = DBIx::Squirrel->connect(@MOCK_DB_CONNECT_ARGS);
+isa_ok($dbh, 'DBIx::Squirrel::db');
+$clone = DBIx::Squirrel->connect($dbh);
+isa_ok($clone, 'DBIx::Squirrel::db');
+$clone->disconnect();
+$dbh->disconnect();
 
-    $dbh->disconnect();
+$dbh = DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS);
+isa_ok($dbh, 'DBIx::Squirrel::db');
+$clone = DBIx::Squirrel->connect($dbh);
+isa_ok($clone, 'DBIx::Squirrel::db');
+$clone->disconnect();
+$dbh->disconnect();
 
-    done_testing();
-};
+$dbh   = DBI->connect(@MOCK_DB_CONNECT_ARGS);
+$clone = DBIx::Squirrel->connect($dbh);
+isa_ok($clone, 'DBIx::Squirrel::db');
+$clone->disconnect();
+$dbh->disconnect();
 
-subtest 'clone connection to mock database' => sub {
-    my $dbh = DBIx::Squirrel->connect(@MOCK_DB_CONNECT_ARGS);
-    isa_ok($dbh, 'DBIx::Squirrel::db');
-
-    my $clone = DBIx::Squirrel->connect($dbh);
-    isa_ok($clone, 'DBIx::Squirrel::db');
-
-    $clone->disconnect();
-    $dbh->disconnect();
-
-    done_testing();
-};
-
-subtest 'clone connection to test database' => sub {
-    my $dbh = DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS);
-    isa_ok($dbh, 'DBIx::Squirrel::db');
-
-    my $clone = DBIx::Squirrel->connect($dbh);
-    isa_ok($clone, 'DBIx::Squirrel::db');
-
-    $clone->disconnect();
-    $dbh->disconnect();
-
-    done_testing();
-};
-
-subtest 'clone connection created by DBI to mock database' => sub {
-    my $dbh   = DBI->connect(@MOCK_DB_CONNECT_ARGS);
-    my $clone = DBIx::Squirrel->connect($dbh);
-    isa_ok($clone, 'DBIx::Squirrel::db');
-
-    $clone->disconnect();
-    $dbh->disconnect();
-
-    done_testing();
-};
-
-subtest 'clone connection created by DBI to test database' => sub {
-    my $dbh   = DBI->connect(@TEST_DB_CONNECT_ARGS);
-    my $clone = DBIx::Squirrel->connect($dbh);
-    isa_ok($clone, 'DBIx::Squirrel::db');
-
-    $clone->disconnect();
-    $dbh->disconnect();
-
-    done_testing();
-};
+$dbh   = DBI->connect(@TEST_DB_CONNECT_ARGS);
+$clone = DBIx::Squirrel->connect($dbh);
+isa_ok($clone, 'DBIx::Squirrel::db');
+$clone->disconnect();
+$dbh->disconnect();
 
 done_testing();
