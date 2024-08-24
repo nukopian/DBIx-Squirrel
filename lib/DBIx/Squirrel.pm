@@ -1358,7 +1358,7 @@ from the database. This may be an ARRAYREF or a HASHREF.
 To change this property, simply provide the new value as the argument. When
 used to change the buffer-size, a reference to the iterator is returned.
 
-The following package global define the relevant default setting:
+The following package global defines the default setting:
 
     $DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
 
