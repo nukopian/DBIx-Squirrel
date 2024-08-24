@@ -1094,13 +1094,29 @@ $ary_ref | undef = $itor-&gt;all();</code></pre>
 
 <h4 id="buffer_size"><code>buffer_size</code></h4>
 
+<pre><code>$buffer_size = $itor-&gt;buffer_size;
+$itor = $itor-&gt;buffer_size($buffer_size);</code></pre>
+
+<p>May be used to determine how many results the iterator makes available to fetch following each trip to the database.</p>
+
+<p>To change this property, simply provide the new value as the argument. When used to change the buffer-size, a reference to the iterator is returned.</p>
+
+<p>Normally, an iterator&#39;s buffer-size is set to a low initial value, greater than 1. It is usually gradually increased by a factor of two, up to a maximum, after every database read. This is done to improve performance when fetching large result sets.</p>
+
+<p>Manually setting the iterator&#39;s buffer-size has the side-effect of fixing it at that value, preventing the kind of automatic adjustment described above.</p>
+
+<p>The following package globals define the relevant default settings:</p>
+
+<pre><code>$DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
+$DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pre>
+
 <h4 id="buffer_size_slice"><code>buffer_size_slice</code></h4>
 
 <pre><code>($buffer_size, $slice) = $itor-&gt;buffer_size_slice();
 $itor = $itor-&gt;buffer_size_slice($slice, $buffer_size);
 $itor = $itor-&gt;buffer_size_slice($buffer_size, $slice);</code></pre>
 
-<p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it makes available to fetch following a single database read.</p>
+<p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it makes available to fetch following each trip to the database.</p>
 
 <p>When called with no arguments, a list comprised of the following two iterator properties is returned:</p>
 
@@ -1108,7 +1124,7 @@ $itor = $itor-&gt;buffer_size_slice($buffer_size, $slice);</code></pre>
 
 <li><p><code>$buffer_size</code></p>
 
-<p>The current size of the results buffer. That is, the current maximum number of results that are processed and ready to fetch after a single database read.</p>
+<p>The current size of the results buffer. That is, the current maximum number of results that are processed and ready to fetch after each trip to the database.</p>
 
 </li>
 <li><p><code>$slice</code></p>
@@ -1118,13 +1134,17 @@ $itor = $itor-&gt;buffer_size_slice($buffer_size, $slice);</code></pre>
 </li>
 </ul>
 
-<p>To change these properties, simply provide the new values in the argument list. They may be provided in either order, but they must both be provided.</p>
+<p>To change these properties, simply provide the new values in the argument list. When used to change these properties, a reference to the iterator is returned.</p>
 
-<p>Normally, the iterator&#39;s buffer-size is set to a low initial value (greater than 1), and is usually adjusted upwards to a maximum after every database read. This is done to improve performance when fetching large result sets.</p>
+<p>Normally, an iterator&#39;s buffer-size is set to a low initial value, greater than 1. It is usually gradually increased by a factor of two, up to a maximum, after every database read. This is done to improve performance when fetching large result sets.</p>
 
 <p>Manually setting the iterator&#39;s buffer-size has the side-effect of fixing it at that value, preventing the kind of automatic adjustment described above.</p>
 
-<p>When used to change these properties, the method returns a reference to the iterator.</p>
+<p>The following package globals define the relevant default settings:</p>
+
+<pre><code>$DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
+$DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
+$DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pre>
 
 <h4 id="count"><code>count</code></h4>
 
@@ -1175,13 +1195,24 @@ $ary_ref | undef = $itor-&gt;remaining();</code></pre>
 
 <h4 id="slice"><code>slice</code></h4>
 
+<pre><code>$slice = $itor-&gt;slice();
+$itor = $itor-&gt;slice($slice);</code></pre>
+
+<p>May be used to determine how the iterator slices the results it fetches from the database. This may be an ARRAYREF or a HASHREF.</p>
+
+<p>To change this property, simply provide the new value as the argument. When used to change the buffer-size, a reference to the iterator is returned.</p>
+
+<p>The following package global define the relevant default setting:</p>
+
+<pre><code>$DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy</code></pre>
+
 <h4 id="slice_buffer_size"><code>slice_buffer_size</code></h4>
 
 <pre><code>($slice, $buffer_size) = $itor-&gt;slice_buffer_size();
 $itor = $itor-&gt;slice_buffer_size($slice, $buffer_size);
 $itor = $itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
 
-<p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it makes available to fetch following a single database read.</p>
+<p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it makes available to fetch following each trip to the database.</p>
 
 <p>When called with no arguments, a list comprised of the following two iterator properties is returned:</p>
 
@@ -1194,18 +1225,22 @@ $itor = $itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
 </li>
 <li><p><code>$buffer_size</code></p>
 
-<p>The current size of the results buffer. That is, the current maximum number of results that are processed and ready to fetch after a single database read.</p>
+<p>The current size of the results buffer. That is, the current maximum number of results that are processed and ready to fetch after each trip to the database.</p>
 
 </li>
 </ul>
 
-<p>To change these properties, simply provide the new values in the argument list. They may be provided in either order, but they must both be provided.</p>
+<p>To change these properties, simply provide the new values in the argument list. When used to change these properties, a reference to the iterator is returned.</p>
 
-<p>Normally, the iterator&#39;s buffer-size is set to a low initial value (greater than 1), and is usually adjusted upwards to a maximum after every database read. This is done to improve performance when fetching large result sets.</p>
+<p>Normally, an iterator&#39;s buffer-size is set to a low initial value, greater than 1. It is usually gradually increased by a factor of two, up to a maximum, after every database read. This is done to improve performance when fetching large result sets.</p>
 
 <p>Manually setting the iterator&#39;s buffer-size has the side-effect of fixing it at that value, preventing the kind of automatic adjustment described above.</p>
 
-<p>When used to change these properties, the method returns a reference to the iterator.</p>
+<p>The following package globals define the relevant default settings:</p>
+
+<pre><code>$DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
+$DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
+$DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pre>
 
 <h4 id="sth"><code>sth</code></h4>
 
