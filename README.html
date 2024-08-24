@@ -1120,7 +1120,9 @@ $itor = $itor-&gt;buffer_size_slice($buffer_size, $slice);</code></pre>
 
 <p>To change these properties, simply provide the new values in the argument list. They may be provided in either order, but they must both be provided.</p>
 
-<p>Normally, the iterator&#39;s buffer-size is set to a low initial value (greater than 1), and is usually adjusted upwards to a maximum after every database read. This is done to improve performance when fetching large result sets. By manually setting the iterator&#39;s buffer-size, it will be fixed at that size and not automatically adjusted.</p>
+<p>Normally, the iterator&#39;s buffer-size is set to a low initial value (greater than 1), and is usually adjusted upwards to a maximum after every database read. This is done to improve performance when fetching large result sets.</p>
+
+<p>Manually setting the iterator&#39;s buffer-size has the side-effect of fixing it at that value, preventing the kind of automatic adjustment described above.</p>
 
 <p>When used to change these properties, the method returns a reference to the iterator.</p>
 
@@ -1199,7 +1201,9 @@ $itor = $itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
 
 <p>To change these properties, simply provide the new values in the argument list. They may be provided in either order, but they must both be provided.</p>
 
-<p>Normally, the iterator&#39;s buffer-size is set to a low initial value (greater than 1), and is usually adjusted upwards to a maximum after every database read. This is done to improve performance when fetching large result sets. By manually setting the iterator&#39;s buffer-size, it will be fixed at that size and not automatically adjusted.</p>
+<p>Normally, the iterator&#39;s buffer-size is set to a low initial value (greater than 1), and is usually adjusted upwards to a maximum after every database read. This is done to improve performance when fetching large result sets.</p>
+
+<p>Manually setting the iterator&#39;s buffer-size has the side-effect of fixing it at that value, preventing the kind of automatic adjustment described above.</p>
 
 <p>When used to change these properties, the method returns a reference to the iterator.</p>
 
