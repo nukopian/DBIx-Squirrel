@@ -1024,17 +1024,18 @@ an array of all matching row objects. Where no rows are matched,
     $itor = $itor->buffer_size_slice($buffer_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
-from the database, and (b) how many results it can buffer-up at a time.
+from the database, and (b) how many results it makes available for fetching
+after a single database read.
 
 When called with no arguments, a list comprised of the following two iterator
 properties is returned:
 
-- 1. `$buffer_size`
+- `$buffer_size`
 
     The current size of the results buffer. That is, the current maximum number of
     results that are processed and ready to fetch after a single database read.
 
-- 2. `$slice`
+- `$slice`
 
     The how the iterator slices results fetched from the database. This may be an
     ARRAYREF or a HASHREF.
@@ -1104,17 +1105,18 @@ Returns the number of rows aftected by non-SELECT statements.
     $itor = $itor->slice_buffer_size($buffer_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
-from the database, and (b) how many results it can buffer-up at a time.
+from the database, and (b) how many results it makes available for fetching
+after a single database read.
 
 When called with no arguments, a list comprised of the following two iterator
 properties is returned:
 
-- 1. `$slice`
+- `$slice`
 
     The how the iterator slices results fetched from the database. This may be an
     ARRAYREF or a HASHREF.
 
-- 2. `$buffer_size`
+- `$buffer_size`
 
     The current size of the results buffer. That is, the current maximum number of
     results that are processed and ready to fetch after a single database read.

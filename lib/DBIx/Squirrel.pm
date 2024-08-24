@@ -1235,19 +1235,20 @@ C<undef> would be returned.
     $itor = $itor->buffer_size_slice($buffer_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
-from the database, and (b) how many results it can buffer-up at a time.
+from the database, and (b) how many results it makes available for fetching
+after a single database read.
 
 When called with no arguments, a list comprised of the following two iterator
 properties is returned:
 
 =over
 
-=item 1. C<$buffer_size>
+=item * C<$buffer_size>
 
 The current size of the results buffer. That is, the current maximum number of
 results that are processed and ready to fetch after a single database read.
 
-=item 2. C<$slice>
+=item * C<$slice>
 
 The how the iterator slices results fetched from the database. This may be an
 ARRAYREF or a HASHREF.
@@ -1319,19 +1320,20 @@ Returns the number of rows aftected by non-SELECT statements.
     $itor = $itor->slice_buffer_size($buffer_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
-from the database, and (b) how many results it can buffer-up at a time.
+from the database, and (b) how many results it makes available for fetching
+after a single database read.
 
 When called with no arguments, a list comprised of the following two iterator
 properties is returned:
 
 =over
 
-=item 1. C<$slice>
+=item * C<$slice>
 
 The how the iterator slices results fetched from the database. This may be an
 ARRAYREF or a HASHREF.
 
-=item 2. C<$buffer_size>
+=item * C<$buffer_size>
 
 The current size of the results buffer. That is, the current maximum number of
 results that are processed and ready to fetch after a single database read.
