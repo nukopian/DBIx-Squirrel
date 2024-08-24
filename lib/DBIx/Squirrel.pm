@@ -1321,7 +1321,7 @@ only use C<count_all> when you know that C<next> won't be called again.
 
 =head4 C<execute>
 
-    $rv = $itor->execute());
+    $rv = $itor->execute();
 
 Executes the iterator's underlying statemeent handle object.
 
@@ -1329,7 +1329,7 @@ Executes the iterator's underlying statemeent handle object.
 
 =head4 C<iterate>
 
-    $itor | undef = $itor->iterate());
+    $itor | undef = $itor->iterate();
 
 Executes the iterator's underlying statemeent handle object,
 returning the iterator object reference if execution was successful,
@@ -1374,7 +1374,7 @@ May be used to determine how the iterator slices the results it fetches
 from the database. This may be an ARRAYREF or a HASHREF.
 
 To change this property, simply provide the new value as the argument. When
-used to change the buffer-size, a reference to the iterator is returned.
+used to change the slicing strategy, a reference to the iterator is returned.
 
 The following package global defines the default setting:
 

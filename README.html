@@ -1167,7 +1167,7 @@ $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pr
 
 <h4 id="execute1"><code>execute</code></h4>
 
-<pre><code>$rv = $itor-&gt;execute());</code></pre>
+<pre><code>$rv = $itor-&gt;execute();</code></pre>
 
 <p>Executes the iterator&#39;s underlying statemeent handle object.</p>
 
@@ -1175,7 +1175,7 @@ $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pr
 
 <h4 id="iterate2"><code>iterate</code></h4>
 
-<pre><code>$itor | undef = $itor-&gt;iterate());</code></pre>
+<pre><code>$itor | undef = $itor-&gt;iterate();</code></pre>
 
 <p>Executes the iterator&#39;s underlying statemeent handle object, returning the iterator object reference if execution was successful, or <code>undef</code> if not.</p>
 
@@ -1213,7 +1213,7 @@ $itor = $itor-&gt;slice($slice);</code></pre>
 
 <p>May be used to determine how the iterator slices the results it fetches from the database. This may be an ARRAYREF or a HASHREF.</p>
 
-<p>To change this property, simply provide the new value as the argument. When used to change the buffer-size, a reference to the iterator is returned.</p>
+<p>To change this property, simply provide the new value as the argument. When used to change the slicing strategy, a reference to the iterator is returned.</p>
 
 <p>The following package global defines the default setting:</p>
 
