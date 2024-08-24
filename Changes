@@ -1,11 +1,13 @@
 Revision history for DBIx-Squirrel
 
+1.3.2   2024-08-24 14:40
+
 1.3.1   2024-08-24 14:10
         - General code improvements.
         - Removed unnecessary imports.
         - Removed call to no longer extant iterator method from &DBIx::Squirrel::it::DESTROY.
         - Added the "count_all" method back into the iterator class, as well as ensuring that "count"
-          does not affect a future call t "next".
+          does not affect a future call to "next".
         - Addressed build failures revealed by the CPAN Testers Matrix:
           - Rewrote &DBIx::Squirrel::util::part_args - failed on Perl versions <= 5.18.4;
           - Back to using "strict" and "warnings" - Modern::Perl having some issues with a bundle "all"
