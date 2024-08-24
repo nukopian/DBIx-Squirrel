@@ -1020,8 +1020,8 @@ an array of all matching row objects. Where no rows are matched,
 #### `buffer_size_slice`
 
     ($buffer_size, $slice) = $itor->buffer_size_slice();
-    $itor->buffer_size_slice($slice, $buffer_size);
-    $itor->buffer_size_slice($buffer_size, $slice);
+    $itor = $itor->buffer_size_slice($slice, $buffer_size);
+    $itor = $itor->buffer_size_slice($buffer_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
 from the database, and (b) how many results it can buffer-up at a time.
@@ -1100,8 +1100,8 @@ Returns the number of rows aftected by non-SELECT statements.
 #### `slice_buffer_size`
 
     ($slice, $buffer_size) = $itor->slice_buffer_size();
-    $itor->slice_buffer_size($slice, $buffer_size);
-    $itor->slice_buffer_size($buffer_size, $slice);
+    $itor = $itor->slice_buffer_size($slice, $buffer_size);
+    $itor = $itor->slice_buffer_size($buffer_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
 from the database, and (b) how many results it can buffer-up at a time.

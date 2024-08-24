@@ -1097,8 +1097,8 @@ $ary_ref | undef = $itor-&gt;all();</code></pre>
 <h4 id="buffer_size_slice"><code>buffer_size_slice</code></h4>
 
 <pre><code>($buffer_size, $slice) = $itor-&gt;buffer_size_slice();
-$itor-&gt;buffer_size_slice($slice, $buffer_size);
-$itor-&gt;buffer_size_slice($buffer_size, $slice);</code></pre>
+$itor = $itor-&gt;buffer_size_slice($slice, $buffer_size);
+$itor = $itor-&gt;buffer_size_slice($buffer_size, $slice);</code></pre>
 
 <p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it can buffer-up at a time.</p>
 
@@ -1174,8 +1174,8 @@ $ary_ref | undef = $itor-&gt;remaining();</code></pre>
 <h4 id="slice_buffer_size"><code>slice_buffer_size</code></h4>
 
 <pre><code>($slice, $buffer_size) = $itor-&gt;slice_buffer_size();
-$itor-&gt;slice_buffer_size($slice, $buffer_size);
-$itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
+$itor = $itor-&gt;slice_buffer_size($slice, $buffer_size);
+$itor = $itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
 
 <p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it can buffer-up at a time.</p>
 
