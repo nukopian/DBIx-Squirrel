@@ -112,7 +112,7 @@ sub new {
 }
 
 sub _buffer_charge {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     unless ($self->{Executed}) {
         return unless defined($self->execute);
     }
@@ -128,22 +128,22 @@ sub _buffer_charge {
 }
 
 sub _buffer_empty {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     undef $_;
     return $attr->{buffer} && @{$attr->{buffer}} < 1;
 }
 
 # Where rows are buffered until fetched.
 sub _buffer_init {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     if ($self->{NUM_OF_FIELDS}) {
-        $attr->{buffer} = @_ ? shift : [];
+        $attr->{buffer} = [];
     }
     return $self;
 }
 
 sub _buffer_size_adjust {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     $attr->{buffer_size} *= 2;
     $attr->{buffer_size}  = BUFFER_SIZE_LIMIT if $attr->{buffer_size} > BUFFER_SIZE_LIMIT;
     return $self;
@@ -151,7 +151,7 @@ sub _buffer_size_adjust {
 
 # How many rows to buffer at a time.
 sub _buffer_size_init {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     if ($self->{NUM_OF_FIELDS}) {
         $attr->{buffer_size} = DEFAULT_BUFFER_SIZE;
     }
@@ -160,7 +160,7 @@ sub _buffer_size_init {
 
 # The total number of rows fetched since execute was called.
 sub _results_count_init {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     if ($self->{NUM_OF_FIELDS}) {
         $attr->{results_count} = 0;
     }
@@ -185,13 +185,13 @@ sub _results_fetch {
 }
 
 sub _results_pending {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     return unless defined($attr->{results_pending});
     return !!@{$attr->{results_pending}};
 }
 
 sub _results_pending_fetch {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     return unless defined($attr->{results_pending});
     my $result = shift(@{$attr->{results_pending}});
     $attr->{results_first} = $result unless $attr->{results_count}++;
@@ -229,7 +229,7 @@ sub _results_transform {
 }
 
 sub _state_clear {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     foreach (
         qw/
         buffer
@@ -247,7 +247,7 @@ sub _state_clear {
 }
 
 sub _state_init {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     $self->_buffer_init;
     $self->_buffer_size_init;
     $self->_results_count_init;
@@ -318,7 +318,7 @@ sub execute {
 }
 
 sub first {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     return do {
         if (exists($attr->{results_first})) {
             $_ = $attr->{results_first};
@@ -339,7 +339,7 @@ sub iterate {
 }
 
 sub last {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     $self->count;
     return do {
         if (exists($attr->{results_last})) {
@@ -353,11 +353,11 @@ sub last {
 }
 
 sub next {
-    return do {$_ = shift->_results_fetch};
+    return do {$_ = $_[0]->_results_fetch};
 }
 
 sub remaining {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     my @rows = $self->_results_fetch;
     push @rows, $_ while $self->_results_fetch;
     return @rows if wantarray;
@@ -372,7 +372,7 @@ sub reset {
 }
 
 sub rows {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     return $attr->{sth}->rows;
 }
 
@@ -433,7 +433,7 @@ BEGIN {
 }
 
 sub sth {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = $_[0]->_private;
     return $attr->{sth};
 }
 
