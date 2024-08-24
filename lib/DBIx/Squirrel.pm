@@ -1306,7 +1306,7 @@ of all rows will be returned.
 
 =head4 C<count_all>
 
-    $count = $itor->count();
+    $count = $itor->count_all();
 
 Returns the total number of rows.
 
