@@ -1049,7 +1049,7 @@ read. This is done to improve performance when fetching large result sets. By
 manually setting the iterator's buffer-size, it will be fixed at that size
 and not automatically adjusted.
 
-When changing these properties, the method returns a reference to the
+When used to change these properties, the method returns a reference to the
 iterator.
 
 #### `count`
@@ -1138,7 +1138,7 @@ read. This is done to improve performance when fetching large result sets. By
 manually setting the iterator's buffer-size, it will be fixed at that size
 and not automatically adjusted.
 
-When changing these properties, the method returns a reference to the
+When used to change these properties, the method returns a reference to the
 iterator.
 
 #### `sth`
