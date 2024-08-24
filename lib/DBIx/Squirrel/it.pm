@@ -121,8 +121,10 @@ sub _buffer_charge {
     my($sth, $slice, $buffer_size) = @{$attr}{qw/sth slice buffer_size/};
     my $rows = $sth->fetchall_arrayref($slice, $buffer_size);
     return 0 unless $rows;
-    if ($attr->{buffer_size} < BUFFER_SIZE_LIMIT) {
-        $self->_buffer_size_adjust if @{$rows} >= $attr->{buffer_size};
+    unless ($attr->{buffer_size_fixed}) {
+        if ($attr->{buffer_size} < BUFFER_SIZE_LIMIT) {
+            $self->_buffer_size_adjust if @{$rows} >= $attr->{buffer_size};
+        }
     }
     $attr->{buffer} = [defined($attr->{buffer}) ? (@{$attr->{buffer}}, @{$rows}) : @{$rows}];
     return do {$_ = scalar(@{$attr->{buffer}})};
@@ -155,6 +157,14 @@ sub _buffer_size_init {
     my($attr, $self) = $_[0]->_private;
     if ($self->{NUM_OF_FIELDS}) {
         $attr->{buffer_size} = DEFAULT_BUFFER_SIZE;
+    }
+    return $self;
+}
+
+sub _buffer_size_fixed_init {
+    my($attr, $self) = $_[0]->_private;
+    if ($self->{NUM_OF_FIELDS}) {
+        $attr->{buffer_size_fixed} = !!0;
     }
     return $self;
 }
@@ -251,6 +261,7 @@ sub _state_init {
     my($attr, $self) = $_[0]->_private;
     $self->_buffer_init;
     $self->_buffer_size_init;
+    $self->_buffer_size_fixed_init;
     $self->_results_count_init;
     return $self;
 }
@@ -273,7 +284,8 @@ sub buffer_size {
         my $new_buffer_size = int(shift || DEFAULT_BUFFER_SIZE);
         throw E_BAD_BUFFER_SIZE
           if $new_buffer_size < DEFAULT_BUFFER_SIZE || $new_buffer_size > BUFFER_SIZE_LIMIT;
-        $attr->{buffer_size} = $new_buffer_size;
+        $attr->{buffer_size}       = $new_buffer_size;
+        $attr->{buffer_size_fixed} = !!1;
         return $self;
     }
     else {
@@ -296,8 +308,8 @@ sub count {
             undef $_;
             return;
         }
+        while ($self->next) {;}
     }
-    while ($self->next) {;}
     return do {$_ = $attr->{results_count}};
 }
 

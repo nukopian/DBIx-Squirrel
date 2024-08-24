@@ -1100,7 +1100,7 @@ $ary_ref | undef = $itor-&gt;all();</code></pre>
 $itor = $itor-&gt;buffer_size_slice($slice, $buffer_size);
 $itor = $itor-&gt;buffer_size_slice($buffer_size, $slice);</code></pre>
 
-<p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it makes available for fetching after a single database read.</p>
+<p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it makes available to fetch following a single database read.</p>
 
 <p>When called with no arguments, a list comprised of the following two iterator properties is returned:</p>
 
@@ -1118,13 +1118,17 @@ $itor = $itor-&gt;buffer_size_slice($buffer_size, $slice);</code></pre>
 </li>
 </ul>
 
-<p>To change these properties, simply provide the new values. These can be provided in either order, but they must both be provided.</p>
+<p>To change these properties, simply provide the new values in the argument list. They may be provided in either order, but they must both be provided.</p>
+
+<p>Normally, the iterator&#39;s buffer-size is initially set to a low value, greater than 1, and is usually adjusted upwards to a maximum after every database read. This is done to improve performance for larget result sets. By manually setting the iterator&#39;s buffer-size, it will be fixed at that size and not automatically adjusted.</p>
+
+<p>When changing these properties, the method returns a reference to the iterator.</p>
 
 <h4 id="count"><code>count</code></h4>
 
 <pre><code>$count = $itor-&gt;count();</code></pre>
 
-<p>Returns the number of rows by counting the number of times <code>next</code> can be called.</p>
+<p>Returns the number of rows fetched.</p>
 
 <h4 id="execute1"><code>execute</code></h4>
 
@@ -1175,7 +1179,7 @@ $ary_ref | undef = $itor-&gt;remaining();</code></pre>
 $itor = $itor-&gt;slice_buffer_size($slice, $buffer_size);
 $itor = $itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
 
-<p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it makes available for fetching after a single database read.</p>
+<p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it makes available to fetch following a single database read.</p>
 
 <p>When called with no arguments, a list comprised of the following two iterator properties is returned:</p>
 
@@ -1193,7 +1197,11 @@ $itor = $itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
 </li>
 </ul>
 
-<p>To change these properties, simply provide the new values. These can be provided in either order, but they must both be provided.</p>
+<p>To change these properties, simply provide the new values in the argument list. They may be provided in either order, but they must both be provided.</p>
+
+<p>Normally, the iterator&#39;s buffer-size is initially set to a low value, greater than 1, and is usually adjusted upwards to a maximum after every database read. This is done to improve performance for larget result sets. By manually setting the iterator&#39;s buffer-size, it will be fixed at that size and not automatically adjusted.</p>
+
+<p>When changing these properties, the method returns a reference to the iterator.</p>
 
 <h4 id="sth"><code>sth</code></h4>
 

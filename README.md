@@ -1024,8 +1024,8 @@ an array of all matching row objects. Where no rows are matched,
     $itor = $itor->buffer_size_slice($buffer_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
-from the database, and (b) how many results it makes available for fetching
-after a single database read.
+from the database, and (b) how many results it makes available to fetch
+following a single database read.
 
 When called with no arguments, a list comprised of the following two iterator
 properties is returned:
@@ -1040,15 +1040,23 @@ properties is returned:
     The how the iterator slices results fetched from the database. This may be an
     ARRAYREF or a HASHREF.
 
-To change these properties, simply provide the new values. These can be
-provided in either order, but they must both be provided.
+To change these properties, simply provide the new values in the argument
+list. They may be provided in either order, but they must both be provided.
+
+Normally, the iterator's buffer-size is initially set to a low value, greater
+than 1, and is usually adjusted upwards to a maximum after every database
+read. This is done to improve performance for larget result sets. By
+manually setting the iterator's buffer-size, it will be fixed at that size
+and not automatically adjusted.
+
+When changing these properties, the method returns a reference to the
+iterator.
 
 #### `count`
 
     $count = $itor->count();
 
-Returns the number of rows by counting the number of times `next`
-can be called.
+Returns the number of rows fetched.
 
 #### `execute`
 
@@ -1105,8 +1113,8 @@ Returns the number of rows aftected by non-SELECT statements.
     $itor = $itor->slice_buffer_size($buffer_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
-from the database, and (b) how many results it makes available for fetching
-after a single database read.
+from the database, and (b) how many results it makes available to fetch
+following a single database read.
 
 When called with no arguments, a list comprised of the following two iterator
 properties is returned:
@@ -1121,8 +1129,17 @@ properties is returned:
     The current size of the results buffer. That is, the current maximum number of
     results that are processed and ready to fetch after a single database read.
 
-To change these properties, simply provide the new values. These can be
-provided in either order, but they must both be provided.
+To change these properties, simply provide the new values in the argument
+list. They may be provided in either order, but they must both be provided.
+
+Normally, the iterator's buffer-size is initially set to a low value, greater
+than 1, and is usually adjusted upwards to a maximum after every database
+read. This is done to improve performance for larget result sets. By
+manually setting the iterator's buffer-size, it will be fixed at that size
+and not automatically adjusted.
+
+When changing these properties, the method returns a reference to the
+iterator.
 
 #### `sth`
 
