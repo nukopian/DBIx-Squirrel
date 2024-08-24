@@ -1149,11 +1149,34 @@ $ary_ref | undef = $itor-&gt;remaining();</code></pre>
 
 <h4 id="slice_buffer_size"><code>slice_buffer_size</code></h4>
 
+<pre><code>($slice, $buffer_size) = $itor-&gt;slice_buffer_size();</code></pre>
+
+<p>Returns a list comprised of two elements:</p>
+
+<ul>
+
+<li><p><code>$slice</code></p>
+
+<p>The how the iterator&#39;s results are sliced.</p>
+
+</li>
+<li><p><code>$buffer_size</code></p>
+
+<p>The current size of the results buffer. That is, the current number of results that could be buffered-up by the iterator and ready to be fetched.</p>
+
+</li>
+</ul>
+
+<pre><code>$itor-&gt;slice_buffer_size($slice, $buffer_size);
+$itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
+
+<p>Defines how the iterator will slice results, as well as how many results the iterator will buffer-up ready to be fetched.</p>
+
 <h4 id="sth"><code>sth</code></h4>
 
 <pre><code>$sth = $itor-&gt;sth();</code></pre>
 
-<p>Returns a reference to the statement handle object associated with the iterator.</p>
+<p>Returns the iterator&#39;s statement handle object.</p>
 
 <h1 id="COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</h1>
 

@@ -1289,7 +1289,28 @@ Returns the number of rows aftected by non-SELECT statements.
 
 =head4 C<slice_buffer_size>
 
-    
+    ($slice, $buffer_size) = $itor->slice_buffer_size();
+
+Returns a list comprised of two elements:
+
+=over
+
+=item * C<$slice>
+
+The how the iterator's results are sliced.
+
+=item * C<$buffer_size>
+
+The current size of the results buffer. That is, the current number of results
+that could be buffered-up by the iterator and ready to be fetched.
+
+=back
+
+    $itor->slice_buffer_size($slice, $buffer_size);
+    $itor->slice_buffer_size($buffer_size, $slice);
+
+Defines how the iterator will slice results, as well as how many results the
+iterator will buffer-up ready to be fetched.
 
 =head4 C<sth>
 

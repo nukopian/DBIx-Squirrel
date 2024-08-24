@@ -1078,12 +1078,30 @@ Returns the number of rows aftected by non-SELECT statements.
 
 #### `slice_buffer_size`
 
+    ($slice, $buffer_size) = $itor->slice_buffer_size();
+
+Returns a list comprised of two elements:
+
+- `$slice`
+
+    The how the iterator's results are sliced.
+
+- `$buffer_size`
+
+    The current size of the results buffer. That is, the current number of results
+    that could be buffered-up by the iterator and ready to be fetched.
+
+    $itor->slice_buffer_size($slice, $buffer_size);
+    $itor->slice_buffer_size($buffer_size, $slice);
+
+Defines how the iterator will slice results, as well as how many results the
+iterator will buffer-up ready to be fetched.
+
 #### `sth`
 
     $sth = $itor->sth();
 
-Returns a reference to the statement handle object associated with
-the iterator.
+Returns the iterator's statement handle object.
 
 # COPYRIGHT AND LICENSE
 
