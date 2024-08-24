@@ -1,3 +1,4 @@
+use diagnostics;
 use strict;
 use warnings;
 use open ':std', ':encoding(utf8)';
