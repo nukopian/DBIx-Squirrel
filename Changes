@@ -1,6 +1,6 @@
 Revision history for DBIx-Squirrel
 
-1.3.1   2024-08-24 09:47
+1.3.1   2024-08-24 11:35
         - General code improvements.
         - Removed unnecessary imports.
         - Removed call to no longer extant iterator method from &DBIx::Squirrel::it::DESTROY.
