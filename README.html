@@ -1163,7 +1163,7 @@ $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pr
 
 <p>If the iterator&#39;s statement has not yet been executed, it will be. Once the iterator&#39;s statement has been executed, any remaining rows will be fetched, included in the count, and then immediately discarded.</p>
 
-<p><b>BEWARE</b> that calling this method alters the iterator&#39;s state enough that calling <code>next</code> won&#39;t return the row you expected. It should only be called only if you know that <code>next</code> won&#39;t be called again.</p>
+<p><b>BEWARE</b> that this method will, potentially, impact any planned call to <code>next</code> that didn&#39;t account for remaining rows to be fetched and discarded. Therefore, only use <code>count_all</code> when you know that <code>next</code> won&#39;t be called again.</p>
 
 <h4 id="execute1"><code>execute</code></h4>
 

@@ -1314,9 +1314,9 @@ If the iterator's statement has not yet been executed, it will be. Once the
 iterator's statement has been executed, any remaining rows will be fetched,
 included in the count, and then immediately discarded.
 
-B<BEWARE> that calling this method alters the iterator's state enough that
-calling C<next> won't return the row you expected. It should only be called
-only if you know that C<next> won't be called again.
+B<BEWARE> that this method will, potentially, impact any planned call to C<next>
+that didn't account for remaining rows to be fetched and discarded. Therefore,
+only use C<count_all> when you know that C<next> won't be called again.
 
 =head4 C<execute>
 

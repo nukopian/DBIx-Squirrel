@@ -1099,9 +1099,9 @@ If the iterator's statement has not yet been executed, it will be. Once the
 iterator's statement has been executed, any remaining rows will be fetched,
 included in the count, and then immediately discarded.
 
-**BEWARE** that calling this method alters the iterator's state enough that
-calling `next` won't return the row you expected. It should only be called
-only if you know that `next` won't be called again.
+**BEWARE** that this method will, potentially, impact any planned call to `next`
+that didn't account for remaining rows to be fetched and discarded. Therefore,
+only use `count_all` when you know that `next` won't be called again.
 
 #### `execute`
 
