@@ -8,8 +8,8 @@ BEGIN {
     @DBIx::Squirrel::util::ISA         = 'Exporter';
     %DBIx::Squirrel::util::EXPORT_TAGS = (
         constants   => ['E_EXP_STATEMENT', 'E_EXP_STH', 'E_EXP_REF',],
-        diagnostics => ['throw',     'whine',],
-        transform   => ['part_args', 'part_args_using', 'transform',],
+        diagnostics => ['throw',           'whine',],
+        transform   => ['part_args',       'transform',],
         sql => ['get_trimmed_sql_and_digest', 'normalise_statement', 'study_statement', 'trim_sql_string', 'hash_sql_string',],
     );
     @DBIx::Squirrel::util::EXPORT_OK = @{
@@ -160,29 +160,10 @@ sub hash_sql_string {
 }
 
 sub part_args {
-    return part_args_using([], @_);
-}
-
-sub part_args_using {
-    my($coderefs, @args) = do {
-        if (defined($_[0])) {
-            if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                @_;
-            }
-            elsif (UNIVERSAL::isa($_[0], 'CODE')) {
-                [shift], @_;
-            }
-            else {
-                throw E_BAD_CB_LIST;
-            }
-        }
-        else {
-            shift;
-            [], @_;
-        }
-    };
-    unshift @{$coderefs}, pop @args while UNIVERSAL::isa($args[$#args], 'CODE');
-    return $coderefs, @args;
+    my @args = reverse(@_);
+    my @coderefs;
+    unshift @coderefs, shift(@args) while UNIVERSAL::isa($args[0], 'CODE');
+    return \@coderefs, @args;
 }
 
 # Runtime scoping of $_result allows caller to import and use "result" instead
