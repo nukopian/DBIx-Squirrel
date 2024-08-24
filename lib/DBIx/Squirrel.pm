@@ -1260,7 +1260,7 @@ list. They may be provided in either order, but they must both be provided.
 
 Normally, the iterator's buffer-size is initially set to a low value, greater
 than 1, and is usually adjusted upwards to a maximum after every database
-read. This is done to improve performance for larget result sets. By
+read. This is done to improve performance when fetching large result sets. By
 manually setting the iterator's buffer-size, it will be fixed at that size
 and not automatically adjusted.
 
@@ -1353,7 +1353,7 @@ list. They may be provided in either order, but they must both be provided.
 
 Normally, the iterator's buffer-size is initially set to a low value, greater
 than 1, and is usually adjusted upwards to a maximum after every database
-read. This is done to improve performance for larget result sets. By
+read. This is done to improve performance when fetching large result sets. By
 manually setting the iterator's buffer-size, it will be fixed at that size
 and not automatically adjusted.
 
