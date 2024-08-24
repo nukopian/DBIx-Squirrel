@@ -101,7 +101,7 @@
               <li><a href="#reset">reset</a></li>
               <li><a href="#rows">rows</a></li>
               <li><a href="#single">single</a></li>
-              <li><a href="#slice">slice</a></li>
+              <li><a href="#slice1">slice</a></li>
               <li><a href="#slice_buffer_size">slice_buffer_size</a></li>
               <li><a href="#sth">sth</a></li>
             </ul>
@@ -1096,7 +1096,31 @@ $ary_ref | undef = $itor-&gt;all();</code></pre>
 
 <h4 id="buffer_size_slice"><code>buffer_size_slice</code></h4>
 
-<p>Alias <i>(see <code>slice_buffer_size</code>)</i>.</p>
+<pre><code>($buffer_size, $slice) = $itor-&gt;buffer_size_slice();
+$itor-&gt;buffer_size_slice($slice, $buffer_size);
+$itor-&gt;buffer_size_slice($buffer_size, $slice);</code></pre>
+
+<p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it can buffer-up at a time.</p>
+
+<p>When called with no arguments, a list comprised of the following two iterator properties is returned:</p>
+
+<dl>
+
+<dt id="buffer_size1">1. <code>$buffer_size</code></dt>
+<dd>
+
+<p>The current size of the results buffer. That is, the current maximum number of results that are processed and ready to fetch after a single database read.</p>
+
+</dd>
+<dt id="slice">2. <code>$slice</code></dt>
+<dd>
+
+<p>The how the iterator slices results fetched from the database. This may be an ARRAYREF or a HASHREF.</p>
+
+</dd>
+</dl>
+
+<p>To change these properties, simply provide the new values. These can be provided in either order, but they must both be provided.</p>
 
 <h4 id="count"><code>count</code></h4>
 
@@ -1145,7 +1169,7 @@ $ary_ref | undef = $itor-&gt;remaining();</code></pre>
 
 <h4 id="single"><code>single</code></h4>
 
-<h4 id="slice"><code>slice</code></h4>
+<h4 id="slice1"><code>slice</code></h4>
 
 <h4 id="slice_buffer_size"><code>slice_buffer_size</code></h4>
 
@@ -1153,27 +1177,27 @@ $ary_ref | undef = $itor-&gt;remaining();</code></pre>
 $itor-&gt;slice_buffer_size($slice, $buffer_size);
 $itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
 
-<p>May be used to determine (a) how the iterator slices results fetched from the database, and (b) how many rows it can potentially buffer-up at a time.</p>
+<p>May be used to determine (a) how the iterator slices the results it fetches from the database, and (b) how many results it can buffer-up at a time.</p>
 
-<p>When called with no arguments, this method will return a list comprised of the following two iterator properties:</p>
+<p>When called with no arguments, a list comprised of the following two iterator properties is returned:</p>
 
 <dl>
 
-<dt id="slice1">1. <code>$slice</code></dt>
+<dt id="slice2">1. <code>$slice</code></dt>
 <dd>
 
-<p>The how the iterator&#39;s results are sliced.</p>
+<p>The how the iterator slices results fetched from the database. This may be an ARRAYREF or a HASHREF.</p>
 
 </dd>
-<dt id="buffer_size1">2. <code>$buffer_size</code></dt>
+<dt id="buffer_size2">2. <code>$buffer_size</code></dt>
 <dd>
 
-<p>The current size of the results buffer. That is, the current number of results that could be buffered-up by the iterator and ready to be fetched.</p>
+<p>The current size of the results buffer. That is, the current maximum number of results that are processed and ready to fetch after a single database read.</p>
 
 </dd>
 </dl>
 
-<p>To change these properties, simply provide new values. You can provide them in either order, but you must provide both.</p>
+<p>To change these properties, simply provide the new values. These can be provided in either order, but they must both be provided.</p>
 
 <h4 id="sth"><code>sth</code></h4>
 

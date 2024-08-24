@@ -1019,7 +1019,28 @@ an array of all matching row objects. Where no rows are matched,
 
 #### `buffer_size_slice`
 
-Alias _(see `slice_buffer_size`)_.
+    ($buffer_size, $slice) = $itor->buffer_size_slice();
+    $itor->buffer_size_slice($slice, $buffer_size);
+    $itor->buffer_size_slice($buffer_size, $slice);
+
+May be used to determine (a) how the iterator slices the results it fetches
+from the database, and (b) how many results it can buffer-up at a time.
+
+When called with no arguments, a list comprised of the following two iterator
+properties is returned:
+
+- 1. `$buffer_size`
+
+    The current size of the results buffer. That is, the current maximum number of
+    results that are processed and ready to fetch after a single database read.
+
+- 2. `$slice`
+
+    The how the iterator slices results fetched from the database. This may be an
+    ARRAYREF or a HASHREF.
+
+To change these properties, simply provide the new values. These can be
+provided in either order, but they must both be provided.
 
 #### `count`
 
@@ -1082,23 +1103,24 @@ Returns the number of rows aftected by non-SELECT statements.
     $itor->slice_buffer_size($slice, $buffer_size);
     $itor->slice_buffer_size($buffer_size, $slice);
 
-May be used to determine (a) how the iterator slices results fetched from the
-database, and (b) how many rows it can potentially buffer-up at a time.
+May be used to determine (a) how the iterator slices the results it fetches
+from the database, and (b) how many results it can buffer-up at a time.
 
-When called with no arguments, this method will return a list comprised of the
-following two iterator properties:
+When called with no arguments, a list comprised of the following two iterator
+properties is returned:
 
 - 1. `$slice`
 
-    The how the iterator's results are sliced.
+    The how the iterator slices results fetched from the database. This may be an
+    ARRAYREF or a HASHREF.
 
 - 2. `$buffer_size`
 
-    The current size of the results buffer. That is, the current number of results
-    that could be buffered-up by the iterator and ready to be fetched.
+    The current size of the results buffer. That is, the current maximum number of
+    results that are processed and ready to fetch after a single database read.
 
-To change these properties, simply provide new values. You can provide them in
-either order, but you must provide both.
+To change these properties, simply provide the new values. These can be
+provided in either order, but they must both be provided.
 
 #### `sth`
 
