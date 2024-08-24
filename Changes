@@ -6,6 +6,7 @@
     because is isn't exported. Hopefully, a conditionally workaround solves the issue.
 -   Strawberry Perl 5.14.4.1 on MSWin32-x86-multi-thread gives /Can't locate object method "e" via package "warnings"/
     error. Added "use diagnostics" pragma to all test code in an attempt to coax more useful information out.
+-   Fixed broken iterator "buffer_size" code - manually set sizes weren't persistent.
 ### 1.3.1 2024-08-24 14:10
 -   General code improvements.
 -   Removed unnecessary imports.
