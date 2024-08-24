@@ -1153,7 +1153,7 @@ $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pr
 
 <p>Returns the number of rows fetched so far.</p>
 
-<p>If the iterator&#39;s statement has not yet been executed, it will be and a count of all rows will be returned.</p>
+<p>If the iterator&#39;s statement has not yet been executed, it will be and a count of all rows will be returned. If the statement has been executed, and results have already been fetched, then only the current count is returned.</p>
 
 <h4 id="count_all"><code>count_all</code></h4>
 

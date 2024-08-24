@@ -1302,7 +1302,8 @@ The following package globals define the relevant default settings:
 Returns the number of rows fetched so far.
 
 If the iterator's statement has not yet been executed, it will be and a count
-of all rows will be returned.
+of all rows will be returned. If the statement has been executed, and results
+have already been fetched, then only the current count is returned.
 
 =head4 C<count_all>
 
