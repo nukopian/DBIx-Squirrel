@@ -11,6 +11,145 @@ package DBIx::Squirrel;
 
 DBIx::Squirrel - A C<DBI> extension
 
+=cut
+
+use DBI;
+use Exporter;
+use Scalar::Util qw/reftype/;
+use Sub::Name;
+use DBIx::Squirrel::dr     ();
+use DBIx::Squirrel::db     ();
+use DBIx::Squirrel::st     ();
+use DBIx::Squirrel::it     ();
+use DBIx::Squirrel::rs     ();
+use DBIx::Squirrel::result ();
+use DBIx::Squirrel::util   qw/throw uniq/;
+
+BEGIN {
+    @DBIx::Squirrel::ISA                          = 'DBI';
+    *DBIx::Squirrel::EXPORT_OK                    = *DBI::EXPORT_OK;
+    *DBIx::Squirrel::EXPORT_TAGS                  = *DBI::EXPORT_TAGS;
+    *DBIx::Squirrel::err                          = *DBI::err;
+    *DBIx::Squirrel::errstr                       = *DBI::errstr;
+    *DBIx::Squirrel::rows                         = *DBI::rows;
+    *DBIx::Squirrel::lasth                        = *DBI::lasth;
+    *DBIx::Squirrel::state                        = *DBI::state;
+    *DBIx::Squirrel::connect                      = *DBIx::Squirrel::dr::connect;
+    *DBIx::Squirrel::connect_cached               = *DBIx::Squirrel::dr::connect_cached;
+    *DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE = *DBIx::Squirrel::st::FINISH_ACTIVE_BEFORE_EXECUTE;
+    *DBIx::Squirrel::DEFAULT_SLICE                = *DBIx::Squirrel::it::DEFAULT_SLICE;
+    *DBIx::Squirrel::DEFAULT_BUFFER_SIZE          = *DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE;
+    *DBIx::Squirrel::BUFFER_SIZE_LIMIT            = *DBIx::Squirrel::it::BUFFER_SIZE_LIMIT;
+    *DBIx::Squirrel::NORMALISE_SQL                = *DBIx::Squirrel::util::NORMALISE_SQL;
+    *DBIx::Squirrel::NORMALIZE_SQL                = *DBIx::Squirrel::util::NORMALISE_SQL;
+
+    unless (defined $DBIx::Squirrel::VERSION) {
+        my $v = "1.3.3";
+        *DBIx::Squirrel::VERSION = \$v;
+    }
+}
+
+use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
+use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
+
+# Divide the argumments into two lists:
+# 1. a list of helper function names;
+# 2. a list of names to be imported from the DBI.
+sub _partition_imports_into_helpers_and_dbi_imports {
+    my(@helpers, @dbi);
+    while (@_) {
+        next unless defined($_[0]);
+        if ($_[0] =~ m/^database_entit(?:y|ies)$/i) {
+            shift;
+            if (ref($_[0])) {
+                if (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                    push @helpers, @{shift()};
+                }
+                else {
+                    shift;
+                }
+            }
+            else {
+                push @helpers, shift();
+            }
+        }
+        else {
+            push @dbi, shift();
+        }
+    }
+    return (\@helpers, \@dbi);
+}
+
+sub import {
+    no strict 'refs';    ## no critic
+    my $class  = shift;
+    my $caller = caller;
+    my($helpers, $dbi) = _partition_imports_into_helpers_and_dbi_imports(@_);
+    for my $name (@{$helpers}) {
+        my $symbol = $class . '::' . $name;
+        my $helper = sub {
+            unless (defined(${$symbol})) {
+                if (@_) {
+                    throw E_BAD_ENT_BIND
+                      unless UNIVERSAL::isa($_[0], 'DBI::db')
+                      or UNIVERSAL::isa($_[0], 'DBI::st')
+                      or UNIVERSAL::isa($_[0], 'DBIx::Squirrel::it');
+                    ${$symbol} = shift;
+                    return ${$symbol};
+                }
+            }
+            return unless defined(${$symbol});
+            if (@_) {
+                my @params = do {
+                    if (@_ == 1 && ref $_[0]) {
+                        if (reftype($_[0]) eq 'ARRAY') {
+                            @{+shift};
+                        }
+                        elsif (reftype($_[0]) eq 'HASH') {
+                            %{+shift};
+                        }
+                        else {
+                            throw E_EXP_HASH_ARR_REF;
+                        }
+                    }
+                    else {
+                        @_;
+                    }
+                };
+                if (UNIVERSAL::isa(${$symbol}, 'DBI::db')) {
+                    return ${$symbol}->prepare(@params);
+                }
+                elsif (UNIVERSAL::isa(${$symbol}, 'DBI::st')) {
+                    return ${$symbol}->execute(@params);
+                }
+                elsif (UNIVERSAL::isa(${$symbol}, 'DBIx::Squirrel::it')) {
+                    return ${$symbol}->iterate(@params);
+                }
+                else {
+                    # ok - no worries
+                }
+            }
+            return ${$symbol};
+        };
+        *{$symbol} = subname($name => $helper);
+        *{$caller . '::' . $name} = subname($caller . '::' . $name => \&{$symbol})
+          unless defined(&{$caller . '::' . $name});
+    }
+    if (@{$dbi}) {
+        DBI->import(@{$dbi});
+        @_ = ('DBIx::Squirrel', @{$dbi});
+        goto &Exporter::import;
+    }
+    return $class;
+}
+
+1;
+__END__
+
+=pod
+
+=encoding UTF-8
+
 =head1 SYNOPSIS
 
     # ------------------
@@ -324,144 +463,6 @@ DBIx::Squirrel - A C<DBI> extension
         },
     );
     $id = $itr->iterate('Acme Rocket')->single;
-=cut
-
-use DBI;
-use Exporter;
-use Scalar::Util qw/reftype/;
-use Sub::Name;
-use DBIx::Squirrel::dr     ();
-use DBIx::Squirrel::db     ();
-use DBIx::Squirrel::st     ();
-use DBIx::Squirrel::it     ();
-use DBIx::Squirrel::rs     ();
-use DBIx::Squirrel::result ();
-use DBIx::Squirrel::util   qw/throw uniq/;
-
-BEGIN {
-    @DBIx::Squirrel::ISA                          = 'DBI';
-    *DBIx::Squirrel::EXPORT_OK                    = *DBI::EXPORT_OK;
-    *DBIx::Squirrel::EXPORT_TAGS                  = *DBI::EXPORT_TAGS;
-    *DBIx::Squirrel::err                          = *DBI::err;
-    *DBIx::Squirrel::errstr                       = *DBI::errstr;
-    *DBIx::Squirrel::rows                         = *DBI::rows;
-    *DBIx::Squirrel::lasth                        = *DBI::lasth;
-    *DBIx::Squirrel::state                        = *DBI::state;
-    *DBIx::Squirrel::connect                      = *DBIx::Squirrel::dr::connect;
-    *DBIx::Squirrel::connect_cached               = *DBIx::Squirrel::dr::connect_cached;
-    *DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE = *DBIx::Squirrel::st::FINISH_ACTIVE_BEFORE_EXECUTE;
-    *DBIx::Squirrel::DEFAULT_SLICE                = *DBIx::Squirrel::it::DEFAULT_SLICE;
-    *DBIx::Squirrel::DEFAULT_BUFFER_SIZE          = *DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE;
-    *DBIx::Squirrel::BUFFER_SIZE_LIMIT            = *DBIx::Squirrel::it::BUFFER_SIZE_LIMIT;
-    *DBIx::Squirrel::NORMALISE_SQL                = *DBIx::Squirrel::util::NORMALISE_SQL;
-    *DBIx::Squirrel::NORMALIZE_SQL                = *DBIx::Squirrel::util::NORMALISE_SQL;
-
-    unless (defined $DBIx::Squirrel::VERSION) {
-        my $v = "1.3.2";
-        *DBIx::Squirrel::VERSION = \$v;
-    }
-}
-
-use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
-use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
-
-# Divide the argumments into two lists:
-# 1. a list of helper function names;
-# 2. a list of names to be imported from the DBI.
-sub _partition_imports_into_helpers_and_dbi_imports {
-    my(@helpers, @dbi);
-    while (@_) {
-        next unless defined($_[0]);
-        if ($_[0] =~ m/^database_entit(?:y|ies)$/i) {
-            shift;
-            if (ref($_[0])) {
-                if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                    push @helpers, @{shift()};
-                }
-                else {
-                    shift;
-                }
-            }
-            else {
-                push @helpers, shift();
-            }
-        }
-        else {
-            push @dbi, shift();
-        }
-    }
-    return (\@helpers, \@dbi);
-}
-
-sub import {
-    no strict 'refs';    ## no critic
-    my $class  = shift;
-    my $caller = caller;
-    my($helpers, $dbi) = _partition_imports_into_helpers_and_dbi_imports(@_);
-    for my $name (@{$helpers}) {
-        my $symbol = $class . '::' . $name;
-        my $helper = sub {
-            unless (defined(${$symbol})) {
-                if (@_) {
-                    throw E_BAD_ENT_BIND
-                      unless UNIVERSAL::isa($_[0], 'DBI::db')
-                      or UNIVERSAL::isa($_[0], 'DBI::st')
-                      or UNIVERSAL::isa($_[0], 'DBIx::Squirrel::it');
-                    ${$symbol} = shift;
-                    return ${$symbol};
-                }
-            }
-            return unless defined(${$symbol});
-            if (@_) {
-                my @params = do {
-                    if (@_ == 1 && ref $_[0]) {
-                        if (reftype($_[0]) eq 'ARRAY') {
-                            @{+shift};
-                        }
-                        elsif (reftype($_[0]) eq 'HASH') {
-                            %{+shift};
-                        }
-                        else {
-                            throw E_EXP_HASH_ARR_REF;
-                        }
-                    }
-                    else {
-                        @_;
-                    }
-                };
-                if (UNIVERSAL::isa(${$symbol}, 'DBI::db')) {
-                    return ${$symbol}->prepare(@params);
-                }
-                elsif (UNIVERSAL::isa(${$symbol}, 'DBI::st')) {
-                    return ${$symbol}->execute(@params);
-                }
-                elsif (UNIVERSAL::isa(${$symbol}, 'DBIx::Squirrel::it')) {
-                    return ${$symbol}->iterate(@params);
-                }
-                else {
-                    # ok - no worries
-                }
-            }
-            return ${$symbol};
-        };
-        *{$symbol} = subname($name => $helper);
-        *{$caller . '::' . $name} = subname($caller . '::' . $name => \&{$symbol})
-          unless defined(&{$caller . '::' . $name});
-    }
-    if (@{$dbi}) {
-        DBI->import(@{$dbi});
-        @_ = ('DBIx::Squirrel', @{$dbi});
-        goto &Exporter::import;
-    }
-    return $class;
-}
-
-1;
-__END__
-
-=pod
-
-=encoding UTF-8
 
 =head1 DESCRIPTION
 
@@ -960,6 +961,7 @@ accessible via C<DBIx::Squirrel>.
     $clone_dbh = DBIx::Squirrel->connect($dbh, \%attr)
                 or die $DBIx::Squirrel::errstr;
 
+
 =head4 C<connect_cached> *
 
     $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password)
@@ -1020,6 +1022,7 @@ the statement, as well as the statement handle:
     ($rows, $sth) = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
 
+
 =head4 C<iterate>
 
     $itor = $dbh->iterate($statement)
@@ -1063,6 +1066,7 @@ the statement, as well as the statement handle:
     $itor = $dbh->iterate($statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
+
 =head4 C<prepare> *
 
     $sth = $dbh->prepare($statement)          or die $dbh->errstr;
@@ -1078,6 +1082,7 @@ statement-string.
 Statement-strings will be "normalised" to use the legacy C<?> style, before
 being handed-off to the C<DBI> method of the same name. In spite of this,
 you should still use key-value bindings if you opted for named placeholders.
+
 
 =head4 C<prepare_cached> *
 
@@ -1097,6 +1102,7 @@ being handed-off to the C<DBI> method of the same name. In spite of this,
 you should still use key-value bindings if you opted for named placeholders.
 
 It is the normalised form of the statement that is cached by the C<DBI>.
+
 
 =head4 C<results>
 
@@ -1150,6 +1156,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $sth->bind(%bind_mappings);
     $sth->bind(\%bind_mappings);
 
+
 =head4 C<bind_param> *
 
     $sth->bind_param($p_num, $bind_value);
@@ -1159,6 +1166,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $sth->bind_param($p_name, $bind_value, \%attr);
     $sth->bind_param($p_name, $bind_value, $bind_type);
 
+
 =head4 C<execute> *
 
     $rv = $sth->execute;
@@ -1166,6 +1174,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $rv = $sth->execute(\@bind_values);
     $rv = $sth->execute(%bind_mappings);
     $rv = $sth->execute(\%bind_mappings);
+
 
 =head4 C<iterate>
 
@@ -1189,6 +1198,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
                 or die ...;
     $itor = $sth->iterate(\%bind_mappings, @transforms)
                 or die ...;
+
 
 =head4 C<results>
 
@@ -1229,6 +1239,7 @@ When called in scalar-context, this method returns a reference to
 an array of all matching row objects. Where no rows are matched,
 C<undef> would be returned.
 
+
 =head4 C<buffer_size>
 
     $buffer_size = $itor->buffer_size;
@@ -1252,6 +1263,7 @@ The following package globals define the relevant default settings:
 
     $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
     $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
+
 
 =head4 C<buffer_size_slice>
 
@@ -1298,6 +1310,7 @@ The following package globals define the relevant default settings:
     $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
     $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
 
+
 =head4 C<count>
 
     $count = $itor->count;
@@ -1312,6 +1325,7 @@ and the final count is returned.
 
 I<B<BEWARE> that you should not use C<next> after this method has been used!>
 
+
 =head4 C<count_fetched>
 
     $count = $itor->count_fetched;
@@ -1321,6 +1335,7 @@ Returns the number of results fetched so far.
 If the iterator's statement has not yet been executed, it will be. Zero will
 be returned if the statement executed successfully, otherwise C<undef> is
 returned.
+
 
 =head4 C<execute>
 
@@ -1341,6 +1356,7 @@ iterator's internal state.
 When called with no arguments, any bind-values and transformations passed to
 the iterator at the time of construction will be honoured.
 
+
 =head4 C<first>
 
     $result = $itor->first;
@@ -1356,7 +1372,8 @@ is fetched and cached. The cached value is returned.
 
 The result of the statement's execution will be returned.
 
-=head4 C<iterate> (or C<reset>)
+
+=head4 C<iterate>
 
     $itor_or_undef = $itor->iterate
     $itor_or_undef = $itor->iterate(@bind_values)
@@ -1378,6 +1395,7 @@ the iterator at the time of construction will be honoured.
 A reference to the iterator is returned if the statement was successfully
 executed, otherwise the method returns C<undef>.
 
+
 =head4 C<last>
 
     $result = $itor->last;
@@ -1392,6 +1410,7 @@ last result fetched is returned.
 
 I<B<BEWARE> that you should not use C<next> after this method has been used!>
 
+
 =head4 C<last_fetched>
 
     $result = $itor->last_fetched;
@@ -1403,6 +1422,7 @@ C<undef> is returned regardless of the statement execution's outcome.
 
 If the statement was previously executed then the last result fetched is
 always cached. The cached value is returned.
+
 
 =head4 C<next>
 
@@ -1430,14 +1450,17 @@ in the result set.
 
 =back
 
+
 =head4 C<one>
 
 Alias (see C<single>).
+
 
 =head4 C<remaining>
 
     @results = $itor->remaining;
     $results_or_undef = $itor->remaining;
+
 
 =head4 C<reset>
 
@@ -1448,11 +1471,13 @@ internal state.
 
 A reference to the iterator is always returned.
 
+
 =head4 C<rows>
 
     $rows = $itor->rows;
 
 Returns the number of rows aftected by non-SELECT statements.
+
 
 =head4 C<single> (or C<one>)
 
@@ -1473,6 +1498,7 @@ If the result returned is one of many buffered, a warning will be issued:
 
 The warning is a reminder to include a LIMIT 1 constraint in the statement.
 
+
 =head4 C<slice>
 
     $slice = $itor->slice;
@@ -1487,6 +1513,7 @@ used to change the slicing strategy, a reference to the iterator is returned.
 The following package global defines the default setting:
 
     $DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
+
 
 =head4 C<slice_buffer_size>
 
@@ -1533,11 +1560,13 @@ The following package globals define the relevant default settings:
     $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
     $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
 
+
 =head4 C<sth>
 
     $sth = $itor->sth;
 
 Returns the iterator's underlying statement handle object.
+
 
 =head1 COPYRIGHT AND LICENSE
 
