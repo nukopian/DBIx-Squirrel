@@ -1,3 +1,4 @@
+use diagnostics;
 use strict;
 use warnings;
 
@@ -38,8 +39,33 @@ BEGIN {
 
 use Cwd qw/realpath/;
 use DBD::Mock;
-use DBD::SQLite::Constants qw/:file_open/;
 use Test::More;
+
+# Strawberry Perl 5.010001 on CPANTs Matrix struggles with this:
+#
+#   Failed test 'use T::Squirrel;'
+#   at t/03-connections.t line 11.
+#     Tried to use 'T::Squirrel'.
+#     Error:  Can't continue after import errors at C:\home\tennis\perl5\lib\perl5/MSWin32-x86-multi-thread/DBD/SQLite/Constants.pm line 41.
+# BEGIN failed--compilation aborted at C:/home/tennis/.cpanm/work/1724511125.4876/DBIx-Squirrel-1.3.1/t/lib/T/Squirrel.pm line 41.
+# Compilation failed in require at t/03-connections.t line 11.
+# BEGIN failed--compilation aborted at t/03-connections.t line 11.
+# Bailout called.  Further testing stopped: 
+#
+# So we'll conditionally import the ':file_open' group
+#
+BEGIN {
+    require DBD::SQLite::Constants;
+    @T::Squirrel::sqlite_open_flags = do {
+        if (exists($DBD::SQLite::Constants::EXPORT_TAGS{file_open})) {
+            DBD::SQLite::Constants->import(':file_open');
+            (sqlite_open_flags => &SQLITE_OPEN_READONLY);
+        }
+        else {
+            ();
+        }
+    };
+}
 
 our $TEST_LIB_DIR = do {
     my $module = __PACKAGE__;
@@ -64,7 +90,7 @@ our($TEST_DB_DSN, $TEST_DB_USERNAME, $TEST_DB_PASSWORD, $TEST_DB_ATTR) = (
         RaiseError                 => !!1,
         sqlite_unicode             => !!1,
         sqlite_see_if_its_a_number => !!1,
-        sqlite_open_flags          => SQLITE_OPEN_READONLY,
+        @T::Squirrel::sqlite_open_flags,
     },
 );
 our @TEST_DB_CREDENTIALS  = ($TEST_DB_USERNAME, $TEST_DB_PASSWORD);
