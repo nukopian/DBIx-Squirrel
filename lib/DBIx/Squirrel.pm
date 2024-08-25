@@ -365,26 +365,29 @@ BEGIN {
 use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
 use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
 
+# Divide the argumments into two lists:
+# 1. a list of helper function names;
+# 2. a list of names to be imported from the DBI.
 sub _partition_imports_into_helpers_and_dbi_imports {
-    my $class = shift;
     my(@helpers, @dbi);
     while (@_) {
-        my $symbol = shift;
-        next unless defined($symbol);
-        if ($symbol eq 'database_entities') {
-            my $symbols = shift;
-            if (UNIVERSAL::isa($symbols, 'ARRAY')) {
-                push @helpers, @{$symbols};
+        next unless defined($_[0]);
+        if ($_[0] =~ m/^database_entit(?:y|ies)$/i) {
+            shift;
+            if (ref($_[0])) {
+                if (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                    push @helpers, @{shift()};
+                }
+                else {
+                    shift;
+                }
             }
-        }
-        elsif ($symbol eq 'database_entity') {
-            $symbol = shift;
-            if (defined($symbol) and not ref($symbol)) {
-                push @helpers, $symbol;
+            else {
+                push @helpers, shift();
             }
         }
         else {
-            push @dbi, $symbol;
+            push @dbi, shift();
         }
     }
     return (\@helpers, \@dbi);
@@ -394,7 +397,7 @@ sub import {
     no strict 'refs';    ## no critic
     my $class  = shift;
     my $caller = caller;
-    my($helpers, $dbi) = $class->_partition_imports_into_helpers_and_dbi_imports(@_);
+    my($helpers, $dbi) = _partition_imports_into_helpers_and_dbi_imports(@_);
     for my $name (@{$helpers}) {
         my $symbol = $class . '::' . $name;
         my $helper = sub {
