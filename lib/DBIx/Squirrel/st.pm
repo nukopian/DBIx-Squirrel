@@ -6,8 +6,7 @@ package    # hide from PAUSE
   DBIx::Squirrel::st;
 
 BEGIN {
-    require DBIx::Squirrel
-      unless defined($DBIx::Squirrel::VERSION);
+    require DBIx::Squirrel unless %DBIx::Squirrel::;
     $DBIx::Squirrel::st::VERSION = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::st::ISA     = 'DBI::st';
 }

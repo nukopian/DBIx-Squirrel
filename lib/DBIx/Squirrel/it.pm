@@ -6,8 +6,7 @@ package    # hide from PAUSE
   DBIx::Squirrel::it;
 
 BEGIN {
-    require DBIx::Squirrel
-      unless defined($DBIx::Squirrel::VERSION);
+    require DBIx::Squirrel unless %DBIx::Squirrel::;
     $DBIx::Squirrel::it::VERSION             = $DBIx::Squirrel::VERSION;
     $DBIx::Squirrel::it::DEFAULT_SLICE       = [];                         # Faster!
     $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;                          # Initial buffer size and autoscaling increment
