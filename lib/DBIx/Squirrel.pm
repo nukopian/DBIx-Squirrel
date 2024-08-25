@@ -1217,8 +1217,8 @@ It is the normalised form of the statement that is cached by the C<DBI>.
 
 =head4 C<all>
 
-    @ary = $itor->all();
-    $ary_ref | undef = $itor->all();
+    @results = $itor->all();
+    $results_or_undef = $itor->all();
 
 Executes the iterator's underlying statement handle object.
 
@@ -1324,32 +1324,57 @@ only use C<count_all> when you know that C<next> won't be called again.
 
 =head4 C<execute>
 
-    $rv = $itor->execute();
+    $rv_or_undef = $itor->execute()
+    $rv_or_undef = $itor->execute(@bind_values)
+    $rv_or_undef = $itor->execute(@transforms)
+    $rv_or_undef = $itor->execute(@bind_values, @transforms)
+    $rv_or_undef = $itor->execute(%bind_mappings)
+    $rv_or_undef = $itor->execute(%bind_mappings, @transforms)
+    $rv_or_undef = $itor->execute(\@bind_values)
+    $rv_or_undef = $itor->execute([@bind_values, @transforms])
+    $rv_or_undef = $itor->execute(\%bind_mappings)
+    $rv_or_undef = $itor->execute(\%bind_mappings, @transforms)
 
 Executes the iterator's underlying statemeent handle object.
 
 =head4 C<first>
 
-=head4 C<iterate>
+    $result = $itor->first();
 
-    $itor | undef = $itor->iterate();
+=head4 C<iterate> (or C<reset>)
 
-Executes the iterator's underlying statemeent handle object,
-returning the iterator object reference if execution was successful,
-or C<undef> if not.
+    $itor_or_undef = $itor->iterate()
+    $itor_or_undef = $itor->iterate(@bind_values)
+    $itor_or_undef = $itor->iterate(@transforms)
+    $itor_or_undef = $itor->iterate(@bind_values, @transforms)
+    $itor_or_undef = $itor->iterate(%bind_mappings)
+    $itor_or_undef = $itor->iterate(%bind_mappings, @transforms)
+    $itor_or_undef = $itor->iterate(\@bind_values)
+    $itor_or_undef = $itor->iterate([@bind_values, @transforms])
+    $itor_or_undef = $itor->iterate(\%bind_mappings)
+    $itor_or_undef = $itor->iterate(\%bind_mappings, @transforms)
+
+Executes the iterator's underlying statement handle object.
+
+If execution was successful then a reference to the iterator is
+returned, otherwise the method returns C<undef>.
 
 =head4 C<last>
 
+    $result = $itor->last();
+
 =head4 C<next>
+
+    $result = $itor->next();
 
 =head4 C<one>
 
-Alias I<(see C<single>)>.
+Alias (see C<single>).
 
 =head4 C<remaining>
 
-    @ary = $itor->remaining();
-    $ary_ref | undef = $itor->remaining();
+    @results = $itor->remaining();
+    $results_or_undef = $itor->remaining();
 
 When called in list-context, the C<all> method returns an array
 of all matching row objects remaining to be fetched.
@@ -1360,13 +1385,17 @@ no rows are matched, C<undef> would be returned.
 
 =head4 C<reset>
 
+Alias (see C<iterate>).
+
 =head4 C<rows>
 
-    $rv = $itor->rows();
+    $rows = $itor->rows();
 
 Returns the number of rows aftected by non-SELECT statements.
 
-=head4 C<single>
+=head4 C<single> (or C<one>)
+
+    $result = $itor->single;
 
 =head4 C<slice>
 
@@ -1432,7 +1461,7 @@ The following package globals define the relevant default settings:
 
     $sth = $itor->sth();
 
-Returns the iterator's statement handle object.
+Returns the iterator's underlying statement handle object.
 
 =head1 COPYRIGHT AND LICENSE
 

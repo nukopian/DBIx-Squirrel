@@ -1003,8 +1003,8 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `all`
 
-    @ary = $itor->all();
-    $ary_ref | undef = $itor->all();
+    @results = $itor->all();
+    $results_or_undef = $itor->all();
 
 Executes the iterator's underlying statement handle object.
 
@@ -1106,32 +1106,57 @@ only use `count_all` when you know that `next` won't be called again.
 
 #### `execute`
 
-    $rv = $itor->execute();
+    $rv_or_undef = $itor->execute()
+    $rv_or_undef = $itor->execute(@bind_values)
+    $rv_or_undef = $itor->execute(@transforms)
+    $rv_or_undef = $itor->execute(@bind_values, @transforms)
+    $rv_or_undef = $itor->execute(%bind_mappings)
+    $rv_or_undef = $itor->execute(%bind_mappings, @transforms)
+    $rv_or_undef = $itor->execute(\@bind_values)
+    $rv_or_undef = $itor->execute([@bind_values, @transforms])
+    $rv_or_undef = $itor->execute(\%bind_mappings)
+    $rv_or_undef = $itor->execute(\%bind_mappings, @transforms)
 
 Executes the iterator's underlying statemeent handle object.
 
 #### `first`
 
-#### `iterate`
+    $result = $itor->first();
 
-    $itor | undef = $itor->iterate();
+#### `iterate` (or `reset`)
 
-Executes the iterator's underlying statemeent handle object,
-returning the iterator object reference if execution was successful,
-or `undef` if not.
+    $itor_or_undef = $itor->iterate()
+    $itor_or_undef = $itor->iterate(@bind_values)
+    $itor_or_undef = $itor->iterate(@transforms)
+    $itor_or_undef = $itor->iterate(@bind_values, @transforms)
+    $itor_or_undef = $itor->iterate(%bind_mappings)
+    $itor_or_undef = $itor->iterate(%bind_mappings, @transforms)
+    $itor_or_undef = $itor->iterate(\@bind_values)
+    $itor_or_undef = $itor->iterate([@bind_values, @transforms])
+    $itor_or_undef = $itor->iterate(\%bind_mappings)
+    $itor_or_undef = $itor->iterate(\%bind_mappings, @transforms)
+
+Executes the iterator's underlying statement handle object.
+
+If execution was successful then a reference to the iterator is
+returned, otherwise the method returns `undef`.
 
 #### `last`
 
+    $result = $itor->last();
+
 #### `next`
+
+    $result = $itor->next();
 
 #### `one`
 
-Alias _(see `single`)_.
+Alias (see `single`).
 
 #### `remaining`
 
-    @ary = $itor->remaining();
-    $ary_ref | undef = $itor->remaining();
+    @results = $itor->remaining();
+    $results_or_undef = $itor->remaining();
 
 When called in list-context, the `all` method returns an array
 of all matching row objects remaining to be fetched.
@@ -1142,13 +1167,17 @@ no rows are matched, `undef` would be returned.
 
 #### `reset`
 
+Alias (see `iterate`).
+
 #### `rows`
 
-    $rv = $itor->rows();
+    $rows = $itor->rows();
 
 Returns the number of rows aftected by non-SELECT statements.
 
-#### `single`
+#### `single` (or `one`)
+
+    $result = $itor->single;
 
 #### `slice`
 
@@ -1210,7 +1239,7 @@ The following package globals define the relevant default settings:
 
     $sth = $itor->sth();
 
-Returns the iterator's statement handle object.
+Returns the iterator's underlying statement handle object.
 
 # COPYRIGHT AND LICENSE
 

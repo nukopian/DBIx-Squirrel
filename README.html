@@ -94,14 +94,14 @@
               <li><a href="#count_all">count_all</a></li>
               <li><a href="#execute1">execute</a></li>
               <li><a href="#first">first</a></li>
-              <li><a href="#iterate2">iterate</a></li>
+              <li><a href="#iterate-or-reset">iterate (or reset)</a></li>
               <li><a href="#last">last</a></li>
               <li><a href="#next">next</a></li>
               <li><a href="#one">one</a></li>
               <li><a href="#remaining">remaining</a></li>
               <li><a href="#reset">reset</a></li>
               <li><a href="#rows">rows</a></li>
-              <li><a href="#single">single</a></li>
+              <li><a href="#single-or-one">single (or one)</a></li>
               <li><a href="#slice">slice</a></li>
               <li><a href="#slice_buffer_size">slice_buffer_size</a></li>
               <li><a href="#sth">sth</a></li>
@@ -1084,8 +1084,8 @@ $itor = $sth-&gt;results(\%bind_mappings, @transforms)
 
 <h4 id="all"><code>all</code></h4>
 
-<pre><code>@ary = $itor-&gt;all();
-$ary_ref | undef = $itor-&gt;all();</code></pre>
+<pre><code>@results = $itor-&gt;all();
+$results_or_undef = $itor-&gt;all();</code></pre>
 
 <p>Executes the iterator&#39;s underlying statement handle object.</p>
 
@@ -1167,30 +1167,56 @@ $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pr
 
 <h4 id="execute1"><code>execute</code></h4>
 
-<pre><code>$rv = $itor-&gt;execute();</code></pre>
+<pre><code>$rv_or_undef = $itor-&gt;execute()
+$rv_or_undef = $itor-&gt;execute(@bind_values)
+$rv_or_undef = $itor-&gt;execute(@transforms)
+$rv_or_undef = $itor-&gt;execute(@bind_values, @transforms)
+$rv_or_undef = $itor-&gt;execute(%bind_mappings)
+$rv_or_undef = $itor-&gt;execute(%bind_mappings, @transforms)
+$rv_or_undef = $itor-&gt;execute(\@bind_values)
+$rv_or_undef = $itor-&gt;execute([@bind_values, @transforms])
+$rv_or_undef = $itor-&gt;execute(\%bind_mappings)
+$rv_or_undef = $itor-&gt;execute(\%bind_mappings, @transforms)</code></pre>
 
 <p>Executes the iterator&#39;s underlying statemeent handle object.</p>
 
 <h4 id="first"><code>first</code></h4>
 
-<h4 id="iterate2"><code>iterate</code></h4>
+<pre><code>$result = $itor-&gt;first();</code></pre>
 
-<pre><code>$itor | undef = $itor-&gt;iterate();</code></pre>
+<h4 id="iterate-or-reset"><code>iterate</code> (or <code>reset</code>)</h4>
 
-<p>Executes the iterator&#39;s underlying statemeent handle object, returning the iterator object reference if execution was successful, or <code>undef</code> if not.</p>
+<pre><code>$itor_or_undef = $itor-&gt;iterate()
+$itor_or_undef = $itor-&gt;iterate(@bind_values)
+$itor_or_undef = $itor-&gt;iterate(@transforms)
+$itor_or_undef = $itor-&gt;iterate(@bind_values, @transforms)
+$itor_or_undef = $itor-&gt;iterate(%bind_mappings)
+$itor_or_undef = $itor-&gt;iterate(%bind_mappings, @transforms)
+$itor_or_undef = $itor-&gt;iterate(\@bind_values)
+$itor_or_undef = $itor-&gt;iterate([@bind_values, @transforms])
+$itor_or_undef = $itor-&gt;iterate(\%bind_mappings)
+$itor_or_undef = $itor-&gt;iterate(\%bind_mappings, @transforms)</code></pre>
+
+<p>Executes the iterator&#39;s underlying statement handle object.</p>
+
+<p>If execution was successful then a reference to the iterator is returned, otherwise the method returns <code>undef</code>.</p>
 
 <h4 id="last"><code>last</code></h4>
 
+<pre><code>$result = $itor-&gt;last();</code></pre>
+
 <h4 id="next"><code>next</code></h4>
+
+<pre><code>$result = $itor-&gt;next();</code></pre>
 
 <h4 id="one"><code>one</code></h4>
 
-<p>Alias <i>(see <code>single</code>)</i>.</p>
+<p>Alias (see <code>single</code>).</p>
 
 <h4 id="remaining"><code>remaining</code></h4>
 
-<pre><code>@ary = $itor-&gt;remaining();
-$ary_ref | undef = $itor-&gt;remaining();</code></pre>
+<pre><code>@results = $itor-&gt;remaining();
+$results_or_undef = $itor-&gt;remaining();</code></pre>
 
 <p>When called in list-context, the <code>all</code> method returns an array of all matching row objects remaining to be fetched.</p>
 
@@ -1198,13 +1224,17 @@ $ary_ref | undef = $itor-&gt;remaining();</code></pre>
 
 <h4 id="reset"><code>reset</code></h4>
 
+<p>Alias (see <code>iterate</code>).</p>
+
 <h4 id="rows"><code>rows</code></h4>
 
-<pre><code>$rv = $itor-&gt;rows();</code></pre>
+<pre><code>$rows = $itor-&gt;rows();</code></pre>
 
 <p>Returns the number of rows aftected by non-SELECT statements.</p>
 
-<h4 id="single"><code>single</code></h4>
+<h4 id="single-or-one"><code>single</code> (or <code>one</code>)</h4>
+
+<pre><code>$result = $itor-&gt;single;</code></pre>
 
 <h4 id="slice"><code>slice</code></h4>
 
@@ -1259,7 +1289,7 @@ $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pr
 
 <pre><code>$sth = $itor-&gt;sth();</code></pre>
 
-<p>Returns the iterator&#39;s statement handle object.</p>
+<p>Returns the iterator&#39;s underlying statement handle object.</p>
 
 <h1 id="COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</h1>
 
