@@ -1138,7 +1138,7 @@ is fetched and cached. The cached value is returned.
 
 The result of the statement's execution will be returned.
 
-#### `iterate` (or `reset`)
+#### `iterate`
 
     $itor_or_undef = $itor->iterate
     $itor_or_undef = $itor->iterate(@bind_values)
