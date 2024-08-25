@@ -8,8 +8,8 @@ use FindBin qw/$Bin/;
 use lib "$Bin/lib";
 
 BEGIN {
-    use_ok('DBIx::Squirrel') || print "Bail out!\n";
-    use_ok('T::Squirrel')    || print "Bail out!\n";
+    use_ok('DBIx::Squirrel')                 || print "Bail out!\n";
+    use_ok('T::Squirrel', qw/:var diagdump/) || print "Bail out!\n";
 }
 
 diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
