@@ -4,7 +4,7 @@ DBIx::Squirrel - A `DBI` extension
 
 # VERSION
 
-version 1.3.3
+version 1.3.4
 
 # SYNOPSIS
 
