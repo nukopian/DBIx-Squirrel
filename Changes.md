@@ -1,6 +1,6 @@
 ## Revision history for DBIx-Squirrel
 
-### 1.3.2 2024-08-24 14:40
+### 1.3.2 2024-08-25 16:45
 -   Fixed typos.
 -   General improvements and optimisations.
 -   Strawberry Perl 5.10.1.1 on MSWin32-x86-multi-thread can't seem to import DBD::SQLite::Constants ':file_open'
