@@ -131,14 +131,16 @@ sub _buffer_size_init {
 
 sub _result_fetch {
     my($attr, $self) = $_[0]->_private_state;    # Not shifted because of jump at #148
+    my($transformed, $results, $result);
+    do {
     return $self->_result_fetch_pending if $self->_results_pending;
     return unless $self->{Active};
     if ($self->_buffer_empty) {
         return unless $self->_buffer_charge;
     }
-    my $result = shift(@{$attr->{buffer}});
-    my($results, $transformed) = $self->_result_transform($result);
-    goto &_result_fetch if $transformed && !@{$results};
+        $result = shift(@{$attr->{buffer}});
+        ($results, $transformed) = $self->_result_transform($result);
+    } while $transformed && !@{$results};
     $result = shift(@{$results});
     $self->_results_push_pending($results) if @{$results};
     $attr->{results_first} = $result unless $attr->{results_count}++;
