@@ -1084,25 +1084,25 @@ The following package globals define the relevant default settings:
 
     $count = $itor->count();
 
-Returns the number of rows fetched so far.
+Returns the total number of rows in the result set.
 
-If the iterator's statement has not yet been executed, it will be and a count
-of all rows will be returned. If the statement has been executed, and results
-have already been fetched, then only the current count is returned.
+If the iterator's statement has not yet been executed, it will be, and `undef`
+will be returned if the statement was not executed successfully.
 
-#### `count_all`
+Any results remaining to be fetched are then fetched, counted and discarded,
+and the final count is returned.
 
-    $count = $itor->count_all();
+_**BEWARE** that you should not use `next` after this method has been used!_
 
-Returns the total number of rows.
+#### `count_fetched`
 
-If the iterator's statement has not yet been executed, it will be. Once the
-iterator's statement has been executed, any remaining rows will be fetched,
-included in the count, and then immediately discarded.
+    $count = $itor->count_fetched();
 
-**BEWARE** that this method will, potentially, impact any planned call to `next`
-that didn't account for remaining rows to be fetched and discarded. Therefore,
-only use `count_all` when you know that `next` won't be called again.
+Returns the number of results fetched so far.
+
+If the iterator's statement has not yet been executed, it will be. Zero will
+be returned if the statement executed successfully, otherwise `undef` is
+returned.
 
 #### `execute`
 
@@ -1123,6 +1123,15 @@ Executes the iterator's underlying statemeent handle object.
 
     $result = $itor->first();
 
+Returns the first result in the result set, or `undef` if there were no
+results.
+
+If the iterator's statement has not yet been executed, it will be, and `undef`
+will be returned if the statement was not executed successfully.
+
+If the first result hasn't yet been fetched, it will be and the first result
+is fetched and cached. The cached value is returned.
+
 #### `iterate` (or `reset`)
 
     $itor_or_undef = $itor->iterate()
@@ -1136,18 +1145,54 @@ Executes the iterator's underlying statemeent handle object.
     $itor_or_undef = $itor->iterate(\%bind_mappings)
     $itor_or_undef = $itor->iterate(\%bind_mappings, @transforms)
 
-Executes the iterator's underlying statement handle object.
+Executes the iterator's underlying statement handle object and resets any
+internal state.
 
-If execution was successful then a reference to the iterator is
-returned, otherwise the method returns `undef`.
+A reference to the iterator is returned if the statement was successfully
+executed, otherwise the method returns `undef`.
 
 #### `last`
 
     $result = $itor->last();
 
+Returns the last result in the result set.
+
+If the iterator's statement has not yet been executed, it will be, and `undef`
+will be returned if the statement was not executed successfully.
+
+Any results remaining to be fetched are then fetched and discarded, and the
+last result fetched is returned.
+
+_**BEWARE** that you should not use `next` after this method has been used!_
+
+#### `last_fetched`
+
+    $result = $itor->last_fetched();
+
+Returns the last result fetched.
+
+If the iterator's statement has not yet been executed, it will be, then
+`undef` is returned regardless of the statement execution's outcome.
+
+If the statement was previously executed then the last result fetched is
+always cached. The cached value is returned.
+
 #### `next`
 
     $result = $itor->next();
+
+Returns the next result in the result set.
+
+If the iterator's statement has not yet been executed, it will be, and `undef`
+will be returned if the statement was not executed successfully.
+
+There are two potential side-effects that could result from a call to `next`:
+
+- The first time it is called, the result returned will be cached and returned in
+any subsequent call to `first`.
+- Every time it is called, the most recent result returned will be cached and
+returned in any call to `last_fetched`, or `last` if it was the final result
+in the result set.
 
 #### `one`
 
@@ -1158,16 +1203,14 @@ Alias (see `single`).
     @results = $itor->remaining();
     $results_or_undef = $itor->remaining();
 
-When called in list-context, the `all` method returns an array
-of all matching row objects remaining to be fetched.
-
-When called in scalar-context, this method returns a reference to
-an array of all matching row objects remaining to be fetched. Where
-no rows are matched, `undef` would be returned.
-
 #### `reset`
 
-Alias (see `iterate`).
+    $itor = $itor->reset();
+
+Executes the iterator's underlying statement handle object and resets any
+internal state.
+
+A reference to the iterator is always returned.
 
 #### `rows`
 
@@ -1178,6 +1221,21 @@ Returns the number of rows aftected by non-SELECT statements.
 #### `single` (or `one`)
 
     $result = $itor->single;
+
+Returns the first result in the result set, or `undef` if there were no
+results.
+
+If the iterator's statement has not yet been executed, it will be, and `undef`
+will be returned if the statement was not executed successfully.
+
+If the first result hasn't yet been fetched, it will be and the first result
+is fetched and cached. The cached value is returned.
+
+If the result returned is one of many buffered, a warning will be issued:
+
+    Query would yield more than one result...
+
+The warning is a reminder to include a LIMIT 1 constraint in the statement.
 
 #### `slice`
 

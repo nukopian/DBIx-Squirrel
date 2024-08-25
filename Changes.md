@@ -2,6 +2,7 @@
 
 ### 1.3.2 2024-08-24 14:40
 -   Fixed typos.
+-   General improvements and optimisations.
 -   Strawberry Perl 5.10.1.1 on MSWin32-x86-multi-thread can't seem to import DBD::SQLite::Constants ':file_open'
     because is isn't exported. Hopefully, a conditionally workaround solves the issue.
 -   Strawberry Perl 5.14.4.1 on MSWin32-x86-multi-thread gives /Can't locate object method "e" via package "warnings"/
