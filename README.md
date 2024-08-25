@@ -1117,7 +1117,11 @@ returned.
     $rv_or_undef = $itor->execute(\%bind_mappings)
     $rv_or_undef = $itor->execute(\%bind_mappings, @transforms)
 
-Executes the iterator's underlying statemeent handle object.
+Executes the iterator's underlying statement, as well as resetting the
+iterator's internal state.
+
+When called with no arguments, any bind-values and transformations passed to
+the iterator at the time of construction will be honoured.
 
 #### `first`
 
@@ -1132,6 +1136,8 @@ will be returned if the statement was not executed successfully.
 If the first result hasn't yet been fetched, it will be and the first result
 is fetched and cached. The cached value is returned.
 
+The result of the statement's execution will be returned.
+
 #### `iterate` (or `reset`)
 
     $itor_or_undef = $itor->iterate
@@ -1145,8 +1151,11 @@ is fetched and cached. The cached value is returned.
     $itor_or_undef = $itor->iterate(\%bind_mappings)
     $itor_or_undef = $itor->iterate(\%bind_mappings, @transforms)
 
-Executes the iterator's underlying statement handle object and resets any
-internal state.
+Executes the iterator's underlying statement, as well as resetting the
+iterator's internal state.
+
+When called with no arguments, any bind-values and transformations passed to
+the iterator at the time of construction will be honoured.
 
 A reference to the iterator is returned if the statement was successfully
 executed, otherwise the method returns `undef`.

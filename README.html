@@ -1181,7 +1181,9 @@ $rv_or_undef = $itor-&gt;execute([@bind_values, @transforms])
 $rv_or_undef = $itor-&gt;execute(\%bind_mappings)
 $rv_or_undef = $itor-&gt;execute(\%bind_mappings, @transforms)</code></pre>
 
-<p>Executes the iterator&#39;s underlying statemeent handle object.</p>
+<p>Executes the iterator&#39;s underlying statement, as well as resetting the iterator&#39;s internal state.</p>
+
+<p>When called with no arguments, any bind-values and transformations passed to the iterator at the time of construction will be honoured.</p>
 
 <h4 id="first"><code>first</code></h4>
 
@@ -1192,6 +1194,8 @@ $rv_or_undef = $itor-&gt;execute(\%bind_mappings, @transforms)</code></pre>
 <p>If the iterator&#39;s statement has not yet been executed, it will be, and <code>undef</code> will be returned if the statement was not executed successfully.</p>
 
 <p>If the first result hasn&#39;t yet been fetched, it will be and the first result is fetched and cached. The cached value is returned.</p>
+
+<p>The result of the statement&#39;s execution will be returned.</p>
 
 <h4 id="iterate-or-reset"><code>iterate</code> (or <code>reset</code>)</h4>
 
@@ -1206,7 +1210,9 @@ $itor_or_undef = $itor-&gt;iterate([@bind_values, @transforms])
 $itor_or_undef = $itor-&gt;iterate(\%bind_mappings)
 $itor_or_undef = $itor-&gt;iterate(\%bind_mappings, @transforms)</code></pre>
 
-<p>Executes the iterator&#39;s underlying statement handle object and resets any internal state.</p>
+<p>Executes the iterator&#39;s underlying statement, as well as resetting the iterator&#39;s internal state.</p>
+
+<p>When called with no arguments, any bind-values and transformations passed to the iterator at the time of construction will be honoured.</p>
 
 <p>A reference to the iterator is returned if the statement was successfully executed, otherwise the method returns <code>undef</code>.</p>
 
