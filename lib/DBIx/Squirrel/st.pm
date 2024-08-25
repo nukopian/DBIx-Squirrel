@@ -20,7 +20,7 @@ use constant W_ODD_NUMBER_OF_ARGS  => 'Check bind values match placeholder schem
 
 our $FINISH_ACTIVE_BEFORE_EXECUTE = !!1;
 
-sub _private {
+sub _private_state {
     my $self = shift;
     return
       unless ref($self);
@@ -90,7 +90,7 @@ sub _placeholders_map_to_values {
 }
 
 sub bind {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = shift->_private_state;
     if (@_) {
         my $placeholders = $attr->{Placeholders};
         if ($placeholders && !_placeholders_confirm_positional($placeholders)) {
@@ -124,7 +124,7 @@ sub bind {
 }
 
 sub bind_param {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = shift->_private_state;
     my($bind_param, $bind_value, @bind_attr) = @_;
     my @bind_param_args = do {
         if (my $placeholders = $attr->{Placeholders}) {

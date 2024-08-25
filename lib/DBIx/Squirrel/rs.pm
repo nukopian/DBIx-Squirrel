@@ -78,7 +78,7 @@ sub row_class {
 }
 
 sub slice {
-    my($attr, $self) = shift->_private;
+    my($attr, $self) = shift->_private_state;
     my $slice = shift;
     my $old   = defined($attr->{slice}) ? $attr->{slice} : '';
     $self->SUPER::slice($slice);

@@ -24,10 +24,10 @@ sub artist_name {($_->ArtistId == 128) ? ($_->Name, 'Envy of None', 'Alex Lifeso
 
 db(DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS));
 artist(db->results('SELECT * FROM artists WHERE ArtistId=? LIMIT 1'));
-my $artist = artist->_private;
+my $artist = artist->_private_state;
 
 artists(db->results('SELECT * FROM artists ORDER BY ArtistId' => \&filter => \&artist_name));
-my $artists = artists->_private;
+my $artists = artists->_private_state;
 
 # This test will exercise buffer control, transformations, pending results injection and
 # results filtering.
