@@ -1,5 +1,7 @@
 ## Revision history for DBIx-Squirrel
 
+### 1.3.3 2024-08-25 17:00
+
 ### 1.3.2 2024-08-25 16:45
 -   Fixed typos.
 -   General improvements and optimisations.
