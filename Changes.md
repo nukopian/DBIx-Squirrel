@@ -1,7 +1,11 @@
 ## Revision history for DBIx-Squirrel
 
-### 1.3.3 2024-08-25 17:15
+### 1.3.3 2024-08-25 18:15
 -   Typos fixed and additions made to POD.
+-   Tests no longer jump through hoops to open the SQLite test database in read-only mode. I only tried that
+    to see if it would have a positive effect on tests segfaulting. I have since simplified testing a great
+    deal since the rewrites, so pushing out this release to see if it mops-up a couple of red boxes on
+    CPANTs.
 ### 1.3.2 2024-08-25 16:45
 -   Fixed typos.
 -   General improvements and optimisations.
