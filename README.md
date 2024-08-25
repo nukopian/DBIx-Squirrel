@@ -947,7 +947,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `execute` \*
 
-    $rv = $sth->execute();
+    $rv = $sth->execute;
     $rv = $sth->execute(@bind_values);
     $rv = $sth->execute(\@bind_values);
     $rv = $sth->execute(%bind_mappings);
@@ -955,7 +955,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `iterate`
 
-    $itor = $sth->iterate()
+    $itor = $sth->iterate
                 or die $dbh->errstr;
     $itor = $sth->iterate(@bind_values)
                 or die ...;
@@ -978,7 +978,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `results`
 
-    $itor = $sth->results()
+    $itor = $sth->results
                 or die $dbh->errstr;
     $itor = $sth->results(@bind_values)
                 or die ...;
@@ -1003,8 +1003,8 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `all`
 
-    @results = $itor->all();
-    $results_or_undef = $itor->all();
+    @results = $itor->all;
+    $results_or_undef = $itor->all;
 
 Executes the iterator's underlying statement handle object.
 
@@ -1082,7 +1082,7 @@ The following package globals define the relevant default settings:
 
 #### `count`
 
-    $count = $itor->count();
+    $count = $itor->count;
 
 Returns the total number of rows in the result set.
 
@@ -1096,7 +1096,7 @@ _**BEWARE** that you should not use `next` after this method has been used!_
 
 #### `count_fetched`
 
-    $count = $itor->count_fetched();
+    $count = $itor->count_fetched;
 
 Returns the number of results fetched so far.
 
@@ -1106,7 +1106,7 @@ returned.
 
 #### `execute`
 
-    $rv_or_undef = $itor->execute()
+    $rv_or_undef = $itor->execute
     $rv_or_undef = $itor->execute(@bind_values)
     $rv_or_undef = $itor->execute(@transforms)
     $rv_or_undef = $itor->execute(@bind_values, @transforms)
@@ -1121,7 +1121,7 @@ Executes the iterator's underlying statemeent handle object.
 
 #### `first`
 
-    $result = $itor->first();
+    $result = $itor->first;
 
 Returns the first result in the result set, or `undef` if there were no
 results.
@@ -1134,7 +1134,7 @@ is fetched and cached. The cached value is returned.
 
 #### `iterate` (or `reset`)
 
-    $itor_or_undef = $itor->iterate()
+    $itor_or_undef = $itor->iterate
     $itor_or_undef = $itor->iterate(@bind_values)
     $itor_or_undef = $itor->iterate(@transforms)
     $itor_or_undef = $itor->iterate(@bind_values, @transforms)
@@ -1153,7 +1153,7 @@ executed, otherwise the method returns `undef`.
 
 #### `last`
 
-    $result = $itor->last();
+    $result = $itor->last;
 
 Returns the last result in the result set.
 
@@ -1167,7 +1167,7 @@ _**BEWARE** that you should not use `next` after this method has been used!_
 
 #### `last_fetched`
 
-    $result = $itor->last_fetched();
+    $result = $itor->last_fetched;
 
 Returns the last result fetched.
 
@@ -1179,7 +1179,7 @@ always cached. The cached value is returned.
 
 #### `next`
 
-    $result = $itor->next();
+    $result = $itor->next;
 
 Returns the next result in the result set.
 
@@ -1200,12 +1200,12 @@ Alias (see `single`).
 
 #### `remaining`
 
-    @results = $itor->remaining();
-    $results_or_undef = $itor->remaining();
+    @results = $itor->remaining;
+    $results_or_undef = $itor->remaining;
 
 #### `reset`
 
-    $itor = $itor->reset();
+    $itor = $itor->reset;
 
 Executes the iterator's underlying statement handle object and resets any
 internal state.
@@ -1214,7 +1214,7 @@ A reference to the iterator is always returned.
 
 #### `rows`
 
-    $rows = $itor->rows();
+    $rows = $itor->rows;
 
 Returns the number of rows aftected by non-SELECT statements.
 
@@ -1239,7 +1239,7 @@ The warning is a reminder to include a LIMIT 1 constraint in the statement.
 
 #### `slice`
 
-    $slice = $itor->slice();
+    $slice = $itor->slice;
     $itor = $itor->slice($slice);
 
 May be used to determine how the iterator slices the results it fetches
@@ -1254,7 +1254,7 @@ The following package global defines the default setting:
 
 #### `slice_buffer_size`
 
-    ($slice, $buffer_size) = $itor->slice_buffer_size();
+    ($slice, $buffer_size) = $itor->slice_buffer_size;
     $itor = $itor->slice_buffer_size($slice, $buffer_size);
     $itor = $itor->slice_buffer_size($buffer_size, $slice);
 
@@ -1295,7 +1295,7 @@ The following package globals define the relevant default settings:
 
 #### `sth`
 
-    $sth = $itor->sth();
+    $sth = $itor->sth;
 
 Returns the iterator's underlying statement handle object.
 
