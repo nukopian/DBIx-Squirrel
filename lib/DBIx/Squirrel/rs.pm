@@ -38,7 +38,7 @@ sub _autoloaded_accessors_unload {
     return $self;
 }
 
-sub _results_prep_for_transform {
+sub _result_prep_to_transform {
     my $self = shift;
     return ref($_[0]) ? $self->_rebless(shift) : shift;
 }
@@ -73,7 +73,7 @@ BEGIN {
 }
 
 sub row_class {
-    my $self = $_[0];
+    my $self = shift;
     return sprintf('%s::Ox%x', ref($self), 0+ $self);
 }
 

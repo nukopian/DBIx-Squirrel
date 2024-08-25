@@ -64,7 +64,7 @@ sub _partition_imports_into_helpers_and_dbi_imports {
             shift;
             if (ref($_[0])) {
                 if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                    push @helpers, @{shift()};
+                    push @helpers, @{+shift};
                 }
                 else {
                     shift;

@@ -22,13 +22,10 @@ our $FINISH_ACTIVE_BEFORE_EXECUTE = !!1;
 
 sub _private_state {
     my $self = shift;
-    return
-      unless ref($self);
-    $self->{private_ekorn} = {}
-      unless defined($self->{private_ekorn});
+    return                      unless ref($self);
+    $self->{private_ekorn} = {} unless defined($self->{private_ekorn});
     unless (@_) {
-        return $self->{private_ekorn}, $self
-          if wantarray;
+        return $self->{private_ekorn}, $self if wantarray;
         return $self->{private_ekorn};
     }
     unless (defined($_[0])) {
@@ -51,14 +48,11 @@ sub _private_state {
 
 sub _placeholders_confirm_positional {
     my $placeholders = shift;
-    return
-      unless UNIVERSAL::isa($placeholders, 'HASH');
-    my @placeholders                        = values(%{$placeholders});
-    my $total_count                         = @placeholders;
-    my $count                               = grep {m/^[\:\$\?]\d+$/} @placeholders;
-    my $all_placeholders_confirm_positional = $count == $total_count;
-    return $placeholders
-      if $all_placeholders_confirm_positional;
+    return unless UNIVERSAL::isa($placeholders, 'HASH');
+    my @placeholders = values(%{$placeholders});
+    my $total_count  = scalar(@placeholders);
+    my $count        = grep {m/^[\:\$\?]\d+$/} @placeholders;
+    return $placeholders if $count == $total_count;
     return;
 }
 
@@ -70,22 +64,19 @@ sub _placeholders_map_to_values {
         }
         else {
             if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                whine W_ODD_NUMBER_OF_ARGS
-                  unless @{$_[0]} % 2 == 0;
+                whine W_ODD_NUMBER_OF_ARGS unless @{$_[0]} % 2 == 0;
                 @{$_[0]};
             }
             elsif (UNIVERSAL::isa($_[0], 'HASH')) {
                 %{$_[0]};
             }
             else {
-                whine W_ODD_NUMBER_OF_ARGS
-                  unless @_ % 2 == 0;
+                whine W_ODD_NUMBER_OF_ARGS unless @_ % 2 == 0;
                 @_;
             }
         }
     };
-    return @mappings
-      if wantarray;
+    return @mappings if wantarray;
     return \@mappings;
 }
 
@@ -97,8 +88,7 @@ sub bind {
             if (my %kv = @{_placeholders_map_to_values($placeholders, @_)}) {
                 while (my($k, $v) = each(%kv)) {
                     if ($k =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
-                        throw E_INVALID_PLACEHOLDER, $k
-                          unless $+{bind_id};
+                        throw E_INVALID_PLACEHOLDER, $k unless $+{bind_id};
                         $self->bind_param($+{bind_id}, $v);
                     }
                     else {
@@ -133,14 +123,12 @@ sub bind_param {
             }
             else {
                 if ($bind_param =~ m/^[\:\$\?]/) {
-                    map  {($_, $bind_value, @bind_attr)}
-                    grep {$placeholders->{$_} eq $bind_param}
-                      keys(%{$placeholders});
+                    map {($_, $bind_value, @bind_attr)}
+                    grep {$placeholders->{$_} eq $bind_param} keys(%{$placeholders});
                 }
                 else {
-                    map  {($_, $bind_value, @bind_attr)}
-                    grep {$placeholders->{$_} eq ":$bind_param"}
-                      keys(%{$placeholders});
+                    map {($_, $bind_value, @bind_attr)}
+                    grep {$placeholders->{$_} eq ":$bind_param"} keys(%{$placeholders});
                 }
             }
         }
@@ -149,16 +137,13 @@ sub bind_param {
         }
     };
     return unless $self->SUPER::bind_param(@bind_param_args);
-    return @bind_param_args
-      if wantarray;
+    return @bind_param_args if wantarray;
     return \@bind_param_args;
 }
 
 sub execute {
     my $self = shift;
-    if ($FINISH_ACTIVE_BEFORE_EXECUTE) {
-        $self->finish if $self->{Active};
-    }
+    $self->finish   if $FINISH_ACTIVE_BEFORE_EXECUTE && $self->{Active};
     $self->bind(@_) if @_;
     return $self->SUPER::execute;
 }

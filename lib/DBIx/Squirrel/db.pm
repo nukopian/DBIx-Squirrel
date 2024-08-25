@@ -19,20 +19,16 @@ use DBIx::Squirrel::util qw/:constants :sql throw/;
 sub _root_class {
     my $root_class = ref($_[0]) || $_[0];
     $root_class =~ s/::\w+$//;
-    return RootClass => $root_class
-      if wantarray;
+    return RootClass => $root_class if wantarray;
     return $root_class;
 }
 
 sub _private_state {
     my $self = shift;
-    return
-      unless ref($self);
-    $self->{private_ekorn} = {}
-      unless defined($self->{private_ekorn});
+    return                      unless ref($self);
+    $self->{private_ekorn} = {} unless defined($self->{private_ekorn});
     unless (@_) {
-        return $self->{private_ekorn}, $self
-          if wantarray;
+        return $self->{private_ekorn}, $self if wantarray;
         return $self->{private_ekorn};
     }
     unless (defined($_[0])) {
@@ -40,8 +36,7 @@ sub _private_state {
         shift;
     }
     if (@_) {
-        $self->{private_ekorn} = {}
-          unless defined($self->{private_ekorn});
+        $self->{private_ekorn} = {} unless defined($self->{private_ekorn});
         if (UNIVERSAL::isa($_[0], 'HASH')) {
             $self->{private_ekorn} = {%{$self->{private_ekorn}}, %{$_[0]}};
         }
@@ -59,11 +54,9 @@ sub prepare {
     my $self      = shift;
     my $statement = shift;
     my($placeholders, $normalised_statement, $original_statement, $digest) = study_statement($statement);
-    throw E_EXP_STATEMENT
-      unless defined($normalised_statement);
+    throw E_EXP_STATEMENT unless defined($normalised_statement);
     my $sth = $self->SUPER::prepare($normalised_statement, @_);
-    return
-      unless defined($sth);
+    return unless defined($sth);
     bless $sth, $self->_root_class . '::st';
     $sth->_private_state({
         Placeholders        => $placeholders,
@@ -78,11 +71,9 @@ sub prepare_cached {
     my $self      = shift;
     my $statement = shift;
     my($placeholders, $normalised_statement, $original_statement, $digest) = study_statement($statement);
-    throw E_EXP_STATEMENT
-      unless defined($normalised_statement);
+    throw E_EXP_STATEMENT unless defined($normalised_statement);
     my $sth = $self->SUPER::prepare_cached($normalised_statement, @_);
-    return
-      unless defined($sth);
+    return unless defined($sth);
     bless $sth, $self->_root_class . '::st';
     $sth->_private_state({
         Placeholders        => $placeholders,
@@ -125,8 +116,7 @@ sub do {
             $self->prepare($statement);
         }
     };
-    return $sth->execute(@_), $sth
-      if wantarray;
+    return $sth->execute(@_), $sth if wantarray;
     return $sth->execute(@_);
 }
 

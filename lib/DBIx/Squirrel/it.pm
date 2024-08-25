@@ -26,11 +26,11 @@ use constant E_EXP_BIND_VALUES => 'Expected bind values but none have been prese
 use constant W_MORE_ROWS       => 'Query would yield more than one result';
 use constant E_EXP_ARRAY_REF   => 'Expected an ARRAY-REF';
 
-sub DEFAULT_SLICE () {$DBIx::Squirrel::it::DEFAULT_SLICE}
+sub DEFAULT_SLICE {$DBIx::Squirrel::it::DEFAULT_SLICE}
 
-sub DEFAULT_BUFFER_SIZE () {$DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE}
+sub DEFAULT_BUFFER_SIZE {$DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE}
 
-sub BUFFER_SIZE_LIMIT () {$DBIx::Squirrel::it::BUFFER_SIZE_LIMIT}
+sub BUFFER_SIZE_LIMIT {$DBIx::Squirrel::it::BUFFER_SIZE_LIMIT}
 
 sub NOTHING {
     $_ = undef;
@@ -40,7 +40,7 @@ sub NOTHING {
 sub DESTROY {
     return if DBIx::Squirrel::util::global_destruct_phase();
     local($., $@, $!, $^E, $?, $_);
-    my $self = shift();
+    my $self = shift;
     $self->_private_state_clear;
     $self->_private_state(undef);
     return;
@@ -83,7 +83,7 @@ sub new {
 }
 
 sub _buffer_charge {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     unless ($self->{Executed}) {
         return unless defined($self->execute);
     }
@@ -101,21 +101,19 @@ sub _buffer_charge {
 }
 
 sub _buffer_empty {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     return $attr->{buffer} && @{$attr->{buffer}} < 1;
 }
 
 # Where rows are buffered until fetched.
 sub _buffer_init {
-    my($attr, $self) = $_[0]->_private_state;
-    if ($self->{NUM_OF_FIELDS}) {
-        $attr->{buffer} = [];
-    }
+    my($attr, $self) = shift->_private_state;
+    $attr->{buffer} = [] if $self->{NUM_OF_FIELDS};
     return $self;
 }
 
 sub _buffer_size_auto_adjust {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     $attr->{buffer_size} *= 2;
     $attr->{buffer_size}  = BUFFER_SIZE_LIMIT if $attr->{buffer_size} > BUFFER_SIZE_LIMIT;
     return $self;
@@ -123,7 +121,7 @@ sub _buffer_size_auto_adjust {
 
 # How many rows to buffer at a time.
 sub _buffer_size_init {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     if ($self->{NUM_OF_FIELDS}) {
         $attr->{buffer_size}       ||= DEFAULT_BUFFER_SIZE;
         $attr->{buffer_size_fixed} ||= !!0;
@@ -131,40 +129,25 @@ sub _buffer_size_init {
     return $self;
 }
 
-# The total number of rows fetched since execute was called.
-sub _results_count_init {
-    my($attr, $self) = $_[0]->_private_state;
-    if ($self->{NUM_OF_FIELDS}) {
-        $attr->{results_count} = 0;
-    }
-    return $self;
-}
-
-sub _results_fetch {
-    my($attr, $self) = $_[0]->_private_state;
-    return $self->_results_pending_fetch if $self->_results_pending;
+sub _result_fetch {
+    my($attr, $self) = $_[0]->_private_state;    # Not shifted because of jump at #148
+    return $self->_result_fetch_pending if $self->_results_pending;
     return unless $self->{Active};
     if ($self->_buffer_empty) {
         return unless $self->_buffer_charge;
     }
     my $result = shift(@{$attr->{buffer}});
-    my($results, $transformed) = $self->_results_transform($result);
-    goto &_results_fetch if $transformed && !@{$results};
+    my($results, $transformed) = $self->_result_transform($result);
+    goto &_result_fetch if $transformed && !@{$results};
     $result = shift(@{$results});
-    $self->_results_pending_push($results) if @{$results};
+    $self->_results_push_pending($results) if @{$results};
     $attr->{results_first} = $result unless $attr->{results_count}++;
     $attr->{results_last}  = $result;
     return do {$_ = $result};
 }
 
-sub _results_pending {
-    my($attr, $self) = $_[0]->_private_state;
-    return unless defined($attr->{results_pending});
-    return !!@{$attr->{results_pending}};
-}
-
-sub _results_pending_fetch {
-    my($attr, $self) = $_[0]->_private_state;
+sub _result_fetch_pending {
+    my($attr, $self) = shift->_private_state;
     return unless defined($attr->{results_pending});
     my $result = shift(@{$attr->{results_pending}});
     $attr->{results_first} = $result unless $attr->{results_count}++;
@@ -172,26 +155,16 @@ sub _results_pending_fetch {
     return do {$_ = $result};
 }
 
-sub _results_pending_push {
-    my($attr, $self) = shift->_private_state;
-    return unless @_;
-    my $results = shift();
-    return                        unless UNIVERSAL::isa($results, 'ARRAY');
-    $attr->{results_pending} = [] unless defined($attr->{results_pending});
-    push @{$attr->{results_pending}}, @{$results};
-    return $self;
-}
-
 # Seemingly pointless, here, but intended to be overridden in subclasses.
-sub _results_prep_for_transform {$_[1]}
+sub _result_prep_to_transform {$_[1]}
 
-sub _results_transform {
+sub _result_transform {
     my($attr, $self) = shift->_private_state;
-    my $result    = $self->_results_prep_for_transform(shift);
+    my $result    = $self->_result_prep_to_transform(shift);
     my $transform = !!@{$attr->{transforms}};
     my @results   = do {
         if ($transform) {
-            map {transform($attr->{transforms}, $self->_results_prep_for_transform($_))} $result;
+            map {transform($attr->{transforms}, $self->_result_prep_to_transform($_))} $result;
         }
         else {
             $result;
@@ -201,11 +174,34 @@ sub _results_transform {
     return \@results;
 }
 
+# The total number of rows fetched since execute was called.
+sub _results_count_init {
+    my($attr, $self) = shift->_private_state;
+    $attr->{results_count} = 0 if $self->{NUM_OF_FIELDS};
+    return $self;
+}
+
+sub _results_pending {
+    my($attr, $self) = shift->_private_state;
+    return unless defined($attr->{results_pending});
+    return !!@{$attr->{results_pending}};
+}
+
+sub _results_push_pending {
+    my($attr, $self) = shift->_private_state;
+    return unless @_;
+    return unless UNIVERSAL::isa($_[0], 'ARRAY');
+    my $results = shift;
+    $attr->{results_pending} = [] unless defined($attr->{results_pending});
+    push @{$attr->{results_pending}}, @{$results};
+    return $self;
+}
+
 {
     my %attr_by_id;
 
     sub _private_state {
-        my $self = shift();
+        my $self = shift;
         return unless ref($self);
         my $id   = 0+ $self;
         my $attr = do {
@@ -237,7 +233,7 @@ sub _results_transform {
 }
 
 sub _private_state_clear {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     delete $attr->{$_} foreach grep {exists($attr->{$_})} qw/
       buffer
       execute_returned
@@ -250,19 +246,17 @@ sub _private_state_clear {
 }
 
 sub _private_state_init {
-    $_[0]->_buffer_init;
-    $_[0]->_buffer_size_init;
-    $_[0]->_results_count_init;
+    shift->_buffer_init->_buffer_size_init->_results_count_init;
 }
 
 sub _private_state_reset {
-    $_[0]->_private_state_clear;
-    goto &_private_state_init;
+    shift->_private_state_clear->_private_state_init;
 }
 
 sub all {
-    return NOTHING unless defined($_[0]->execute(@_));
-    return $_[0]->remaining;
+    my $self = shift;
+    return NOTHING unless defined($self->execute(@_));
+    return $self->remaining;
 }
 
 sub buffer_size {
@@ -270,7 +264,7 @@ sub buffer_size {
     if (@_) {
         throw E_BAD_BUFFER_SIZE unless looks_like_number($_[0]);
         throw E_BAD_BUFFER_SIZE if $_[0] < DEFAULT_BUFFER_SIZE || $_[0] > BUFFER_SIZE_LIMIT;
-        $attr->{buffer_size}       = shift();
+        $attr->{buffer_size}       = shift;
         $attr->{buffer_size_fixed} = !!1;
         return $self;
     }
@@ -281,23 +275,23 @@ sub buffer_size {
 }
 
 sub buffer_size_slice {
-    my $self = shift();
+    my $self = shift;
     return $self->buffer_size, $self->slice unless @_;
     return $self->slice(shift)->buffer_size(shift) if ref($_[0]);
     return $self->buffer_size(shift)->slice(shift);
 }
 
 sub count {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     unless ($self->{Executed}) {
         return NOTHING unless defined($self->execute);
     }
-    while (defined($self->_results_fetch)) {;}
+    while (defined($self->_result_fetch)) {;}
     return do {$_ = $attr->{results_count}};
 }
 
 sub count_fetched {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     unless ($self->{Executed}) {
         return NOTHING unless defined($self->execute);
     }
@@ -326,36 +320,36 @@ sub execute {
 }
 
 sub first {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     unless ($self->{Executed}) {
         return NOTHING unless defined($self->execute);
     }
-    return do {$_ = exists($attr->{results_first}) ? $attr->{results_first} : $self->_results_fetch};
+    return do {$_ = exists($attr->{results_first}) ? $attr->{results_first} : $self->_result_fetch};
 }
 
 sub iterate {
-    my $self = shift();
+    my $self = shift;
     return NOTHING unless defined($self->execute(@_));
     return do {$_ = $self};
 }
 
 sub reset {
-    my $self = $_[0];
+    my $self = shift;
     $self->execute;
     return $self;
 }
 
 sub last {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     unless ($self->{Executed}) {
         return NOTHING unless defined($self->execute);
-        while (defined($self->_results_fetch)) {;}
+        while (defined($self->_result_fetch)) {;}
     }
     return do {$_ = $attr->{results_last}};
 }
 
 sub last_fetched {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     unless ($self->{Executed}) {
         $self->execute;
         return NOTHING;
@@ -364,30 +358,30 @@ sub last_fetched {
 }
 
 sub next {
-    my $self = $_[0];
+    my $self = shift;
     unless ($self->{Executed}) {
         return NOTHING unless defined($self->execute);
     }
-    return do {$_ = $self->_results_fetch};
+    return do {$_ = $self->_result_fetch};
 }
 
 sub remaining {
-    my $self = $_[0];
+    my $self = shift;
     unless ($self->{Executed}) {
         return NOTHING unless defined($self->execute);
     }
     my @rows;
-    push @rows, $_ while defined($self->_results_fetch);
+    push @rows, $_ while defined($self->_result_fetch);
     return @rows if wantarray;
     return \@rows;
 }
 
-sub rows {$_[0]->sth->rows}
+sub rows {shift->sth->rows}
 
 sub single {
-    my($attr, $self) = $_[0]->_private_state;
+    my($attr, $self) = shift->_private_state;
     return NOTHING unless defined($self->execute);
-    return NOTHING unless defined($self->_results_fetch);
+    return NOTHING unless defined($self->_result_fetch);
     whine W_MORE_ROWS if @{$attr->{buffer}};
     return do {$_ = exists($attr->{results_first}) ? $attr->{results_first} : ()};
 }
@@ -401,11 +395,11 @@ sub slice {
     if (@_) {
         if (ref($_[0])) {
             if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                $attr->{slice} = shift();
+                $attr->{slice} = shift;
                 return $self;
             }
             if (UNIVERSAL::isa($_[0], 'HASH')) {
-                $attr->{slice} = shift();
+                $attr->{slice} = shift;
                 return $self;
             }
         }
@@ -418,12 +412,12 @@ sub slice {
 }
 
 sub slice_buffer_size {
-    my $self = shift();
+    my $self = shift;
     return $self->slice, $self->buffer_size unless @_;
     return $self->slice(shift)->buffer_size(shift) if ref($_[0]);
     return $self->buffer_size(shift)->slice(shift);
 }
 
-sub sth {$_[0]->_private_state->{sth}}
+sub sth {shift->_private_state->{sth}}
 
 1;
