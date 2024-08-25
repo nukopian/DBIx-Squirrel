@@ -56,7 +56,7 @@ sub new {
 
 sub _buffer_charge {
     my($attr, $self) = shift->_private_state;
-    my $sth = $self->sth;
+    my $sth = $attr->{sth};
     unless ($sth->{Executed}) {
         return unless defined($self->execute);
     }
@@ -81,7 +81,7 @@ sub _buffer_empty {
 # Where rows are buffered until fetched.
 sub _buffer_init {
     my($attr, $self) = shift->_private_state;
-    $attr->{buffer} = [] if $self->sth->{NUM_OF_FIELDS};
+    $attr->{buffer} = [] if $attr->{sth}->{NUM_OF_FIELDS};
     return $self;
 }
 
@@ -95,7 +95,7 @@ sub _buffer_size_auto_adjust {
 # How many rows to buffer at a time.
 sub _buffer_size_init {
     my($attr, $self) = shift->_private_state;
-    if ($self->sth->{NUM_OF_FIELDS}) {
+    if ($attr->{sth}->{NUM_OF_FIELDS}) {
         $attr->{buffer_size}       ||= DEFAULT_BUFFER_SIZE;
         $attr->{buffer_size_fixed} ||= !!0;
     }
@@ -104,7 +104,7 @@ sub _buffer_size_init {
 
 sub _result_fetch {
     my($attr, $self) = shift->_private_state;
-    my $sth = $self->sth;
+    my $sth = $attr->{sth};
     my($transformed, $results, $result);
     do {
         return $self->_result_fetch_pending if $self->_results_pending;
@@ -153,7 +153,7 @@ sub _result_transform {
 # The total number of rows fetched since execute was called.
 sub _results_count_init {
     my($attr, $self) = shift->_private_state;
-    $attr->{results_count} = 0 if $self->sth->{NUM_OF_FIELDS};
+    $attr->{results_count} = 0 if $attr->{sth}->{NUM_OF_FIELDS};
     return $self;
 }
 
@@ -259,8 +259,7 @@ sub buffer_size_slice {
 
 sub count {
     my($attr, $self) = shift->_private_state;
-    my $sth = $self->sth;
-    unless ($sth->{Executed}) {
+    unless ($attr->{sth}->{Executed}) {
         return unless defined($self->execute);
     }
     while (defined($self->_result_fetch)) {;}
@@ -269,8 +268,7 @@ sub count {
 
 sub count_fetched {
     my($attr, $self) = shift->_private_state;
-    my $sth = $self->sth;
-    unless ($sth->{Executed}) {
+    unless ($attr->{sth}->{Executed}) {
         return unless defined($self->execute);
     }
     return do {$_ = $attr->{results_count}};
@@ -293,7 +291,7 @@ sub execute {
         $attr->{bind_values} = [@{$attr->{bind_values_initial}}]
           unless defined($attr->{bind_values}) && @{$attr->{bind_values}};
     }
-    my $sth = $self->sth;
+    my $sth = $attr->{sth};
     throw E_EXP_BIND_VALUES if $sth->{NUM_OF_PARAMS} && @{$attr->{bind_values}} < 1;
     $self->_private_state_reset;
     return do {$_ = $attr->{execute_returned} = $sth->execute(@{$attr->{bind_values}})};
@@ -301,8 +299,7 @@ sub execute {
 
 sub first {
     my($attr, $self) = shift->_private_state;
-    my $sth = $self->sth;
-    unless ($sth->{Executed}) {
+    unless ($attr->{sth}->{Executed}) {
         return unless defined($self->execute);
     }
     return do {$_ = exists($attr->{results_first}) ? $attr->{results_first} : $self->_result_fetch};
@@ -322,8 +319,7 @@ sub reset {
 
 sub last {
     my($attr, $self) = shift->_private_state;
-    my $sth = $self->sth;
-    unless ($sth->{Executed}) {
+    unless ($attr->{sth}->{Executed}) {
         return unless defined($self->execute);
         while (defined($self->_result_fetch)) {;}
     }
@@ -332,8 +328,7 @@ sub last {
 
 sub last_fetched {
     my($attr, $self) = shift->_private_state;
-    my $sth = $self->sth;
-    unless ($sth->{Executed}) {
+    unless ($attr->{sth}->{Executed}) {
         $self->execute;
         return;
     }
