@@ -1,5 +1,8 @@
 ## Revision history for DBIx-Squirrel
 
+### 1.3.5 2024-08-26 07:40
+-   
+
 ### 1.3.4 2024-08-25 18:30
 -   Some refactoring to improve robustness.
 

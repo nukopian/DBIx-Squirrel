@@ -291,7 +291,6 @@ sub execute {
           unless defined($attr->{bind_values}) && @{$attr->{bind_values}};
     }
     my $sth = $attr->{sth};
-    throw E_EXP_BIND_VALUES if $sth->{NUM_OF_PARAMS} && @{$attr->{bind_values}} < 1;
     $self->_private_state_reset;
     return do {$_ = $attr->{execute_returned} = $sth->execute(@{$attr->{bind_values}})};
 }
