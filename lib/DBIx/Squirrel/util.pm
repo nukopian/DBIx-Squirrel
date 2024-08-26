@@ -164,9 +164,17 @@ sub hash_sql_string {
 }
 
 sub part_args {
-    my @args = @_;
+    # Originally, I would pop @args if element -1 was a CODEREF, but Perl 5.14.2
+    # really doesn't like it and some tests fail with error:
+    #
+    #   Modification of non-creatable array value attempted, subscript -1
+    #
+    # To make the affected tests pass on Perl 5.14.2, we must force a copy of @_
+    # to be made (reverse) and we shift @args from element 0.
+    #
+    my @args = reverse(@_);
     my @coderefs;
-    unshift @coderefs, pop(@args) while UNIVERSAL::isa($args[-1], 'CODE');
+    unshift @coderefs, shift(@args) while UNIVERSAL::isa($args[0], 'CODE');
     return \@coderefs, @args;
 }
 
