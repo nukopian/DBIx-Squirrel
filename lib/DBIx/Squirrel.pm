@@ -1,3 +1,4 @@
+use 5.010_001;
 use strict;
 use warnings;
 
@@ -44,7 +45,7 @@ BEGIN {
     *DBIx::Squirrel::NORMALIZE_SQL                = *DBIx::Squirrel::util::NORMALISE_SQL;
 
     unless (defined $DBIx::Squirrel::VERSION) {
-        my $v = "1.3.3";
+        my $v = "1.3.4";
         *DBIx::Squirrel::VERSION = \$v;
     }
 }
@@ -63,7 +64,7 @@ sub _partition_imports_into_helpers_and_dbi_imports {
             shift;
             if (ref($_[0])) {
                 if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                    push @helpers, @{shift()};
+                    push @helpers, @{+shift};
                 }
                 else {
                     shift;
