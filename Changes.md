@@ -2,9 +2,10 @@
 
 ### NEXT
 -   **TESTS**
-    - Added compile test
+    - Added compile test.
+    - Added some important unit tests.
 -   **FIXES**
-    - Refactored &DBIx::Squirrel::util::part_args (again!) because Perl 5.14.2 really
+    - Refactored &DBIx::Squirrel::util::args_partition (again!) because Perl 5.14.2 really
       objects to popping trailing CODEREFs from `@_`. Need to force a copy (reverse
       does it) and shift leading CODEREFs, and it's all happy again. Hoping not to
       see more red on CPANTs about this routine.
@@ -44,7 +45,7 @@
 -   Added the "count_all" method back into the iterator class, as well as ensuring that "count"
     does not affect a future call to "next".
 -   Addressed build failures revealed by the CPAN Testers Matrix:
-    -   Rewrote &DBIx::Squirrel::util::part_args - failed on Perl versions <= 5.18.4;
+    -   Rewrote &DBIx::Squirrel::util::args_partition - failed on Perl versions <= 5.18.4;
     -   Back to using "strict" and "warnings" - Modern::Perl having some issues with a bundle "all"
         in Perl versions <= 5.14.4.
     -   Perls versions <= 5.13 do not support ${^GLOBAL_PHASE}, so used Devel::GlobalDestruction
