@@ -1,3 +1,4 @@
+use 5.010_001;
 use strict;
 use warnings;
 
@@ -159,14 +160,7 @@ sub trim_sql_string {
 memoize('hash_sql_string');
 
 sub hash_sql_string {
-    return do {
-        if (&is_viable_sql_string) {
-            &sha256_base64;
-        }
-        else {
-            undef;
-        }
-    };
+    return is_viable_sql_string(@_) ? sha256_base64(@_) : undef;
 }
 
 sub part_args {
