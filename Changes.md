@@ -1,13 +1,14 @@
 ## Revision history for DBIx-Squirrel
 
 ### NEXT
--   Testing:
+-   **TESTS**
     - Added compile test
--   Fixes:
+-   **FIXES**
     - Refactored &DBIx::Squirrel::util::part_args (again!) because Perl 5.14.2 really
       objects to popping trailing CODEREFs from `@_`. Need to force a copy (reverse
       does it) and shift leading CODEREFs, and it's all happy again. Hoping not to
       see more red on CPANTs about this routine.
+
 ### 1.3.5 2024-08-26 07:40
 -   Fixed a problem recently introduced into how transformation pipelines and
     arguments are partitioned.
