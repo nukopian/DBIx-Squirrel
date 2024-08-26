@@ -1,7 +1,13 @@
 ## Revision history for DBIx-Squirrel
 
 ### 1.3.5 2024-08-26 07:40
--   
+-   Fixed a problem recently introduced into how transformation pipelines and
+    arguments are partitioned.
+-   Fixed the iterator execute method. It used the bleat about missing bind-
+    values, but that doesn't make sense during construction when there might
+    legitimately be none. Now calling execute with none of the expected 
+    bind-values just effectively resets the iterator. 
+-   Fixed the results code that was breaking due to a missing `no strict qw/refs/`.
 
 ### 1.3.4 2024-08-25 18:30
 -   Some refactoring to improve robustness.
