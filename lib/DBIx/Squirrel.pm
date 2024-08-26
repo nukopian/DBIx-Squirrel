@@ -45,7 +45,7 @@ BEGIN {
     *DBIx::Squirrel::NORMALIZE_SQL                = *DBIx::Squirrel::util::NORMALISE_SQL;
 
     unless (defined $DBIx::Squirrel::VERSION) {
-        my $v = "1.3.6";
+        my $v = "1.3.7";
         *DBIx::Squirrel::VERSION = \$v;
     }
 }
