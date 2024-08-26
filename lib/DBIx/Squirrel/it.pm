@@ -272,32 +272,6 @@ sub count_fetched {
     return do {$_ = $attr->{results_count}};
 }
 
-sub start {
-    my($attr,       $self)        = shift->_private_state;
-    my($transforms, @bind_values) = args_partition(@_);
-    if (@{$transforms}) {
-        $attr->{transforms} = [@{$attr->{transforms_initial}}, @{$transforms}];
-    }
-    else {
-        $attr->{transforms} = [@{$attr->{transforms_initial}}]
-          unless defined($attr->{transforms}) && @{$attr->{transforms}};
-    }
-    if (@bind_values) {
-        $attr->{bind_values} = [@bind_values];
-    }
-    else {
-        $attr->{bind_values} = [@{$attr->{bind_values_initial}}]
-          unless defined($attr->{bind_values}) && @{$attr->{bind_values}};
-    }
-    my $sth = $attr->{sth};
-    $self->_private_state_reset;
-    return do {$_ = $attr->{execute_returned} = $sth->execute(@{$attr->{bind_values}})};
-}
-
-BEGIN {
-    *execute = subname(execute => \&start);
-}
-
 sub first {
     my($attr, $self) = shift->_private_state;
     unless ($attr->{sth}->{Executed}) {
@@ -397,6 +371,32 @@ sub slice_buffer_size {
     return $self->slice, $self->buffer_size unless @_;
     return $self->slice(shift)->buffer_size(shift) if ref($_[0]);
     return $self->buffer_size(shift)->slice(shift);
+}
+
+sub start {
+    my($attr,       $self)        = shift->_private_state;
+    my($transforms, @bind_values) = args_partition(@_);
+    if (@{$transforms}) {
+        $attr->{transforms} = [@{$attr->{transforms_initial}}, @{$transforms}];
+    }
+    else {
+        $attr->{transforms} = [@{$attr->{transforms_initial}}]
+          unless defined($attr->{transforms}) && @{$attr->{transforms}};
+    }
+    if (@bind_values) {
+        $attr->{bind_values} = [@bind_values];
+    }
+    else {
+        $attr->{bind_values} = [@{$attr->{bind_values_initial}}]
+          unless defined($attr->{bind_values}) && @{$attr->{bind_values}};
+    }
+    my $sth = $attr->{sth};
+    $self->_private_state_reset;
+    return do {$_ = $attr->{execute_returned} = $sth->execute(@{$attr->{bind_values}})};
+}
+
+BEGIN {
+    *execute = subname(execute => \&start);
 }
 
 sub sth {shift->_private_state->{sth}}
