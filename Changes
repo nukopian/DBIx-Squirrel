@@ -1,15 +1,23 @@
 Revision history for DBIx-Squirrel
 
-NEXT
+1.3.6 2024-08-26 23:00
 
 -   TESTS
-    -   Added compile test
--   FIXES
-    -   Refactored &DBIx::Squirrel::util::args_partition (again!)
-        because Perl 5.14.2 really objects to popping trailing CODEREFs
-        from @_. Need to force a copy (reverse does it) and shift
-        leading CODEREFs, and it’s all happy again. Hoping not to see
-        more red on CPANTs about this routine.
+    -   Added compile test.
+    -   Added some important unit tests.
+-   REFACTOR / FIX
+    -   The argument partitioning code that isolates transformations
+        from bind-values has been re-written to (hopefully) avoid some
+        of the complaints evident when testing under some older Perls.
+    -   Much of the shitty old code in DBIx::Squirrel::util has been
+        reworked and, given its importance, covered by some new and
+        comprehensive unit tests.
+    -   Made good on an earlier idea to rename the iterator’s execute
+        method to start. Within that context, it makes more sense since
+        execute could reasonably be thought to require bind-params at
+        all call sites, but that isn’t always the case in the iterator
+        code. So a different name made sense, and execute has been
+        demoted to alias so as not to break anything.
 
 1.3.5 2024-08-26 07:40
 

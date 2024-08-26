@@ -1104,25 +1104,6 @@ If the iterator's statement has not yet been executed, it will be. Zero will
 be returned if the statement executed successfully, otherwise `undef` is
 returned.
 
-#### `execute`
-
-    $rv_or_undef = $itor->execute
-    $rv_or_undef = $itor->execute(@bind_values)
-    $rv_or_undef = $itor->execute(@transforms)
-    $rv_or_undef = $itor->execute(@bind_values, @transforms)
-    $rv_or_undef = $itor->execute(%bind_mappings)
-    $rv_or_undef = $itor->execute(%bind_mappings, @transforms)
-    $rv_or_undef = $itor->execute(\@bind_values)
-    $rv_or_undef = $itor->execute([@bind_values, @transforms])
-    $rv_or_undef = $itor->execute(\%bind_mappings)
-    $rv_or_undef = $itor->execute(\%bind_mappings, @transforms)
-
-Executes the iterator's underlying statement, as well as resetting the
-iterator's internal state.
-
-When called with no arguments, any bind-values and transformations passed to
-the iterator at the time of construction will be honoured.
-
 #### `first`
 
     $result = $itor->first;
@@ -1301,6 +1282,25 @@ The following package globals define the relevant default settings:
     $DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
     $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
     $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
+
+#### `start`
+
+    $rv_or_undef = $itor->start
+    $rv_or_undef = $itor->start(@bind_values)
+    $rv_or_undef = $itor->start(@transforms)
+    $rv_or_undef = $itor->start(@bind_values, @transforms)
+    $rv_or_undef = $itor->start(%bind_mappings)
+    $rv_or_undef = $itor->start(%bind_mappings, @transforms)
+    $rv_or_undef = $itor->start(\@bind_values)
+    $rv_or_undef = $itor->start([@bind_values, @transforms])
+    $rv_or_undef = $itor->start(\%bind_mappings)
+    $rv_or_undef = $itor->start(\%bind_mappings, @transforms)
+
+Culminates in the iterator's underlying statement being executed, after
+resetting the iterator's internal state.
+
+When called with no arguments, any bind-values and transformations passed to
+the iterator at the time of construction are used.
 
 #### `sth`
 

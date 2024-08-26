@@ -92,7 +92,6 @@
               <li><a href="#buffer_size_slice">buffer_size_slice</a></li>
               <li><a href="#count">count</a></li>
               <li><a href="#count_fetched">count_fetched</a></li>
-              <li><a href="#execute1">execute</a></li>
               <li><a href="#first">first</a></li>
               <li><a href="#iterate2">iterate</a></li>
               <li><a href="#last">last</a></li>
@@ -105,6 +104,7 @@
               <li><a href="#single-or-one">single (or one)</a></li>
               <li><a href="#slice">slice</a></li>
               <li><a href="#slice_buffer_size">slice_buffer_size</a></li>
+              <li><a href="#start">start</a></li>
               <li><a href="#sth">sth</a></li>
             </ul>
           </li>
@@ -1168,23 +1168,6 @@ $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pr
 
 <p>If the iterator&#39;s statement has not yet been executed, it will be. Zero will be returned if the statement executed successfully, otherwise <code>undef</code> is returned.</p>
 
-<h4 id="execute1"><code>execute</code></h4>
-
-<pre><code>$rv_or_undef = $itor-&gt;execute
-$rv_or_undef = $itor-&gt;execute(@bind_values)
-$rv_or_undef = $itor-&gt;execute(@transforms)
-$rv_or_undef = $itor-&gt;execute(@bind_values, @transforms)
-$rv_or_undef = $itor-&gt;execute(%bind_mappings)
-$rv_or_undef = $itor-&gt;execute(%bind_mappings, @transforms)
-$rv_or_undef = $itor-&gt;execute(\@bind_values)
-$rv_or_undef = $itor-&gt;execute([@bind_values, @transforms])
-$rv_or_undef = $itor-&gt;execute(\%bind_mappings)
-$rv_or_undef = $itor-&gt;execute(\%bind_mappings, @transforms)</code></pre>
-
-<p>Executes the iterator&#39;s underlying statement, as well as resetting the iterator&#39;s internal state.</p>
-
-<p>When called with no arguments, any bind-values and transformations passed to the iterator at the time of construction will be honoured.</p>
-
 <h4 id="first"><code>first</code></h4>
 
 <pre><code>$result = $itor-&gt;first;</code></pre>
@@ -1345,6 +1328,23 @@ $itor = $itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
 <pre><code>$DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
 $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
 $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pre>
+
+<h4 id="start"><code>start</code></h4>
+
+<pre><code>$rv_or_undef = $itor-&gt;start
+$rv_or_undef = $itor-&gt;start(@bind_values)
+$rv_or_undef = $itor-&gt;start(@transforms)
+$rv_or_undef = $itor-&gt;start(@bind_values, @transforms)
+$rv_or_undef = $itor-&gt;start(%bind_mappings)
+$rv_or_undef = $itor-&gt;start(%bind_mappings, @transforms)
+$rv_or_undef = $itor-&gt;start(\@bind_values)
+$rv_or_undef = $itor-&gt;start([@bind_values, @transforms])
+$rv_or_undef = $itor-&gt;start(\%bind_mappings)
+$rv_or_undef = $itor-&gt;start(\%bind_mappings, @transforms)</code></pre>
+
+<p>Culminates in the iterator&#39;s underlying statement being executed, after resetting the iterator&#39;s internal state.</p>
+
+<p>When called with no arguments, any bind-values and transformations passed to the iterator at the time of construction are used.</p>
 
 <h4 id="sth"><code>sth</code></h4>
 
