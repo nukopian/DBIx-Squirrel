@@ -1,7 +1,7 @@
 ## Revision history for DBIx-Squirrel
 
 ### 1.3.4 2024-08-25 18:30
--   Typos fixed and POD updated.
+-   Some refactoring to improve robustness.
 
 ### 1.3.3 2024-08-25 18:15
 -   Typos fixed and additions made to POD.
