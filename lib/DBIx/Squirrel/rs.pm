@@ -2,7 +2,7 @@ use 5.010_001;
 use strict;
 use warnings;
 
-package    # hide from PAUSE
+package              # hide from PAUSE
   DBIx::Squirrel::rs;
 
 BEGIN {
@@ -78,6 +78,7 @@ sub row_class {
 }
 
 sub slice {
+    no strict 'refs';    ## no critic
     my($attr, $self) = shift->_private_state;
     my $slice = shift;
     my $old   = defined($attr->{slice}) ? $attr->{slice} : '';
