@@ -21,7 +21,6 @@ use DBIx::Squirrel::util qw/part_args throw transform whine/;
 use constant E_BAD_STH         => 'Expected a statement handle object';
 use constant E_BAD_SLICE       => 'Slice must be a reference to an ARRAY or HASH';
 use constant E_BAD_BUFFER_SIZE => 'Maximum row count must be an integer greater than zero';
-use constant E_EXP_BIND_VALUES => 'Expected bind values but none have been presented';
 use constant W_MORE_ROWS       => 'Query would yield more than one result';
 use constant E_EXP_ARRAY_REF   => 'Expected an ARRAY-REF';
 
@@ -291,7 +290,6 @@ sub execute {
           unless defined($attr->{bind_values}) && @{$attr->{bind_values}};
     }
     my $sth = $attr->{sth};
-    throw E_EXP_BIND_VALUES if $sth->{NUM_OF_PARAMS} && @{$attr->{bind_values}} < 1;
     $self->_private_state_reset;
     return do {$_ = $attr->{execute_returned} = $sth->execute(@{$attr->{bind_values}})};
 }

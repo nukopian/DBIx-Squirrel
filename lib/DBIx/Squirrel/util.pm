@@ -164,9 +164,9 @@ sub hash_sql_string {
 }
 
 sub part_args {
-    my @args = reverse(@_);
+    my @args = @_;
     my @coderefs;
-    unshift @coderefs, shift(@args) while UNIVERSAL::isa($args[0], 'CODE');
+    unshift @coderefs, pop(@args) while UNIVERSAL::isa($args[-1], 'CODE');
     return \@coderefs, @args;
 }
 
