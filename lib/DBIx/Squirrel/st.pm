@@ -46,8 +46,9 @@ sub _private_state {
 }
 
 sub _placeholders_confirm_positional {
-    my($attr, $self) = shift->_private_state;
-    my $placeholders = $attr->{Placeholders};
+    local($_);
+    my $self         = shift;
+    my $placeholders = $self->_private_state->{Placeholders};
     my @placeholders = values(%{$placeholders});
     my $total_count  = scalar(@placeholders);
     my $count        = grep {m/^[\:\$\?]\d+$/} @placeholders;
@@ -56,23 +57,26 @@ sub _placeholders_confirm_positional {
 }
 
 sub _placeholders_map_to_values {
-    my($attr, $self) = shift->_private_state;
-    my $placeholders = $attr->{Placeholders};
-    my @mappings     = do {
-        if ($self->_placeholders_confirm_positional) {
-            map {($placeholders->{$_} => $_[$_ - 1])} keys(%{$placeholders});
+    local($_);
+    my $self       = shift;
+    my $positional = $self->_placeholders_confirm_positional;
+    my @mappings   = do {
+        if ($positional) {
+            map {($positional->{$_} => $_[$_ - 1])} keys(%{$positional});
         }
         else {
-            if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                whine W_ODD_NUMBER_OF_ARGS unless @{$_[0]} % 2 == 0;
-                @{$_[0]};
-            }
-            elsif (UNIVERSAL::isa($_[0], 'HASH')) {
+            if (UNIVERSAL::isa($_[0], 'HASH')) {
                 %{$_[0]};
             }
             else {
-                whine W_ODD_NUMBER_OF_ARGS unless @_ % 2 == 0;
-                @_;
+                if (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                    whine W_ODD_NUMBER_OF_ARGS unless @{$_[0]} && @{$_[0]} % 2 == 0;
+                    @{$_[0]};
+                }
+                else {
+                    whine W_ODD_NUMBER_OF_ARGS unless @_ && @_ % 2 == 0;
+                    @_;
+                }
             }
         }
     };
@@ -81,19 +85,15 @@ sub _placeholders_map_to_values {
 }
 
 sub bind {
-    my($attr, $self) = shift->_private_state;
-    return unless my $placeholders = $attr->{Placeholders};
+    local($_);
+    my $self = shift;
     if (@_) {
         if ($self->_placeholders_confirm_positional) {
             if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                for my $bind_id (1 .. scalar(@{$_[0]})) {
-                    $self->bind_param($bind_id, $_[0][$bind_id - 1]);
-                }
+                $self->bind_param($_, $_[0][$_ - 1]) for 1 .. scalar(@{$_[0]});
             }
             else {
-                for my $bind_id (1 .. scalar(@_)) {
-                    $self->bind_param($bind_id, $_[$bind_id - 1]);
-                }
+                $self->bind_param($_, $_[$_ - 1]) for 1 .. scalar(@_);
             }
         }
         else {
@@ -114,10 +114,12 @@ sub bind {
 }
 
 sub bind_param {
-    my($attr, $self) = shift->_private_state;
-    my($param, $value, @attr) = @_;
+    local($_);
+    my $self = shift;
     my @args = do {
-        if (my $placeholders = $attr->{Placeholders}) {
+        my($param, $value, @attr) = @_;
+        my $placeholders = $self->_private_state->{Placeholders};
+        if ($placeholders) {
             if ($param =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
                 $+{bind_id}, $value, @attr;
             }
