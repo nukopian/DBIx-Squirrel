@@ -26,8 +26,6 @@ is( $artist_legacy->{Statement},
 
 is($artist_legacy->execute(3), '0E0', 'statement execute ok');
 
-$DBD_SQLite_VERSION=1.55;
-
 SKIP:
 {   skip "DBD\::SQLite $DBD_SQLite_VERSION too old for \$sth->{ParamValues} tests", 1
       unless $DBD_SQLite_VERSION >= 1.56;
