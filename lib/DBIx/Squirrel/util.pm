@@ -42,13 +42,13 @@ use constant E_BAD_CB_LIST   => 'Expected a reference to a list of code-referenc
 
 sub args_partition {
     my $s = scalar(@_);
+    return [] unless $s;
     my $n = $s;
-    return [] unless $n;
     while ($n) {
         last unless UNIVERSAL::isa($_[$n - 1], 'CODE');
         $n -= 1;
     }
-    return [@_] if $n == 0;
+    return [@_] if $n = 0;
     return [], @_ if $n == $s;
     return [@_[$n .. $#_]], @_[0 .. $n - 1];
 }
