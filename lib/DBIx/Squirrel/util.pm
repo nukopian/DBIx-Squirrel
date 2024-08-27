@@ -24,7 +24,7 @@ BEGIN {
     %DBIx::Squirrel::util::EXPORT_TAGS = (
         constants   => ['E_EXP_STATEMENT', 'E_EXP_STH', 'E_EXP_REF',],
         diagnostics => ['throw',           'whine',],
-        transform   => ['args_partition',  'transform',],
+        transform   => ['args_partition',  'scalar_transform',],
         sql         => ['statement_trim',  'statement_normalise', 'statement_study', 'sql_trim', 'sql_digest',],
     );
     @DBIx::Squirrel::util::EXPORT_OK = @{
@@ -164,7 +164,7 @@ our $_result;
 
 sub result {$_result}
 
-sub transform {
+sub scalar_transform {
     my @transforms = do {
         if (UNIVERSAL::isa($_[0], 'ARRAY')) {
             @{+shift};

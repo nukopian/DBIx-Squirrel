@@ -7,7 +7,7 @@ package    # hide from PAUSE
 
 use Scalar::Util qw/weaken looks_like_number/;
 use Sub::Name;
-use DBIx::Squirrel::util qw/args_partition throw transform whine/;
+use DBIx::Squirrel::util qw/args_partition throw scalar_transform whine/;
 use namespace::clean;
 
 BEGIN {
@@ -139,7 +139,7 @@ sub _result_transform {
     my $transform = !!@{$attr->{transforms}};
     my @results   = do {
         if ($transform) {
-            map {transform($attr->{transforms}, $self->_result_prep_to_transform($_))} $result;
+            map {scalar_transform($attr->{transforms}, $self->_result_prep_to_transform($_))} $result;
         }
         else {
             $result;
