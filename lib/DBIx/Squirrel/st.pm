@@ -10,7 +10,7 @@ use DBIx::Squirrel::util qw/throw whine/;
 use namespace::clean;
 
 BEGIN {
-    require DBIx::Squirrel unless %DBIx::Squirrel::;
+    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     $DBIx::Squirrel::st::VERSION = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::st::ISA     = qw/DBI::st/;
 }

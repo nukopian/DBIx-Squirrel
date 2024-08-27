@@ -11,7 +11,7 @@ use DBIx::Squirrel::util qw/:constants :sql throw/;
 use namespace::clean;
 
 BEGIN {
-    require DBIx::Squirrel unless %DBIx::Squirrel::;
+    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     $DBIx::Squirrel::db::VERSION = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::db::ISA     = qw/DBI::db/;
 }

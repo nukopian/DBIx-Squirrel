@@ -11,7 +11,7 @@ use DBIx::Squirrel::util qw/transform/;
 use namespace::clean;
 
 BEGIN {
-    require DBIx::Squirrel unless %DBIx::Squirrel::;
+    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     $DBIx::Squirrel::rs::VERSION = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::rs::ISA     = qw/DBIx::Squirrel::it/;
 }

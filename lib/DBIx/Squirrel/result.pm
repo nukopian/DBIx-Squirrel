@@ -10,7 +10,7 @@ use DBIx::Squirrel::util qw/throw/;
 use namespace::clean;
 
 BEGIN {
-    require DBIx::Squirrel unless %DBIx::Squirrel::;
+    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     $DBIx::Squirrel::result::VERSION = $DBIx::Squirrel::VERSION;
 }
 

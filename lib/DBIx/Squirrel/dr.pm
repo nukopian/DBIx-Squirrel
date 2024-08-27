@@ -8,7 +8,7 @@ package    # hide from PAUSE
 use namespace::clean;
 
 BEGIN {
-    require DBIx::Squirrel unless %DBIx::Squirrel::;
+    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     $DBIx::Squirrel::dr::VERSION = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::dr::ISA     = qw/DBI::dr/;
 }

@@ -11,7 +11,7 @@ use DBIx::Squirrel::util qw/args_partition throw transform whine/;
 use namespace::clean;
 
 BEGIN {
-    require DBIx::Squirrel unless %DBIx::Squirrel::;
+    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     $DBIx::Squirrel::it::VERSION             = $DBIx::Squirrel::VERSION;
     $DBIx::Squirrel::it::DEFAULT_SLICE       = [];                         # Faster!
     $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;                          # Initial buffer size and autoscaling increment
