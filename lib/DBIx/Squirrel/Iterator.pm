@@ -3,22 +3,22 @@ use strict;
 use warnings;
 
 package    # hide from PAUSE
-  DBIx::Squirrel::it;
+  DBIx::Squirrel::Iterator;
 
 use Scalar::Util qw/weaken looks_like_number/;
 use Sub::Name;
-use DBIx::Squirrel::util qw/args_partition throw whine/;
+use DBIx::Squirrel::Utils qw/args_partition throw whine/;
 use namespace::clean;
 
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     require Exporter;
-    $DBIx::Squirrel::it::VERSION             = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::it::ISA                 = qw/Exporter/;
-    @DBIx::Squirrel::it::EXPORT_OK           = qw/result result_transform/;
-    $DBIx::Squirrel::it::DEFAULT_SLICE       = [];                         # Faster!
-    $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;                          # Initial buffer size and autoscaling increment
-    $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;                         # Absolute maximum buffersize
+    $DBIx::Squirrel::Iterator::VERSION             = $DBIx::Squirrel::VERSION;
+    @DBIx::Squirrel::Iterator::ISA                 = qw/Exporter/;
+    @DBIx::Squirrel::Iterator::EXPORT_OK           = qw/result result_transform/;
+    $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];                            # Faster!
+    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;                             # Initial buffer size and autoscaling increment
+    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;                            # Absolute maximum buffersize
 }
 
 use constant E_BAD_STH         => 'Expected a statement handle object';
@@ -27,14 +27,14 @@ use constant E_BAD_BUFFER_SIZE => 'Maximum row count must be an integer greater 
 use constant W_MORE_ROWS       => 'Query would yield more than one result';
 use constant E_EXP_ARRAY_REF   => 'Expected an ARRAY-REF';
 
-sub DEFAULT_SLICE () {$DBIx::Squirrel::it::DEFAULT_SLICE}
+sub DEFAULT_SLICE () {$DBIx::Squirrel::Iterator::DEFAULT_SLICE}
 
-sub DEFAULT_BUFFER_SIZE () {$DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE}
+sub DEFAULT_BUFFER_SIZE () {$DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE}
 
-sub BUFFER_SIZE_LIMIT () {$DBIx::Squirrel::it::BUFFER_SIZE_LIMIT}
+sub BUFFER_SIZE_LIMIT () {$DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT}
 
 sub DESTROY {
-    return if DBIx::Squirrel::util::global_destruct_phase();
+    return if DBIx::Squirrel::Utils::global_destruct_phase();
     local($., $@, $!, $^E, $?, $_);
     my $self = shift;
     $self->_private_state_clear;

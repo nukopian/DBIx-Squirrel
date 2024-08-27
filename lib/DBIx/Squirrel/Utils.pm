@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 package    # hide from PAUSE
-  DBIx::Squirrel::util;
+  DBIx::Squirrel::Utils;
 
 use Carp                     ();
 use Devel::GlobalDestruction ();
@@ -12,8 +12,8 @@ use Sub::Name;
 
 BEGIN {
     require Exporter;
-    @DBIx::Squirrel::util::ISA       = qw/Exporter/;
-    @DBIx::Squirrel::util::EXPORT_OK = (
+    @DBIx::Squirrel::Utils::ISA       = qw/Exporter/;
+    @DBIx::Squirrel::Utils::EXPORT_OK = (
         qw/
           args_partition
           global_destruct_phase
@@ -26,7 +26,7 @@ BEGIN {
           whine
           /
     );
-    %DBIx::Squirrel::util::EXPORT_TAGS = (all => [@DBIx::Squirrel::util::EXPORT_OK]);
+    %DBIx::Squirrel::Utils::EXPORT_TAGS = (all => [@DBIx::Squirrel::Utils::EXPORT_OK]);
 }
 
 sub args_partition {

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 package    # hide from PAUSE
-  DBIx::Squirrel::rs;
+  DBIx::Squirrel::ResultSet;
 
 use Scalar::Util qw/weaken/;
 use Sub::Name;
@@ -11,13 +11,13 @@ use namespace::clean;
 
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    $DBIx::Squirrel::rs::VERSION = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::rs::ISA     = qw/DBIx::Squirrel::it/;
+    $DBIx::Squirrel::ResultSet::VERSION = $DBIx::Squirrel::VERSION;
+    @DBIx::Squirrel::ResultSet::ISA     = qw/DBIx::Squirrel::Iterator/;
 }
 
 sub DESTROY {
     no strict 'refs';    ## no critic
-    return if DBIx::Squirrel::util::global_destruct_phase();
+    return if DBIx::Squirrel::Utils::global_destruct_phase();
     local($., $@, $!, $^E, $?, $_);
     my $self      = shift;
     my $row_class = $self->row_class;
@@ -64,7 +64,7 @@ sub _rebless {
 }
 
 sub result_class {
-    return 'DBIx::Squirrel::result';
+    return 'DBIx::Squirrel::ResultClass';
 }
 
 BEGIN {

@@ -8,8 +8,8 @@ package              # hide from PAUSE
 
 use DBI;
 use Sub::Name;
-use DBIx::Squirrel::st qw/statement_study/;
-use DBIx::Squirrel::util qw/throw/;
+use DBIx::Squirrel::st    qw/statement_study/;
+use DBIx::Squirrel::Utils qw/throw/;
 use namespace::clean;
 
 BEGIN {

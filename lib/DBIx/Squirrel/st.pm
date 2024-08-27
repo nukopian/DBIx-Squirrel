@@ -8,7 +8,7 @@ package    # hide from PAUSE
 use Digest::SHA qw/sha256_base64/;
 use Memoize;
 use Sub::Name;
-use DBIx::Squirrel::util qw/throw whine/;
+use DBIx::Squirrel::Utils qw/throw whine/;
 use namespace::clean;
 
 BEGIN {
@@ -156,7 +156,7 @@ sub execute {
 }
 
 sub iterate {
-    return DBIx::Squirrel::it->new(@_);
+    return DBIx::Squirrel::Iterator->new(@_);
 }
 
 BEGIN {
@@ -166,7 +166,7 @@ BEGIN {
 }
 
 sub results {
-    return DBIx::Squirrel::rs->new(@_);
+    return DBIx::Squirrel::ResultSet->new(@_);
 }
 
 BEGIN {

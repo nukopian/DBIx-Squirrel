@@ -624,7 +624,7 @@ Each stage of a transformation receives the latest version of the result via
 the argument-list (`$_[0]` to be precise). For the sake of convenience (and
 for convention), this result is also available as `$_`. If you prefer to
 rely on something like `$_`, but would like something much less ephemeral,
-just `use DBIx::Squirrel::util 'result'` and use the `result` function
+just `use DBIx::Squirrel::Utils 'result'` and use the `result` function
 inside your transformation stage.
 
 Handing off to the next stage, or the caller, is with an explicit `return`
@@ -1036,8 +1036,8 @@ at that value, preventing the kind of automatic adjustment described above.
 
 The following package globals define the relevant default settings:
 
-    $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
+    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
 
 #### `buffer_size_slice`
 
@@ -1076,9 +1076,9 @@ at that value, preventing the kind of automatic adjustment described above.
 
 The following package globals define the relevant default settings:
 
-    $DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
-    $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
+    $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
+    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
 
 #### `count`
 
@@ -1240,7 +1240,7 @@ used to change the slicing strategy, a reference to the iterator is returned.
 
 The following package global defines the default setting:
 
-    $DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
+    $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
 
 #### `slice_buffer_size`
 
@@ -1279,9 +1279,9 @@ at that value, preventing the kind of automatic adjustment described above.
 
 The following package globals define the relevant default settings:
 
-    $DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
-    $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
+    $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
+    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
 
 #### `start`
 

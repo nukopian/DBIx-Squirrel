@@ -10,11 +10,11 @@ use FindBin        qw/$Bin/;
 use lib "$Bin/lib";
 
 BEGIN {
-    use_ok('DBIx::Squirrel',       database_entity => 'db')            || print "Bail out!\n";
-    use_ok('T::Squirrel',          qw/:var diagdump/)                  || print "Bail out!\n";
-    use_ok('DBIx::Squirrel::it',   qw/result result_transform/)        || print "Bail out!\n";
-    use_ok('DBIx::Squirrel::st',   qw/statement_trim statement_study/) || print "Bail out!\n";
-    use_ok('DBIx::Squirrel::util', qw/args_partition throw whine/)     || print "Bail out!\n";
+    use_ok('DBIx::Squirrel',           database_entity => 'db')            || print "Bail out!\n";
+    use_ok('T::Squirrel',              qw/:var diagdump/)                  || print "Bail out!\n";
+    use_ok('DBIx::Squirrel::Iterator', qw/result result_transform/)        || print "Bail out!\n";
+    use_ok('DBIx::Squirrel::st',       qw/statement_trim statement_study/) || print "Bail out!\n";
+    use_ok('DBIx::Squirrel::Utils',    qw/args_partition throw whine/)     || print "Bail out!\n";
 }
 
 diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
@@ -22,7 +22,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 {
     no strict qw/subs/;    ## no critic
 
-    note('DBIx::Squirrel::util::whine');
+    note('DBIx::Squirrel::Utils::whine');
 
     my @tests = (
         {   line => __LINE__,
@@ -57,7 +57,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 {
     no strict qw/subs/;    ## no critic
 
-    note('DBIx::Squirrel::util::throw');
+    note('DBIx::Squirrel::Utils::throw');
 
     my @tests = (
         {   line => __LINE__,
@@ -115,7 +115,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
     my $sub2 = sub {'DUMMY 2'};
     my $sub3 = sub {'DUMMY 3'};
 
-    note('DBIx::Squirrel::util::args_partition');
+    note('DBIx::Squirrel::Utils::args_partition');
 
     my @tests = (
         {line => __LINE__, got => [args_partition()],                               exp => [[]]},
@@ -232,7 +232,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 {
     no strict qw/subs/;    ## no critic
 
-    note('DBIx::Squirrel::it::result_transform');
+    note('DBIx::Squirrel::Iterator::result_transform');
 
     my @tests = (
         {line => __LINE__, got => sub {result_transform()},              exp => []},
@@ -276,7 +276,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 {
     no strict qw/subs/;    ## no critic
 
-    note('DBIx::Squirrel::it::result');
+    note('DBIx::Squirrel::Iterator::ResultClass');
 
     my @tests = (
         {   line => __LINE__,

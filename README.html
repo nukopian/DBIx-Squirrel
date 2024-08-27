@@ -719,7 +719,7 @@ $itr = $sth-&gt;iterate(        |  $itr = $sth-&gt;results(
 
 <p>The final element of each constructor&#39;s argument-list is the transformation pipeline (<code>[@transforms]</code>). Each stage of this pipeline is an individual processing step, represented by a CODEREF (or a call that returns a CODEREF).</p>
 
-<p>Each stage of a transformation receives the latest version of the result via the argument-list (<code>$_[0]</code> to be precise). For the sake of convenience (and for convention), this result is also available as <code>$_</code>. If you prefer to rely on something like <code>$_</code>, but would like something much less ephemeral, just <code>use DBIx::Squirrel::util &#39;result&#39;</code> and use the <code>result</code> function inside your transformation stage.</p>
+<p>Each stage of a transformation receives the latest version of the result via the argument-list (<code>$_[0]</code> to be precise). For the sake of convenience (and for convention), this result is also available as <code>$_</code>. If you prefer to rely on something like <code>$_</code>, but would like something much less ephemeral, just <code>use DBIx::Squirrel::Utils &#39;result&#39;</code> and use the <code>result</code> function inside your transformation stage.</p>
 
 <p>Handing off to the next stage, or the caller, is with an explicit <code>return</code> statement, or the result of evaluating the unit&#39;s final expression. Returning nothing&mdash;either <code>()</code>, or a bare <code>return</code>&mdash;from a processing step will filter the result out entirely, and no further processing steps will apply to it.</p>
 
@@ -1109,8 +1109,8 @@ $itor = $itor-&gt;buffer_size($buffer_size);</code></pre>
 
 <p>The following package globals define the relevant default settings:</p>
 
-<pre><code>$DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-$DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pre>
+<pre><code>$DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
+$DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pre>
 
 <h4 id="buffer_size_slice"><code>buffer_size_slice</code></h4>
 
@@ -1144,9 +1144,9 @@ $itor = $itor-&gt;buffer_size_slice($buffer_size, $slice);</code></pre>
 
 <p>The following package globals define the relevant default settings:</p>
 
-<pre><code>$DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
-$DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-$DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pre>
+<pre><code>$DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
+$DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
+$DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pre>
 
 <h4 id="count"><code>count</code></h4>
 
@@ -1291,7 +1291,7 @@ $itor = $itor-&gt;slice($slice);</code></pre>
 
 <p>The following package global defines the default setting:</p>
 
-<pre><code>$DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy</code></pre>
+<pre><code>$DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy</code></pre>
 
 <h4 id="slice_buffer_size"><code>slice_buffer_size</code></h4>
 
@@ -1325,9 +1325,9 @@ $itor = $itor-&gt;slice_buffer_size($buffer_size, $slice);</code></pre>
 
 <p>The following package globals define the relevant default settings:</p>
 
-<pre><code>$DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
-$DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-$DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pre>
+<pre><code>$DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
+$DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
+$DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size</code></pre>
 
 <h4 id="start"><code>start</code></h4>
 

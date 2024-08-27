@@ -13,7 +13,7 @@ BEGIN {
     @DBIx::Squirrel::Transform::IO::EXPORT    = @DBIx::Squirrel::Transform::IO::EXPORT_OK;
 }
 
-use DBIx::Squirrel::util qw/result/;
+use DBIx::Squirrel::Iterator qw/result/;
 
 sub stdout {
     if (@_) {

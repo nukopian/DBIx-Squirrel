@@ -3,15 +3,15 @@ use strict;
 use warnings;
 
 package    # hide from PAUSE
-  DBIx::Squirrel::result;
+  DBIx::Squirrel::ResultClass;
 
 use Sub::Name;
-use DBIx::Squirrel::util qw/throw/;
+use DBIx::Squirrel::Utils qw/throw/;
 use namespace::clean;
 
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    $DBIx::Squirrel::result::VERSION = $DBIx::Squirrel::VERSION;
+    $DBIx::Squirrel::ResultClass::VERSION = $DBIx::Squirrel::VERSION;
 }
 
 use constant E_BAD_OBJECT     => 'A reference to either an array or hash was expected';
