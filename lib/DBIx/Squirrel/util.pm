@@ -85,11 +85,13 @@ sub whine {
 }
 
 sub uniq {
+    local($_);
     my %seen;
     return grep {!$seen{$_}++} @_;
 }
 
 sub statement_study {
+    local($_);
     my($normal, $trimmed, $digest) = statement_normalise(@_);
     return unless length($trimmed);
     my %positions_to_params_map = do {

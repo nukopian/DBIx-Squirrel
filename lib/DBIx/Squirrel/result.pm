@@ -36,6 +36,7 @@ sub row_class {
 }
 
 sub get_column {
+    local($_);
     my($self, $name) = @_;
     return unless defined($name);
     if (UNIVERSAL::isa($self, 'ARRAY')) {
@@ -66,6 +67,7 @@ sub get_column {
 our $AUTOLOAD;
 
 sub AUTOLOAD {
+    local($_);
     no strict 'refs';    ## no critic
     return if substr($AUTOLOAD, -7) eq 'DESTROY';
     my $name = $AUTOLOAD;

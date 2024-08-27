@@ -133,6 +133,7 @@ sub _result_fetch_pending {
 sub _result_prep_to_transform {$_[1]}
 
 sub _result_transform {
+    local($_);
     my($attr, $self) = shift->_private_state;
     my $result    = $self->_result_prep_to_transform(shift);
     my $transform = !!@{$attr->{transforms}};
@@ -206,6 +207,7 @@ sub _results_push_pending {
 }
 
 sub _private_state_clear {
+    local($_);
     my($attr, $self) = shift->_private_state;
     delete $attr->{$_} foreach grep {exists($attr->{$_})} qw/
       buffer
@@ -228,7 +230,7 @@ sub _private_state_reset {
 
 sub all {
     my $self = shift;
-    return unless defined($self->start(@_));
+    return unless defined($self->start);
     return $self->remaining;
 }
 
