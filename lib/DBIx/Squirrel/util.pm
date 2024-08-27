@@ -35,7 +35,6 @@ BEGIN {
           statement_study
           statement_trim
           throw
-          transform_scalar
           uniq
           whine
           /
