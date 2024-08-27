@@ -5,8 +5,7 @@ package    # hide from PAUSE
   DBIx::Squirrel::Transform::IO;
 
 BEGIN {
-    require DBIx::Squirrel
-      unless defined($DBIx::Squirrel::VERSION);
+    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     require Exporter;
     $DBIx::Squirrel::Transform::IO::VERSION   = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::Transform::IO::ISA       = qw/Exporter/;
