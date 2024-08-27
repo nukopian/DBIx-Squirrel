@@ -5,9 +5,16 @@ use warnings;
 package    # hide from PAUSE
   DBIx::Squirrel::util;
 
+use Carp                     ();
+use Devel::GlobalDestruction ();
+use Digest::SHA              qw/sha256_base64/;
+use Memoize;
+use Scalar::Util;
+use Sub::Name;
+
 BEGIN {
     require Exporter;
-    @DBIx::Squirrel::util::ISA         = 'Exporter';
+    @DBIx::Squirrel::util::ISA         = qw/Exporter/;
     %DBIx::Squirrel::util::EXPORT_TAGS = (
         constants   => ['E_EXP_STATEMENT', 'E_EXP_STH', 'E_EXP_REF',],
         diagnostics => ['throw',           'whine',],
@@ -29,13 +36,6 @@ BEGIN {
         ]
     };
 }
-
-use Carp                     ();
-use Devel::GlobalDestruction ();
-use Digest::SHA              qw/sha256_base64/;
-use Memoize;
-use Scalar::Util;
-use Sub::Name;
 
 use constant E_EXP_STATEMENT => 'Expected a statement';
 use constant E_EXP_STH       => 'Expected a statement handle';
@@ -130,9 +130,7 @@ sub statement_trim {
 
 memoize('sql_digest');
 
-sub sql_digest {
-    return sha256_base64(shift);
-}
+sub sql_digest {sha256_base64(shift)}
 
 memoize('sql_trim');
 
