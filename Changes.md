@@ -19,20 +19,25 @@
 -   **TESTS**
     -   More unit tests added.
     -   Many tests broken by changes now fixed.
+    -   All `$sth->{ParamValues}` fail on CPANTs builds using DBD::SQLite
+        versions older than 1.56 because that's the first version to have the
+        feature added. Updated the test code to detect the version in use and
+        SKIP those checks for systems using an older DBD::SQLite. Since we
+        don't use it in the non-test code, skipping is those tests is more
+        than sufficient.
 -   **TEST COVERAGE**
-
     ```
     ---------------------------- ------ ------ ------ ------ ------ ------ ------
     File                           stmt   bran   cond    sub    pod   time  total
     ---------------------------- ------ ------ ------ ------ ------ ------ ------
-    blib/lib/DBIx/Squirrel.pm      91.3   55.5   66.6  100.0    n/a   40.4   85.3
-    ...DBIx/Squirrel/Iterator.pm   72.5   43.9   73.9   76.7    0.0    6.1   61.7
-    ...x/Squirrel/ResultClass.pm   65.8   23.5    n/a   81.8    0.0    0.8   56.3
+    blib/lib/DBIx/Squirrel.pm      91.3   55.5   66.6  100.0    n/a   40.3   85.3
+    ...DBIx/Squirrel/Iterator.pm   72.5   43.9   73.9   76.7    0.0    6.0   61.7
+    ...x/Squirrel/ResultClass.pm   65.8   23.5    n/a   81.8    0.0    0.7   56.3
     ...BIx/Squirrel/ResultSet.pm   67.0   20.0    n/a   81.8    0.0    1.4   61.1
-    ...ib/DBIx/Squirrel/Utils.pm   97.7  100.0  100.0   91.6    0.0    6.8   92.6
+    ...ib/DBIx/Squirrel/Utils.pm   97.7  100.0  100.0   91.6    0.0    7.2   92.6
     blib/lib/DBIx/Squirrel/db.pm   53.7   25.0   33.3   85.7    0.0    0.6   47.1
-    blib/lib/DBIx/Squirrel/dr.pm   84.2   50.0   33.3   90.0    0.0   40.2   67.5
-    blib/lib/DBIx/Squirrel/st.pm   87.5   71.4   44.4  100.0    0.0    3.3   80.5
+    blib/lib/DBIx/Squirrel/dr.pm   84.2   50.0   33.3   90.0    0.0   40.3   67.5
+    blib/lib/DBIx/Squirrel/st.pm   87.5   71.4   44.4  100.0    0.0    3.2   80.5
     Total                          75.6   46.4   60.0   86.6    0.0  100.0   66.9
     ---------------------------- ------ ------ ------ ------ ------ ------ ------
     ```
