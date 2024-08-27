@@ -6,7 +6,7 @@ use Test::More;
 use Test::MockModule;
 use Test::Exception;
 use Test::Warnings qw/warning/;
-use FindBin qw/$Bin/;
+use FindBin        qw/$Bin/;
 use lib "$Bin/lib";
 
 BEGIN {
@@ -169,6 +169,8 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 
 {
     note('DBIx::Squirrel::util::statement_study');
+
+    throws_ok {statement_study(bless({}, 'NotAStatementHandle'))} qr/Expected a statement handle/, 'got expected exception';
 
     my $db1                = DBIx::Squirrel->connect(@MOCK_DB_CONNECT_ARGS);
     my $st1                = $db1->prepare('SELECT :foo, :bar');
