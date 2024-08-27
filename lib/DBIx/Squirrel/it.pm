@@ -176,7 +176,6 @@ sub _results_push_pending {
 
     sub _private_state {
         my $self = shift;
-        return unless ref($self);
         my $id   = 0+ $self;
         my $attr = do {
             $attr_by_id{$id} = {} unless defined($attr_by_id{$id});

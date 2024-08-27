@@ -22,7 +22,6 @@ our $FINISH_ACTIVE_BEFORE_EXECUTE = !!1;
 
 sub _private_state {
     my $self = shift;
-    return                      unless ref($self);
     $self->{private_ekorn} = {} unless defined($self->{private_ekorn});
     unless (@_) {
         return $self->{private_ekorn}, $self if wantarray;
@@ -47,8 +46,8 @@ sub _private_state {
 }
 
 sub _placeholders_confirm_positional {
-    my $placeholders = shift;
-    return unless UNIVERSAL::isa($placeholders, 'HASH');
+    my($attr, $self) = shift->_private_state;
+    my $placeholders = $attr->{Placeholders};
     my @placeholders = values(%{$placeholders});
     my $total_count  = scalar(@placeholders);
     my $count        = grep {m/^[\:\$\?]\d+$/} @placeholders;
@@ -57,9 +56,10 @@ sub _placeholders_confirm_positional {
 }
 
 sub _placeholders_map_to_values {
-    my $placeholders = shift;
+    my($attr, $self) = shift->_private_state;
+    my $placeholders = $attr->{Placeholders};
     my @mappings     = do {
-        if (_placeholders_confirm_positional($placeholders)) {
+        if ($self->_placeholders_confirm_positional) {
             map {($placeholders->{$_} => $_[$_ - 1])} keys(%{$placeholders});
         }
         else {
@@ -82,22 +82,9 @@ sub _placeholders_map_to_values {
 
 sub bind {
     my($attr, $self) = shift->_private_state;
+    return unless my $placeholders = $attr->{Placeholders};
     if (@_) {
-        my $placeholders = $attr->{Placeholders};
-        if ($placeholders && !_placeholders_confirm_positional($placeholders)) {
-            if (my %kv = @{_placeholders_map_to_values($placeholders, @_)}) {
-                while (my($k, $v) = each(%kv)) {
-                    if ($k =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
-                        throw E_INVALID_PLACEHOLDER, $k unless $+{bind_id};
-                        $self->bind_param($+{bind_id}, $v);
-                    }
-                    else {
-                        $self->bind_param($k, $v);
-                    }
-                }
-            }
-        }
-        else {
+        if ($self->_placeholders_confirm_positional) {
             if (UNIVERSAL::isa($_[0], 'ARRAY')) {
                 for my $bind_id (1 .. scalar(@{$_[0]})) {
                     $self->bind_param($bind_id, $_[0][$bind_id - 1]);
@@ -109,36 +96,49 @@ sub bind {
                 }
             }
         }
+        else {
+            if (my %kv = @{$self->_placeholders_map_to_values(@_)}) {
+                while (my($k, $v) = each(%kv)) {
+                    if ($k =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
+                        throw E_INVALID_PLACEHOLDER, $k unless $+{bind_id};
+                        $self->bind_param($+{bind_id}, $v);
+                    }
+                    else {
+                        $self->bind_param($k, $v);
+                    }
+                }
+            }
+        }
     }
     return $self;
 }
 
 sub bind_param {
     my($attr, $self) = shift->_private_state;
-    my($bind_param, $bind_value, @bind_attr) = @_;
-    my @bind_param_args = do {
+    my($param, $value, @attr) = @_;
+    my @args = do {
         if (my $placeholders = $attr->{Placeholders}) {
-            if ($bind_param =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
-                $+{bind_id}, $bind_value, @bind_attr;
+            if ($param =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
+                $+{bind_id}, $value, @attr;
             }
             else {
-                if ($bind_param =~ m/^[\:\$\?]/) {
-                    map {($_, $bind_value, @bind_attr)}
-                    grep {$placeholders->{$_} eq $bind_param} keys(%{$placeholders});
-                }
-                else {
-                    map {($_, $bind_value, @bind_attr)}
-                    grep {$placeholders->{$_} eq ":$bind_param"} keys(%{$placeholders});
-                }
+                map {($_, $value, @attr)} do {
+                    if ($param =~ m/^[\:\$\?]/) {
+                        grep {$placeholders->{$_} eq $param} keys(%{$placeholders});
+                    }
+                    else {
+                        grep {$placeholders->{$_} eq ":$param"} keys(%{$placeholders});
+                    }
+                };
             }
         }
         else {
-            $bind_param, $bind_value, @bind_attr;
+            $param, $value, @attr;
         }
     };
-    return unless $self->SUPER::bind_param(@bind_param_args);
-    return @bind_param_args if wantarray;
-    return \@bind_param_args;
+    return unless $self->SUPER::bind_param(@args);
+    return @args if wantarray;
+    return \@args;
 }
 
 sub execute {

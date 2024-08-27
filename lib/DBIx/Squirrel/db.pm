@@ -25,7 +25,6 @@ sub _root_class {
 
 sub _private_state {
     my $self = shift;
-    return                      unless ref($self);
     $self->{private_ekorn} = {} unless defined($self->{private_ekorn});
     unless (@_) {
         return $self->{private_ekorn}, $self if wantarray;
