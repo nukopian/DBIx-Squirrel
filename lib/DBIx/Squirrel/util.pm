@@ -29,16 +29,8 @@ BEGIN {
     );
     @DBIx::Squirrel::util::EXPORT_OK = @{
         $DBIx::Squirrel::util::EXPORT_TAGS{all} = [
-            qw/
-              global_destruct_phase
-              uniq
-              result
-              /,
-            do {
-                my %seen;
-                grep {!$seen{$_}++}
-                  map {@{$DBIx::Squirrel::util::EXPORT_TAGS{$_}}} qw/constants diagnostics sql transform/,;
-            },
+            qw/global_destruct_phase result uniq/,
+            uniq(map {@{$DBIx::Squirrel::util::EXPORT_TAGS{$_}}} qw/constants diagnostics sql transform/),
         ]
     };
 }
