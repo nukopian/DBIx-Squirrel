@@ -51,7 +51,7 @@ use constant E_BAD_CB_LIST   => 'Expected a reference to a list of code-referenc
 our $NORMALISE_SQL = !!1;
 
 # Perl versions older than 5.14 do not support ${^GLOBAL_PHASE}, so provide
-# a shim that works around the wrinkle.
+# a shim that works around that wrinkle.
 sub global_destruct_phase {Devel::GlobalDestruction::in_global_destruction()}
 
 sub throw {
