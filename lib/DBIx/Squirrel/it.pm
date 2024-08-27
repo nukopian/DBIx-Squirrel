@@ -139,7 +139,7 @@ sub _result_transform {
     my $transform = !!@{$attr->{transforms}};
     my @results   = do {
         if ($transform) {
-            map {scalar_transform($attr->{transforms}, $self->_result_prep_to_transform($_))} $result;
+            map {transform_scalar($attr->{transforms}, $self->_result_prep_to_transform($_))} $result;
         }
         else {
             $result;
