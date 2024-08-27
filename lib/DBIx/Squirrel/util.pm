@@ -23,8 +23,7 @@ BEGIN {
           args_partition
           global_destruct_phase
           result
-          sql_digest
-          sql_trim
+          statement_digest
           statement_normalise
           statement_study
           statement_trim
@@ -48,7 +47,7 @@ sub args_partition {
         last unless UNIVERSAL::isa($_[$n - 1], 'CODE');
         $n -= 1;
     }
-    return [@_] if $n = 0;
+    return [@_] if $n == 0;
     return [], @_ if $n == $s;
     return [@_[$n .. $#_]], @_[0 .. $n - 1];
 }
@@ -56,6 +55,17 @@ sub args_partition {
 # Perl versions older than 5.14 do not support ${^GLOBAL_PHASE}, so provide
 # a shim that works around that wrinkle.
 sub global_destruct_phase {Devel::GlobalDestruction::in_global_destruction()}
+
+memoize('statement_digest');
+
+sub statement_digest {sha256_base64(shift)}
+
+sub statement_normalise {
+    my $trimmed = statement_trim(@_);
+    my $normal  = $trimmed;
+    $normal =~ s{[\:\$\?]\w+\b}{?}g;
+    return $normal, $trimmed, statement_digest($trimmed);
+}
 
 #TODO These statement functions really need moving!
 sub statement_study {
@@ -73,39 +83,23 @@ sub statement_study {
     return \%positions_to_params_map, $normal, $trimmed, $digest;
 }
 
-sub statement_normalise {
-    my $trimmed = statement_trim(@_);
-    my $normal  = $trimmed;
-    $normal =~ s{[\:\$\?]\w+\b}{?}g;
-    return $normal, $trimmed, sql_digest($trimmed);
-}
-
 sub statement_trim {
-    my $sth_or_sql = shift;
-    if (ref($sth_or_sql)) {
-        if (UNIVERSAL::isa($sth_or_sql, 'DBIx::Squirrel::st')) {
-            return sql_trim($sth_or_sql->_private_state->{OriginalStatement});
-        }
-        elsif (UNIVERSAL::isa($sth_or_sql, 'DBI::st')) {
-            return sql_trim($sth_or_sql->{Statement});
+    my $sql = do {
+        if (ref($_[0])) {
+            if (UNIVERSAL::isa($_[0], 'DBIx::Squirrel::st')) {
+                shift->_private_state->{OriginalStatement};
+            }
+            elsif (UNIVERSAL::isa($_[0], 'DBI::st')) {
+                shift->{Statement};
+            }
+            else {
+                throw(E_EXP_STH);
+            }
         }
         else {
-            throw(E_EXP_STH);
+            defined($_[0]) ? shift : '';
         }
-    }
-    else {
-        return sql_trim($sth_or_sql);
-    }
-}
-
-memoize('sql_digest');
-
-sub sql_digest {sha256_base64(shift)}
-
-memoize('sql_trim');
-
-sub sql_trim {
-    my $sql = defined($_[0]) && !ref($_[0]) ? shift : '';
+    };
     $sql        =~ s{\s+--\s+.*$}{}gm;
     $sql        =~ s{^[[:blank:]\r\n]+}{}gm;
     $sql        =~ s{[[:blank:]\r\n]+$}{}gm;

@@ -16,7 +16,7 @@ BEGIN {
     use_ok(
         'DBIx::Squirrel::util', qw/
           args_partition
-          sql_trim
+          statement_trim
           statement_study
           throw
           whine
@@ -147,17 +147,17 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 ##############
 
 {
-    note('DBIx::Squirrel::util::sql_trim');
+    note('DBIx::Squirrel::util::statement_trim');
 
     my @tests = (
-        {line => __LINE__, got => [sql_trim()],                           exp => [""]},
-        {line => __LINE__, got => [sql_trim(undef)],                      exp => [""]},
-        {line => __LINE__, got => [sql_trim("")],                         exp => [""]},
-        {line => __LINE__, got => [sql_trim("SELECT 1")],                 exp => ["SELECT 1"]},
-        {line => __LINE__, got => [sql_trim("SELECT 1  -- COMMENT")],     exp => ["SELECT 1"]},
-        {line => __LINE__, got => [sql_trim("SELECT 1\n-- COMMENT")],     exp => ["SELECT 1"]},
-        {line => __LINE__, got => [sql_trim("  SELECT 1\n-- COMMENT  ")], exp => ["SELECT 1"]},
-        {line => __LINE__, got => [sql_trim("\tSELECT 1\n-- COMMENT  ")], exp => ["SELECT 1"]},
+        {line => __LINE__, got => [statement_trim()],                           exp => [""]},
+        {line => __LINE__, got => [statement_trim(undef)],                      exp => [""]},
+        {line => __LINE__, got => [statement_trim("")],                         exp => [""]},
+        {line => __LINE__, got => [statement_trim("SELECT 1")],                 exp => ["SELECT 1"]},
+        {line => __LINE__, got => [statement_trim("SELECT 1  -- COMMENT")],     exp => ["SELECT 1"]},
+        {line => __LINE__, got => [statement_trim("SELECT 1\n-- COMMENT")],     exp => ["SELECT 1"]},
+        {line => __LINE__, got => [statement_trim("  SELECT 1\n-- COMMENT  ")], exp => ["SELECT 1"]},
+        {line => __LINE__, got => [statement_trim("\tSELECT 1\n-- COMMENT  ")], exp => ["SELECT 1"]},
     );
 
     foreach my $t (@tests) {
@@ -177,7 +177,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
     my $db2                = DBI->connect(@MOCK_DB_CONNECT_ARGS);
     my $st2                = $db2->prepare('SELECT ?, ?');
     my $dbix_squirrel_util = Test::MockModule->new('DBIx::Squirrel::util');
-    $dbix_squirrel_util->mock(sql_digest => 'DETERMINISTIC');
+    $dbix_squirrel_util->mock(statement_digest => 'DETERMINISTIC');
 
     my @tests = (
         {line => __LINE__, got => [statement_study('')],         exp => []},
