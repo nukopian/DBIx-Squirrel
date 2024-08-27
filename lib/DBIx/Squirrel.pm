@@ -45,7 +45,7 @@ BEGIN {
     *DBIx::Squirrel::BUFFER_SIZE_LIMIT            = *DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT;
 
     unless (defined $DBIx::Squirrel::VERSION) {
-        my $v = "1.4.0";
+        my $v = "1.4.1";
         *DBIx::Squirrel::VERSION = \$v;
     }
 }
