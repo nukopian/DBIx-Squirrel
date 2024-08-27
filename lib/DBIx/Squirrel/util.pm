@@ -145,14 +145,14 @@ sub sql_trim {
 sub args_partition {
     my $s = scalar(@_);
     my $n = $s;
-    return ([]) unless $n;
+    return [] unless $n;
     while ($n) {
         last unless UNIVERSAL::isa($_[$n - 1], 'CODE');
         $n -= 1;
     }
-    return ([], @_) if $n == $s;
-    return ([@_])   if $n == 0;
-    return ([@_[$n .. $#_]], @_[0 .. $n - 1]);
+    return [@_] if $n == 0;
+    return [], @_ if $n == $s;
+    return [@_[$n .. $#_]], @_[0 .. $n - 1];
 }
 
 # Runtime scoping of $_result allows caller to import and use "result" instead
