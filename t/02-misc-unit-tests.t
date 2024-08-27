@@ -80,6 +80,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
     $dbix_squirrel_util->mock(sql_digest => 'DETERMINISTIC');
 
     my @tests = (
+        {lno => __LINE__, got => [statement_study('')],         exp => []},
         {lno => __LINE__, got => [statement_study('SELECT 1')], exp => [{}, 'SELECT 1', 'SELECT 1', 'DETERMINISTIC']},
         {lno => __LINE__, got => [statement_study('SELECT ?')], exp => [{}, 'SELECT ?', 'SELECT ?', 'DETERMINISTIC']},
         {   lno => __LINE__,
