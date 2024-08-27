@@ -5,6 +5,7 @@ use warnings;
 package    # hide from PAUSE
   DBIx::Squirrel::dr;
 
+use DBIx::Squirrel::Utils qw/throw/;
 use namespace::clean;
 
 BEGIN {
@@ -32,13 +33,17 @@ sub connect {
     goto &_clone_connection if UNIVERSAL::isa($_[1], 'DBI::db');
     my $invocant   = shift;
     my $attributes = @_ && UNIVERSAL::isa($_[$#_], 'HASH') ? pop : {};
-    return $invocant->DBI::connect(@_, {%{$attributes}, __PACKAGE__->_root_class});
+    my $dbh        = DBI::connect($invocant, @_, {%{$attributes}, __PACKAGE__->_root_class})
+      or throw $DBI::errstr;
+    return $dbh;
 }
 
 sub connect_cached {
     my $invocant   = shift;
     my $attributes = @_ && UNIVERSAL::isa($_[$#_], 'HASH') ? pop : {};
-    return $invocant->DBI::connect_cached(@_, {%{$attributes}, __PACKAGE__->_root_class});
+    my $dbh        = DBI::connect_cached($invocant, @_, {%{$attributes}, __PACKAGE__->_root_class})
+      or throw $DBI::errstr;
+    return $dbh;
 }
 
 1;

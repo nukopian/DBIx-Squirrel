@@ -59,9 +59,9 @@ sub prepare {
     my $statement = shift;
     my($placeholders, $normalised_statement, $original_statement, $digest) = statement_study($statement);
     throw E_EXP_STATEMENT unless defined($normalised_statement);
-    my $sth = $self->SUPER::prepare($normalised_statement, @_);
-    return unless defined($sth);
-    bless $sth, $self->_root_class . '::st';
+    my $sth = DBI::db::prepare($self, $normalised_statement, @_)
+      or throw $DBI::errstr;
+    $sth = bless($sth, $self->_root_class . '::st');
     $sth->_private_state({
         Placeholders        => $placeholders,
         NormalisedStatement => $normalised_statement,
@@ -76,9 +76,9 @@ sub prepare_cached {
     my $statement = shift;
     my($placeholders, $normalised_statement, $original_statement, $digest) = statement_study($statement);
     throw E_EXP_STATEMENT unless defined($normalised_statement);
-    my $sth = $self->SUPER::prepare_cached($normalised_statement, @_);
-    return unless defined($sth);
-    bless $sth, $self->_root_class . '::st';
+    my $sth = DBI::db::prepare_cached($self, $normalised_statement, @_)
+      or throw $DBI::errstr;
+    $sth = bless($sth, $self->_root_class . '::st');
     $sth->_private_state({
         Placeholders        => $placeholders,
         NormalisedStatement => $normalised_statement,
