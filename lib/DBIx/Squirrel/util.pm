@@ -41,7 +41,7 @@ use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
 use constant E_BAD_CB_LIST   => 'Expected a reference to a list of code-references, a code-reference, or undefined';
 
 sub args_partition {
-    my $s = scalar(@_);
+    my $s = @_;
     return [] unless $s;
     my $n = $s;
     while ($n) {

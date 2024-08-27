@@ -50,7 +50,7 @@ sub _placeholders_confirm_positional {
     my $self         = shift;
     my $placeholders = $self->_private_state->{Placeholders};
     my @placeholders = values(%{$placeholders});
-    my $total_count  = scalar(@placeholders);
+    my $total_count  = @placeholders;
     my $count        = grep {m/^[\:\$\?]\d+$/} @placeholders;
     return $placeholders if $count == $total_count;
     return;
