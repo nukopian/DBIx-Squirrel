@@ -29,7 +29,6 @@ BEGIN {
           statement_study
           statement_trim
           throw
-          uniq
           whine
           /
     );
