@@ -20,19 +20,27 @@ sub uniq {
 
 BEGIN {
     require Exporter;
-    @DBIx::Squirrel::util::ISA         = qw/Exporter/;
-    %DBIx::Squirrel::util::EXPORT_TAGS = (
-        constants   => ['E_EXP_STATEMENT', 'E_EXP_STH', 'E_EXP_REF',],
-        diagnostics => ['throw',           'whine',],
-        transform   => ['args_partition',  'scalar_transform',],
-        sql         => ['statement_trim',  'statement_normalise', 'statement_study', 'sql_trim', 'sql_digest',],
+    @DBIx::Squirrel::util::ISA       = qw/Exporter/;
+    @DBIx::Squirrel::util::EXPORT_OK = (
+        qw/
+          E_EXP_REF
+          E_EXP_STATEMENT
+          E_EXP_STH
+          args_partition
+          global_destruct_phase
+          result
+          sql_digest
+          sql_trim
+          statement_normalise
+          statement_study
+          statement_trim
+          throw
+          transform_scalar
+          uniq
+          whine
+          /
     );
-    @DBIx::Squirrel::util::EXPORT_OK = @{
-        $DBIx::Squirrel::util::EXPORT_TAGS{all} = [
-            qw/global_destruct_phase result uniq/,
-            uniq(map {@{$DBIx::Squirrel::util::EXPORT_TAGS{$_}}} qw/constants diagnostics sql transform/),
-        ]
-    };
+    %DBIx::Squirrel::util::EXPORT_TAGS = (all => [@DBIx::Squirrel::util::EXPORT_OK]);
 }
 
 use constant E_EXP_STATEMENT => 'Expected a statement';
@@ -156,7 +164,7 @@ our $_result;
 
 sub result {$_result}
 
-sub scalar_transform {
+sub transform_scalar {
     my @transforms = do {
         if (UNIVERSAL::isa($_[0], 'ARRAY')) {
             @{+shift};

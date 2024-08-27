@@ -7,7 +7,7 @@ package              # hide from PAUSE
   DBIx::Squirrel::db;
 
 use Sub::Name;
-use DBIx::Squirrel::util qw/:constants :sql throw/;
+use DBIx::Squirrel::util qw/E_EXP_STATEMENT E_EXP_REF statement_study throw/;
 use namespace::clean;
 
 BEGIN {
