@@ -54,39 +54,27 @@ our $NORMALISE_SQL = !!1;
 sub global_destruct_phase {Devel::GlobalDestruction::in_global_destruction()}
 
 sub throw {
-    @_ = do {
+    Carp::confess do {
         if (@_) {
             my($f, @a) = @_;
-            if (@a) {
-                sprintf $f, @a;
-            }
-            else {
-                defined($f) ? $f : 'Exception';
-            }
-        } ## end if ( @_ )
+            @a ? sprintf($f, @a) : $f || $@ || 'Unknown exception thrown';
+        }
         else {
-            defined($@) ? $@ : 'Exception';
+            $@ || 'Unknown exception thrown';
         }
     };
-    goto &Carp::confess;
 }
 
 sub whine {
-    @_ = do {
+    Carp::cluck do {
         if (@_) {
             my($f, @a) = @_;
-            if (@a) {
-                sprintf($f, @a);
-            }
-            else {
-                defined($f) ? $f : 'Warning';
-            }
-        } ## end if ( @_ )
+            @a ? sprintf($f, @a) : $f || 'Unhelpful warning issued';
+        }
         else {
-            'Warning';
+            'Unhelpful warning issued';
         }
     };
-    goto &Carp::cluck;
 }
 
 sub statement_study {
