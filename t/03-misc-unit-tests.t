@@ -15,7 +15,7 @@ BEGIN {
           args_partition
           sql_trim
           statement_study
-          scalar_transform
+          transform_scalar
           result
           /,
     ) || print "Bail out!\n";
@@ -142,43 +142,43 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
     note('DBIx::Squirrel::util::transform');
 
     my @tests = (
-        {lno => __LINE__, got => sub {scalar_transform()},              exp => []},
-        {lno => __LINE__, got => sub {scalar_transform(4)},             exp => [4]},
-        {lno => __LINE__, got => sub {scalar(scalar_transform(4))},     exp => [1]},
-        {lno => __LINE__, got => sub {scalar(scalar_transform(4)); $_}, exp => [4]},
+        {lno => __LINE__, got => sub {transform_scalar()},              exp => []},
+        {lno => __LINE__, got => sub {transform_scalar(4)},             exp => [4]},
+        {lno => __LINE__, got => sub {scalar(transform_scalar(4))},     exp => [1]},
+        {lno => __LINE__, got => sub {scalar(transform_scalar(4)); $_}, exp => [4]},
         {   lno => __LINE__,
             got => sub {
-                scalar_transform([sub {2 * $_[0]}], 2);
+                transform_scalar([sub {2 * $_[0]}], 2);
             },
             exp => [4],
         },
         {   lno => __LINE__,
             got => sub {
-                scalar_transform([sub {2 * $_[0]} => sub {2 * $_[0]}], 2);
+                transform_scalar([sub {2 * $_[0]} => sub {2 * $_[0]}], 2);
             },
             exp => [8],
         },
         {   lno => __LINE__,
             got => sub {
-                scalar_transform([sub {3 * result}], 4);
+                transform_scalar([sub {3 * result}], 4);
             },
             exp => [12],
         },
         {   lno => __LINE__,
             got => sub {
-                scalar_transform([sub {3 * result} => sub {3 * result}], 4);
+                transform_scalar([sub {3 * result} => sub {3 * result}], 4);
             },
             exp => [36],
         },
         {   lno => __LINE__,
             got => sub {
-                scalar_transform([sub {4 * $_}], 4);
+                transform_scalar([sub {4 * $_}], 4);
             },
             exp => [16],
         },
         {   lno => __LINE__,
             got => sub {
-                scalar_transform([sub {4 * $_} => sub {4 * $_}], 4);
+                transform_scalar([sub {4 * $_} => sub {4 * $_}], 4);
             },
             exp => [64],
         },

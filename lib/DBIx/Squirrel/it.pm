@@ -7,7 +7,7 @@ package    # hide from PAUSE
 
 use Scalar::Util qw/weaken looks_like_number/;
 use Sub::Name;
-use DBIx::Squirrel::util qw/args_partition throw scalar_transform whine/;
+use DBIx::Squirrel::util qw/args_partition throw transform_scalar whine/;
 use namespace::clean;
 
 BEGIN {
