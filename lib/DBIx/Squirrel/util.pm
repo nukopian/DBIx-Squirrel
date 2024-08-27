@@ -12,12 +12,6 @@ use Memoize;
 use Scalar::Util;
 use Sub::Name;
 
-sub uniq {
-    local($_);
-    my %seen;
-    return grep {!$seen{$_}++} @_;
-}
-
 BEGIN {
     require Exporter;
     @DBIx::Squirrel::util::ISA       = qw/Exporter/;
