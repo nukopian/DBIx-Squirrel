@@ -6,8 +6,10 @@ no strict 'subs';    ## no critic
 package              # hide from PAUSE
   DBIx::Squirrel::db;
 
+use DBI;
 use Sub::Name;
-use DBIx::Squirrel::util qw/E_EXP_STATEMENT E_EXP_REF statement_study throw/;
+use DBIx::Squirrel::st qw/statement_study/;
+use DBIx::Squirrel::util qw/throw/;
 use namespace::clean;
 
 BEGIN {
@@ -15,6 +17,9 @@ BEGIN {
     $DBIx::Squirrel::db::VERSION = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::db::ISA     = qw/DBI::db/;
 }
+
+use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
+use constant E_EXP_STATEMENT => 'Expected a statement';
 
 sub _root_class {
     my $root_class = ref($_[0]) || $_[0];

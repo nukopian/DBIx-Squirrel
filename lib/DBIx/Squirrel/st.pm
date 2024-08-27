@@ -5,16 +5,21 @@ use warnings;
 package    # hide from PAUSE
   DBIx::Squirrel::st;
 
+use Digest::SHA qw/sha256_base64/;
+use Memoize;
 use Sub::Name;
 use DBIx::Squirrel::util qw/throw whine/;
 use namespace::clean;
 
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    $DBIx::Squirrel::st::VERSION = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::st::ISA     = qw/DBI::st/;
+    require Exporter;
+    $DBIx::Squirrel::st::VERSION   = $DBIx::Squirrel::VERSION;
+    @DBIx::Squirrel::st::ISA       = qw/DBI::st Exporter/;
+    @DBIx::Squirrel::st::EXPORT_OK = qw/statement_digest statement_normalise statement_study statement_trim/;
 }
 
+use constant E_EXP_STH             => 'Expected a statement handle';
 use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';
 use constant W_ODD_NUMBER_OF_ARGS  => 'Check bind values match placeholder scheme';
 
@@ -168,6 +173,56 @@ BEGIN {
     *resultset = subname(resultset => \&results);
     *rset      = subname(rset      => \&results);
     *rs        = subname(rs        => \&results);
+}
+
+memoize('statement_digest');
+
+sub statement_digest {sha256_base64(shift)}
+
+sub statement_normalise {
+    my $statement  = statement_trim(shift);
+    my $normalised = $statement;
+    $normalised =~ s{[\:\$\?]\w+\b}{?}g;
+    return $normalised, $statement, statement_digest($statement);
+}
+
+sub statement_study {
+    local($_);
+    my($normal, $trimmed, $digest) = statement_normalise(shift);
+    return unless length($trimmed);
+    my %positions_to_params_map = do {
+        if (my @params = $trimmed =~ m{[\:\$\?]\w+\b}g) {
+            map {(1 + $_ => $params[$_])} 0 .. $#params;
+        }
+        else {
+            ();
+        }
+    };
+    return \%positions_to_params_map, $normal, $trimmed, $digest;
+}
+
+sub statement_trim {
+    my $statement = do {
+        if (ref($_[0])) {
+            if (UNIVERSAL::isa($_[0], 'DBIx::Squirrel::st')) {
+                shift->_private_state->{OriginalStatement};
+            }
+            elsif (UNIVERSAL::isa($_[0], 'DBI::st')) {
+                shift->{Statement};
+            }
+            else {
+                throw(E_EXP_STH);
+            }
+        }
+        else {
+            defined($_[0]) ? shift : '';
+        }
+    };
+    $statement                  =~ s{\s+--\s+.*$}{}gm;
+    $statement                  =~ s{^[[:blank:]\r\n]+}{}gm;
+    $statement                  =~ s{[[:blank:]\r\n]+$}{}gm;
+    return '' unless $statement =~ m/\S/;
+    return $statement;
 }
 
 1;

@@ -10,18 +10,11 @@ use FindBin        qw/$Bin/;
 use lib "$Bin/lib";
 
 BEGIN {
-    use_ok('DBIx::Squirrel',     database_entity => 'db')     || print "Bail out!\n";
-    use_ok('T::Squirrel',        qw/:var diagdump/)           || print "Bail out!\n";
-    use_ok('DBIx::Squirrel::it', qw/result result_transform/) || print "Bail out!\n";
-    use_ok(
-        'DBIx::Squirrel::util', qw/
-          args_partition
-          statement_trim
-          statement_study
-          throw
-          whine
-          /,
-    ) || print "Bail out!\n";
+    use_ok('DBIx::Squirrel',       database_entity => 'db')            || print "Bail out!\n";
+    use_ok('T::Squirrel',          qw/:var diagdump/)                  || print "Bail out!\n";
+    use_ok('DBIx::Squirrel::it',   qw/result result_transform/)        || print "Bail out!\n";
+    use_ok('DBIx::Squirrel::st',   qw/statement_trim statement_study/) || print "Bail out!\n";
+    use_ok('DBIx::Squirrel::util', qw/args_partition throw whine/)     || print "Bail out!\n";
 }
 
 diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
@@ -147,7 +140,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 ##############
 
 {
-    note('DBIx::Squirrel::util::statement_trim');
+    note('DBIx::Squirrel::st::statement_trim');
 
     my @tests = (
         {line => __LINE__, got => [statement_trim()],                           exp => [""]},
@@ -168,16 +161,16 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 ##############
 
 {
-    note('DBIx::Squirrel::util::statement_study');
+    note('DBIx::Squirrel::st::statement_study');
 
     throws_ok {statement_study(bless({}, 'NotAStatementHandle'))} qr/Expected a statement handle/, 'got expected exception';
 
-    my $db1                = DBIx::Squirrel->connect(@MOCK_DB_CONNECT_ARGS);
-    my $st1                = $db1->prepare('SELECT :foo, :bar');
-    my $db2                = DBI->connect(@MOCK_DB_CONNECT_ARGS);
-    my $st2                = $db2->prepare('SELECT ?, ?');
-    my $dbix_squirrel_util = Test::MockModule->new('DBIx::Squirrel::util');
-    $dbix_squirrel_util->mock(statement_digest => 'DETERMINISTIC');
+    my $db1              = DBIx::Squirrel->connect(@MOCK_DB_CONNECT_ARGS);
+    my $st1              = $db1->prepare('SELECT :foo, :bar');
+    my $db2              = DBI->connect(@MOCK_DB_CONNECT_ARGS);
+    my $st2              = $db2->prepare('SELECT ?, ?');
+    my $dbix_squirrel_st = Test::MockModule->new('DBIx::Squirrel::st');
+    $dbix_squirrel_st->mock(statement_digest => 'DETERMINISTIC');    # in case we use algo that isn't!
 
     my @tests = (
         {line => __LINE__, got => [statement_study('')],         exp => []},
