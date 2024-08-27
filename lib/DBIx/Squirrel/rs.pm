@@ -7,7 +7,6 @@ package    # hide from PAUSE
 
 use Scalar::Util qw/weaken/;
 use Sub::Name;
-use DBIx::Squirrel::util qw/transform/;
 use namespace::clean;
 
 BEGIN {
