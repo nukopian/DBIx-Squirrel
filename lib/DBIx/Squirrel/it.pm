@@ -7,12 +7,15 @@ package    # hide from PAUSE
 
 use Scalar::Util qw/weaken looks_like_number/;
 use Sub::Name;
-use DBIx::Squirrel::util qw/args_partition throw transform_scalar whine/;
+use DBIx::Squirrel::util qw/args_partition throw whine/;
 use namespace::clean;
 
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
+    require Exporter;
     $DBIx::Squirrel::it::VERSION             = $DBIx::Squirrel::VERSION;
+    @DBIx::Squirrel::it::ISA                 = qw/Exporter/;
+    @DBIx::Squirrel::it::EXPORT_OK           = qw/result result_transform/;
     $DBIx::Squirrel::it::DEFAULT_SLICE       = [];                         # Faster!
     $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;                          # Initial buffer size and autoscaling increment
     $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;                         # Absolute maximum buffersize
@@ -100,78 +103,6 @@ sub _buffer_size_init {
     return $self;
 }
 
-sub _result_fetch {
-    my($attr, $self) = shift->_private_state;
-    my $sth = $attr->{sth};
-    my($transformed, $results, $result);
-    do {
-        return $self->_result_fetch_pending if $self->_results_pending;
-        return unless $sth->{Active};
-        if ($self->_buffer_empty) {
-            return unless $self->_buffer_charge;
-        }
-        $result = shift(@{$attr->{buffer}});
-        ($results, $transformed) = $self->_result_transform($result);
-    } while $transformed && !@{$results};
-    $result = shift(@{$results});
-    $self->_results_push_pending($results) if @{$results};
-    $attr->{results_first} = $result unless $attr->{results_count}++;
-    $attr->{results_last}  = $result;
-    return do {$_ = $result};
-}
-
-sub _result_fetch_pending {
-    my($attr, $self) = shift->_private_state;
-    return unless defined($attr->{results_pending});
-    my $result = shift(@{$attr->{results_pending}});
-    $attr->{results_first} = $result unless $attr->{results_count}++;
-    $attr->{results_last}  = $result;
-    return do {$_ = $result};
-}
-
-# Seemingly pointless, here, but intended to be overridden in subclasses.
-sub _result_prep_to_transform {$_[1]}
-
-sub _result_transform {
-    local($_);
-    my($attr, $self) = shift->_private_state;
-    my $result    = $self->_result_prep_to_transform(shift);
-    my $transform = !!@{$attr->{transforms}};
-    my @results   = do {
-        if ($transform) {
-            map {transform_scalar($attr->{transforms}, $self->_result_prep_to_transform($_))} $result;
-        }
-        else {
-            $result;
-        }
-    };
-    return \@results, $transform if wantarray;
-    return \@results;
-}
-
-# The total number of rows fetched since execute was called.
-sub _results_count_init {
-    my($attr, $self) = shift->_private_state;
-    $attr->{results_count} = 0 if $attr->{sth}->{NUM_OF_FIELDS};
-    return $self;
-}
-
-sub _results_pending {
-    my($attr, $self) = shift->_private_state;
-    return unless defined($attr->{results_pending});
-    return !!@{$attr->{results_pending}};
-}
-
-sub _results_push_pending {
-    my($attr, $self) = shift->_private_state;
-    return unless @_;
-    return unless UNIVERSAL::isa($_[0], 'ARRAY');
-    my $results = shift;
-    $attr->{results_pending} = [] unless defined($attr->{results_pending});
-    push @{$attr->{results_pending}}, @{$results};
-    return $self;
-}
-
 {
     my %attr_by_id;
 
@@ -226,6 +157,111 @@ sub _private_state_init {
 
 sub _private_state_reset {
     shift->_private_state_clear->_private_state_init;
+}
+
+sub _result_fetch {
+    my($attr, $self) = shift->_private_state;
+    my $sth = $attr->{sth};
+    my($transformed, $results, $result);
+    do {
+        return $self->_result_fetch_pending if $self->_results_pending;
+        return unless $sth->{Active};
+        if ($self->_buffer_empty) {
+            return unless $self->_buffer_charge;
+        }
+        $result = shift(@{$attr->{buffer}});
+        ($results, $transformed) = $self->_result_process($result);
+    } while $transformed && !@{$results};
+    $result = shift(@{$results});
+    $self->_results_push_pending($results) if @{$results};
+    $attr->{results_first} = $result unless $attr->{results_count}++;
+    $attr->{results_last}  = $result;
+    return do {$_ = $result};
+}
+
+sub _result_fetch_pending {
+    my($attr, $self) = shift->_private_state;
+    return unless defined($attr->{results_pending});
+    my $result = shift(@{$attr->{results_pending}});
+    $attr->{results_first} = $result unless $attr->{results_count}++;
+    $attr->{results_last}  = $result;
+    return do {$_ = $result};
+}
+
+# Seemingly pointless, here, but intended to be overridden in subclasses.
+sub _result_preprocess {$_[1]}
+
+sub _result_process {
+    local($_);
+    my($attr, $self) = shift->_private_state;
+    my $result    = $self->_result_preprocess(shift);
+    my $transform = !!@{$attr->{transforms}};
+    my @results   = do {
+        if ($transform) {
+            map {result_transform($attr->{transforms}, $self->_result_preprocess($_))} $result;
+        }
+        else {
+            $result;
+        }
+    };
+    return \@results, $transform if wantarray;
+    return \@results;
+}
+
+# The total number of rows fetched since execute was called.
+sub _results_count_init {
+    my($attr, $self) = shift->_private_state;
+    $attr->{results_count} = 0 if $attr->{sth}->{NUM_OF_FIELDS};
+    return $self;
+}
+
+sub _results_pending {
+    my($attr, $self) = shift->_private_state;
+    return unless defined($attr->{results_pending});
+    return !!@{$attr->{results_pending}};
+}
+
+sub _results_push_pending {
+    my($attr, $self) = shift->_private_state;
+    return unless @_;
+    return unless UNIVERSAL::isa($_[0], 'ARRAY');
+    my $results = shift;
+    $attr->{results_pending} = [] unless defined($attr->{results_pending});
+    push @{$attr->{results_pending}}, @{$results};
+    return $self;
+}
+
+# Runtime scoping of $_result allows caller to import and use "result" instead
+# of "$_" during result transformation.
+
+our $_result;
+
+sub result {$_result}
+
+sub result_transform {
+    my @transforms = do {
+        if (UNIVERSAL::isa($_[0], 'ARRAY')) {
+            @{+shift};
+        }
+        elsif (UNIVERSAL::isa($_[0], 'CODE')) {
+            shift;
+        }
+        else {
+            ();
+        }
+    };
+    if (@transforms && @_) {
+        for my $transform (@transforms) {
+            last unless @_ = do {
+                local($_result) = @_;
+                local($_)       = $_result;
+                $transform->(@_);
+            };
+        }
+    }
+    return @_ if wantarray;
+    $_ = $_[0];
+    return scalar(@_) if @_;
 }
 
 sub all {

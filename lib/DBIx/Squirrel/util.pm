@@ -157,37 +157,4 @@ sub args_partition {
     return [@_[$n .. $#_]], @_[0 .. $n - 1];
 }
 
-# Runtime scoping of $_result allows caller to import and use "result" instead
-# of "$_" during result transformation.
-
-our $_result;
-
-sub result {$_result}
-
-sub transform_scalar {
-    my @transforms = do {
-        if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-            @{+shift};
-        }
-        elsif (UNIVERSAL::isa($_[0], 'CODE')) {
-            shift;
-        }
-        else {
-            ();
-        }
-    };
-    if (@transforms && @_) {
-        for my $transform (@transforms) {
-            last unless @_ = do {
-                local($_result) = @_;
-                local($_)       = $_result;
-                $transform->(@_);
-            };
-        }
-    }
-    return @_ if wantarray;
-    $_ = $_[0];
-    return scalar(@_) if @_;
-}
-
 1;

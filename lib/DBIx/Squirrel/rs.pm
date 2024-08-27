@@ -37,7 +37,7 @@ sub _autoloaded_accessors_unload {
     return $self;
 }
 
-sub _result_prep_to_transform {
+sub _result_preprocess {
     my $self = shift;
     return ref($_[0]) ? $self->_rebless(shift) : shift;
 }
