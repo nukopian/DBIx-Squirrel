@@ -5,15 +5,15 @@ use warnings;
 package    # hide from PAUSE
   DBIx::Squirrel::st;
 
+use Sub::Name;
+use DBIx::Squirrel::util qw/throw whine/;
+use namespace::clean;
+
 BEGIN {
     require DBIx::Squirrel unless %DBIx::Squirrel::;
     $DBIx::Squirrel::st::VERSION = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::st::ISA     = 'DBI::st';
+    @DBIx::Squirrel::st::ISA     = qw/DBI::st/;
 }
-
-use namespace::autoclean;
-use Sub::Name;
-use DBIx::Squirrel::util qw/throw whine/;
 
 use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';
 use constant W_ODD_NUMBER_OF_ARGS  => 'Check bind values match placeholder scheme';

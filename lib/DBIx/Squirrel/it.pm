@@ -5,6 +5,11 @@ use warnings;
 package    # hide from PAUSE
   DBIx::Squirrel::it;
 
+use Scalar::Util qw/weaken looks_like_number/;
+use Sub::Name;
+use DBIx::Squirrel::util qw/args_partition throw transform whine/;
+use namespace::clean;
+
 BEGIN {
     require DBIx::Squirrel unless %DBIx::Squirrel::;
     $DBIx::Squirrel::it::VERSION             = $DBIx::Squirrel::VERSION;
@@ -12,11 +17,6 @@ BEGIN {
     $DBIx::Squirrel::it::DEFAULT_BUFFER_SIZE = 2;                          # Initial buffer size and autoscaling increment
     $DBIx::Squirrel::it::BUFFER_SIZE_LIMIT   = 64;                         # Absolute maximum buffersize
 }
-
-use namespace::autoclean;
-use Scalar::Util qw/weaken looks_like_number/;
-use Sub::Name;
-use DBIx::Squirrel::util qw/args_partition throw transform whine/;
 
 use constant E_BAD_STH         => 'Expected a statement handle object';
 use constant E_BAD_SLICE       => 'Slice must be a reference to an ARRAY or HASH';

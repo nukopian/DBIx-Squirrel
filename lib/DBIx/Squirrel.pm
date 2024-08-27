@@ -25,9 +25,10 @@ use DBIx::Squirrel::it     ();
 use DBIx::Squirrel::rs     ();
 use DBIx::Squirrel::result ();
 use DBIx::Squirrel::util   qw/throw uniq/;
+use namespace::clean;
 
 BEGIN {
-    @DBIx::Squirrel::ISA                          = 'DBI';
+    @DBIx::Squirrel::ISA                          = qw/DBI/;
     *DBIx::Squirrel::EXPORT_OK                    = *DBI::EXPORT_OK;
     *DBIx::Squirrel::EXPORT_TAGS                  = *DBI::EXPORT_TAGS;
     *DBIx::Squirrel::err                          = *DBI::err;

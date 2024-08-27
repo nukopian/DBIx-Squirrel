@@ -5,13 +5,13 @@ use warnings;
 package    # hide from PAUSE
   DBIx::Squirrel::dr;
 
+use namespace::clean;
+
 BEGIN {
     require DBIx::Squirrel unless %DBIx::Squirrel::;
     $DBIx::Squirrel::dr::VERSION = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::dr::ISA     = 'DBI::dr';
+    @DBIx::Squirrel::dr::ISA     = qw/DBI::dr/;
 }
-
-use namespace::autoclean;
 
 sub _root_class {
     my $root_class = ref($_[0]) || $_[0];

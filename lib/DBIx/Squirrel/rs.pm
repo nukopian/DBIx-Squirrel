@@ -2,19 +2,19 @@ use 5.010_001;
 use strict;
 use warnings;
 
-package              # hide from PAUSE
+package    # hide from PAUSE
   DBIx::Squirrel::rs;
+
+use Scalar::Util qw/weaken/;
+use Sub::Name;
+use DBIx::Squirrel::util qw/transform/;
+use namespace::clean;
 
 BEGIN {
     require DBIx::Squirrel unless %DBIx::Squirrel::;
     $DBIx::Squirrel::rs::VERSION = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::rs::ISA     = qw/DBIx::Squirrel::it/;
 }
-
-use namespace::autoclean;
-use Scalar::Util qw/weaken/;
-use Sub::Name;
-use DBIx::Squirrel::util qw/transform/;
 
 sub DESTROY {
     no strict 'refs';    ## no critic

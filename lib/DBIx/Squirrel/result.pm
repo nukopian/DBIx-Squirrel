@@ -5,14 +5,14 @@ use warnings;
 package    # hide from PAUSE
   DBIx::Squirrel::result;
 
+use Sub::Name;
+use DBIx::Squirrel::util qw/throw/;
+use namespace::clean;
+
 BEGIN {
     require DBIx::Squirrel unless %DBIx::Squirrel::;
     $DBIx::Squirrel::result::VERSION = $DBIx::Squirrel::VERSION;
 }
-
-use namespace::autoclean;
-use Sub::Name;
-use DBIx::Squirrel::util qw/throw/;
 
 use constant E_BAD_OBJECT     => 'A reference to either an array or hash was expected';
 use constant E_STH_EXPIRED    => 'Result is no longer associated with a statement';

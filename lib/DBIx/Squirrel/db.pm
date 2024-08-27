@@ -6,15 +6,15 @@ no strict 'subs';    ## no critic
 package              # hide from PAUSE
   DBIx::Squirrel::db;
 
+use Sub::Name;
+use DBIx::Squirrel::util qw/:constants :sql throw/;
+use namespace::clean;
+
 BEGIN {
     require DBIx::Squirrel unless %DBIx::Squirrel::;
     $DBIx::Squirrel::db::VERSION = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::db::ISA     = 'DBI::db';
+    @DBIx::Squirrel::db::ISA     = qw/DBI::db/;
 }
-
-use namespace::autoclean;
-use Sub::Name;
-use DBIx::Squirrel::util qw/:constants :sql throw/;
 
 sub _root_class {
     my $root_class = ref($_[0]) || $_[0];
