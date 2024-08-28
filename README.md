@@ -1334,8 +1334,8 @@ Returns the iterator's underlying statement handle object.
 ### Iterator Exports
 
 The `DBIx::Squirrel::Iterator` package exports a number of subroutines that
-may be used with transformation steps to access useful information about the
-current context.
+may be used within the stages of a transformation pipeline. These may be
+used to access information about the current transformation context.
 
 #### `database`
 
