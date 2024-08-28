@@ -27,6 +27,9 @@ Revision history for DBIx-Squirrel
     -   New features documented.
 -   TESTS
     -   Some tests updated to reflect mentioned name changes.
+    -   Got a steer from TWATA to look at TRWYANT PPIx::Regexp for a
+        possible solution to /Can’t locate object method “e” via package
+        “warnings”/ in some Strawberry Perl builds. Thanks, both!
 -   TEST COVERAGE
 
     ---------------------------- ------ ------ ------ ------ ------ ------ ------
