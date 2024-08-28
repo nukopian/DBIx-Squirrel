@@ -1,10 +1,10 @@
 use 5.010_001;
-use strict;
-use warnings;
 
 package    # hide from PAUSE
   DBIx::Squirrel::ResultSet;
 
+use strict;
+use warnings;
 use Scalar::Util qw/weaken/;
 use Sub::Name;
 use namespace::clean;

@@ -1,10 +1,10 @@
 use 5.010_001;
-use strict;
-use warnings;
 
 package    # hide from PAUSE
   DBIx::Squirrel::dr;
 
+use strict;
+use warnings;
 use DBIx::Squirrel::Utils qw/throw/;
 use namespace::clean;
 

@@ -1,10 +1,10 @@
 use 5.010_001;
-use strict;
-use warnings;
 
 package    # hide from PAUSE
   DBIx::Squirrel::st;
 
+use strict;
+use warnings;
 use Digest::SHA qw/sha256_base64/;
 use Memoize;
 use Sub::Name;

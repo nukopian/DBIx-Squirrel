@@ -1,6 +1,5 @@
 use 5.010_001;
 use strict;
-use warnings;
 
 package DBIx::Squirrel;
 
@@ -14,6 +13,7 @@ DBIx::Squirrel - A C<DBI> extension
 
 =cut
 
+use warnings;
 use DBI;
 use Exporter;
 use Scalar::Util qw/reftype/;

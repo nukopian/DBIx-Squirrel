@@ -1,10 +1,10 @@
 use 5.010_001;
-use strict;
-use warnings;
 
 package    # hide from PAUSE
   DBIx::Squirrel::Utils;
 
+use strict;
+use warnings;
 use Carp                     ();
 use Devel::GlobalDestruction ();
 use Scalar::Util;

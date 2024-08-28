@@ -1,10 +1,10 @@
 use 5.010_001;
-use strict;
-use warnings;
 
 package    # hide from PAUSE
   DBIx::Squirrel::Iterator;
 
+use strict;
+use warnings;
 use Scalar::Util qw/weaken looks_like_number/;
 use Sub::Name;
 use DBIx::Squirrel::Utils qw/args_partition throw whine/;
