@@ -1361,8 +1361,8 @@ your namespace, although `result` is less cryptic:
 
 - It is the first element of the `@_` list. Use `$_[0]`, or `shift` the
 value from the start of the list.
-- It is also presented in the `$_` variable, though that state is ephemeral
-and should be consumed before it changes.
+- It is also presented in the ephemeral `$_` variable. It should be consumed
+quickly, before it changes.
 
 #### `result_current`
 
