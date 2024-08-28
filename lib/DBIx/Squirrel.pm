@@ -1595,12 +1595,13 @@ your namespace, although C<result> is less cryptic:
 
 =item *
 
-It is the first element of the C<@_> list, so you may also use C<$_[0]> or
-C<shift> the value off the start of the list.
+It is the first element of the C<@_> list. Use C<$_[0]>, or C<shift> the
+value from the start of the list.
 
 =item *
 
-It is also presented to the transformation step in the C<$_> variable.
+It is also presented to the transformation step in the C<$_> variable,
+though that should be used quickly.
 
 =back
 

@@ -1417,10 +1417,10 @@ $rv_or_undef = $itor-&gt;start(\%bind_mappings, @transforms)</code></pre>
 
 <ul>
 
-<li><p>It is the first element of the <code>@_</code> list, so you may also use <code>$_[0]</code> or <code>shift</code> the value off the start of the list.</p>
+<li><p>It is the first element of the <code>@_</code> list. Use <code>$_[0]</code>, or <code>shift</code> the value from the start of the list.</p>
 
 </li>
-<li><p>It is also presented to the transformation step in the <code>$_</code> variable.</p>
+<li><p>It is also presented to the transformation step in the <code>$_</code> variable, though that should be used quickly.</p>
 
 </li>
 </ul>

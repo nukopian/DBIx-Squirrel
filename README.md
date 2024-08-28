@@ -1359,9 +1359,10 @@ transformation pipeline.
 There are alternative ways to get at this value without having to pollute
 your namespace, although `result` is less cryptic:
 
-- It is the first element of the `@_` list, so you may also use `$_[0]` or
-`shift` the value off the start of the list.
-- It is also presented to the transformation step in the `$_` variable.
+- It is the first element of the `@_` list. Use `$_[0]`, or `shift` the
+value from the start of the list.
+- It is also presented to the transformation step in the `$_` variable,
+though that should be used quickly.
 
 #### `result_current`
 
