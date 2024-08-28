@@ -1,17 +1,6 @@
-use 5.010_001;
-
 package DBIx::Squirrel;
 
-=pod
-
-=encoding UTF-8
-
-=head1 NAME
-
-DBIx::Squirrel - A C<DBI> extension
-
-=cut
-
+use 5.010_001;
 use strict;
 use warnings;
 use DBI;
@@ -145,6 +134,10 @@ __END__
 =pod
 
 =encoding UTF-8
+
+=head1 NAME
+
+DBIx::Squirrel - A C<DBI> extension
 
 =head1 SYNOPSIS
 

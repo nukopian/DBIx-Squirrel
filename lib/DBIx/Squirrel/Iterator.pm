@@ -1,8 +1,7 @@
-use 5.010_001;
-
 package    # hide from PAUSE
   DBIx::Squirrel::Iterator;
 
+use 5.010_001;
 use strict;
 use warnings;
 use Scalar::Util qw/weaken looks_like_number/;
