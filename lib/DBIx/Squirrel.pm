@@ -18,7 +18,7 @@ use namespace::clean;
 
 BEGIN {
     @DBIx::Squirrel::ISA                          = qw/DBI/;
-    $DBIx::Squirrel::VERSION                      = '1.005_001';
+    $DBIx::Squirrel::VERSION                      = "1.005_001";
     $DBIx::Squirrel::VERSION                      = eval($DBIx::Squirrel::VERSION);
     @DBIx::Squirrel::EXPORT_OK                    = @DBI::EXPORT_OK;
     %DBIx::Squirrel::EXPORT_TAGS                  = %DBI::EXPORT_TAGS;
@@ -1607,7 +1607,7 @@ Returns the first result fetched.
 
 =head4 C<result_prev>
 
-    my $result = result_previous();
+    my $result = result_prev();
 
 Returns the previous result, if there was one.
 
