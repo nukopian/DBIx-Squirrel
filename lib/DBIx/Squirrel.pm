@@ -1613,13 +1613,13 @@ An alias (see C<result>).
 
     my $result = result_first();
 
-Returns the first result.
+Returns the first result fetched.
 
 =head4 C<result_prev>
 
     my $result = result_previous();
 
-Returns the previous result if there was one.
+Returns the previous result, if there was one.
 
 =head4 C<result_previous>
 
@@ -1629,8 +1629,8 @@ An alias (see C<result_prev>).
 
     my $offset = result_offset();
 
-Returns the zero-based offset if this result, effectively the result count minus
-one.
+Returns the result's zero-based offset, effectively the number of results
+fetched, less one.
 
 =head4 C<result_original>
 

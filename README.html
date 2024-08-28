@@ -1433,13 +1433,13 @@ $rv_or_undef = $itor-&gt;start(\%bind_mappings, @transforms)</code></pre>
 
 <pre><code>my $result = result_first();</code></pre>
 
-<p>Returns the first result.</p>
+<p>Returns the first result fetched.</p>
 
 <h4 id="result_prev"><code>result_prev</code></h4>
 
 <pre><code>my $result = result_previous();</code></pre>
 
-<p>Returns the previous result if there was one.</p>
+<p>Returns the previous result, if there was one.</p>
 
 <h4 id="result_previous"><code>result_previous</code></h4>
 
@@ -1449,7 +1449,7 @@ $rv_or_undef = $itor-&gt;start(\%bind_mappings, @transforms)</code></pre>
 
 <pre><code>my $offset = result_offset();</code></pre>
 
-<p>Returns the zero-based offset if this result, effectively the result count minus one.</p>
+<p>Returns the result&#39;s zero-based offset, effectively the number of results fetched, less one.</p>
 
 <h4 id="result_original"><code>result_original</code></h4>
 
