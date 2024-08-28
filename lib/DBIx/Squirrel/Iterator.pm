@@ -15,10 +15,10 @@ BEGIN {
     require Exporter;
     $DBIx::Squirrel::Iterator::VERSION             = $DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::Iterator::ISA                 = qw/Exporter/;
-    @DBIx::Squirrel::Iterator::EXPORT_OK           = qw/result result_transform/;
-    $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];                            # Faster!
-    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;                             # Initial buffer size and autoscaling increment
-    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;                            # Absolute maximum buffersize
+    @DBIx::Squirrel::Iterator::EXPORT_OK           = qw/dbh itor offset result result_transform/;
+    $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];                                        # Faster!
+    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;                                         # Initial buffer size and autoscaling increment
+    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;                                        # Absolute maximum buffersize
 }
 
 use constant E_BAD_STH         => 'Expected a statement handle object';
@@ -159,53 +159,104 @@ sub _private_state_reset {
     shift->_private_state_clear->_private_state_init;
 }
 
-sub _result_fetch {
-    my($attr, $self) = shift->_private_state;
-    my $sth = $attr->{sth};
-    my($transformed, $results, $result);
-    do {
-        return $self->_result_fetch_pending if $self->_results_pending;
-        return unless $sth->{Active};
-        if ($self->_buffer_empty) {
-            return unless $self->_buffer_charge;
-        }
-        $result = shift(@{$attr->{buffer}});
-        ($results, $transformed) = $self->_result_process($result);
-    } while $transformed && !@{$results};
-    $result = shift(@{$results});
-    $self->_results_push_pending($results) if @{$results};
-    $attr->{results_first} = $result unless $attr->{results_count}++;
-    $attr->{results_last}  = $result;
-    return do {$_ = $result};
-}
+{
+    our $_result;
 
-sub _result_fetch_pending {
-    my($attr, $self) = shift->_private_state;
-    return unless defined($attr->{results_pending});
-    my $result = shift(@{$attr->{results_pending}});
-    $attr->{results_first} = $result unless $attr->{results_count}++;
-    $attr->{results_last}  = $result;
-    return do {$_ = $result};
-}
+    sub result {$_result}
 
-# Seemingly pointless, here, but intended to be overridden in subclasses.
-sub _result_preprocess {$_[1]}
+    our $_dbh;
 
-sub _result_process {
-    local($_);
-    my($attr, $self) = shift->_private_state;
-    my $result    = $self->_result_preprocess(shift);
-    my $transform = !!@{$attr->{transforms}};
-    my @results   = do {
-        if ($transform) {
-            map {result_transform($attr->{transforms}, $self->_result_preprocess($_))} $result;
+    sub dbh {$_dbh}
+
+    our $_itor;
+
+    sub itor {$_itor}
+
+    our $_offset;
+
+    sub offset {$_offset}
+
+    sub _result_fetch {
+        my($attr, $self) = shift->_private_state;
+        my $sth = $attr->{sth};
+        my($transformed, $results, $result);
+        do {
+            return $self->_result_fetch_pending if $self->_results_pending;
+            return unless $sth->{Active};
+            if ($self->_buffer_empty) {
+                return unless $self->_buffer_charge;
+            }
+            $result = shift(@{$attr->{buffer}});
+            ($results, $transformed) = $self->_result_process($result);
+        } while $transformed && !@{$results};
+        $result = shift(@{$results});
+        $self->_results_push_pending($results) if @{$results};
+        $attr->{results_first} = $result unless $attr->{results_count}++;
+        return do {$_ = $result};
+    }
+
+    sub _result_fetch_pending {
+        my($attr, $self) = shift->_private_state;
+        return unless defined($attr->{results_pending});
+        my $result = shift(@{$attr->{results_pending}});
+        $attr->{results_first} = $result unless $attr->{results_count}++;
+        $attr->{results_last}  = $result;
+        return do {$_ = $result};
+    }
+
+    # Seemingly pointless, here, but intended to be overridden in subclasses.
+    sub _result_preprocess {$_[1]}
+
+    sub _result_process {
+        local($_);
+        my($attr, $self) = shift->_private_state;
+        my $result    = $self->_result_preprocess(shift);
+        my $transform = !!@{$attr->{transforms}};
+        my @results   = do {
+            if ($transform) {
+                map {$self->_result_transform($attr->{transforms}, $self->_result_preprocess($_))} $result;
+            }
+            else {
+                $result;
+            }
+        };
+        return \@results, $transform if wantarray;
+        return \@results;
+    }
+
+    sub result_transform {    ## not a method
+        my @transforms = do {
+            if (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                @{+shift};
+            }
+            elsif (UNIVERSAL::isa($_[0], 'CODE')) {
+                shift;
+            }
+            else {
+                ();
+            }
+        };
+        if (@transforms && @_) {
+            for my $transform (@transforms) {
+                last unless @_ = do {
+                    local($_result) = @_;
+                    local($_)       = $_result;
+                    $transform->(@_);
+                };
+            }
         }
-        else {
-            $result;
-        }
-    };
-    return \@results, $transform if wantarray;
-    return \@results;
+        return @_ if wantarray;
+        $_ = $_[0];
+        return scalar(@_) if @_;
+    }
+
+    sub _result_transform {
+        my($attr, $self) = shift->_private_state;
+        local($_itor)   = $self;
+        local($_offset) = $attr->{results_count};
+        local($_dbh) = $self->sth->{Database};
+        return result_transform(@_);
+    }
 }
 
 # The total number of rows fetched since execute was called.
@@ -229,39 +280,6 @@ sub _results_push_pending {
     $attr->{results_pending} = [] unless defined($attr->{results_pending});
     push @{$attr->{results_pending}}, @{$results};
     return $self;
-}
-
-# Runtime scoping of $_result allows caller to import and use "result" instead
-# of "$_" during result transformation.
-
-our $_result;
-
-sub result {$_result}
-
-sub result_transform {
-    my @transforms = do {
-        if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-            @{+shift};
-        }
-        elsif (UNIVERSAL::isa($_[0], 'CODE')) {
-            shift;
-        }
-        else {
-            ();
-        }
-    };
-    if (@transforms && @_) {
-        for my $transform (@transforms) {
-            last unless @_ = do {
-                local($_result) = @_;
-                local($_)       = $_result;
-                $transform->(@_);
-            };
-        }
-    }
-    return @_ if wantarray;
-    $_ = $_[0];
-    return scalar(@_) if @_;
 }
 
 sub all {
