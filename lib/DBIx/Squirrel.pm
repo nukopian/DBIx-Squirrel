@@ -1566,8 +1566,8 @@ Returns the iterator's underlying statement handle object.
 =head3 Iterator Exports
 
 The C<DBIx::Squirrel::Iterator> package exports a number of subroutines that
-may be used within the stages of a transformation pipeline. These may be
-used to access information about the current transformation context.
+may be used within the stages of a transformation pipeline. These provide
+information about the current transformation context.
 
 =head4 C<database>
 
