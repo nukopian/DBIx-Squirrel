@@ -1,5 +1,11 @@
 ## Revision history for DBIx-Squirrel
 
+### 1.4.1 2024-08-28 08:15
+-   **REFACTOR / FIX**
+    -   Removed redundant import (&List::Util::uniq). The function is not
+        implemented on a couple of CPANTs builds, and it's absence caused build
+        failures. I stopped using it, but forgot the import.
+
 ### 1.4.0 2024-08-27 21:00
 -   **BREAKING CHANGES**
     -   Packages not subclassing DBI packages have now been renamed. The names
