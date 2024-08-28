@@ -18,6 +18,27 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 db(DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS));
 
 my $artist_legacy = db->prepare('SELECT * FROM artists WHERE ArtistId=? LIMIT 1');
+my @tests = (
+    {line => __LINE__, got => [length($artist_legacy->_private_state->{Hash})], exp => [43]},    ## 43-char Base64 string
+    {   line => __LINE__,
+        got  => [$artist_legacy->_private_state->{NormalisedStatement}],
+        exp  => ['SELECT * FROM artists WHERE ArtistId=? LIMIT 1'],
+    },
+    {   line => __LINE__,
+        got  => [$artist_legacy->_private_state->{OriginalStatement}],
+        exp  => ['SELECT * FROM artists WHERE ArtistId=? LIMIT 1'],
+    },
+    {line => __LINE__, got => [$artist_legacy->_private_state->{Placeholders}], exp => [{}]},
+);
+foreach my $t (@tests) {
+    is_deeply(
+        UNIVERSAL::isa($t->{got}, 'CODE') ? $t->{got}->() : $t->{got},
+        $t->{exp}, sprintf('A test at line %d%s', $t->{line}, $t->{name} ? " - $t->{name}" : ''),
+    );
+}
+
+done_testing();
+exit;
 
 is( $artist_legacy->{Statement},
     'SELECT * FROM artists WHERE ArtistId=? LIMIT 1',
