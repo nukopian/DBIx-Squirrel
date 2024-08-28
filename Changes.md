@@ -1,6 +1,6 @@
 ## Revision history for DBIx-Squirrel
 
-### 1.4.1 2024-08-28 08:15
+### 1.4.1 2024-08-28 14:28
 -   **NEW**
     -   Non-breaking changes the `cache_size_slice` and `slice_cache_size`
         methods, in which the second argument is optional. This was done to
@@ -32,15 +32,15 @@
 ---------------------------- ------ ------ ------ ------ ------ ------ ------
 File                           stmt   bran   cond    sub    pod   time  total
 ---------------------------- ------ ------ ------ ------ ------ ------ ------
-blib/lib/DBIx/Squirrel.pm      91.1   55.5   66.6  100.0    n/a   39.3   85.0
-...DBIx/Squirrel/Iterator.pm   69.9   40.3   73.9   72.0    0.0    7.8   58.6
+blib/lib/DBIx/Squirrel.pm      85.0   44.1   55.5  100.0    n/a   39.5   78.8
+...DBIx/Squirrel/Iterator.pm   69.9   40.3   73.9   72.0    0.0    7.6   58.6
 ...x/Squirrel/ResultClass.pm   65.8   23.5    n/a   81.8    0.0    0.7   56.3
 ...BIx/Squirrel/ResultSet.pm   67.0   20.0    n/a   81.8    0.0    1.4   61.1
 ...ib/DBIx/Squirrel/Utils.pm   97.7  100.0  100.0   91.6    0.0    7.0   92.6
-blib/lib/DBIx/Squirrel/db.pm   53.7   25.0   33.3   85.7    0.0    0.6   47.1
-blib/lib/DBIx/Squirrel/dr.pm   84.2   50.0   33.3   90.0    0.0   39.7   67.5
-blib/lib/DBIx/Squirrel/st.pm   87.5   71.4   44.4  100.0    0.0    3.2   80.5
-Total                          74.6   44.9   60.0   84.4    0.0  100.0   65.6
+blib/lib/DBIx/Squirrel/db.pm   66.6   46.8   33.3   90.4    0.0    0.6   61.3
+blib/lib/DBIx/Squirrel/dr.pm   84.2   50.0   33.3   90.0    0.0   39.9   67.5
+blib/lib/DBIx/Squirrel/st.pm   69.5   50.0   22.2   96.0    0.0    3.0   63.3
+Total                          72.5   43.7   55.0   84.4    0.0  100.0   64.0
 ---------------------------- ------ ------ ------ ------ ------ ------ ------
 ```
 
