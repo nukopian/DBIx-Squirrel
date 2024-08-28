@@ -16,7 +16,6 @@ DBIx::Squirrel - A C<DBI> extension
 
 use DBI;
 use Exporter;
-use List::Util   qw/uniq/;
 use Scalar::Util qw/reftype/;
 use Sub::Name;
 use DBIx::Squirrel::dr          ();
