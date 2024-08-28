@@ -1600,8 +1600,8 @@ value from the start of the list.
 
 =item *
 
-It is also presented to the transformation step in the C<$_> variable,
-though that should be used quickly.
+It is also presented in the C<$_> variable, though that state is ephemeral
+and should be consumed before it changes.
 
 =back
 
