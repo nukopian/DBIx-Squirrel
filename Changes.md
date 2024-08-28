@@ -1,10 +1,48 @@
 ## Revision history for DBIx-Squirrel
 
 ### 1.4.1 2024-08-28 08:15
+-   **NEW**
+    -   Non-breaking changes the `cache_size_slice` and `slice_cache_size`
+        methods, in which the second argument is optional. This was done to
+        be consistent with the re-worked `reset` method.
+    -   Non-breaking change to the `reset` method, which may now be used to
+        change cache size and/oor slicing strategy.
+    -   The DBIx::Squirrel::Iterator package now has and exports new functions
+        that expose aspects of the iterator's current context to stages in
+        a transformation pipeline.
 -   **REFACTOR / FIX**
     -   Removed redundant import (&List::Util::uniq). The function is not
-        implemented on a couple of CPANTs builds, and it's absence caused build
-        failures. I stopped using it, but forgot the import.
+        implemented on a couple of CPANTs builds, and it's absence caused
+        build failures. I stopped using it, but forgot to remove the
+        import, in itself causing build failures on systems with an
+        old List::Util.
+    -   In keeping with the DBI and for the sake of consistency, anything I
+        once referred to as a "buffer" is now referred to as a cache, and
+        this has resulted in the names of many things being changed. For now,
+        there are no breaking changes in the public interface due to the
+        presence of now deprecated aliases. I'll remove these in 1.5.0.
+    **DOCUMENTATION**
+    -   POD reflects some of the mentioned name changes.
+    -   New features documented.
+-   **TESTS**
+    -   Some tests updated to reflect mentioned name changes.
+-   **TEST COVERAGE**
+
+```
+---------------------------- ------ ------ ------ ------ ------ ------ ------
+File                           stmt   bran   cond    sub    pod   time  total
+---------------------------- ------ ------ ------ ------ ------ ------ ------
+blib/lib/DBIx/Squirrel.pm      91.1   55.5   66.6  100.0    n/a   39.3   85.0
+...DBIx/Squirrel/Iterator.pm   69.9   40.3   73.9   72.0    0.0    7.8   58.6
+...x/Squirrel/ResultClass.pm   65.8   23.5    n/a   81.8    0.0    0.7   56.3
+...BIx/Squirrel/ResultSet.pm   67.0   20.0    n/a   81.8    0.0    1.4   61.1
+...ib/DBIx/Squirrel/Utils.pm   97.7  100.0  100.0   91.6    0.0    7.0   92.6
+blib/lib/DBIx/Squirrel/db.pm   53.7   25.0   33.3   85.7    0.0    0.6   47.1
+blib/lib/DBIx/Squirrel/dr.pm   84.2   50.0   33.3   90.0    0.0   39.7   67.5
+blib/lib/DBIx/Squirrel/st.pm   87.5   71.4   44.4  100.0    0.0    3.2   80.5
+Total                          74.6   44.9   60.0   84.4    0.0  100.0   65.6
+---------------------------- ------ ------ ------ ------ ------ ------ ------
+```
 
 ### 1.4.0 2024-08-27 21:00
 -   **BREAKING CHANGES**
