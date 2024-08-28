@@ -1162,7 +1162,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
 
 =head4 C<execute> *
 
-    $rv = $sth->execute;
+    $rv = $sth->execute();
     $rv = $sth->execute(@bind_values);
     $rv = $sth->execute(\@bind_values);
     $rv = $sth->execute(%bind_mappings);
@@ -1170,7 +1170,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
 
 =head4 C<iterate>
 
-    $itor = $sth->iterate
+    $itor = $sth->iterate()
                 or die $dbh->errstr;
     $itor = $sth->iterate(@bind_values)
                 or die ...;
@@ -1193,7 +1193,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
 
 =head4 C<results>
 
-    $itor = $sth->results
+    $itor = $sth->results()
                 or die $dbh->errstr;
     $itor = $sth->results(@bind_values)
                 or die ...;
@@ -1218,8 +1218,8 @@ It is the normalised form of the statement that is cached by the C<DBI>.
 
 =head4 C<all>
 
-    @results = $itor->all;
-    $results_or_undef = $itor->all;
+    @results = $itor->all();
+    $results_or_undef = $itor->all();
 
 Executes the iterator's underlying statement handle object.
 
@@ -1240,7 +1240,7 @@ Deprecated alias for C<cache_size_slice>.
 
 =head4 C<cache_size>
 
-    $cache_size = $itor->cache_size;
+    $cache_size = $itor->cache_size();
     $itor = $itor->cache_size($cache_size);
 
 May be used to determine how many results the iterator makes available to
@@ -1311,7 +1311,7 @@ The following package globals define the relevant default settings:
 
 =head4 C<count>
 
-    $count = $itor->count;
+    $count = $itor->count();
 
 Returns the total number of rows in the result set.
 
@@ -1325,7 +1325,7 @@ I<B<BEWARE> that you should not use C<next> after this method has been used!>
 
 =head4 C<count_fetched>
 
-    $count = $itor->count_fetched;
+    $count = $itor->count_fetched();
 
 Returns the number of results fetched so far.
 
@@ -1335,7 +1335,7 @@ returned.
 
 =head4 C<first>
 
-    $result = $itor->first;
+    $result = $itor->first();
 
 Returns the first result in the result set, or C<undef> if there were no
 results.
@@ -1350,7 +1350,7 @@ The result of the statement's execution will be returned.
 
 =head4 C<iterate>
 
-    $itor_or_undef = $itor->iterate
+    $itor_or_undef = $itor->iterate()
     $itor_or_undef = $itor->iterate(@bind_values)
     $itor_or_undef = $itor->iterate(@transforms)
     $itor_or_undef = $itor->iterate(@bind_values, @transforms)
@@ -1372,7 +1372,7 @@ executed, otherwise the method returns C<undef>.
 
 =head4 C<last>
 
-    $result = $itor->last;
+    $result = $itor->last();
 
 Returns the last result in the result set.
 
@@ -1386,7 +1386,7 @@ I<B<BEWARE> that you should not use C<next> after this method has been used!>
 
 =head4 C<last_fetched>
 
-    $result = $itor->last_fetched;
+    $result = $itor->last_fetched();
 
 Returns the last result fetched.
 
@@ -1398,7 +1398,7 @@ always cached. The cached value is returned.
 
 =head4 C<next>
 
-    $result = $itor->next;
+    $result = $itor->next();
 
 Returns the next result in the result set.
 
@@ -1428,12 +1428,12 @@ Alias (see C<single>).
 
 =head4 C<remaining>
 
-    @results = $itor->remaining;
+    @results = $itor->remaining();
     $results_or_undef = $itor->remaining;
 
 =head4 C<reset>
 
-    $itor = $itor->reset;
+    $itor = $itor->reset();
     $itor = $itor->reset($slice);
     $itor = $itor->reset($cache_size);
     $itor = $itor->reset($slice, $cache_size);
@@ -1449,13 +1449,13 @@ A reference to the iterator is returned, regardless of execution outcome.
 
 =head4 C<rows>
 
-    $rows = $itor->rows;
+    $rows = $itor->rows();
 
 Returns the number of rows aftected by non-SELECT statements.
 
 =head4 C<single> (or C<one>)
 
-    $result = $itor->single;
+    $result = $itor->single();
 
 Returns the first result in the result set, or C<undef> if there were no
 results.
@@ -1474,7 +1474,7 @@ The warning is a reminder to include a LIMIT 1 constraint in the statement.
 
 =head4 C<slice>
 
-    $slice = $itor->slice;
+    $slice = $itor->slice();
     $itor = $itor->slice($slice);
 
 May be used to determine how the iterator slices the results it fetches
@@ -1493,7 +1493,7 @@ Deprecated alias for C<slice_cache_size>.
 
 =head4 C<slice_cache_size>
 
-    ($slice, $cache_size) = $itor->slice_cache_size;
+    ($slice, $cache_size) = $itor->slice_cache_size();
     $itor = $itor->slice_cache_size($slice);
     $itor = $itor->slice_cache_size($cache_size);
     $itor = $itor->slice_cache_size($slice, $cache_size);
@@ -1540,7 +1540,7 @@ The following package globals define the relevant default settings:
 
 =head4 C<start>
 
-    $rv_or_undef = $itor->start
+    $rv_or_undef = $itor->start()
     $rv_or_undef = $itor->start(@bind_values)
     $rv_or_undef = $itor->start(@transforms)
     $rv_or_undef = $itor->start(@bind_values, @transforms)
@@ -1559,7 +1559,7 @@ the iterator at the time of construction are used.
 
 =head4 C<sth>
 
-    $sth = $itor->sth;
+    $sth = $itor->sth();
 
 Returns the iterator's underlying statement handle object.
 
@@ -1616,13 +1616,13 @@ Returns the first result.
 
 =head4 C<result_prev>
 
-An alias (see C<result_previous>).
-
-=head4 C<result_previous>
-
     my $result = result_previous();
 
 Returns the previous result if there was one.
+
+=head4 C<result_previous>
+
+An alias (see C<result_prev>).
 
 =head4 C<result_offset>
 

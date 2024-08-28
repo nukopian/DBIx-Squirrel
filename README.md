@@ -947,7 +947,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `execute` \*
 
-    $rv = $sth->execute;
+    $rv = $sth->execute();
     $rv = $sth->execute(@bind_values);
     $rv = $sth->execute(\@bind_values);
     $rv = $sth->execute(%bind_mappings);
@@ -955,7 +955,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `iterate`
 
-    $itor = $sth->iterate
+    $itor = $sth->iterate()
                 or die $dbh->errstr;
     $itor = $sth->iterate(@bind_values)
                 or die ...;
@@ -978,7 +978,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `results`
 
-    $itor = $sth->results
+    $itor = $sth->results()
                 or die $dbh->errstr;
     $itor = $sth->results(@bind_values)
                 or die ...;
@@ -1003,8 +1003,8 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `all`
 
-    @results = $itor->all;
-    $results_or_undef = $itor->all;
+    @results = $itor->all();
+    $results_or_undef = $itor->all();
 
 Executes the iterator's underlying statement handle object.
 
@@ -1025,7 +1025,7 @@ Deprecated alias for `cache_size_slice`.
 
 #### `cache_size`
 
-    $cache_size = $itor->cache_size;
+    $cache_size = $itor->cache_size();
     $itor = $itor->cache_size($cache_size);
 
 May be used to determine how many results the iterator makes available to
@@ -1092,7 +1092,7 @@ The following package globals define the relevant default settings:
 
 #### `count`
 
-    $count = $itor->count;
+    $count = $itor->count();
 
 Returns the total number of rows in the result set.
 
@@ -1106,7 +1106,7 @@ _**BEWARE** that you should not use `next` after this method has been used!_
 
 #### `count_fetched`
 
-    $count = $itor->count_fetched;
+    $count = $itor->count_fetched();
 
 Returns the number of results fetched so far.
 
@@ -1116,7 +1116,7 @@ returned.
 
 #### `first`
 
-    $result = $itor->first;
+    $result = $itor->first();
 
 Returns the first result in the result set, or `undef` if there were no
 results.
@@ -1131,7 +1131,7 @@ The result of the statement's execution will be returned.
 
 #### `iterate`
 
-    $itor_or_undef = $itor->iterate
+    $itor_or_undef = $itor->iterate()
     $itor_or_undef = $itor->iterate(@bind_values)
     $itor_or_undef = $itor->iterate(@transforms)
     $itor_or_undef = $itor->iterate(@bind_values, @transforms)
@@ -1153,7 +1153,7 @@ executed, otherwise the method returns `undef`.
 
 #### `last`
 
-    $result = $itor->last;
+    $result = $itor->last();
 
 Returns the last result in the result set.
 
@@ -1167,7 +1167,7 @@ _**BEWARE** that you should not use `next` after this method has been used!_
 
 #### `last_fetched`
 
-    $result = $itor->last_fetched;
+    $result = $itor->last_fetched();
 
 Returns the last result fetched.
 
@@ -1179,7 +1179,7 @@ always cached. The cached value is returned.
 
 #### `next`
 
-    $result = $itor->next;
+    $result = $itor->next();
 
 Returns the next result in the result set.
 
@@ -1200,12 +1200,12 @@ Alias (see `single`).
 
 #### `remaining`
 
-    @results = $itor->remaining;
+    @results = $itor->remaining();
     $results_or_undef = $itor->remaining;
 
 #### `reset`
 
-    $itor = $itor->reset;
+    $itor = $itor->reset();
     $itor = $itor->reset($slice);
     $itor = $itor->reset($cache_size);
     $itor = $itor->reset($slice, $cache_size);
@@ -1221,13 +1221,13 @@ A reference to the iterator is returned, regardless of execution outcome.
 
 #### `rows`
 
-    $rows = $itor->rows;
+    $rows = $itor->rows();
 
 Returns the number of rows aftected by non-SELECT statements.
 
 #### `single` (or `one`)
 
-    $result = $itor->single;
+    $result = $itor->single();
 
 Returns the first result in the result set, or `undef` if there were no
 results.
@@ -1246,7 +1246,7 @@ The warning is a reminder to include a LIMIT 1 constraint in the statement.
 
 #### `slice`
 
-    $slice = $itor->slice;
+    $slice = $itor->slice();
     $itor = $itor->slice($slice);
 
 May be used to determine how the iterator slices the results it fetches
@@ -1265,7 +1265,7 @@ Deprecated alias for `slice_cache_size`.
 
 #### `slice_cache_size`
 
-    ($slice, $cache_size) = $itor->slice_cache_size;
+    ($slice, $cache_size) = $itor->slice_cache_size();
     $itor = $itor->slice_cache_size($slice);
     $itor = $itor->slice_cache_size($cache_size);
     $itor = $itor->slice_cache_size($slice, $cache_size);
@@ -1308,7 +1308,7 @@ The following package globals define the relevant default settings:
 
 #### `start`
 
-    $rv_or_undef = $itor->start
+    $rv_or_undef = $itor->start()
     $rv_or_undef = $itor->start(@bind_values)
     $rv_or_undef = $itor->start(@transforms)
     $rv_or_undef = $itor->start(@bind_values, @transforms)
@@ -1327,7 +1327,7 @@ the iterator at the time of construction are used.
 
 #### `sth`
 
-    $sth = $itor->sth;
+    $sth = $itor->sth();
 
 Returns the iterator's underlying statement handle object.
 
@@ -1375,13 +1375,13 @@ Returns the first result.
 
 #### `result_prev`
 
-An alias (see `result_previous`).
-
-#### `result_previous`
-
     my $result = result_previous();
 
 Returns the previous result if there was one.
+
+#### `result_previous`
+
+An alias (see `result_prev`).
 
 #### `result_offset`
 

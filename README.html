@@ -1046,7 +1046,7 @@ $sth-&gt;bind_param($p_name, $bind_value, $bind_type);</code></pre>
 
 <h4 id="execute"><code>execute</code> *</h4>
 
-<pre><code>$rv = $sth-&gt;execute;
+<pre><code>$rv = $sth-&gt;execute();
 $rv = $sth-&gt;execute(@bind_values);
 $rv = $sth-&gt;execute(\@bind_values);
 $rv = $sth-&gt;execute(%bind_mappings);
@@ -1054,7 +1054,7 @@ $rv = $sth-&gt;execute(\%bind_mappings);</code></pre>
 
 <h4 id="iterate1"><code>iterate</code></h4>
 
-<pre><code>$itor = $sth-&gt;iterate
+<pre><code>$itor = $sth-&gt;iterate()
             or die $dbh-&gt;errstr;
 $itor = $sth-&gt;iterate(@bind_values)
             or die ...;
@@ -1077,7 +1077,7 @@ $itor = $sth-&gt;iterate(\%bind_mappings, @transforms)
 
 <h4 id="results1"><code>results</code></h4>
 
-<pre><code>$itor = $sth-&gt;results
+<pre><code>$itor = $sth-&gt;results()
             or die $dbh-&gt;errstr;
 $itor = $sth-&gt;results(@bind_values)
             or die ...;
@@ -1102,8 +1102,8 @@ $itor = $sth-&gt;results(\%bind_mappings, @transforms)
 
 <h4 id="all"><code>all</code></h4>
 
-<pre><code>@results = $itor-&gt;all;
-$results_or_undef = $itor-&gt;all;</code></pre>
+<pre><code>@results = $itor-&gt;all();
+$results_or_undef = $itor-&gt;all();</code></pre>
 
 <p>Executes the iterator&#39;s underlying statement handle object.</p>
 
@@ -1121,7 +1121,7 @@ $results_or_undef = $itor-&gt;all;</code></pre>
 
 <h4 id="cache_size"><code>cache_size</code></h4>
 
-<pre><code>$cache_size = $itor-&gt;cache_size;
+<pre><code>$cache_size = $itor-&gt;cache_size();
 $itor = $itor-&gt;cache_size($cache_size);</code></pre>
 
 <p>May be used to determine how many results the iterator makes available to fetch following each trip to the database.</p>
@@ -1177,7 +1177,7 @@ $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size</code
 
 <h4 id="count"><code>count</code></h4>
 
-<pre><code>$count = $itor-&gt;count;</code></pre>
+<pre><code>$count = $itor-&gt;count();</code></pre>
 
 <p>Returns the total number of rows in the result set.</p>
 
@@ -1189,7 +1189,7 @@ $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size</code
 
 <h4 id="count_fetched"><code>count_fetched</code></h4>
 
-<pre><code>$count = $itor-&gt;count_fetched;</code></pre>
+<pre><code>$count = $itor-&gt;count_fetched();</code></pre>
 
 <p>Returns the number of results fetched so far.</p>
 
@@ -1197,7 +1197,7 @@ $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size</code
 
 <h4 id="first"><code>first</code></h4>
 
-<pre><code>$result = $itor-&gt;first;</code></pre>
+<pre><code>$result = $itor-&gt;first();</code></pre>
 
 <p>Returns the first result in the result set, or <code>undef</code> if there were no results.</p>
 
@@ -1209,7 +1209,7 @@ $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size</code
 
 <h4 id="iterate2"><code>iterate</code></h4>
 
-<pre><code>$itor_or_undef = $itor-&gt;iterate
+<pre><code>$itor_or_undef = $itor-&gt;iterate()
 $itor_or_undef = $itor-&gt;iterate(@bind_values)
 $itor_or_undef = $itor-&gt;iterate(@transforms)
 $itor_or_undef = $itor-&gt;iterate(@bind_values, @transforms)
@@ -1228,7 +1228,7 @@ $itor_or_undef = $itor-&gt;iterate(\%bind_mappings, @transforms)</code></pre>
 
 <h4 id="last"><code>last</code></h4>
 
-<pre><code>$result = $itor-&gt;last;</code></pre>
+<pre><code>$result = $itor-&gt;last();</code></pre>
 
 <p>Returns the last result in the result set.</p>
 
@@ -1240,7 +1240,7 @@ $itor_or_undef = $itor-&gt;iterate(\%bind_mappings, @transforms)</code></pre>
 
 <h4 id="last_fetched"><code>last_fetched</code></h4>
 
-<pre><code>$result = $itor-&gt;last_fetched;</code></pre>
+<pre><code>$result = $itor-&gt;last_fetched();</code></pre>
 
 <p>Returns the last result fetched.</p>
 
@@ -1250,7 +1250,7 @@ $itor_or_undef = $itor-&gt;iterate(\%bind_mappings, @transforms)</code></pre>
 
 <h4 id="next"><code>next</code></h4>
 
-<pre><code>$result = $itor-&gt;next;</code></pre>
+<pre><code>$result = $itor-&gt;next();</code></pre>
 
 <p>Returns the next result in the result set.</p>
 
@@ -1274,12 +1274,12 @@ $itor_or_undef = $itor-&gt;iterate(\%bind_mappings, @transforms)</code></pre>
 
 <h4 id="remaining"><code>remaining</code></h4>
 
-<pre><code>@results = $itor-&gt;remaining;
+<pre><code>@results = $itor-&gt;remaining();
 $results_or_undef = $itor-&gt;remaining;</code></pre>
 
 <h4 id="reset"><code>reset</code></h4>
 
-<pre><code>$itor = $itor-&gt;reset;
+<pre><code>$itor = $itor-&gt;reset();
 $itor = $itor-&gt;reset($slice);
 $itor = $itor-&gt;reset($cache_size);
 $itor = $itor-&gt;reset($slice, $cache_size);
@@ -1293,13 +1293,13 @@ $itor = $itor-&gt;reset($cache_size, $slice);</code></pre>
 
 <h4 id="rows"><code>rows</code></h4>
 
-<pre><code>$rows = $itor-&gt;rows;</code></pre>
+<pre><code>$rows = $itor-&gt;rows();</code></pre>
 
 <p>Returns the number of rows aftected by non-SELECT statements.</p>
 
 <h4 id="single-or-one"><code>single</code> (or <code>one</code>)</h4>
 
-<pre><code>$result = $itor-&gt;single;</code></pre>
+<pre><code>$result = $itor-&gt;single();</code></pre>
 
 <p>Returns the first result in the result set, or <code>undef</code> if there were no results.</p>
 
@@ -1315,7 +1315,7 @@ $itor = $itor-&gt;reset($cache_size, $slice);</code></pre>
 
 <h4 id="slice"><code>slice</code></h4>
 
-<pre><code>$slice = $itor-&gt;slice;
+<pre><code>$slice = $itor-&gt;slice();
 $itor = $itor-&gt;slice($slice);</code></pre>
 
 <p>May be used to determine how the iterator slices the results it fetches from the database. This may be an ARRAYREF or a HASHREF.</p>
@@ -1332,7 +1332,7 @@ $itor = $itor-&gt;slice($slice);</code></pre>
 
 <h4 id="slice_cache_size"><code>slice_cache_size</code></h4>
 
-<pre><code>($slice, $cache_size) = $itor-&gt;slice_cache_size;
+<pre><code>($slice, $cache_size) = $itor-&gt;slice_cache_size();
 $itor = $itor-&gt;slice_cache_size($slice);
 $itor = $itor-&gt;slice_cache_size($cache_size);
 $itor = $itor-&gt;slice_cache_size($slice, $cache_size);
@@ -1370,7 +1370,7 @@ $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size</code
 
 <h4 id="start"><code>start</code></h4>
 
-<pre><code>$rv_or_undef = $itor-&gt;start
+<pre><code>$rv_or_undef = $itor-&gt;start()
 $rv_or_undef = $itor-&gt;start(@bind_values)
 $rv_or_undef = $itor-&gt;start(@transforms)
 $rv_or_undef = $itor-&gt;start(@bind_values, @transforms)
@@ -1387,7 +1387,7 @@ $rv_or_undef = $itor-&gt;start(\%bind_mappings, @transforms)</code></pre>
 
 <h4 id="sth"><code>sth</code></h4>
 
-<pre><code>$sth = $itor-&gt;sth;</code></pre>
+<pre><code>$sth = $itor-&gt;sth();</code></pre>
 
 <p>Returns the iterator&#39;s underlying statement handle object.</p>
 
@@ -1437,13 +1437,13 @@ $rv_or_undef = $itor-&gt;start(\%bind_mappings, @transforms)</code></pre>
 
 <h4 id="result_prev"><code>result_prev</code></h4>
 
-<p>An alias (see <code>result_previous</code>).</p>
-
-<h4 id="result_previous"><code>result_previous</code></h4>
-
 <pre><code>my $result = result_previous();</code></pre>
 
 <p>Returns the previous result if there was one.</p>
+
+<h4 id="result_previous"><code>result_previous</code></h4>
+
+<p>An alias (see <code>result_prev</code>).</p>
 
 <h4 id="result_offset"><code>result_offset</code></h4>
 
