@@ -1,5 +1,5 @@
 use DBIx::Squirrel database_entities => [qw/db get_artists/];
-use DBIx::Squirrel::Iterator qw/dbh itor offset result/;
+use DBIx::Squirrel::Iterator qw/database result result_offset/;
 
 db do {
     DBIx::Squirrel->connect(
@@ -17,8 +17,8 @@ get_artists do {
     db->results(
         "SELECT ArtistId, Name FROM artists LIMIT 100" => sub {
             my($artist) = @_;
-            printf "---- %s\n", dbh;
-            printf "%4d Name: %s\n", offset, $artist->Name;
+            printf "---- %s\n", database;
+            printf "%4d Name: %s\n", result_offset, $artist->Name;
             return $artist;
         } => sub {$_->ArtistId}
     );

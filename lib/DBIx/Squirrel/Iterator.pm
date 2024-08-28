@@ -13,25 +13,37 @@ use namespace::clean;
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     require Exporter;
-    $DBIx::Squirrel::Iterator::VERSION             = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::Iterator::ISA                 = qw/Exporter/;
-    @DBIx::Squirrel::Iterator::EXPORT_OK           = qw/dbh itor offset result result_transform/;
-    $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];                                        # Faster!
-    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;                                         # Initial buffer size and autoscaling increment
-    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;                                        # Absolute maximum buffersize
+    $DBIx::Squirrel::Iterator::VERSION   = $DBIx::Squirrel::VERSION;
+    @DBIx::Squirrel::Iterator::ISA       = qw/Exporter/;
+    @DBIx::Squirrel::Iterator::EXPORT_OK = qw/
+      database
+      iterator
+      result
+      result_current
+      result_first
+      result_prev
+      result_previous
+      result_offset
+      result_original
+      result_transform
+      statement
+      /;
+    $DBIx::Squirrel::Iterator::DEFAULT_SLICE      = [];    # Faster!
+    $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;     # Initial buffer size and autoscaling increment
+    $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;    # Absolute maximum buffersize
 }
 
-use constant E_BAD_STH         => 'Expected a statement handle object';
-use constant E_BAD_SLICE       => 'Slice must be a reference to an ARRAY or HASH';
-use constant E_BAD_BUFFER_SIZE => 'Maximum row count must be an integer greater than zero';
-use constant W_MORE_ROWS       => 'Query would yield more than one result';
-use constant E_EXP_ARRAY_REF   => 'Expected an ARRAY-REF';
+use constant E_BAD_STH        => 'Expected a statement handle object';
+use constant E_BAD_SLICE      => 'Slice must be a reference to an ARRAY or HASH';
+use constant E_BAD_CACHE_SIZE => 'Maximum row count must be an integer greater than zero';
+use constant W_MORE_ROWS      => 'Query would yield more than one result';
+use constant E_EXP_ARRAY_REF  => 'Expected an ARRAY-REF';
 
 sub DEFAULT_SLICE () {$DBIx::Squirrel::Iterator::DEFAULT_SLICE}
 
-sub DEFAULT_BUFFER_SIZE () {$DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE}
+sub DEFAULT_CACHE_SIZE () {$DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE}
 
-sub BUFFER_SIZE_LIMIT () {$DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT}
+sub CACHE_SIZE_LIMIT () {$DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT}
 
 sub DESTROY {
     return if DBIx::Squirrel::Utils::global_destruct_phase();
@@ -55,50 +67,50 @@ sub new {
     return $self;
 }
 
-sub _buffer_charge {
+sub _cache_charge {
     my($attr, $self) = shift->_private_state;
     my $sth = $attr->{sth};
     unless ($sth->{Executed}) {
         return unless defined($self->start);
     }
     return unless $sth->{Active};
-    my($slice, $buffer_size) = @{$attr}{qw/slice buffer_size/};
-    my $rows = $sth->fetchall_arrayref($slice, $buffer_size);
+    my($slice, $cache_size) = @{$attr}{qw/slice cache_size/};
+    my $rows = $sth->fetchall_arrayref($slice, $cache_size);
     return 0 unless $rows;
-    unless ($attr->{buffer_size_fixed}) {
-        if ($attr->{buffer_size} < BUFFER_SIZE_LIMIT) {
-            $self->_buffer_size_auto_adjust if @{$rows} >= $attr->{buffer_size};
+    unless ($attr->{cache_size_fixed}) {
+        if ($attr->{cache_size} < CACHE_SIZE_LIMIT) {
+            $self->_cache_size_auto_adjust if @{$rows} >= $attr->{cache_size};
         }
     }
     $attr->{buffer} = [defined($attr->{buffer}) ? (@{$attr->{buffer}}, @{$rows}) : @{$rows}];
     return scalar(@{$attr->{buffer}});
 }
 
-sub _buffer_empty {
+sub _cache_empty {
     my($attr, $self) = shift->_private_state;
     return $attr->{buffer} && @{$attr->{buffer}} < 1;
 }
 
 # Where rows are buffered until fetched.
-sub _buffer_init {
+sub _cache_init {
     my($attr, $self) = shift->_private_state;
     $attr->{buffer} = [] if $attr->{sth}->{NUM_OF_FIELDS};
     return $self;
 }
 
-sub _buffer_size_auto_adjust {
+sub _cache_size_auto_adjust {
     my($attr, $self) = shift->_private_state;
-    $attr->{buffer_size} *= 2;
-    $attr->{buffer_size}  = BUFFER_SIZE_LIMIT if $attr->{buffer_size} > BUFFER_SIZE_LIMIT;
+    $attr->{cache_size} *= 2;
+    $attr->{cache_size}  = CACHE_SIZE_LIMIT if $attr->{cache_size} > CACHE_SIZE_LIMIT;
     return $self;
 }
 
 # How many rows to buffer at a time.
-sub _buffer_size_init {
+sub _cache_size_init {
     my($attr, $self) = shift->_private_state;
     if ($attr->{sth}->{NUM_OF_FIELDS}) {
-        $attr->{buffer_size}       ||= DEFAULT_BUFFER_SIZE;
-        $attr->{buffer_size_fixed} ||= !!0;
+        $attr->{cache_size}       ||= DEFAULT_CACHE_SIZE;
+        $attr->{cache_size_fixed} ||= !!0;
     }
     return $self;
 }
@@ -152,7 +164,7 @@ sub _private_state_clear {
 }
 
 sub _private_state_init {
-    shift->_buffer_init->_buffer_size_init->_results_count_init;
+    shift->_cache_init->_cache_size_init->_results_count_init;
 }
 
 sub _private_state_reset {
@@ -160,21 +172,53 @@ sub _private_state_reset {
 }
 
 {
-    our $_result;
+    # The following package globals are intended to be private. They are
+    # modified by private methods in this lexical block, using runtime-
+    # scoping. Their current values can be inspected, within any stage of
+    # a transformation pipeline, by importing and using the public
+    # subroutines in this lexical block.
+    our($_DATABASE, $_ITERATOR, $_RESULT, $_RESULT_FIRST, $_RESULT_OFFSET, $_RESULT_ORIGINAL, $_RESULT_PREV, $_STATEMENT,);
 
-    sub result {$_result}
+    sub database {$_DATABASE}
 
-    our $_dbh;
+    sub iterator {$_ITERATOR}
 
-    sub dbh {$_dbh}
+    sub result {$_RESULT}
 
-    our $_itor;
+    BEGIN {
+        *result_current = subname(result_current => \&result);
+    }
 
-    sub itor {$_itor}
+    sub result_first {$_RESULT_FIRST}
 
-    our $_offset;
+    sub result_prev {$_RESULT_PREV}
 
-    sub offset {$_offset}
+    BEGIN {
+        *result_previous = subname(result_previous => \&result_prev);
+    }
+
+    sub result_offset {$_RESULT_OFFSET}
+
+    sub result_original {$_RESULT_ORIGINAL}
+
+    sub statement {$_STATEMENT}
+
+    sub result_transform {    ## not a method
+        my @transforms = UNIVERSAL::isa($_[0], 'ARRAY') ? @{+shift} : UNIVERSAL::isa($_[0], 'CODE') ? shift : ();
+        my @results    = @_;
+        if (@transforms && @_) {
+            local($_RESULT_ORIGINAL) = @results;
+            for my $transform (@transforms) {
+                last unless @results = do {
+                    local($_) = local($_RESULT) = @results;
+                    $transform->(@results);
+                };
+            }
+        }
+        return @results if wantarray;
+        $_ = $results[0];
+        return @results;
+    }
 
     sub _result_fetch {
         my($attr, $self) = shift->_private_state;
@@ -183,8 +227,8 @@ sub _private_state_reset {
         do {
             return $self->_result_fetch_pending if $self->_results_pending;
             return unless $sth->{Active};
-            if ($self->_buffer_empty) {
-                return unless $self->_buffer_charge;
+            if ($self->_cache_empty) {
+                return unless $self->_cache_charge;
             }
             $result = shift(@{$attr->{buffer}});
             ($results, $transformed) = $self->_result_process($result);
@@ -192,6 +236,7 @@ sub _private_state_reset {
         $result = shift(@{$results});
         $self->_results_push_pending($results) if @{$results};
         $attr->{results_first} = $result unless $attr->{results_count}++;
+        $attr->{results_last}  = $result;
         return do {$_ = $result};
     }
 
@@ -214,7 +259,13 @@ sub _private_state_reset {
         my $transform = !!@{$attr->{transforms}};
         my @results   = do {
             if ($transform) {
-                map {$self->_result_transform($attr->{transforms}, $self->_result_preprocess($_))} $result;
+                local($_DATABASE)      = $self->sth->{Database};
+                local($_ITERATOR)      = $self;
+                local($_RESULT_FIRST)  = $attr->{results_first};
+                local($_RESULT_OFFSET) = $attr->{results_count};
+                local($_RESULT_PREV)   = $attr->{results_last};
+                local($_STATEMENT)     = $self->sth;
+                map {result_transform($attr->{transforms}, $self->_result_preprocess($_))} $result;
             }
             else {
                 $result;
@@ -222,40 +273,6 @@ sub _private_state_reset {
         };
         return \@results, $transform if wantarray;
         return \@results;
-    }
-
-    sub result_transform {    ## not a method
-        my @transforms = do {
-            if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                @{+shift};
-            }
-            elsif (UNIVERSAL::isa($_[0], 'CODE')) {
-                shift;
-            }
-            else {
-                ();
-            }
-        };
-        if (@transforms && @_) {
-            for my $transform (@transforms) {
-                last unless @_ = do {
-                    local($_result) = @_;
-                    local($_)       = $_result;
-                    $transform->(@_);
-                };
-            }
-        }
-        return @_ if wantarray;
-        $_ = $_[0];
-        return scalar(@_) if @_;
-    }
-
-    sub _result_transform {
-        my($attr, $self) = shift->_private_state;
-        local($_itor)   = $self;
-        local($_offset) = $attr->{results_count};
-        local($_dbh) = $self->sth->{Database};
-        return result_transform(@_);
     }
 }
 
@@ -282,32 +299,44 @@ sub _results_push_pending {
     return $self;
 }
 
-sub all {
-    my $self = shift;
-    return unless defined($self->start);
-    return $self->remaining;
-}
+sub all {shift->reset->remaining}
 
-sub buffer_size {
+sub cache_size {
     my($attr, $self) = shift->_private_state;
     if (@_) {
-        throw E_BAD_BUFFER_SIZE unless looks_like_number($_[0]);
-        throw E_BAD_BUFFER_SIZE if $_[0] < DEFAULT_BUFFER_SIZE || $_[0] > BUFFER_SIZE_LIMIT;
-        $attr->{buffer_size}       = shift;
-        $attr->{buffer_size_fixed} = !!1;
+        throw E_BAD_CACHE_SIZE unless looks_like_number($_[0]);
+        throw E_BAD_CACHE_SIZE if $_[0] < DEFAULT_CACHE_SIZE || $_[0] > CACHE_SIZE_LIMIT;
+        $attr->{cache_size}       = shift;
+        $attr->{cache_size_fixed} = !!1;
         return $self;
     }
     else {
-        $attr->{buffer_size} = DEFAULT_BUFFER_SIZE unless defined($attr->{buffer_size});
-        return $attr->{buffer_size};
+        $attr->{cache_size} = DEFAULT_CACHE_SIZE unless defined($attr->{cache_size});
+        return $attr->{cache_size};
     }
 }
 
-sub buffer_size_slice {
+BEGIN {
+    *buffer_size = subname(buffer_size => \&cache_size);
+
+}
+
+sub cache_size_slice {
     my $self = shift;
-    return $self->buffer_size, $self->slice unless @_;
-    return $self->slice(shift)->buffer_size(shift) if ref($_[0]);
-    return $self->buffer_size(shift)->slice(shift);
+    return $self->cache_size, $self->slice unless @_;
+    if (ref($_[0])) {
+        $self->slice(shift);
+        $self->cache_size(shift) if @_;
+    }
+    else {
+        $self->cache_size(shift);
+        $self->slice(shift) if @_;
+    }
+    return $self;
+}
+
+BEGIN {
+    *buffer_size_slice = subname(buffer_size_slice => \&cache_size_slice);
 }
 
 sub count {
@@ -339,12 +368,6 @@ sub iterate {
     my $self = shift;
     return unless defined($self->start(@_));
     return do {$_ = $self};
-}
-
-sub reset {
-    my $self = shift;
-    $self->start;
-    return $self;
 }
 
 sub last {
@@ -386,6 +409,22 @@ sub remaining {
     return \@rows;
 }
 
+sub reset {
+    my $self = shift;
+    if (@_) {
+        if (ref($_[0])) {
+            $self->slice(shift);
+            $self->cache_size(shift) if @_;
+        }
+        else {
+            $self->cache_size(shift);
+            $self->slice(shift) if @_;
+        }
+    }
+    $self->start;
+    return $self;
+}
+
 sub rows {shift->sth->rows}
 
 sub single {
@@ -421,11 +460,22 @@ sub slice {
     }
 }
 
-sub slice_buffer_size {
+sub slice_cache_size {
     my $self = shift;
-    return $self->slice, $self->buffer_size unless @_;
-    return $self->slice(shift)->buffer_size(shift) if ref($_[0]);
-    return $self->buffer_size(shift)->slice(shift);
+    return $self->slice, $self->cache_size unless @_;
+    if (ref($_[0])) {
+        $self->slice(shift);
+        $self->cache_size(shift) if @_;
+    }
+    else {
+        $self->cache_size(shift);
+        $self->slice(shift) if @_;
+    }
+    return $self;
+}
+
+BEGIN {
+    *slice_buffer_size = subname(slice_buffer_size => \&slice_cache_size);
 }
 
 sub start {

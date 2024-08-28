@@ -40,8 +40,8 @@ BEGIN {
     *DBIx::Squirrel::connect_cached               = *DBIx::Squirrel::dr::connect_cached;
     *DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE = *DBIx::Squirrel::st::FINISH_ACTIVE_BEFORE_EXECUTE;
     *DBIx::Squirrel::DEFAULT_SLICE                = *DBIx::Squirrel::Iterator::DEFAULT_SLICE;
-    *DBIx::Squirrel::DEFAULT_BUFFER_SIZE          = *DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE;
-    *DBIx::Squirrel::BUFFER_SIZE_LIMIT            = *DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT;
+    *DBIx::Squirrel::DEFAULT_CACHE_SIZE           = *DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE;
+    *DBIx::Squirrel::CACHE_SIZE_LIMIT             = *DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT;
 
     unless (defined $DBIx::Squirrel::VERSION) {
         my $v = "1.4.1";
@@ -961,7 +961,6 @@ accessible via C<DBIx::Squirrel>.
     $clone_dbh = DBIx::Squirrel->connect($dbh, \%attr)
                 or die $DBIx::Squirrel::errstr;
 
-
 =head4 C<connect_cached> *
 
     $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password)
@@ -1022,7 +1021,6 @@ the statement, as well as the statement handle:
     ($rows, $sth) = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
 
-
 =head4 C<iterate>
 
     $itor = $dbh->iterate($statement)
@@ -1066,7 +1064,6 @@ the statement, as well as the statement handle:
     $itor = $dbh->iterate($statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
-
 =head4 C<prepare> *
 
     $sth = $dbh->prepare($statement)          or die $dbh->errstr;
@@ -1082,7 +1079,6 @@ statement-string.
 Statement-strings will be "normalised" to use the legacy C<?> style, before
 being handed-off to the C<DBI> method of the same name. In spite of this,
 you should still use key-value bindings if you opted for named placeholders.
-
 
 =head4 C<prepare_cached> *
 
@@ -1102,7 +1098,6 @@ being handed-off to the C<DBI> method of the same name. In spite of this,
 you should still use key-value bindings if you opted for named placeholders.
 
 It is the normalised form of the statement that is cached by the C<DBI>.
-
 
 =head4 C<results>
 
@@ -1156,7 +1151,6 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $sth->bind(%bind_mappings);
     $sth->bind(\%bind_mappings);
 
-
 =head4 C<bind_param> *
 
     $sth->bind_param($p_num, $bind_value);
@@ -1166,7 +1160,6 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $sth->bind_param($p_name, $bind_value, \%attr);
     $sth->bind_param($p_name, $bind_value, $bind_type);
 
-
 =head4 C<execute> *
 
     $rv = $sth->execute;
@@ -1174,7 +1167,6 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $rv = $sth->execute(\@bind_values);
     $rv = $sth->execute(%bind_mappings);
     $rv = $sth->execute(\%bind_mappings);
-
 
 =head4 C<iterate>
 
@@ -1199,7 +1191,6 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $itor = $sth->iterate(\%bind_mappings, @transforms)
                 or die ...;
 
-
 =head4 C<results>
 
     $itor = $sth->results
@@ -1223,7 +1214,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $itor = $sth->results(\%bind_mappings, @transforms)
                 or die ...;
 
-=head3 Iterator Objects
+=head3 Iterator Methods
 
 =head4 C<all>
 
@@ -1239,11 +1230,18 @@ When called in scalar-context, this method returns a reference to
 an array of all matching row objects. Where no rows are matched,
 C<undef> would be returned.
 
-
 =head4 C<buffer_size>
 
-    $buffer_size = $itor->buffer_size;
-    $itor = $itor->buffer_size($buffer_size);
+Deprecated alias for C<cache_size>.
+
+=head4 C<buffer_size_slice>
+
+Deprecated alias for C<cache_size_slice>.
+
+=head4 C<cache_size>
+
+    $cache_size = $itor->cache_size;
+    $itor = $itor->cache_size($cache_size);
 
 May be used to determine how many results the iterator makes available to
 fetch following each trip to the database.
@@ -1261,15 +1259,16 @@ at that value, preventing the kind of automatic adjustment described above.
 
 The following package globals define the relevant default settings:
 
-    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
+    $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
+=head4 C<cache_size_slice>
 
-=head4 C<buffer_size_slice>
-
-    ($buffer_size, $slice) = $itor->buffer_size_slice();
-    $itor = $itor->buffer_size_slice($slice, $buffer_size);
-    $itor = $itor->buffer_size_slice($buffer_size, $slice);
+    ($cache_size, $slice) = $itor->cache_size_slice();
+    $itor = $itor->cache_size_slice($slice);
+    $itor = $itor->cache_size_slice($cache_size);
+    $itor = $itor->cache_size_slice($slice, $cache_size);
+    $itor = $itor->cache_size_slice($cache_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
 from the database, and (b) how many results it makes available to fetch
@@ -1280,7 +1279,7 @@ properties is returned:
 
 =over
 
-=item * C<$buffer_size>
+=item * C<$cache_size>
 
 The current size of the results buffer. That is, the current maximum number of
 results that are processed and ready to fetch after each trip to the database.
@@ -1307,9 +1306,8 @@ at that value, preventing the kind of automatic adjustment described above.
 The following package globals define the relevant default settings:
 
     $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
-    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
-
+    $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
 =head4 C<count>
 
@@ -1325,7 +1323,6 @@ and the final count is returned.
 
 I<B<BEWARE> that you should not use C<next> after this method has been used!>
 
-
 =head4 C<count_fetched>
 
     $count = $itor->count_fetched;
@@ -1335,7 +1332,6 @@ Returns the number of results fetched so far.
 If the iterator's statement has not yet been executed, it will be. Zero will
 be returned if the statement executed successfully, otherwise C<undef> is
 returned.
-
 
 =head4 C<first>
 
@@ -1351,7 +1347,6 @@ If the first result hasn't yet been fetched, it will be and the first result
 is fetched and cached. The cached value is returned.
 
 The result of the statement's execution will be returned.
-
 
 =head4 C<iterate>
 
@@ -1375,7 +1370,6 @@ the iterator at the time of construction will be honoured.
 A reference to the iterator is returned if the statement was successfully
 executed, otherwise the method returns C<undef>.
 
-
 =head4 C<last>
 
     $result = $itor->last;
@@ -1390,7 +1384,6 @@ last result fetched is returned.
 
 I<B<BEWARE> that you should not use C<next> after this method has been used!>
 
-
 =head4 C<last_fetched>
 
     $result = $itor->last_fetched;
@@ -1402,7 +1395,6 @@ C<undef> is returned regardless of the statement execution's outcome.
 
 If the statement was previously executed then the last result fetched is
 always cached. The cached value is returned.
-
 
 =head4 C<next>
 
@@ -1430,34 +1422,36 @@ in the result set.
 
 =back
 
-
 =head4 C<one>
 
 Alias (see C<single>).
-
 
 =head4 C<remaining>
 
     @results = $itor->remaining;
     $results_or_undef = $itor->remaining;
 
-
 =head4 C<reset>
 
     $itor = $itor->reset;
+    $itor = $itor->reset($slice);
+    $itor = $itor->reset($cache_size);
+    $itor = $itor->reset($slice, $cache_size);
+    $itor = $itor->reset($cache_size, $slice);
 
-Executes the iterator's underlying statement handle object and resets any
-internal state.
+Executes the iterator's underlying statement handle object with the current
+bind-values, resetting any internal state.
 
-A reference to the iterator is always returned.
+This method may also be used to set the statement cache size and/or slicing
+strategy in the same call.
 
+A reference to the iterator is returned, regardless of execution outcome.
 
 =head4 C<rows>
 
     $rows = $itor->rows;
 
 Returns the number of rows aftected by non-SELECT statements.
-
 
 =head4 C<single> (or C<one>)
 
@@ -1478,7 +1472,6 @@ If the result returned is one of many buffered, a warning will be issued:
 
 The warning is a reminder to include a LIMIT 1 constraint in the statement.
 
-
 =head4 C<slice>
 
     $slice = $itor->slice;
@@ -1494,12 +1487,17 @@ The following package global defines the default setting:
 
     $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
 
-
 =head4 C<slice_buffer_size>
 
-    ($slice, $buffer_size) = $itor->slice_buffer_size;
-    $itor = $itor->slice_buffer_size($slice, $buffer_size);
-    $itor = $itor->slice_buffer_size($buffer_size, $slice);
+Deprecated alias for C<slice_cache_size>.
+
+=head4 C<slice_cache_size>
+
+    ($slice, $cache_size) = $itor->slice_cache_size;
+    $itor = $itor->slice_cache_size($slice);
+    $itor = $itor->slice_cache_size($cache_size);
+    $itor = $itor->slice_cache_size($slice, $cache_size);
+    $itor = $itor->slice_cache_size($cache_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
 from the database, and (b) how many results it makes available to fetch
@@ -1515,7 +1513,7 @@ properties is returned:
 The how the iterator slices results fetched from the database. This may be an
 ARRAYREF or a HASHREF.
 
-=item * C<$buffer_size>
+=item * C<$cache_size>
 
 The current size of the results buffer. That is, the current maximum number of
 results that are processed and ready to fetch after each trip to the database.
@@ -1537,9 +1535,8 @@ at that value, preventing the kind of automatic adjustment described above.
 The following package globals define the relevant default settings:
 
     $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
-    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
-
+    $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
 =head4 C<start>
 
@@ -1560,13 +1557,92 @@ resetting the iterator's internal state.
 When called with no arguments, any bind-values and transformations passed to
 the iterator at the time of construction are used.
 
-
 =head4 C<sth>
 
     $sth = $itor->sth;
 
 Returns the iterator's underlying statement handle object.
 
+=head3 Iterator Exports
+
+The C<DBIx::Squirrel::Iterator> package exports a number of subroutines that
+may be used with transformation steps to access useful information about the
+current context.
+
+=head4 C<database>
+
+    my $dbh = database();
+
+Returns a reference to the current iterator's database handle object.
+
+=head4 C<iterator>
+
+    my $itor = iterator();
+
+Returns a reference to the current iterator.
+
+=head4 C<result>
+
+    my $result = result();
+
+Returns the result as it was when it entered the I<current stage> of the
+transformation pipeline.
+
+There are alternative ways to get at this value without having to pollute
+your namespace, although C<result> is less cryptic:
+
+=over
+
+=item *
+
+It is the first element of the C<@_> list, so you may also use C<$_[0]> or
+C<shift> the value off the start of the list.
+
+=item *
+
+It is also presented to the transformation step in the C<$_> variable.
+
+=back
+
+=head4 C<result_current>
+
+An alias (see C<result>).
+
+=head4 C<result_first>
+
+    my $result = result_first();
+
+Returns the first result.
+
+=head4 C<result_prev>
+
+An alias (see C<result_previous>).
+
+=head4 C<result_previous>
+
+    my $result = result_previous();
+
+Returns the previous result if there was one.
+
+=head4 C<result_offset>
+
+    my $offset = result_offset();
+
+Returns the zero-based offset if this result, effectively the result count minus
+one.
+
+=head4 C<result_original>
+
+    my $result = result_original();
+
+Returns the result as it was when it entered the I<first stage> of the current
+transformation pipeline.
+
+=head4 C<statement>
+
+    my $sth = statement();
+
+Returns a reference to the current iterator's statement handle object.
 
 =head1 COPYRIGHT AND LICENSE
 
