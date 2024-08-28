@@ -1,6 +1,10 @@
 ## Revision history for DBIx-Squirrel
 
-### 1.4.2 2024-08-28 23:21
+### 1.6.0 TBA              (Stable Release)
+
+### 1.5.1 2024-08-28 23:54 (Developer Release)
+
+### 1.4.2 2024-08-28 23:21 (Stable Release)
 -   **NEW**
     -   Non-breaking changes the `cache_size_slice` and `slice_cache_size`
         methods, in which the second argument is optional. This was done to
