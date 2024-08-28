@@ -4,7 +4,7 @@ DBIx::Squirrel - A `DBI` extension
 
 # VERSION
 
-version 1.4.0
+version 1.4.2
 
 # SYNOPSIS
 
@@ -947,7 +947,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `execute` \*
 
-    $rv = $sth->execute;
+    $rv = $sth->execute();
     $rv = $sth->execute(@bind_values);
     $rv = $sth->execute(\@bind_values);
     $rv = $sth->execute(%bind_mappings);
@@ -955,7 +955,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `iterate`
 
-    $itor = $sth->iterate
+    $itor = $sth->iterate()
                 or die $dbh->errstr;
     $itor = $sth->iterate(@bind_values)
                 or die ...;
@@ -978,7 +978,7 @@ It is the normalised form of the statement that is cached by the `DBI`.
 
 #### `results`
 
-    $itor = $sth->results
+    $itor = $sth->results()
                 or die $dbh->errstr;
     $itor = $sth->results(@bind_values)
                 or die ...;
@@ -999,12 +999,12 @@ It is the normalised form of the statement that is cached by the `DBI`.
     $itor = $sth->results(\%bind_mappings, @transforms)
                 or die ...;
 
-### Iterator Objects
+### Iterator Methods
 
 #### `all`
 
-    @results = $itor->all;
-    $results_or_undef = $itor->all;
+    @results = $itor->all();
+    $results_or_undef = $itor->all();
 
 Executes the iterator's underlying statement handle object.
 
@@ -1017,8 +1017,16 @@ an array of all matching row objects. Where no rows are matched,
 
 #### `buffer_size`
 
-    $buffer_size = $itor->buffer_size;
-    $itor = $itor->buffer_size($buffer_size);
+Deprecated alias for `cache_size`.
+
+#### `buffer_size_slice`
+
+Deprecated alias for `cache_size_slice`.
+
+#### `cache_size`
+
+    $cache_size = $itor->cache_size();
+    $itor = $itor->cache_size($cache_size);
 
 May be used to determine how many results the iterator makes available to
 fetch following each trip to the database.
@@ -1036,14 +1044,16 @@ at that value, preventing the kind of automatic adjustment described above.
 
 The following package globals define the relevant default settings:
 
-    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
+    $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
-#### `buffer_size_slice`
+#### `cache_size_slice`
 
-    ($buffer_size, $slice) = $itor->buffer_size_slice();
-    $itor = $itor->buffer_size_slice($slice, $buffer_size);
-    $itor = $itor->buffer_size_slice($buffer_size, $slice);
+    ($cache_size, $slice) = $itor->cache_size_slice();
+    $itor = $itor->cache_size_slice($slice);
+    $itor = $itor->cache_size_slice($cache_size);
+    $itor = $itor->cache_size_slice($slice, $cache_size);
+    $itor = $itor->cache_size_slice($cache_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
 from the database, and (b) how many results it makes available to fetch
@@ -1052,7 +1062,7 @@ following each trip to the database.
 When called with no arguments, a list comprised of the following two iterator
 properties is returned:
 
-- `$buffer_size`
+- `$cache_size`
 
     The current size of the results buffer. That is, the current maximum number of
     results that are processed and ready to fetch after each trip to the database.
@@ -1077,12 +1087,12 @@ at that value, preventing the kind of automatic adjustment described above.
 The following package globals define the relevant default settings:
 
     $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
-    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
+    $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
 #### `count`
 
-    $count = $itor->count;
+    $count = $itor->count();
 
 Returns the total number of rows in the result set.
 
@@ -1096,7 +1106,7 @@ _**BEWARE** that you should not use `next` after this method has been used!_
 
 #### `count_fetched`
 
-    $count = $itor->count_fetched;
+    $count = $itor->count_fetched();
 
 Returns the number of results fetched so far.
 
@@ -1106,7 +1116,7 @@ returned.
 
 #### `first`
 
-    $result = $itor->first;
+    $result = $itor->first();
 
 Returns the first result in the result set, or `undef` if there were no
 results.
@@ -1121,7 +1131,7 @@ The result of the statement's execution will be returned.
 
 #### `iterate`
 
-    $itor_or_undef = $itor->iterate
+    $itor_or_undef = $itor->iterate()
     $itor_or_undef = $itor->iterate(@bind_values)
     $itor_or_undef = $itor->iterate(@transforms)
     $itor_or_undef = $itor->iterate(@bind_values, @transforms)
@@ -1143,7 +1153,7 @@ executed, otherwise the method returns `undef`.
 
 #### `last`
 
-    $result = $itor->last;
+    $result = $itor->last();
 
 Returns the last result in the result set.
 
@@ -1157,7 +1167,7 @@ _**BEWARE** that you should not use `next` after this method has been used!_
 
 #### `last_fetched`
 
-    $result = $itor->last_fetched;
+    $result = $itor->last_fetched();
 
 Returns the last result fetched.
 
@@ -1169,7 +1179,7 @@ always cached. The cached value is returned.
 
 #### `next`
 
-    $result = $itor->next;
+    $result = $itor->next();
 
 Returns the next result in the result set.
 
@@ -1190,27 +1200,34 @@ Alias (see `single`).
 
 #### `remaining`
 
-    @results = $itor->remaining;
+    @results = $itor->remaining();
     $results_or_undef = $itor->remaining;
 
 #### `reset`
 
-    $itor = $itor->reset;
+    $itor = $itor->reset();
+    $itor = $itor->reset($slice);
+    $itor = $itor->reset($cache_size);
+    $itor = $itor->reset($slice, $cache_size);
+    $itor = $itor->reset($cache_size, $slice);
 
-Executes the iterator's underlying statement handle object and resets any
-internal state.
+Executes the iterator's underlying statement handle object with the current
+bind-values, resetting any internal state.
 
-A reference to the iterator is always returned.
+This method may also be used to set the statement cache size and/or slicing
+strategy in the same call.
+
+A reference to the iterator is returned, regardless of execution outcome.
 
 #### `rows`
 
-    $rows = $itor->rows;
+    $rows = $itor->rows();
 
 Returns the number of rows aftected by non-SELECT statements.
 
 #### `single` (or `one`)
 
-    $result = $itor->single;
+    $result = $itor->single();
 
 Returns the first result in the result set, or `undef` if there were no
 results.
@@ -1229,7 +1246,7 @@ The warning is a reminder to include a LIMIT 1 constraint in the statement.
 
 #### `slice`
 
-    $slice = $itor->slice;
+    $slice = $itor->slice();
     $itor = $itor->slice($slice);
 
 May be used to determine how the iterator slices the results it fetches
@@ -1244,9 +1261,15 @@ The following package global defines the default setting:
 
 #### `slice_buffer_size`
 
-    ($slice, $buffer_size) = $itor->slice_buffer_size;
-    $itor = $itor->slice_buffer_size($slice, $buffer_size);
-    $itor = $itor->slice_buffer_size($buffer_size, $slice);
+Deprecated alias for `slice_cache_size`.
+
+#### `slice_cache_size`
+
+    ($slice, $cache_size) = $itor->slice_cache_size();
+    $itor = $itor->slice_cache_size($slice);
+    $itor = $itor->slice_cache_size($cache_size);
+    $itor = $itor->slice_cache_size($slice, $cache_size);
+    $itor = $itor->slice_cache_size($cache_size, $slice);
 
 May be used to determine (a) how the iterator slices the results it fetches
 from the database, and (b) how many results it makes available to fetch
@@ -1260,7 +1283,7 @@ properties is returned:
     The how the iterator slices results fetched from the database. This may be an
     ARRAYREF or a HASHREF.
 
-- `$buffer_size`
+- `$cache_size`
 
     The current size of the results buffer. That is, the current maximum number of
     results that are processed and ready to fetch after each trip to the database.
@@ -1280,12 +1303,12 @@ at that value, preventing the kind of automatic adjustment described above.
 The following package globals define the relevant default settings:
 
     $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
-    $DBIx::Squirrel::Iterator::DEFAULT_BUFFER_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::Iterator::BUFFER_SIZE_LIMIT   = 64;  # maximum buffer-size
+    $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
 #### `start`
 
-    $rv_or_undef = $itor->start
+    $rv_or_undef = $itor->start()
     $rv_or_undef = $itor->start(@bind_values)
     $rv_or_undef = $itor->start(@transforms)
     $rv_or_undef = $itor->start(@bind_values, @transforms)
@@ -1304,9 +1327,82 @@ the iterator at the time of construction are used.
 
 #### `sth`
 
-    $sth = $itor->sth;
+    $sth = $itor->sth();
 
 Returns the iterator's underlying statement handle object.
+
+### Iterator Exports
+
+The `DBIx::Squirrel::Iterator` package exports a number of subroutines that
+may be used within the stages of a transformation pipeline. These provide
+information about the current transformation context.
+
+#### `database`
+
+    my $dbh = database();
+
+Returns a reference to the current iterator's database handle object.
+
+#### `iterator`
+
+    my $itor = iterator();
+
+Returns a reference to the current iterator.
+
+#### `result`
+
+    my $result = result();
+
+Returns the result as it was when it entered the _current stage_ of the
+transformation pipeline.
+
+There are alternative ways to get at this value without having to pollute
+your namespace, although `result` is less cryptic:
+
+- It is the first element of the `@_` list. Use `$_[0]`, or `shift` the
+value from the start of the list.
+- It is also presented in the ephemeral `$_` variable. It should be consumed
+quickly, before it changes.
+
+#### `result_current`
+
+An alias (see `result`).
+
+#### `result_first`
+
+    my $result = result_first();
+
+Returns the first result fetched.
+
+#### `result_prev`
+
+    my $result = result_previous();
+
+Returns the previous result, if there was one.
+
+#### `result_previous`
+
+An alias (see `result_prev`).
+
+#### `result_offset`
+
+    my $offset = result_offset();
+
+Returns the result's zero-based offset, effectively the number of results
+fetched, less one.
+
+#### `result_original`
+
+    my $result = result_original();
+
+Returns the result as it was when it entered the _first stage_ of the current
+transformation pipeline.
+
+#### `statement`
+
+    my $sth = statement();
+
+Returns a reference to the current iterator's statement handle object.
 
 # COPYRIGHT AND LICENSE
 
