@@ -2,13 +2,20 @@ Revision history for DBIx-Squirrel
 
 1.6.0 TBA (Stable Release)
 
-1.5.1 2024-08-28 23:54 (Developer Release)
+1.5 2024-08-28 23:54 (Developer Release)
 
--   Added GitHub workflow to run build tests for a number of Perl
-    versions I’ve had problems with in the past. Would be good to know
-    these are ok before uploading to the CPAN.
--   Added comment to tests explaining why we have to use
-    Test::More::UTF8.
+-   1.5.2
+    -   Requirements:
+        -   (R1) Allow database entity helpers to be assigned values
+            more than once.
+-   1.5.1
+    -   Fixed issue affecting Perl 5.10.1 build checks on GitHub runner
+        that wasn’t able to install Test::MockModule due to two of its
+        own dependencies having build issues. Worked around by dropping
+        Test::MockModule as a build requirement and mock-patching the
+        required method manually.
+    -   Added comment to tests scripts explaining why we now have to use
+        the Test::More::UTF8 package.
 
 1.4.2 2024-08-28 23:21 (Stable Release)
 

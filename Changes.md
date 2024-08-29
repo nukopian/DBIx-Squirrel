@@ -2,13 +2,22 @@
 
 ### 1.6.0 TBA              (Stable Release)
 
-### 1.5.1 2024-08-28 23:54 (Developer Release)
--   Added GitHub workflow to run build tests for a number of Perl versions
-    I've had problems with in the past. Would be good to know these are ok
-    before uploading to the CPAN.
--   Added comment to tests explaining why we have to use Test::More::UTF8.
+### 1.5   2024-08-28 23:54 (Developer Release)
+-   1.5.2
+    -   Requirements:
+        - (F1)  Allow database entity helpers to be assigned values more
+                than once.
+        - (T1)  Improve DBIx::Squirrel::st test coverage from 63.3 pc.
+-   1.5.1
+    -   Fixed issue affecting Perl 5.10.1 build checks on GitHub runner
+        that wasn't able to install Test::MockModule due to two of its
+        own dependencies having build issues. Worked around by dropping
+        Test::MockModule as a build requirement and mock-patching the
+        required method manually.
+    -   Added comment to tests scripts explaining why we now have to use
+        the Test::More::UTF8 package.
 
-### 1.4.2 2024-08-28 23:21 (Stable Release)
+### 1.4.2   2024-08-28 23:21 (Stable Release)
 -   **NEW**
     -   Non-breaking changes the `cache_size_slice` and `slice_cache_size`
         methods, in which the second argument is optional. This was done to
@@ -60,10 +69,10 @@ Total                          72.5   43.7   55.0   84.4    0.0  100.0   64.0
 ### 1.4.1_1 2024-08-28 Developer Release
 -   Testing release, trying to mop-up last remaining red blobs on CPANTs.
 
-### 1.4.1 2024-08-28 TRIAL Release
+### 1.4.1   2024-08-28 TRIAL Release
 -   Testing release, trying to mop-up last remaining red blobs on CPANTs.
 
-### 1.4.0 2024-08-27 21:00
+### 1.4.0   2024-08-27 21:00
 -   **BREAKING CHANGES**
     -   Packages not subclassing DBI packages have now been renamed. The names
         are longer than the uninformative two-character names originlly given.
@@ -106,7 +115,7 @@ Total                          75.6   46.4   60.0   86.6    0.0  100.0   66.9
 ---------------------------- ------ ------ ------ ------ ------ ------ ------
 ```
 
-### 1.3.6 2024-08-26 23:00
+### 1.3.6   2024-08-26 23:00
 -   **REFACTOR / FIX**
     -   The argument partitioning code that isolates transformations from
         bind-values has been re-written to (hopefully) avoid some of the
@@ -128,7 +137,7 @@ Total                          75.6   46.4   60.0   86.6    0.0  100.0   66.9
     -   Monitoring test coverage now. More tests to come in forthcoming
         releases.
 
-### 1.3.5 2024-08-26 07:40
+### 1.3.5   2024-08-26 07:40
 -   Fixed a problem recently introduced into how transformation pipelines and
     arguments are partitioned.
 -   Fixed the iterator execute method. It used the bleat about missing bind-
@@ -137,17 +146,17 @@ Total                          75.6   46.4   60.0   86.6    0.0  100.0   66.9
     bind-values just effectively resets the iterator. 
 -   Fixed the results code that was breaking due to a missing `no strict qw/refs/`.
 
-### 1.3.4 2024-08-25 18:30
+### 1.3.4   2024-08-25 18:30
 -   Some refactoring to improve robustness.
 
-### 1.3.3 2024-08-25 18:15
+### 1.3.3   2024-08-25 18:15
 -   Typos fixed and additions made to POD.
 -   Tests no longer jump through hoops to open the SQLite test database in read-only mode. I only tried that
     to see if it would have a positive effect on tests segfaulting. I have since simplified testing a great
     deal since the rewrites, so pushing out this release to see if it mops-up a couple of red boxes on
     CPANTs.
 
-### 1.3.2 2024-08-25 16:45
+### 1.3.2   2024-08-25 16:45
 -   Fixed typos.
 -   General improvements and optimisations.
 -   Strawberry Perl 5.10.1.1 on MSWin32-x86-multi-thread can't seem to import DBD::SQLite::Constants ':file_open'
@@ -156,7 +165,7 @@ Total                          75.6   46.4   60.0   86.6    0.0  100.0   66.9
     error. Added "use diagnostics" pragma to all test code in an attempt to coax more useful information out.
 -   Fixed broken iterator "buffer_size" code - manually set sizes weren't persistent.
 
-### 1.3.1 2024-08-24 14:10
+### 1.3.1   2024-08-24 14:10
 -   General code improvements.
 -   Removed unnecessary imports.
 -   Removed call to no longer extant iterator method from &DBIx::Squirrel::it::DESTROY.
@@ -177,13 +186,13 @@ Total                          75.6   46.4   60.0   86.6    0.0  100.0   66.9
     red issues on the CPANTS matrix to go green, hence the expedited release. POD gaps will
     be filled in future point releases.
 
-### 1.3.0 2024-08-23 21:00
+### 1.3.0   2024-08-23 21:00
 -   Ground-up rewrite of iterators and result-set code.
 -   Ground-up rewrite and simplification of test code.
 -   More documentation added. This stuff is never finished, and I'll be adding more in future!
 -   A lot of refactoring and tidying up completed.
 
-### 1.2.11 2024-08-18 13:15
+### 1.2.11  2024-08-18 13:15
 -   Fixed typos.
 -   Did some internal refactoring.
 -   Updated t/lib/T/Constants.pm to ensure that SQLite database connections are created with
@@ -193,7 +202,7 @@ Total                          75.6   46.4   60.0   86.6    0.0  100.0   66.9
     to replicate this build environment exactly, so I'm hoping this fixes the issue. We shall
     see. Thanks to Chris Williams (BINGOS) for the original report.
 
-### 1.2.10 2024-08-17 17:35
+### 1.2.10  2024-08-17 17:35
 -   Fixed minor typos in POD.
 -   Did some internal refactoring.
 -   Updated dist.ini: no longer using Dist::Zilla Readme plugin to produce README.
@@ -201,16 +210,16 @@ Total                          75.6   46.4   60.0   86.6    0.0  100.0   66.9
     handing-off to &DBI::st::bind_value.
 -   No longer quoting hash keys matching /^\w+$/.
 
-### 1.2.9 2024-08-17 22:50
+### 1.2.9   2024-08-17 22:50
 -   Reorganised the examples folder and renamed an example script.
 -   Added some canned transforms.
 -   Added new example script (examples/transformations/02.pl).
 -   Added DBD::SQLite to test dependencies, with thanks to Slaven Rezić (SREZIC) for the alert.
 
-### 1.2.8 2024-08-16 18:45
+### 1.2.8   2024-08-16 18:45
 -   Fixed some documentation issues.
 -   Removed a redundant line from sample script (examples/transformations_1.pl).
 
-### 1.2.7 2024-08-16 18:00
+### 1.2.7   2024-08-16 18:00
 -   First version, released on an unsuspecting world.
 
