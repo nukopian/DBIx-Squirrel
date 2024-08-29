@@ -2,12 +2,17 @@
 
 ### 1.6.0 TBA              (Stable Release)
 
-### 1.5   2024-08-28 23:54 (Developer Release)
--   1.5.2
-    -   Requirements:
-        - (F1)  Allow database entity helpers to be assigned values more
-                than once.
-        - (T1)  Improve DBIx::Squirrel::st test coverage from 63.3 pc.
+### 1.5 2024-08-28 23:54 (Developer Release)
+-   1.5.2   Goals:
+    - F1.   Allow database entity helpers to be assigned values more
+            than once.
+    - T1.   Increase DBIx::Squirrel::st test coverage appreciably from
+            63.3 pc.
+    - D1.   Improve the SYNOPSIS, which is too long and wastes far too
+            much space covering activities that can be done with the
+            DBI.
+    - D2.   Improve the DESCRIPTION, which is too short and does a
+            poor job of marketing the package.
 -   1.5.1
     -   Fixed issue affecting Perl 5.10.1 build checks on GitHub runner
         that wasn't able to install Test::MockModule due to two of its
@@ -17,7 +22,7 @@
     -   Added comment to tests scripts explaining why we now have to use
         the Test::More::UTF8 package.
 
-### 1.4.2   2024-08-28 23:21 (Stable Release)
+### 1.4.2 2024-08-28 23:21 (Stable Release)
 -   **NEW**
     -   Non-breaking changes the `cache_size_slice` and `slice_cache_size`
         methods, in which the second argument is optional. This was done to
