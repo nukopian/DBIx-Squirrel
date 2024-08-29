@@ -1376,7 +1376,7 @@ Returns the first result fetched.
 
 #### `result_prev`
 
-    my $result = result_previous();
+    my $result = result_prev();
 
 Returns the previous result, if there was one.
 
