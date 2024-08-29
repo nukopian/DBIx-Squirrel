@@ -28,6 +28,7 @@ on 'test' => sub {
   requires "Test::MockModule" => "0";
   requires "Test::More" => "0";
   requires "Test::More::UTF8" => "0";
+  requires "Test::Simple" => "1.302201";
   requires "Test::Warn" => "0";
   requires "Test::Warnings" => "0";
   requires "lib" => "0";
