@@ -2,8 +2,8 @@
 
 ### 1.6.0 TBA              (Stable Release)
 
-### 1.5 2024-08-28 23:54 (Developer Release)
--   1.5.2   Goals:
+### 1.5.2 2024-08-28 23:54 (Developer Release)
+-   **GOALS FOR THIS RELEASE**
     - F1.   Allow database entity helpers to be assigned values more
             than once.
     - T1.   Increase DBIx::Squirrel::st test coverage appreciably from
