@@ -1,6 +1,14 @@
 ## Revision history for DBIx-Squirrel
 
-### 1.4.2 2024-08-28 23:21
+### 1.6.0 TBA              (Stable Release)
+
+### 1.5.1 2024-08-28 23:54 (Developer Release)
+-   Added GitHub workflow to run build tests for a number of Perl versions
+    I've had problems with in the past. Would be good to know these are ok
+    before uploading to the CPAN.
+-   Added comment to tests explaining why we have to use Test::More::UTF8.
+
+### 1.4.2 2024-08-28 23:21 (Stable Release)
 -   **NEW**
     -   Non-breaking changes the `cache_size_slice` and `slice_cache_size`
         methods, in which the second argument is optional. This was done to

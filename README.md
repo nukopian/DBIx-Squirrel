@@ -4,7 +4,7 @@ DBIx::Squirrel - A `DBI` extension
 
 # VERSION
 
-version 1.4.2
+version 1.5.1
 
 # SYNOPSIS
 
@@ -1376,7 +1376,7 @@ Returns the first result fetched.
 
 #### `result_prev`
 
-    my $result = result_previous();
+    my $result = result_prev();
 
 Returns the previous result, if there was one.
 
