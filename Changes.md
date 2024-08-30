@@ -4,14 +4,14 @@
 
 ### 1.5.2 2024-08-28 23:54 (Developer Release)
 -   **GOALS FOR THIS RELEASE**
-    - F1.   Allow database entity helpers to be assigned values more
+    - F1    Allow database entity helpers to be assigned values more
             than once.
-    - T1.   Increase DBIx::Squirrel::st test coverage appreciably from
+    - T2    Increase DBIx::Squirrel::st test coverage appreciably from
             63.3 pc.
-    - D1.   Improve the SYNOPSIS, which is too long and wastes far too
+    - D3    Improve the SYNOPSIS, which is too long and wastes far too
             much space covering activities that can be done with the
             DBI.
-    - D2.   Improve the DESCRIPTION, which is too short and does a
+    - D4    Improve the DESCRIPTION, which is too short and does a
             poor job of marketing the package.
 -   1.5.1
     -   Fixed issue affecting Perl 5.10.1 build checks on GitHub runner
