@@ -1,3 +1,3 @@
 <div align="center">
-![repository-social-card.png]
+![resources/images/repository-social-card.png]
 </div>
