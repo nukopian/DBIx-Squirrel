@@ -20,10 +20,11 @@ BEGIN {
         result
         result_current
         result_first
-        result_prev
-        result_previous
+        result_number
         result_offset
         result_original
+        result_prev
+        result_previous
         result_transform
         statement
         /;
@@ -59,9 +60,10 @@ sub new {
     my($transforms, $sth, @bind_values) = args_partition(@_);
     throw E_BAD_STH unless UNIVERSAL::isa($sth, 'DBIx::Squirrel::st');
     my $self = bless {}, $class;
-    $self->_private_state({sth                 => $sth,
-                           bind_values_initial => [@bind_values],
-                           transforms_initial  => $transforms,
+    $self->_private_state({
+        sth                 => $sth,
+        bind_values_initial => [@bind_values],
+        transforms_initial  => $transforms,
     });
     return $self;
 }
@@ -178,8 +180,17 @@ sub _private_state_reset {
     # scoping. Their current values can be inspected, within any stage of
     # a transformation pipeline, by importing and using the public
     # subroutines in this lexical block.
-    our($_DATABASE, $_ITERATOR, $_RESULT, $_RESULT_FIRST, $_RESULT_OFFSET,
-        $_RESULT_ORIGINAL, $_RESULT_PREV, $_STATEMENT,);
+    our(
+        $_DATABASE,
+        $_ITERATOR,
+        $_RESULT,
+        $_RESULT_FIRST,
+        $_RESULT_NUMBER,
+        $_RESULT_OFFSET,
+        $_RESULT_ORIGINAL,
+        $_RESULT_PREV,
+        $_STATEMENT,
+    );
 
     sub database {$_DATABASE}
 
@@ -193,15 +204,17 @@ sub _private_state_reset {
 
     sub result_first {$_RESULT_FIRST}
 
+    sub result_number {$_RESULT_NUMBER}
+
+    sub result_offset {$_RESULT_OFFSET}
+
+    sub result_original {$_RESULT_ORIGINAL}
+
     sub result_prev {$_RESULT_PREV}
 
     BEGIN {
         *result_previous = subname(result_previous => \&result_prev);
     }
-
-    sub result_offset {$_RESULT_OFFSET}
-
-    sub result_original {$_RESULT_ORIGINAL}
 
     sub statement {$_STATEMENT}
 
@@ -267,6 +280,7 @@ sub _private_state_reset {
                 local($_DATABASE)      = $self->sth->{Database};
                 local($_ITERATOR)      = $self;
                 local($_RESULT_FIRST)  = $attr->{results_first};
+                local($_RESULT_NUMBER) = $attr->{results_count} + 1;
                 local($_RESULT_OFFSET) = $attr->{results_count};
                 local($_RESULT_PREV)   = $attr->{results_last};
                 local($_STATEMENT)     = $self->sth;
