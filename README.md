@@ -18,7 +18,7 @@ whatsoever.
 
 As with the DBI, database queries are crafted with SQL, keeping you close
 to the data, while processing result-sets can be done cleanly and efficiently
-with iterators and simple yet powerful transformations. 
+with DBIx-Squirrel's iterators and transformations. 
 
 Pretty much everything you could do with the DBI can be done in exactly
 the same fashion with DBIx-Squirrel. Its enhancements are progressive
