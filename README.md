@@ -12,19 +12,19 @@
 ## Introduction
 
 Using DBIx-Squirrel is just like using the DBI, but with a few very nice
-upgrades. This DBI extension will get you to a sweet-spot between classic
-DBI and DBIx-Class programming, with practically no learning curve.
+upgrades. It will get you to a sweet-spot between classic DBI and
+DBIx-Class programming, with practically no learning curve whatsoever.
 
 As with the DBI, database queries are crafted with SQL, keeping you close
-to the data, while results can be processed cleanly and efficiently with
-DBIx-Squirrel's simple yet powerful transformation pipelines.
+to the data, while processing result-sets can be done cleanly and efficiently
+with DBIx-Squirrel's simple yet powerful transformation pipelines. 
 
 Pretty much everything you could do with the DBI can be done the exact
 same way with this package. DBIx-Squirrel's enhancements are progressive
 in nature and you aren't forced to use them to get things done.
 
 While this package won't set the world on fire, it will help those who
-need to hack together data-processing scripts quickly and with ease.
+need to hack together data-processing scripts quickly, and with ease.
 
 ### An example
 
@@ -34,9 +34,7 @@ use DBIx::Squirrel;
 $dbh = DBIx::Squirrel->connect("dbi:SQLite:dbname=./t/data/chinook.db", "", "");
 
 $artist_names = $dbh->results(
-    "SELECT Name FROM artists ORDER BY Name" => sub {
-        $_->Name;
-    }
+    "SELECT Name FROM artists ORDER BY Name" => sub {$_->Name}
 );
 
 print "$_\n" while $artist_names->next();
