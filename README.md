@@ -1,1 +1,1 @@
-![DBIx-Sqirrel](./resources/images/repository-social-card.png?raw=True)
+![DBIx-Sqirrel](./resources/images/ekorn.png?raw=True)
