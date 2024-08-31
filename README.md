@@ -9,6 +9,8 @@
     </p>
 </div>
 
+## Introduction
+
 Using DBIx-Squirrel is just like using the DBI, but with a few very nice
 upgrades. This DBI extension will you to a sweet-spot, somewhere between
 classic DBI and DBIx-Class, with practically no learning curve.
@@ -23,6 +25,8 @@ in nature and you aren't forced to use them to get things done.
 
 While this package won't set the world on fire, it will help those who
 need to hack together data-processing scripts quickly and with ease.
+
+### An example
 
 ```perl
 use DBIx::Squirrel;
