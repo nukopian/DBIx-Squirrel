@@ -10,11 +10,11 @@
 </div>
 
 Using DBIx-Squirrel is just like using the DBI, but with a few very nice
-upgrades. This DBU extension gets you to a sweet spot somewhere between
-classic DBI and DBIx-Class with practically no learning curve.
+upgrades. This DBI extension will you to a sweet-spot, somewhere between
+classic DBI and DBIx-Class, with practically no learning curve.
 
 As with the DBI, database queries are crafted with SQL, keeping you close
-to the data, while results may be processed cleanly and efficiently with
+to the data, while results can be processed cleanly and efficiently with
 DBIx-Squirrel's simple yet powerful transformation pipelines.
 
 This package won't set the world on fire, but it will help those who need
