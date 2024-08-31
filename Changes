@@ -13,8 +13,8 @@ Revision history for DBIx-Squirrel
         much space covering activities that can be done with the DBI.
     -   D4 Improve the DESCRIPTION, which is too short and does a poor
         job of marketing the package.
-    -   New iterator export "result_number", which is a 1-based alter-
-        native to "result_offset".
+    -   ADDED new iterator export "result_number", which is a 1-based
+        alternative to "result_offset".
 -   1.5.1
     -   Fixed issue affecting Perl 5.10.1 build checks on GitHub runner
         that wasn’t able to install Test::MockModule due to two of its
