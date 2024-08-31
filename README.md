@@ -5,9 +5,13 @@
     <img src="https://img.shields.io/github/release-date/nukopian/DBIx-Squirrel">
     <img src="https://img.shields.io/cpan/l/DBIx-Squirrel">
     <p>
-        <em>The little Perl DBI extension that makes database work a lot simpler.</em>
+        <em>A little Perl DBI extension that makes database work a lot simpler.</em>
     </p>
 </div>
+
+Using DBIx-Squirrel is just like using the DBI, but with a few very nice
+upgrades. It gets you to a sweet spot somewhere between classic DBI and
+DBIx-Class with minimal, if any, learning curve.
 
 ```perl
 use DBIx::Squirrel;
