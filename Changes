@@ -1,8 +1,8 @@
 Revision history for DBIx-Squirrel
 
-1.6.0 TBA (Stable Release)
+1.6.0 2024-09-?? ??:?? Next Stable Release
 
-1.5.2 2024-08-28 23:54 (Developer Release)
+1.5.2 2024-08-28 23:54 Developer Release (Work In Progress)
 
 -   GOALS FOR THIS RELEASE
     -   F1 Allow database entity helpers to be assigned values more than
