@@ -17,7 +17,7 @@ DBIx-Class programming, with practically no learning curve whatsoever.
 
 As with the DBI, database queries are crafted with SQL, keeping you close
 to the data, while processing result-sets can be done cleanly and efficiently
-with DBIx-Squirrel's simple yet powerful transformation pipelines. 
+with DBIx-Squirrel's iterators and simple yet powerful transformations. 
 
 Pretty much everything you could do with the DBI can be done the exact
 same way with this package. DBIx-Squirrel's enhancements are progressive
