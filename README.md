@@ -29,6 +29,10 @@ need to hack together data-processing scripts quickly, and with ease.
 
 **Example 1**
 
+We will print all artist names, sorted alphabetically by name. As we iterate over the results, each result is transformed into shape we want, namely a string containing the artist's name.
+
+It's elegant and clean. We aren't getting an artist object back and then having to ferret about for the name. We get back what we need, and only what we need.
+
 ```perl
 use DBIx::Squirrel;
 
@@ -38,12 +42,16 @@ $artist_names = $dbh->results(
     'SELECT Name FROM artists ORDER BY Name' => sub {$_->Name}
 );
 
-print "$_\n" while $artist_names->next();
+print "$_\n" while defined($artist_names->next());
 
 $dbh->disconnect();
 ```
 
 **Example 2**
+
+Here, we just want the artist names, sorted alphabetically and stored in array. Just to ensure that we're getting what we expect, we insert a new transformation step, before the final step, to print out the artist id and name.
+
+Again, simple and elegant. All of the processing is logically kept with the query, while we get back only what we need. Our calling scope isn't littered with the detritus of temporary state.
 
 ```perl
 use DBIx::Squirrel;
