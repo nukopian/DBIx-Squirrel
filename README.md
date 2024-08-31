@@ -17,8 +17,8 @@ As with the DBI, database queries are crafted with SQL, keeping you close
 to the data, while results may be processed cleanly and efficiently with
 DBIx-Squirrel's simple yet powerful transformation pipelines.
 
-This package won't set the world on fire, but it is aimed at those who need
-to hack together data-processing scripts in a hurry and with ease.
+This package won't set the world on fire, but it will help those who need
+to hack together data-processing scripts quickly and with relative ease.
 
 ```perl
 use DBIx::Squirrel;
