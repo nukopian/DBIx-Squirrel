@@ -18,11 +18,11 @@ whatsoever.
 
 As with the DBI, database queries are crafted with SQL, keeping you close
 to the data, while processing result-sets can be done cleanly and efficiently
-with DBIx-Squirrel's iterators and simple yet powerful transformations. 
+with iterators and simple yet powerful transformations. 
 
-Pretty much everything you could do with the DBI can be done the exact
-same way with this package. DBIx-Squirrel's enhancements are progressive
-in nature and you aren't forced to use them to get things done.
+Pretty much everything you could do with the DBI can be done in exactly
+the same fashion with DBIx-Squirrel. Its enhancements are progressive
+in nature, and you are not forced to use them to get things done.
 
 While this package won't set the world on fire, it will help those who
 need to hack together data-processing scripts quickly, and with ease.
