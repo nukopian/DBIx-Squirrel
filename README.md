@@ -32,10 +32,10 @@ need to hack together data-processing scripts quickly, and with ease.
 ```perl
 use DBIx::Squirrel;
 
-$dbh = DBIx::Squirrel->connect("dbi:SQLite:dbname=./t/data/chinook.db", "", "");
+$dbh = DBIx::Squirrel->connect('dbi:SQLite:dbname=./t/data/chinook.db', '', '');
 
 $artist_names = $dbh->results(
-    "SELECT Name FROM artists ORDER BY Name" => sub {$_->Name}
+    'SELECT Name FROM artists ORDER BY Name' => sub {$_->Name}
 );
 
 print "$_\n" while $artist_names->next();
