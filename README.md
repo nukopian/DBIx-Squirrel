@@ -27,7 +27,7 @@ in nature, and you are not forced to use them to get things done.
 While this package won't set the world on fire, it will help those who
 need to hack together data-processing scripts quickly, and with ease.
 
-### An example
+**An example**
 
 ```perl
 use DBIx::Squirrel;
