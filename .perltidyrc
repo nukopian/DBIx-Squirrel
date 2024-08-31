@@ -7,9 +7,6 @@
 -vmll               # Variable maximum line length
 -i=4                # Indent level is 4 cols
 -ci=4               # Continuation indent is  cols
--lp
--vt=2               # Medium vertical tightness
--vtc=0              # Minimum vertical closing tightness
 -cti=0              # No extra indentation for closing brackets
 -cab=1              # Comma arrow breakpoints 1
 -mft=1              # Maximum fields per tabel 1
