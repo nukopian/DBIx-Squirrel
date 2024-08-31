@@ -27,7 +27,7 @@ in nature, and you are not forced to use them to get things done.
 While this package won't set the world on fire, it will help those who
 need to hack together data-processing scripts quickly, and with ease.
 
-**An example**
+**Example 1**
 
 ```perl
 use DBIx::Squirrel;
@@ -39,6 +39,28 @@ $artist_names = $dbh->results(
 );
 
 print "$_\n" while $artist_names->next();
+
+$dbh->disconnect();
+```
+
+**Example 2**
+
+```perl
+use DBIx::Squirrel;
+
+$dbh = DBIx::Squirrel->connect('dbi:SQLite:dbname=./t/data/chinook.db', '', '');
+
+$artist_names = $dbh->results(
+    'SELECT * FROM artists ORDER BY ArtistId' => sub {
+        my $artist = $_;
+        print $artist->ArtistId, '. ', $artist->Name, "\n";
+        $artist;
+    } => sub {
+        $_->Name;
+    }
+);
+
+@artist_names = $artist_names->all();
 
 $dbh->disconnect();
 ```
