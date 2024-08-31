@@ -1,1 +1,1 @@
-[![DBIx-Sqirrel](./resources/images/ekorn.png?raw=True)[][]]
+<img src="./resources/images/ekorn.png">
