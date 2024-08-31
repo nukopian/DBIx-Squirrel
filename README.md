@@ -7,7 +7,7 @@
         <img src="https://img.shields.io/cpan/l/DBIx-Squirrel">
     </h1>
     <p>
-        <em>A little Perl DBI extension that makes working with databases a lot easier.</em>
+        <strong>A little Perl DBI extension that makes working with databases a lot easier.</strong>
     </p>
 </div>
 
