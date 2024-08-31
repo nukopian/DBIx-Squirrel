@@ -10,7 +10,7 @@ $dbh = DBIx::Squirrel->connect(
 );
 
 $artist_names = $dbh->results(
-    "SELECT * FROM artists ORDER BY Name" => sub {
+    "SELECT Name FROM artists ORDER BY Name" => sub {
         $_->Name;
     }
 );
