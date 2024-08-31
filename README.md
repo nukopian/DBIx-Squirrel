@@ -5,8 +5,8 @@
         <img src="https://img.shields.io/cpan/v/DBIx-Squirrel">
         <img src="https://img.shields.io/github/release-date/nukopian/DBIx-Squirrel">
         <img src="https://img.shields.io/cpan/l/DBIx-Squirrel">
-        <p><strong>A little Perl DBI extension that makes working with databases a lot easier.</strong></p>
     </h1>
+    <p><strong>A little Perl DBI extension that makes working with databases a lot easier.</strong></p>
 </div>
 
 ## Introduction
