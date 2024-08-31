@@ -17,22 +17,24 @@ use DBIx::Squirrel::Utils       qw/throw/;
 use namespace::clean;
 
 BEGIN {
-    @DBIx::Squirrel::ISA                          = qw/DBI/;
-    $DBIx::Squirrel::VERSION                      = "1.005_002";
-    $DBIx::Squirrel::VERSION                      = eval($DBIx::Squirrel::VERSION);
-    @DBIx::Squirrel::EXPORT_OK                    = @DBI::EXPORT_OK;
-    %DBIx::Squirrel::EXPORT_TAGS                  = %DBI::EXPORT_TAGS;
-    *DBIx::Squirrel::err                          = *DBI::err;
-    *DBIx::Squirrel::errstr                       = *DBI::errstr;
-    *DBIx::Squirrel::rows                         = *DBI::rows;
-    *DBIx::Squirrel::lasth                        = *DBI::lasth;
-    *DBIx::Squirrel::state                        = *DBI::state;
-    *DBIx::Squirrel::connect                      = *DBIx::Squirrel::dr::connect;
-    *DBIx::Squirrel::connect_cached               = *DBIx::Squirrel::dr::connect_cached;
-    *DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE = *DBIx::Squirrel::st::FINISH_ACTIVE_BEFORE_EXECUTE;
-    *DBIx::Squirrel::DEFAULT_SLICE                = *DBIx::Squirrel::Iterator::DEFAULT_SLICE;
-    *DBIx::Squirrel::DEFAULT_CACHE_SIZE           = *DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE;
-    *DBIx::Squirrel::CACHE_SIZE_LIMIT             = *DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT;
+    @DBIx::Squirrel::ISA            = qw/DBI/;
+    $DBIx::Squirrel::VERSION        = "1.005_002";
+    $DBIx::Squirrel::VERSION        = eval($DBIx::Squirrel::VERSION);
+    @DBIx::Squirrel::EXPORT_OK      = @DBI::EXPORT_OK;
+    %DBIx::Squirrel::EXPORT_TAGS    = %DBI::EXPORT_TAGS;
+    *DBIx::Squirrel::err            = *DBI::err;
+    *DBIx::Squirrel::errstr         = *DBI::errstr;
+    *DBIx::Squirrel::rows           = *DBI::rows;
+    *DBIx::Squirrel::lasth          = *DBI::lasth;
+    *DBIx::Squirrel::state          = *DBI::state;
+    *DBIx::Squirrel::connect        = *DBIx::Squirrel::dr::connect;
+    *DBIx::Squirrel::connect_cached = *DBIx::Squirrel::dr::connect_cached;
+    *DBIx::Squirrel::FINISH_ACTIVE_BEFORE_EXECUTE
+        = *DBIx::Squirrel::st::FINISH_ACTIVE_BEFORE_EXECUTE;
+    *DBIx::Squirrel::DEFAULT_SLICE = *DBIx::Squirrel::Iterator::DEFAULT_SLICE;
+    *DBIx::Squirrel::DEFAULT_CACHE_SIZE
+        = *DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE;
+    *DBIx::Squirrel::CACHE_SIZE_LIMIT = *DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT;
 }
 
 use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
@@ -77,9 +79,9 @@ sub import {
             unless (defined(${$symbol})) {
                 if (@_) {
                     throw E_BAD_ENT_BIND
-                      unless UNIVERSAL::isa($_[0], 'DBI::db')
-                      or UNIVERSAL::isa($_[0], 'DBI::st')
-                      or UNIVERSAL::isa($_[0], 'DBIx::Squirrel::Iterator');
+                        unless UNIVERSAL::isa($_[0], 'DBI::db')
+                        or UNIVERSAL::isa($_[0], 'DBI::st')
+                        or UNIVERSAL::isa($_[0], 'DBIx::Squirrel::Iterator');
                     ${$symbol} = shift;
                     return ${$symbol};
                 }
@@ -119,7 +121,7 @@ sub import {
         };
         *{$symbol} = subname($name => $helper);
         *{$caller . '::' . $name} = subname($caller . '::' . $name => \&{$symbol})
-          unless defined(&{$caller . '::' . $name});
+            unless defined(&{$caller . '::' . $name});
     }
     if (@{$dbi}) {
         DBI->import(@{$dbi});
