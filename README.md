@@ -1,9 +1,11 @@
 <div align="center">
     <img src="./resources/images/ekorn.png" width="128">
-    <h1>DBIx-Squirrel</h1>
-    <img src="https://img.shields.io/cpan/v/DBIx-Squirrel">
-    <img src="https://img.shields.io/github/release-date/nukopian/DBIx-Squirrel">
-    <img src="https://img.shields.io/cpan/l/DBIx-Squirrel">
+    <h1>
+        DBIx-Squirrel<br>
+        <img src="https://img.shields.io/cpan/v/DBIx-Squirrel">
+        <img src="https://img.shields.io/github/release-date/nukopian/DBIx-Squirrel">
+        <img src="https://img.shields.io/cpan/l/DBIx-Squirrel">
+    </h1>
     <p>
         <em>A little Perl DBI extension that makes working with databases a lot easier.</em>
     </p>
