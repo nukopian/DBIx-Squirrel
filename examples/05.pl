@@ -2,16 +2,17 @@ use DBIx::Squirrel;
 
 $dbh = DBIx::Squirrel->connect('dbi:SQLite:dbname=./t/data/chinook.db', '', '');
 
-$artist_names = $dbh->results(
+$artists = $dbh->results(
     'SELECT * FROM artists ORDER BY ArtistId' => sub {
-        my $artist = $_;
-        print $artist->ArtistId, '. ', $artist->Name, "\n";
-        $artist;
+        my($result) = @_;
+        printf STDERR "# %3d. %s\n", $result->ArtistId, $result->Name
+            if !!$ENV{DEBUG};
+        $result;
     } => sub {
         $_->Name;
     }
 );
 
-@artist_names = $artist_names->all();
+@artists = $artists->all();
 
 $dbh->disconnect();

@@ -6,6 +6,6 @@ $artists = $dbh->results(
     'SELECT Name FROM artists ORDER BY Name' => sub {$_->Name}
 );
 
-print "$_\n" while defined($artists->next());
+print "$_\n" while $artists->next();
 
 $dbh->disconnect();
