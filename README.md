@@ -15,6 +15,7 @@
 
 - [Introduction](#introduction)
 - [Installation](#installation)
+- [POD page](docs/POD.md)
 
 
 ## Introduction
