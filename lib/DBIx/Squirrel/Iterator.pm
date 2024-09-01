@@ -390,6 +390,8 @@ sub first {
     };
 }
 
+sub is_active {!!$_[0]->_private_state->{sth}->{Active}}
+
 sub iterate {
     my $self = shift;
     return unless defined($self->start(@_));
@@ -422,6 +424,8 @@ sub next {
     }
     return do {$_ = $self->_result_fetch};
 }
+
+sub not_active {!$_[0]->_private_state->{sth}->{Active}}
 
 sub remaining {
     my $self = shift;

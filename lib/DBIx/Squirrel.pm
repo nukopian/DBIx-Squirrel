@@ -1340,6 +1340,13 @@ is fetched and cached. The cached value is returned.
 
 The result of the statement's execution will be returned.
 
+=head4 C<is_active>
+
+    $bool = $itor->is_active();
+
+Returns true (C<!!1>) if there more results to fetch, otherwise false (C<!!0>)
+is returned.
+
 =head4 C<iterate>
 
     $itor_or_undef = $itor->iterate()
@@ -1413,6 +1420,13 @@ returned in any call to C<last_fetched>, or C<last> if it was the final result
 in the result set.
 
 =back
+
+=head4 C<not_active>
+
+    $bool = $itor->not_active();
+
+Returns true (C<!!1>) if there are no more results to fetch, otherwise false
+(C<!!0>) is returned.
 
 =head4 C<one>
 
@@ -1616,6 +1630,12 @@ Returns the previous result, if there was one.
 =head4 C<result_previous>
 
 An alias (see C<result_prev>).
+
+=head4 C<result_number>
+
+    my $number = result_number();
+
+Returns the result's 1-based sequence number.
 
 =head4 C<result_offset>
 
