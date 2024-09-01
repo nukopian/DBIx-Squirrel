@@ -190,17 +190,17 @@ cpanm DBIx::Squirrel
 #### Manual installation
 
 If you prefer to install manually, or you would like to try out any of the
-example code:
+example code in a sub-shell:
 
 ```shell
 cpanm --look DBIx::Squirrel
 perl Makefile.PL
-make && make test
-make install
+make && make test && make install
 ```
 
 #### Uninstall with `App::cpanminus`
 
+In the unfortunate event that things don't work out...
 ```shell
 cpanm --uninstall DBIx::Squirrel
 ```
