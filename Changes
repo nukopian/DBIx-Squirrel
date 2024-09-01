@@ -4,7 +4,7 @@ Revision history for DBIx-Squirrel
 
 1.5.3 2024-09-01 20:52 Developer Release (Work In Progress)
 
--   GOALS FOR THIS RELEASE
+-   GOALS 1.5.3
     -   F1 Allow database entity helpers to be assigned values more than
         once.
     -   T2 Increase DBIx::Squirrel::st test coverage appreciably from
@@ -12,9 +12,9 @@ Revision history for DBIx-Squirrel
     -   D3 Improve the SYNOPSIS, which is too long and wastes far too
         much space covering activities that can be done with the DBI.
 -   1.5.2
-    -   Improved the README page, which sucked. The POD page is still
+    -   IMPROVED the README page, which sucked. The POD page is still
         there, but it is sulking in a separate document. 
-    -   Improved the DESCRIPTION, which was too short and did a poor
+    -   IMPROVED the DESCRIPTION, which was too short and did a poor
         job of marketing the package.
     -   ADDED new iterator export "result_number", which is a 1-based
         alternative to "result_offset".
