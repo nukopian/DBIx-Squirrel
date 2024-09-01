@@ -6,10 +6,16 @@
         <img src="https://img.shields.io/github/release-date/nukopian/DBIx-Squirrel">
         <img src="https://img.shields.io/cpan/l/DBIx-Squirrel">
     </h1>
-    <p>••• <a href="http://fast-matrix.cpantesters.org/?dist=DBIx-Squirrel%201.4.2">Current release status on the CPAN Testers Matrix</a> •••</p>
     <p><em>The little Perl DBI extension that makes working with databases
     a lot easier.</em><p>
+    <p>••• <a href="http://fast-matrix.cpantesters.org/?dist=DBIx-Squirrel%201.4.2">Current release status on the CPAN Testers Matrix</a> •••</p>
 </div>
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Installation](#installation)
+
 
 ## Introduction
 
@@ -166,3 +172,31 @@ A transformation is presented as a *contiguous* chain of CODEREFs at the
 end of the iterator's argument list. You can separate each stage with a
 comma (`,`), though the long-comma (`=>`) is more expressive, since it
 indicates the result's direction of travel through a transformation.
+
+## Installation
+
+### Using `App::cpanminus`
+
+#### Automated install
+
+```shell
+cpanm DBIx::Squirrel
+```
+
+#### Manual install
+
+If you prefer to install manually, or you would like to try out any of the
+example code:
+
+```shell
+cpanm --look DBIx::Squirrel
+perl Makefile.PL
+make && make test
+make install
+```
+
+#### Uninstall using `App::cpanminus`
+
+```shell
+cpanm --uninstall DBIx::Squirrel
+```
