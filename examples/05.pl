@@ -9,7 +9,7 @@ $artists = $dbh->results(
             if !!$ENV{DEBUG};
         $result;
     } => sub {
-        $_->Name;
+        return $_->Name;
     }
 );
 
