@@ -1,4 +1,4 @@
-<div align="center">
+<div id="dbix-squirrel-top" align="center">
     <a href="https://metacpan.org/dist/DBIx-Squirrel" title="Go to the distribution's page on MetaCPAN"><img src="./resources/images/ekorn.png" width="128"></a>
     <h1>
         DBIx-Squirrel<br>
@@ -8,7 +8,7 @@
     </h1>
     <p><em>The little Perl DBI extension that makes working with databases
     a lot easier.</em><p>
-    <p>••• <a href="http://fast-matrix.cpantesters.org/?dist=DBIx-Squirrel%201.4.2">Current release status on the CPAN Testers Matrix</a> •••</p>
+    <p>• <a href="http://fast-matrix.cpantesters.org/?dist=DBIx-Squirrel%201.4.2">Current release status on the CPAN Testers Matrix</a> •</p>
 </div>
 
 ## Table of Contents
@@ -110,7 +110,7 @@ littering the calling context&mdash;*no temporary state, and definitely
 no untangling of the results' innards just to get at the information
 we wanted.*
 
-[[Back to the top](#table-of-contents)]
+<div align="right">• <a href="#dbix-squirrel-top">Back to Top</a> •</div>
 
 ##### 2. `examples/05.pl`
 
@@ -175,7 +175,7 @@ end of the iterator's argument list. You can separate each stage with a
 comma (`,`), though the long-comma (`=>`) is more expressive, since it
 indicates the result's direction of travel through a transformation.
 
-[[Back to the top](#table-of-contents)]
+<div align="right">• <a href="#dbix-squirrel-top">Back to Top</a> •</div>
 
 ## Installation
 
@@ -205,4 +205,4 @@ make install
 cpanm --uninstall DBIx::Squirrel
 ```
 
-[[Back to the top](#table-of-contents)]
+<div align="right">• <a href="#dbix-squirrel-top">Back to Top</a> •</div>
