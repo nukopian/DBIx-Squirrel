@@ -110,7 +110,7 @@ littering the calling context&mdash;*no temporary state, and definitely
 no untangling of the results' innards just to get at the information
 we wanted.*
 
-<div align="right">• <a href="#dbix-squirrel-top">Back to Top</a> •</div>
+<div align="right">Go to: <a href="#dbix-squirrel-top">Top</a></div>
 
 ##### 2. `examples/05.pl`
 
@@ -175,7 +175,7 @@ end of the iterator's argument list. You can separate each stage with a
 comma (`,`), though the long-comma (`=>`) is more expressive, since it
 indicates the result's direction of travel through a transformation.
 
-<div align="right">• <a href="#dbix-squirrel-top">Back to Top</a> •</div>
+<div align="right">Go to: <a href="#dbix-squirrel-top">Top</a></div>
 
 ## Installation
 
@@ -205,4 +205,4 @@ In the unfortunate event that things don't work out...
 cpanm --uninstall DBIx::Squirrel
 ```
 
-<div align="right">• <a href="#dbix-squirrel-top">Back to Top</a> •</div>
+<div align="right">Go to: <a href="#dbix-squirrel-top">Top</a></div>
