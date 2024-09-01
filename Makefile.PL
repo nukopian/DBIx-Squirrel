@@ -7,7 +7,7 @@ use 5.010001;
 use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "A C<DBI> extension",
+  "ABSTRACT" => "The little Perl DBI extension that makes working with databases a lot easier.",
   "AUTHOR" => "Iain Campbell <cpanic\@cpan.org>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0
@@ -47,7 +47,7 @@ my %WriteMakefileArgs = (
     "Test::Warnings" => 0,
     "lib" => 0
   },
-  "VERSION" => "1.5.1",
+  "VERSION" => "1.5.2",
   "test" => {
     "TESTS" => "t/*.t"
   }

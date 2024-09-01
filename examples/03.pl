@@ -5,8 +5,8 @@ db do {
     DBIx::Squirrel->connect(
         "dbi:SQLite:dbname=./t/data/chinook.db",
         "",
-        "",
-        {   PrintError     => !!0,
+        "", {
+            PrintError     => !!0,
             RaiseError     => !!1,
             sqlite_unicode => !!1,
         },

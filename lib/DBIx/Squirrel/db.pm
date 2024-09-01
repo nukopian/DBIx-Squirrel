@@ -1,5 +1,5 @@
 package    # hide from PAUSE
-  DBIx::Squirrel::db;
+    DBIx::Squirrel::db;
 
 use 5.010_001;
 use strict;
@@ -56,16 +56,16 @@ sub _private_state {
 sub prepare {
     my $self      = shift;
     my $statement = shift;
-    my($placeholders, $normalised_statement, $original_statement, $digest) = statement_study($statement);
+    my($placeholders, $normalised_statement, $original_statement, $digest)
+        = statement_study($statement);
     throw E_EXP_STATEMENT unless defined($normalised_statement);
     my $sth = DBI::db::prepare($self, $normalised_statement, @_)
-      or throw $DBI::errstr;
+        or throw $DBI::errstr;
     $sth = bless($sth, $self->_root_class . '::st');
-    $sth->_private_state({
-        Placeholders        => $placeholders,
-        NormalisedStatement => $normalised_statement,
-        OriginalStatement   => $original_statement,
-        Hash                => $digest,
+    $sth->_private_state({Placeholders        => $placeholders,
+                          NormalisedStatement => $normalised_statement,
+                          OriginalStatement   => $original_statement,
+                          Hash                => $digest,
     });
     return $sth;
 }
@@ -73,17 +73,17 @@ sub prepare {
 sub prepare_cached {
     my $self      = shift;
     my $statement = shift;
-    my($placeholders, $normalised_statement, $original_statement, $digest) = statement_study($statement);
+    my($placeholders, $normalised_statement, $original_statement, $digest)
+        = statement_study($statement);
     throw E_EXP_STATEMENT unless defined($normalised_statement);
     my $sth = DBI::db::prepare_cached($self, $normalised_statement, @_)
-      or throw $DBI::errstr;
+        or throw $DBI::errstr;
     $sth = bless($sth, $self->_root_class . '::st');
-    $sth->_private_state({
-        Placeholders        => $placeholders,
-        NormalisedStatement => $normalised_statement,
-        OriginalStatement   => $original_statement,
-        Hash                => $digest,
-        CacheKey            => join('#', (caller(0))[1, 2]),
+    $sth->_private_state({Placeholders        => $placeholders,
+                          NormalisedStatement => $normalised_statement,
+                          OriginalStatement   => $original_statement,
+                          Hash                => $digest,
+                          CacheKey            => join('#', (caller(0))[1, 2]),
     });
     return $sth;
 }
