@@ -1,8 +1,8 @@
 <div align="center">
-    <a href="https://metacpan.org/dist/DBIx-Squirrel"><img src="./resources/images/ekorn.png" width="128"></a>
+    <a href="https://metacpan.org/dist/DBIx-Squirrel" title="Go to the distribution's page on MetaCPAN"><img src="./resources/images/ekorn.png" width="128"></a>
     <h1>
         DBIx-Squirrel<br>
-        <a href="https://metacpan.org/dist/DBIx-Squirrel"><img src="https://img.shields.io/cpan/v/DBIx-Squirrel"></a>
+        <a href="https://metacpan.org/dist/DBIx-Squirrel" title="Go to the distribution's page on MetaCPAN"><img src="https://img.shields.io/cpan/v/DBIx-Squirrel"></a>
         <img src="https://img.shields.io/github/release-date/nukopian/DBIx-Squirrel">
         <img src="https://img.shields.io/cpan/l/DBIx-Squirrel">
     </h1>
