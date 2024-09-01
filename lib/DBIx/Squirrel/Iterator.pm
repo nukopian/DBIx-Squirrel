@@ -28,6 +28,7 @@ BEGIN {
         result_transform
         statement
         /;
+    @DBIx::Squirrel::Iterator::EXPORT = @DBIx::Squirrel::Iterator::EXPORT_OK;
     $DBIx::Squirrel::Iterator::DEFAULT_SLICE      = [];    # Faster!
     $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;     # Initial buffer size and autoscaling increment
     $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;    # Absolute maximum buffersize
