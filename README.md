@@ -179,15 +179,15 @@ indicates the result's direction of travel through a transformation.
 
 ## Installation
 
-### Using `App::cpanminus`
+### Install with `App::cpanminus`
 
-#### Automated install
+#### Automated installation
 
 ```shell
 cpanm DBIx::Squirrel
 ```
 
-#### Manual install
+#### Manual installation
 
 If you prefer to install manually, or you would like to try out any of the
 example code:
@@ -199,7 +199,7 @@ make && make test
 make install
 ```
 
-#### Uninstall using `App::cpanminus`
+#### Uninstall with `App::cpanminus`
 
 ```shell
 cpanm --uninstall DBIx::Squirrel
