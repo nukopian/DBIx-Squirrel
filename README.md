@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./resources/images/ekorn.png" width="128">
+    <a href="https://metacpan.org/dist/DBIx-Squirrel"><img src="./resources/images/ekorn.png" width="128"></a>
     <h1>
         DBIx-Squirrel<br>
         <a href="https://metacpan.org/dist/DBIx-Squirrel"><img src="https://img.shields.io/cpan/v/DBIx-Squirrel"></a>
