@@ -1,5 +1,7 @@
 package DBIx::Squirrel;
 
+# ABSTRACT: The little Perl DBI extension that makes working with databases a lot easier.
+
 use 5.010_001;
 use strict;
 use warnings;

@@ -7,7 +7,7 @@ use 5.010001;
 use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "A C<DBI> extension",
+  "ABSTRACT" => "The little Perl DBI extension that makes working with databases a lot easier.",
   "AUTHOR" => "Iain Campbell <cpanic\@cpan.org>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0

@@ -1,16 +1,25 @@
-=pod
+<div id="dbix-squirrel-top" align="center">
+    <a href="https://metacpan.org/dist/DBIx-Squirrel" title="Go to the distribution's page on MetaCPAN"><img src="../resources/images/ekorn.png" width="128"></a>
+    <h1>
+        DBIx-Squirrel<br>
+        <a href="https://metacpan.org/dist/DBIx-Squirrel" title="Go to the distribution's page on MetaCPAN"><img src="https://img.shields.io/cpan/v/DBIx-Squirrel"></a>
+        <img src="https://img.shields.io/github/release-date/nukopian/DBIx-Squirrel">
+        <img src="https://img.shields.io/cpan/l/DBIx-Squirrel">
+    </h1>
+    <p><em>The little Perl DBI extension that makes working with databases
+    a lot easier.</em><p>
+    <p>• <a href="http://fast-matrix.cpantesters.org/?dist=DBIx-Squirrel%201.4.2">Current release status on the CPAN Testers Matrix</a> •</p>
+</div>
 
-=encoding UTF-8
-
-=head1 NAME
+# NAME
 
 DBIx::Squirrel - The little Perl DBI extension that makes working with databases a lot easier.
 
-=head1 VERSION
+# VERSION
 
 Version 1.5.2
 
-=head1 SYNOPSIS
+# SYNOPSIS
 
     # ------------------
     # Import the package
@@ -324,264 +333,220 @@ Version 1.5.2
     );
     $id = $itr->iterate('Acme Rocket')->single;
 
-=head1 DESCRIPTION
+# DESCRIPTION
 
-The C<DBIx::Squirrel> package extends the C<DBI> by providing a few extra
+The `DBIx::Squirrel` package extends the `DBI` by providing a few extra
 conveniences that are subtle and additive in nature, and, hopefully, quite
 useful.
 
-=head2 IMPORTING
+## IMPORTING
 
 In the simplest case, just import the package as you would any other:
 
     use DBIx::Squirrel;
 
-Any symbols and tags that you would typically import from the C<DBI> can
-also be requested via C<DBIx::Squirrel>:
+Any symbols and tags that you would typically import from the `DBI` can
+also be requested via `DBIx::Squirrel`:
 
     use DBIx::Squirrel DBI-IMPORT-LIST;
 
-If required (and in addition to any C<DBI> imports), C<DBIx::Squirrel> can
+If required (and in addition to any `DBI` imports), `DBIx::Squirrel` can
 create and import Database Entity Helper functions for you:
 
     use DBIx::Squirrel database_entity=>NAME;
     use DBIx::Squirrel database_entities=>[NAMES];
 
-=head3 Database Entity Helper Functions
+### Database Entity Helper Functions
 
 A database entity helper is nothing more than a standard function providing
 some syntactic sugar in the form of a polymorphic interface for interacting
 with database entities such as database connections, statements and
 iterators.
 
-While it is not absolutely necessary to use themE<mdash>you could just as
-easily use scalar referencesE<mdash>helper functions do possess the advantage
+While it is not absolutely necessary to use them—you could just as
+easily use scalar references—helper functions do possess the advantage
 of being shared more easily among package namespaces than, say, lexical
 variables.
 
 Helper semantics deal with three common types of interaction:
 
-=over
+- **Establishing an association**
 
-=item * B<Establishing an association>
+    Before it can be used, a helper must first be associated with a database
+    entity. This is accomplished by passing the function single argument: a
+    reference to the associated object.
 
-Before it can be used, a helper must first be associated with a database
-entity. This is accomplished by passing the function single argument: a
-reference to the associated object.
+    Once established, associations are _sticky_ and cannot easily be undone.
+    You should take care to create them once only, in a sensible place.
 
-Once established, associations are I<sticky> and cannot easily be undone.
-You should take care to create them once only, in a sensible place.
+    Use Perl's standard importing mechanisms (as shown above) to share
+    associations among different package namespaces.
 
-Use Perl's standard importing mechanisms (as shown above) to share
-associations among different package namespaces.
+- **Resolving an association**
 
-=item * B<Resolving an association>
+    Fetching the reference to the associated database entity is accomplished
+    by calling the helper function without any arguments.
 
-Fetching the reference to the associated database entity is accomplished
-by calling the helper function without any arguments.
+    When no association exists in this scenario, a helper returns `undef`.
 
-When no association exists in this scenario, a helper returns C<undef>.
+- **Addressing an association**
 
-=item * B<Addressing an association>
+    Addressing an association amounts to doing something meaningful with it,
+    and we accomplish this by calling the helper function with one or more
+    arguments.
 
-Addressing an association amounts to doing something meaningful with it,
-and we accomplish this by calling the helper function with one or more
-arguments.
+    Once associated with a database entity, a helper function will consume
+    any arguments that are passed to it and send a version of these to the
+    database entity method that imparts meaning to the interaction.
 
-Once associated with a database entity, a helper function will consume
-any arguments that are passed to it and send a version of these to the
-database entity method that imparts meaning to the interaction.
+    Meaning in this context is determined by the type of association:
 
-Meaning in this context is determined by the type of association:
+    - for a database connection, a statement is prepared using the `prepare` method;
+    - for statements and iterators, these are executed with the `execute` and `iterate`
+    methods respectively.
 
-=over
+    **Clearly there is a paradox here**, and itcentres around those statements
+    and iterators that take no parameters and expect no bind-values. In order
+    to smooth-out this wrinkle, you can opt to enclose arguments inside an
+    anonymous array or hash. When no bind-values are expected, you can coerce
+    the helper into performing the execution by passing an empty ARRAYREF or
+    HASHREF. Alternatively, you could just resolve the association and call
+    the relevant method manually.
 
-=item *
+#### Examples
 
-for a database connection, a statement is prepared using the C<prepare> method;
-
-=item *
-
-for statements and iterators, these are executed with the C<execute> and C<iterate>
-methods respectively.
-
-=back
-
-B<Clearly there is a paradox here>, and itcentres around those statements
-and iterators that take no parameters and expect no bind-values. In order
-to smooth-out this wrinkle, you can opt to enclose arguments inside an
-anonymous array or hash. When no bind-values are expected, you can coerce
-the helper into performing the execution by passing an empty ARRAYREF or
-HASHREF. Alternatively, you could just resolve the association and call
-the relevant method manually.
-
-=back
-
-=head4 Examples
-
-=over
-
-=item *
-
-Let us do a full worked example. We will connect to a database, create and
+- Let us do a full worked example. We will connect to a database, create and
 work with two result sets, one of which expects a single bind-value. Some
 concepts will be expanded upon and improved later, but it might be helpful
 to dip a toe in the water ahead of time:
 
-    use DBIx::Squirrel database_entities => [ qw/db artists artist/ ];
+        use DBIx::Squirrel database_entities => [ qw/db artists artist/ ];
 
-    # Associate helper ("db") with our database connection:
+        # Associate helper ("db") with our database connection:
 
-    @connect_args = ( 'dbi:SQLite:dbname=chinook.db', '', '', { sqlite_unicode => 1 } );
-    db( DBIx::Squirrel->connect(@connection_args) );
+        @connect_args = ( 'dbi:SQLite:dbname=chinook.db', '', '', { sqlite_unicode => 1 } );
+        db( DBIx::Squirrel->connect(@connection_args) );
 
-    # Resolve the database connection helper ("db"), using it to
-    # associate helpers ("artist" and "artists") with different
-    # result sets:
+        # Resolve the database connection helper ("db"), using it to
+        # associate helpers ("artist" and "artists") with different
+        # result sets:
 
-    artist( db->results('SELECT * FROM artists WHERE Name=? LIMIT 1') );
-    artists( db->results('SELECT * FROM artists') );
+        artist( db->results('SELECT * FROM artists WHERE Name=? LIMIT 1') );
+        artists( db->results('SELECT * FROM artists') );
 
-    # Address the helper ("artist"), passing it a bind-value, to get
-    # the ArtistId of the artist whose name is "Aerosmith".
-    #
-    # We could have called "next" to get the only matching record, but by
-    # calling "single" (or "first") we can ensure that there are no warnings
-    # about dangling active statements emitted when we disconnect from the
-    # database.
+        # Address the helper ("artist"), passing it a bind-value, to get
+        # the ArtistId of the artist whose name is "Aerosmith".
+        #
+        # We could have called "next" to get the only matching record, but by
+        # calling "single" (or "first") we can ensure that there are no warnings
+        # about dangling active statements emitted when we disconnect from the
+        # database.
 
-    print artist('Aerosmith')->single->ArtistId, "\n";
+        print artist('Aerosmith')->single->ArtistId, "\n";
 
-    # Iterate over the "artists" result set, printing the Name-column for
-    # each artist. We don't need to trigger execution manually because
-    # the "next" method will do that for us, if it is necessary.
+        # Iterate over the "artists" result set, printing the Name-column for
+        # each artist. We don't need to trigger execution manually because
+        # the "next" method will do that for us, if it is necessary.
 
-    while ( artists->next ) {
-        print $_->Name, "\n";
-    };
+        while ( artists->next ) {
+            print $_->Name, "\n";
+        };
 
-=back
+## CONNECTING TO DATABASES
 
-=head2 CONNECTING TO DATABASES
+Connecting to a database using `DBIx::Squirrel` may be done exactly as it
+would when using the `DBI`'s `connect_cached` and `connect` methods.
 
-Connecting to a database using C<DBIx::Squirrel> may be done exactly as it
-would when using the C<DBI>'s C<connect_cached> and C<connect> methods.
+### Cloning database connections
 
-=head3 Cloning database connections
-
-The C<connect> method implemented by the C<DBIx::Squirrel> package offers
+The `connect` method implemented by the `DBIx::Squirrel` package offers
 an alternative form:
 
     $new_dbh = DBIx::Squirrel->connect($original_dbh, \%attr);
 
 This form clones another connection object and returns a brand new object
-that is blessed using the same class that invoked the C<connect> method.
+that is blessed using the same class that invoked the `connect` method.
 The method will allow you to clone database connections created by the
-C<DBI> and any subclasses (C<DBIx::Squirrel> being one).
+`DBI` and any subclasses (`DBIx::Squirrel` being one).
 
-=head2 PREPARING STATEMENTS
+## PREPARING STATEMENTS
 
-Preparing a statement using C<DBIx::Squirrel> may be done exactly as
-it would be done using the C<DBI>'s C<prepare_cached> and C<prepare>
+Preparing a statement using `DBIx::Squirrel` may be done exactly as
+it would be done using the `DBI`'s `prepare_cached` and `prepare`
 methods.
 
-=head3 Placeholders
+### Placeholders
 
-A nice quality-of-life improvement offered by C<DBIx::Squirrel>'s own
-implementation of the C<prepare_cached> and C<prepare> methods is their
+A nice quality-of-life improvement offered by `DBIx::Squirrel`'s own
+implementation of the `prepare_cached` and `prepare` methods is their
 built-in ability to cope with a number of different placeholder styles:
 
-=over
+- named (`:name`);
+- positional (`:number`, `$number`, `?number`);
+- legacy (`?`)
 
-=item * named (C<:name>);
-
-=item * positional (C<:number>, C<$number>, C<?number>);
-
-=item * legacy (C<?>)
-
-=back
-
-It does not matter what style your C<DBD>-driver supports, C<DBIx::Squirrel>
+It does not matter what style your `DBD`-driver supports, `DBIx::Squirrel`
 will happily deal with all of the above styles. Just pick the one that
 you prefer to work with, or use the one that is most suitable for the
 task at hand.
 
-By the time your statement is passed to the C<DBD>-driver for execution,
+By the time your statement is passed to the `DBD`-driver for execution,
 both it and its bind-values will have been normalised to use the legacy
-style (C<?>) supported by all drivers.
+style (`?`) supported by all drivers.
 
-=head4 Examples
+#### Examples
 
-=over
+- Legacy placeholders (`?`):
 
-=item *
+        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=? LIMIT 1');
 
-Legacy placeholders (C<?>):
+        # Any of the following value-binding styles will work:
+        $res = $sth->execute('Aerosmith');
+        $res = $sth->execute(['Aerosmith']);
 
-    $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=? LIMIT 1');
+- SQLite positional placeholders (`?number`):
 
-    # Any of the following value-binding styles will work:
-    $res = $sth->execute('Aerosmith');
-    $res = $sth->execute(['Aerosmith']);
+        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=?1 LIMIT 1');
 
-=item *
+        # Any of the following value-binding styles will work:
+        $res = $sth->execute('Aerosmith');
+        $res = $sth->execute(['Aerosmith']);
 
-SQLite positional placeholders (C<?number>):
+- PostgreSQL positional placeholders (`$number`):
 
-    $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=?1 LIMIT 1');
+        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=$1 LIMIT 1');
 
-    # Any of the following value-binding styles will work:
-    $res = $sth->execute('Aerosmith');
-    $res = $sth->execute(['Aerosmith']);
+        # Any of the following value-binding styles will work:
+        $res = $sth->execute('Aerosmith');
+        $res = $sth->execute(['Aerosmith']);
 
-=item *
+- Oracle positional placeholders (`:number`):
 
-PostgreSQL positional placeholders (C<$number>):
+        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:1 LIMIT 1');
 
-    $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=$1 LIMIT 1');
+        # Any of the following value-binding styles will work:
+        $res = $sth->execute('Aerosmith');
+        $res = $sth->execute(['Aerosmith']);
 
-    # Any of the following value-binding styles will work:
-    $res = $sth->execute('Aerosmith');
-    $res = $sth->execute(['Aerosmith']);
+- Oracle named placeholders (`:name`):
 
-=item *
+        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:Name LIMIT 1');
 
-Oracle positional placeholders (C<:number>):
+        # Any of the following value-binding styles will work:
+        $res = $sth->execute(Name => 'Aerosmith');
+        $res = $sth->execute( ':Name' => 'Aerosmith');
+        $res = $sth->execute({Name => 'Aerosmith'});
+        $res = $sth->execute({':Name' => 'Aerosmith'});
 
-    $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:1 LIMIT 1');
+## ITERATORS
 
-    # Any of the following value-binding styles will work:
-    $res = $sth->execute('Aerosmith');
-    $res = $sth->execute(['Aerosmith']);
-
-=item *
-
-Oracle named placeholders (C<:name>):
-
-    $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=:Name LIMIT 1');
-
-    # Any of the following value-binding styles will work:
-    $res = $sth->execute(Name => 'Aerosmith');
-    $res = $sth->execute( ':Name' => 'Aerosmith');
-    $res = $sth->execute({Name => 'Aerosmith'});
-    $res = $sth->execute({':Name' => 'Aerosmith'});
-
-=back
-
-=head2 ITERATORS
-
-In addition to statement objects, C<DBIx::Squirrel> provides two kinds
+In addition to statement objects, `DBIx::Squirrel` provides two kinds
 of iterator:
 
-=over
+- Basic
+- Fancy, _or Result Sets_
 
-=item * Basic
-
-=item * Fancy, I<or Result Sets>
-
-=back
-
-=head3 Basic Iterators
+### Basic Iterators
 
 Basic iterators present row data as ARRAYREFs or HASHREFs depending
 on the slice-style currently in use. Column values are accessed either
@@ -591,7 +556,7 @@ when using the HASHREF-slicing.
 The default, row data is sliced as an ARRAYREF. The iterator "reset"
 method may be used to alter this behaviour.
 
-=head4 How to create a basic iterator
+#### How to create a basic iterator
 
     $itr = $dbh->iterate(
         $query,
@@ -605,10 +570,10 @@ method may be used to alter this behaviour.
         [@transforms]
     );
 
-The C<iterate> methods may be replaced by either of the C<it> or C<iterator>
+The `iterate` methods may be replaced by either of the `it` or `iterator`
 aliases, if preferred.
 
-=head3 Fancy Iterators
+### Fancy Iterators
 
 Fancy iterators behave just like their basic alternatives, but the
 row data they present is blessed. Column values may continue to be
@@ -616,7 +581,7 @@ accessed as they would be with basic iterators, but accessor methods
 may also be used to get column values. Such accessor methods are
 created the first time they are used.
 
-=head4 How to create a fancy iterator
+#### How to create a fancy iterator
 
     $itr = $dbh->results(
         $query,
@@ -630,13 +595,13 @@ created the first time they are used.
         [@transforms]
     );
 
-The C<results> methods may be replaced by either of the C<rs> or C<resultset>
+The `results` methods may be replaced by either of the `rs` or `resultset`
 aliases, if preferred.
 
-=head2 TRANSFORMING RESULTS
+## TRANSFORMING RESULTS
 
-All C<DBIx::Squirrel> iterators support an optional processing step called
-I<transformation>.
+All `DBIx::Squirrel` iterators support an optional processing step called
+_transformation_.
 
 Transformation can be summarised as the automatic, just-in-time processing,
 re-shaping or filtering of results, as they are fetched from the database
@@ -665,152 +630,125 @@ each:
     );                           |  );
 
 The final element of each constructor's argument-list is the transformation
-pipeline (C<[@transforms]>). Each stage of this pipeline is an individual
+pipeline (`[@transforms]`). Each stage of this pipeline is an individual
 processing step, represented by a CODEREF (or a call that returns a CODEREF).
 
 Each stage of a transformation receives the latest version of the result via
-the argument-list (C<$_[0]> to be precise). For the sake of convenience (and
-for convention), this result is also available as C<$_>. If you prefer to
-rely on something like C<$_>, but would like something much less ephemeral,
-just C<use DBIx::Squirrel::Utils 'result'> and use the C<result> function
+the argument-list (`$_[0]` to be precise). For the sake of convenience (and
+for convention), this result is also available as `$_`. If you prefer to
+rely on something like `$_`, but would like something much less ephemeral,
+just `use DBIx::Squirrel::Utils 'result'` and use the `result` function
 inside your transformation stage.
 
-Handing off to the next stage, or the caller, is with an explicit C<return>
+Handing off to the next stage, or the caller, is with an explicit `return`
 statement, or the result of evaluating the unit's final expression. Returning
-nothingE<mdash>either C<()>, or a bare C<return>E<mdash>from a processing
+nothing—either `()`, or a bare `return`—from a processing
 step will filter the result out entirely, and no further processing steps
 will apply to it.
 
-=head3 Examples
+### Examples
 
-=over
+1. See script `examples/transformations/01.pl`:
 
-=item 1.
+        use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
 
-See script C<examples/transformations/01.pl>:
+        db do {
+            DBIx::Squirrel->connect(
+                "dbi:SQLite:dbname=./t/data/chinook.db",
+                "",
+                "",
+                {   PrintError     => !!0,
+                    RaiseError     => !!1,
+                    sqlite_unicode => !!1,
+                },
+            );
+        };
 
-    use DBIx::Squirrel database_entities => [qw/db get_artist_id_by_name/];
+        get_artist_id_by_name do {
+            db->results(
+                "SELECT ArtistId, Name FROM artists WHERE Name=? LIMIT 1" => sub {
+                    my($artist) = @_;
+                    print "----\n";
+                    print "Name: ", $artist->Name, "\n";
+                    return $artist;
+                } => sub {$_->ArtistId}
+            );
+        };
 
-    db do {
-        DBIx::Squirrel->connect(
-            "dbi:SQLite:dbname=./t/data/chinook.db",
-            "",
-            "",
-            {   PrintError     => !!0,
-                RaiseError     => !!1,
-                sqlite_unicode => !!1,
-            },
-        );
-    };
-
-    get_artist_id_by_name do {
-        db->results(
-            "SELECT ArtistId, Name FROM artists WHERE Name=? LIMIT 1" => sub {
-                my($artist) = @_;
-                print "----\n";
-                print "Name: ", $artist->Name, "\n";
-                return $artist;
-            } => sub {$_->ArtistId}
-        );
-    };
-
-    foreach my $name ("AC/DC", "Aerosmith", "Darling West", "Rush") {
-        if (get_artist_id_by_name($name)->single) {
-            print "ArtistId: $_\n";
+        foreach my $name ("AC/DC", "Aerosmith", "Darling West", "Rush") {
+            if (get_artist_id_by_name($name)->single) {
+                print "ArtistId: $_\n";
+            }
         }
-    }
 
-    db->disconnect();
+        db->disconnect();
 
-The script is comprised of four parts:
+    The script is comprised of four parts:
 
-=over
+    - **Connect to the database**
 
-=item *
+        Here, I am not just connecting to the database. I am associating the resulting
+        database connection handle with the `db` helper function, meaning I can refer
+        to it as `db` in future.
 
-B<Connect to the database>
+    - **Create the `get_artist_id_by_name` helper function**
 
-Here, I am not just connecting to the database. I am associating the resulting
-database connection handle with the C<db> helper function, meaning I can refer
-to it as C<db> in future.
+        Here, I am constructing a fancy iterator and also associating it with the
+        `get_artist_id_by_name` helper function. This means I can just call the
+        `get_artist_id_by_name` function to execute the iterator in future.
 
-=item *
+        Also here, I describe the the kind of processing I want applied to every
+        single result produced by this iterator, expressed as a transformation
+        pipeline that is comprised of two separate stages:
 
-B<Create the C<get_artist_id_by_name> helper function>
+        - I want the names of matched artists printed nicely on the console;
+        - I am only intersted in getting back the artist's id.
 
-Here, I am constructing a fancy iterator and also associating it with the
-C<get_artist_id_by_name> helper function. This means I can just call the
-C<get_artist_id_by_name> function to execute the iterator in future.
+    - **Query the database and process the results**
 
-Also here, I describe the the kind of processing I want applied to every
-single result produced by this iterator, expressed as a transformation
-pipeline that is comprised of two separate stages:
+        Here, I'm executing the query once for each one of four artists to get and
+        print their artist ids.
 
-=over
+    - **Disconnect from the database**
 
-=item *
+        Just as we would with the `DBI`.
 
-I want the names of matched artists printed nicely on the console;
+    Find the script and run it:
 
-=item *
+        $ perl -Ilib examples/transformations/01.pl
+        ----
+        Name: AC/DC
+        ArtistId: 1
+        ----
+        Name: Aerosmith
+        ArtistId: 3
+        ----
+        Name: Rush
+        ArtistId: 128
 
-I am only intersted in getting back the artist's id.
+    Notice that we got nothing back for one of our artists? That's because
+    the artist in question is not in our database and we cannot apply a
+    transformation to nothing, so nothing is returned.
 
-=back
+## REFERENCE
 
-=item *
+This section describes the `DBIx::Squirrel` interface.
 
-B<Query the database and process the results>
-
-Here, I'm executing the query once for each one of four artists to get and
-print their artist ids.
-
-=item *
-
-B<Disconnect from the database>
-
-Just as we would with the C<DBI>.
-
-=back
-
-Find the script and run it:
-
-    $ perl -Ilib examples/transformations/01.pl
-    ----
-    Name: AC/DC
-    ArtistId: 1
-    ----
-    Name: Aerosmith
-    ArtistId: 3
-    ----
-    Name: Rush
-    ArtistId: 128
-
-Notice that we got nothing back for one of our artists? That's because
-the artist in question is not in our database and we cannot apply a
-transformation to nothing, so nothing is returned.
-
-=back
-
-=head2 REFERENCE
-
-This section describes the C<DBIx::Squirrel> interface.
-
-Many of the methods (*) presented below may seem familiar to the experienced
-C<DBI> user, and they should. They are documented here because C<DBIx::Squirrel>
+Many of the methods (\*) presented below may seem familiar to the experienced
+`DBI` user, and they should. They are documented here because `DBIx::Squirrel`
 makes subtle changes to their interfaces.
 
 Such changes are additive and unobtrusive in nature, in most cases, resulting
 in additional calling forms rather than any change in outcome. Unless a
-documented deviation from the standard C<DBI> behaviour exists, one may
-safely assume that the C<DBI> documentation still applies.
+documented deviation from the standard `DBI` behaviour exists, one may
+safely assume that the `DBI` documentation still applies.
 
-Other parts of the C<DBI> interface remain unaltered, as well as being
-accessible via C<DBIx::Squirrel>.
+Other parts of the `DBI` interface remain unaltered, as well as being
+accessible via `DBIx::Squirrel`.
 
-=head3 DBIx::Squirrel Class Methods
+### DBIx::Squirrel Class Methods
 
-=head4 C<connect> *
+#### `connect` \*
 
     $dbh = DBIx::Squirrel->connect($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
@@ -821,16 +759,16 @@ accessible via C<DBIx::Squirrel>.
     $clone_dbh = DBIx::Squirrel->connect($dbh, \%attr)
                 or die $DBIx::Squirrel::errstr;
 
-=head4 C<connect_cached> *
+#### `connect_cached` \*
 
     $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password)
                 or die $DBIx::Squirrel::errstr;
     $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password, \%attr)
                 or die $DBIx::Squirrel::errstr;
 
-=head3 Database Handle Methods
+### Database Handle Methods
 
-=head4 C<do> *
+#### `do` \*
 
     $rows = $dbh->do($statement)
                 or die $dbh->errstr;
@@ -853,10 +791,10 @@ accessible via C<DBIx::Squirrel>.
     $rows = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
 
-Calling C<do> in scalar-context works just as it does when using the C<DBI>,
+Calling `do` in scalar-context works just as it does when using the `DBI`,
 although there are a few more calling forms.
 
-Calling C<do> in list-context, however, is new behaviour and results in the
+Calling `do` in list-context, however, is new behaviour and results in the
 return of a list comprised of two elements: the number of rows affected by
 the statement, as well as the statement handle:
 
@@ -881,7 +819,7 @@ the statement, as well as the statement handle:
     ($rows, $sth) = $dbh->do($statement, undef, \%bind_mappings)
                 or die ...;
 
-=head4 C<iterate>
+#### `iterate`
 
     $itor = $dbh->iterate($statement)
                 or die $dbh->errstr;
@@ -924,42 +862,42 @@ the statement, as well as the statement handle:
     $itor = $dbh->iterate($statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
-=head4 C<prepare> *
+#### `prepare` \*
 
     $sth = $dbh->prepare($statement)          or die $dbh->errstr;
     $sth = $dbh->prepare($statement, \%attr)  or die $dbh->errstr;
 
-The C<prepare> method interface is identical in form to that provided by the
-C<DBI>.
+The `prepare` method interface is identical in form to that provided by the
+`DBI`.
 
-C<DBIx::Squirrel> permits the use of one of a number of valid placeholder
-styles (C<:name>, C<:number>, C<$number>, C<?number>, C<?>) within the
+`DBIx::Squirrel` permits the use of one of a number of valid placeholder
+styles (`:name`, `:number`, `$number`, `?number`, `?`) within the
 statement-string.
 
-Statement-strings will be "normalised" to use the legacy C<?> style, before
-being handed-off to the C<DBI> method of the same name. In spite of this,
+Statement-strings will be "normalised" to use the legacy `?` style, before
+being handed-off to the `DBI` method of the same name. In spite of this,
 you should still use key-value bindings if you opted for named placeholders.
 
-=head4 C<prepare_cached> *
+#### `prepare_cached` \*
 
     $sth = $dbh->prepare_cached($statement)
     $sth = $dbh->prepare_cached($statement, \%attr)
     $sth = $dbh->prepare_cached($statement, \%attr, $if_active)
 
-The C<prepare_cached> method interface is identical in form to that provided
-by the C<DBI>.
+The `prepare_cached` method interface is identical in form to that provided
+by the `DBI`.
 
-C<DBIx::Squirrel> permits the use of one of a number of valid placeholder
-styles (C<:name>, C<:number>, C<$number>, C<?number>, C<?>) within the
+`DBIx::Squirrel` permits the use of one of a number of valid placeholder
+styles (`:name`, `:number`, `$number`, `?number`, `?`) within the
 statement-string.
 
-Statement-strings will be "normalised" to use the legacy C<?> style, before
-being handed-off to the C<DBI> method of the same name. In spite of this,
+Statement-strings will be "normalised" to use the legacy `?` style, before
+being handed-off to the `DBI` method of the same name. In spite of this,
 you should still use key-value bindings if you opted for named placeholders.
 
-It is the normalised form of the statement that is cached by the C<DBI>.
+It is the normalised form of the statement that is cached by the `DBI`.
 
-=head4 C<results>
+#### `results`
 
     $itor = $dbh->results($statement)
                 or die $dbh->errstr;
@@ -1002,16 +940,16 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $itor = $dbh->results($statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
-=head3 Statement Handle Methods
+### Statement Handle Methods
 
-=head4 C<bind>
+#### `bind`
 
     $sth->bind(@bind_values);
     $sth->bind(\@bind_values);
     $sth->bind(%bind_mappings);
     $sth->bind(\%bind_mappings);
 
-=head4 C<bind_param> *
+#### `bind_param` \*
 
     $sth->bind_param($p_num, $bind_value);
     $sth->bind_param($p_num, $bind_value, \%attr);
@@ -1020,7 +958,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $sth->bind_param($p_name, $bind_value, \%attr);
     $sth->bind_param($p_name, $bind_value, $bind_type);
 
-=head4 C<execute> *
+#### `execute` \*
 
     $rv = $sth->execute();
     $rv = $sth->execute(@bind_values);
@@ -1028,7 +966,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $rv = $sth->execute(%bind_mappings);
     $rv = $sth->execute(\%bind_mappings);
 
-=head4 C<iterate>
+#### `iterate`
 
     $itor = $sth->iterate()
                 or die $dbh->errstr;
@@ -1051,7 +989,7 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $itor = $sth->iterate(\%bind_mappings, @transforms)
                 or die ...;
 
-=head4 C<results>
+#### `results`
 
     $itor = $sth->results()
                 or die $dbh->errstr;
@@ -1074,31 +1012,31 @@ It is the normalised form of the statement that is cached by the C<DBI>.
     $itor = $sth->results(\%bind_mappings, @transforms)
                 or die ...;
 
-=head3 Iterator Methods
+### Iterator Methods
 
-=head4 C<all>
+#### `all`
 
     @results = $itor->all();
     $results_or_undef = $itor->all();
 
 Executes the iterator's underlying statement handle object.
 
-When called in list-context, the C<all> method returns an array
+When called in list-context, the `all` method returns an array
 of all matching row objects.
 
 When called in scalar-context, this method returns a reference to
 an array of all matching row objects. Where no rows are matched,
-C<undef> would be returned.
+`undef` would be returned.
 
-=head4 C<buffer_size>
+#### `buffer_size`
 
-Deprecated alias for C<cache_size>.
+Deprecated alias for `cache_size`.
 
-=head4 C<buffer_size_slice>
+#### `buffer_size_slice`
 
-Deprecated alias for C<cache_size_slice>.
+Deprecated alias for `cache_size_slice`.
 
-=head4 C<cache_size>
+#### `cache_size`
 
     $cache_size = $itor->cache_size();
     $itor = $itor->cache_size($cache_size);
@@ -1122,7 +1060,7 @@ The following package globals define the relevant default settings:
     $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
     $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
-=head4 C<cache_size_slice>
+#### `cache_size_slice`
 
     ($cache_size, $slice) = $itor->cache_size_slice();
     $itor = $itor->cache_size_slice($slice);
@@ -1137,19 +1075,15 @@ following each trip to the database.
 When called with no arguments, a list comprised of the following two iterator
 properties is returned:
 
-=over
+- `$cache_size`
 
-=item * C<$cache_size>
+    The current size of the results buffer. That is, the current maximum number of
+    results that are processed and ready to fetch after each trip to the database.
 
-The current size of the results buffer. That is, the current maximum number of
-results that are processed and ready to fetch after each trip to the database.
+- `$slice`
 
-=item * C<$slice>
-
-The how the iterator slices results fetched from the database. This may be an
-ARRAYREF or a HASHREF.
-
-=back
+    The how the iterator slices results fetched from the database. This may be an
+    ARRAYREF or a HASHREF.
 
 To change these properties, simply provide the new values in the argument
 list. When used to change these properties, a reference to the iterator is
@@ -1169,38 +1103,38 @@ The following package globals define the relevant default settings:
     $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
     $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
-=head4 C<count>
+#### `count`
 
     $count = $itor->count();
 
 Returns the total number of rows in the result set.
 
-If the iterator's statement has not yet been executed, it will be, and C<undef>
+If the iterator's statement has not yet been executed, it will be, and `undef`
 will be returned if the statement was not executed successfully.
 
 Any results remaining to be fetched are then fetched, counted and discarded,
 and the final count is returned.
 
-I<B<BEWARE> that you should not use C<next> after this method has been used!>
+_**BEWARE** that you should not use `next` after this method has been used!_
 
-=head4 C<count_fetched>
+#### `count_fetched`
 
     $count = $itor->count_fetched();
 
 Returns the number of results fetched so far.
 
 If the iterator's statement has not yet been executed, it will be. Zero will
-be returned if the statement executed successfully, otherwise C<undef> is
+be returned if the statement executed successfully, otherwise `undef` is
 returned.
 
-=head4 C<first>
+#### `first`
 
     $result = $itor->first();
 
-Returns the first result in the result set, or C<undef> if there were no
+Returns the first result in the result set, or `undef` if there were no
 results.
 
-If the iterator's statement has not yet been executed, it will be, and C<undef>
+If the iterator's statement has not yet been executed, it will be, and `undef`
 will be returned if the statement was not executed successfully.
 
 If the first result hasn't yet been fetched, it will be and the first result
@@ -1208,14 +1142,14 @@ is fetched and cached. The cached value is returned.
 
 The result of the statement's execution will be returned.
 
-=head4 C<is_active>
+#### `is_active`
 
     $bool = $itor->is_active();
 
-Returns true (C<!!1>) if there more results to fetch, otherwise false (C<!!0>)
+Returns true (`!!1`) if there more results to fetch, otherwise false (`!!0`)
 is returned.
 
-=head4 C<iterate>
+#### `iterate`
 
     $itor_or_undef = $itor->iterate()
     $itor_or_undef = $itor->iterate(@bind_values)
@@ -1235,77 +1169,68 @@ When called with no arguments, any bind-values and transformations passed to
 the iterator at the time of construction will be honoured.
 
 A reference to the iterator is returned if the statement was successfully
-executed, otherwise the method returns C<undef>.
+executed, otherwise the method returns `undef`.
 
-=head4 C<last>
+#### `last`
 
     $result = $itor->last();
 
 Returns the last result in the result set.
 
-If the iterator's statement has not yet been executed, it will be, and C<undef>
+If the iterator's statement has not yet been executed, it will be, and `undef`
 will be returned if the statement was not executed successfully.
 
 Any results remaining to be fetched are then fetched and discarded, and the
 last result fetched is returned.
 
-I<B<BEWARE> that you should not use C<next> after this method has been used!>
+_**BEWARE** that you should not use `next` after this method has been used!_
 
-=head4 C<last_fetched>
+#### `last_fetched`
 
     $result = $itor->last_fetched();
 
 Returns the last result fetched.
 
 If the iterator's statement has not yet been executed, it will be, then
-C<undef> is returned regardless of the statement execution's outcome.
+`undef` is returned regardless of the statement execution's outcome.
 
 If the statement was previously executed then the last result fetched is
 always cached. The cached value is returned.
 
-=head4 C<next>
+#### `next`
 
     $result = $itor->next();
 
 Returns the next result in the result set.
 
-If the iterator's statement has not yet been executed, it will be, and C<undef>
+If the iterator's statement has not yet been executed, it will be, and `undef`
 will be returned if the statement was not executed successfully.
 
-There are two potential side-effects that could result from a call to C<next>:
+There are two potential side-effects that could result from a call to `next`:
 
-=over
-
-=item *
-
-The first time it is called, the result returned will be cached and returned in
-any subsequent call to C<first>.
-
-=item *
-
-Every time it is called, the most recent result returned will be cached and
-returned in any call to C<last_fetched>, or C<last> if it was the final result
+- The first time it is called, the result returned will be cached and returned in
+any subsequent call to `first`.
+- Every time it is called, the most recent result returned will be cached and
+returned in any call to `last_fetched`, or `last` if it was the final result
 in the result set.
 
-=back
-
-=head4 C<not_active>
+#### `not_active`
 
     $bool = $itor->not_active();
 
-Returns true (C<!!1>) if there are no more results to fetch, otherwise false
-(C<!!0>) is returned.
+Returns true (`!!1`) if there are no more results to fetch, otherwise false
+(`!!0`) is returned.
 
-=head4 C<one>
+#### `one`
 
-Alias (see C<single>).
+Alias (see `single`).
 
-=head4 C<remaining>
+#### `remaining`
 
     @results = $itor->remaining();
     $results_or_undef = $itor->remaining;
 
-=head4 C<reset>
+#### `reset`
 
     $itor = $itor->reset();
     $itor = $itor->reset($slice);
@@ -1321,20 +1246,20 @@ strategy in the same call.
 
 A reference to the iterator is returned, regardless of execution outcome.
 
-=head4 C<rows>
+#### `rows`
 
     $rows = $itor->rows();
 
 Returns the number of rows aftected by non-SELECT statements.
 
-=head4 C<single> (or C<one>)
+#### `single` (or `one`)
 
     $result = $itor->single();
 
-Returns the first result in the result set, or C<undef> if there were no
+Returns the first result in the result set, or `undef` if there were no
 results.
 
-If the iterator's statement has not yet been executed, it will be, and C<undef>
+If the iterator's statement has not yet been executed, it will be, and `undef`
 will be returned if the statement was not executed successfully.
 
 If the first result hasn't yet been fetched, it will be and the first result
@@ -1346,7 +1271,7 @@ If the result returned is one of many buffered, a warning will be issued:
 
 The warning is a reminder to include a LIMIT 1 constraint in the statement.
 
-=head4 C<slice>
+#### `slice`
 
     $slice = $itor->slice();
     $itor = $itor->slice($slice);
@@ -1361,11 +1286,11 @@ The following package global defines the default setting:
 
     $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
 
-=head4 C<slice_buffer_size>
+#### `slice_buffer_size`
 
-Deprecated alias for C<slice_cache_size>.
+Deprecated alias for `slice_cache_size`.
 
-=head4 C<slice_cache_size>
+#### `slice_cache_size`
 
     ($slice, $cache_size) = $itor->slice_cache_size();
     $itor = $itor->slice_cache_size($slice);
@@ -1380,19 +1305,15 @@ following each trip to the database.
 When called with no arguments, a list comprised of the following two iterator
 properties is returned:
 
-=over
+- `$slice`
 
-=item * C<$slice>
+    The how the iterator slices results fetched from the database. This may be an
+    ARRAYREF or a HASHREF.
 
-The how the iterator slices results fetched from the database. This may be an
-ARRAYREF or a HASHREF.
+- `$cache_size`
 
-=item * C<$cache_size>
-
-The current size of the results buffer. That is, the current maximum number of
-results that are processed and ready to fetch after each trip to the database.
-
-=back
+    The current size of the results buffer. That is, the current maximum number of
+    results that are processed and ready to fetch after each trip to the database.
 
 To change these properties, simply provide the new values in the argument
 list. When used to change these properties, a reference to the iterator is
@@ -1412,7 +1333,7 @@ The following package globals define the relevant default settings:
     $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
     $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
-=head4 C<start>
+#### `start`
 
     $rv_or_undef = $itor->start()
     $rv_or_undef = $itor->start(@bind_values)
@@ -1431,101 +1352,92 @@ resetting the iterator's internal state.
 When called with no arguments, any bind-values and transformations passed to
 the iterator at the time of construction are used.
 
-=head4 C<sth>
+#### `sth`
 
     $sth = $itor->sth();
 
 Returns the iterator's underlying statement handle object.
 
-=head3 Iterator Exports
+### Iterator Exports
 
-The C<DBIx::Squirrel::Iterator> package exports a number of subroutines that
+The `DBIx::Squirrel::Iterator` package exports a number of subroutines that
 may be used within the stages of a transformation pipeline. These provide
 information about the current transformation context.
 
-=head4 C<database>
+#### `database`
 
     my $dbh = database();
 
 Returns a reference to the current iterator's database handle object.
 
-=head4 C<iterator>
+#### `iterator`
 
     my $itor = iterator();
 
 Returns a reference to the current iterator.
 
-=head4 C<result>
+#### `result`
 
     my $result = result();
 
-Returns the result as it was when it entered the I<current stage> of the
+Returns the result as it was when it entered the _current stage_ of the
 transformation pipeline.
 
 There are alternative ways to get at this value without having to pollute
-your namespace, although C<result> is less cryptic:
+your namespace, although `result` is less cryptic:
 
-=over
-
-=item *
-
-It is the first element of the C<@_> list. Use C<$_[0]>, or C<shift> the
+- It is the first element of the `@_` list. Use `$_[0]`, or `shift` the
 value from the start of the list.
-
-=item *
-
-It is also presented in the ephemeral C<$_> variable. It should be consumed
+- It is also presented in the ephemeral `$_` variable. It should be consumed
 quickly, before it changes.
 
-=back
+#### `result_current`
 
-=head4 C<result_current>
+An alias (see `result`).
 
-An alias (see C<result>).
-
-=head4 C<result_first>
+#### `result_first`
 
     my $result = result_first();
 
 Returns the first result fetched.
 
-=head4 C<result_prev>
+#### `result_prev`
 
     my $result = result_prev();
 
 Returns the previous result, if there was one.
 
-=head4 C<result_previous>
+#### `result_previous`
 
-An alias (see C<result_prev>).
+An alias (see `result_prev`).
 
-=head4 C<result_number>
+#### `result_number`
 
     my $number = result_number();
 
 Returns the result's 1-based sequence number.
 
-=head4 C<result_offset>
+#### `result_offset`
 
     my $offset = result_offset();
 
 Returns the result's zero-based offset, effectively the number of results
 fetched, less one.
 
-=head4 C<result_original>
+#### `result_original`
 
     my $result = result_original();
 
-Returns the result as it was when it entered the I<first stage> of the current
+Returns the result as it was when it entered the _first stage_ of the current
 transformation pipeline.
 
-=head4 C<statement>
+#### `statement`
 
     my $sth = statement();
 
 Returns a reference to the current iterator's statement handle object.
 
-=head1 COPYRIGHT AND LICENSE
+# COPYRIGHT AND LICENSE
 
 The DBIx::Squirrel module is Copyright (c) 2020-2014 Iain Campbell.
 All rights reserved.
@@ -1533,8 +1445,6 @@ All rights reserved.
 You may distribute under the terms of either the GNU General Public
 License or the Artistic License, as specified in the Perl 5.10.0 README file.
 
-=head1 SUPPORT / WARRANTY
+# SUPPORT / WARRANTY
 
 DBIx::Squirrel is free Open Source software. IT COMES WITHOUT WARRANTY OF ANY KIND.
-
-=cut
