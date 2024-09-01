@@ -110,6 +110,8 @@ littering the calling context&mdash;*no temporary state, and definitely
 no untangling of the results' innards just to get at the information
 we wanted.*
 
+[[Back to the top](#table-of-contents)]
+
 ##### 2. `examples/05.pl`
 
 ```perl
@@ -173,6 +175,8 @@ end of the iterator's argument list. You can separate each stage with a
 comma (`,`), though the long-comma (`=>`) is more expressive, since it
 indicates the result's direction of travel through a transformation.
 
+[[Back to the top](#table-of-contents)]
+
 ## Installation
 
 ### Using `App::cpanminus`
@@ -200,3 +204,5 @@ make install
 ```shell
 cpanm --uninstall DBIx::Squirrel
 ```
+
+[[Back to the top](#table-of-contents)]
