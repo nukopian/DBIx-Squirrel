@@ -3,7 +3,8 @@
     <h1>
         DBIx-Squirrel<br>
         <a href="https://metacpan.org/dist/DBIx-Squirrel" title="Go to the distribution's page on MetaCPAN"><img src="https://img.shields.io/cpan/v/DBIx-Squirrel"></a>
-        <img src="https://img.shields.io/github/release-date/nukopian/DBIx-Squirrel">
+        <a href="https://github.com/nukopian/DBIx-Squirrel/releases/tag/1.5.2"><img src="https://img.shields.io/github/v/release/nukopian/DBIx-Squirrel?label=github&color=tan"></a>
+        <a href="https://github.com/nukopian/DBIx-Squirrel/releases/tag/1.5.2"><img src="https://img.shields.io/github/release-date/nukopian/DBIx-Squirrel?color=tan"></a>
         <img src="https://img.shields.io/cpan/l/DBIx-Squirrel">
     </h1>
     <p><em>The little Perl DBI extension that makes working with databases
