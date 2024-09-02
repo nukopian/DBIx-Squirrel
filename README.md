@@ -22,35 +22,32 @@
 ## Introduction
 
 Using DBIx-Squirrel is just like using the DBI, but with upgrades.
-
-You can quickly get to a sweet-spot, somewhere between classic DBI and
-and DBIx-Class programming, while being burdened with few, if any,
-cognitive demands, provided that you have some familiarity with
-either (or both) of the alternatives.
+Those with some experience of classic DBI and DBIx-Class programming
+can quickly get to a sweet-spot somewhere between both.
 
 Just as with the DBI, all database queries are crafted with SQL,
-keeping you close to the data. Through iterators and transformations,
-DBIx-Squirrel offers a clean and elegant paradigm for efficiently
-processing results. Even DBIx-Squirrel iterators share interface
-commonalities with those of DBIx-Class result-sets, further
-flattening the learning curve.
+keeping you close to the data. With its built-in support for named,
+positional and legacy parameter placeholders, DBIx-Squirrel makes
+the task of crafting that SQL a lot less bothersome, while its
+iterators and transformations offer a clean and elegant way to
+process results.
 
-Pretty much everything that can be done with the DBI can be done with
-DBIx-Squirrel, if need be, the same way. DBIx-Squirrel enhancements
-are progressive in nature, working in harmony with features provided
-by its venerable ancestor. You won't be forced into a radically
-different mindset just to accomplish simple tasks.
+Most comforting of all, everything that could be done with the DBI
+can still be done using DBIx-Squirrel. Enhancements are subtle and
+progressive in nature, and intended to work in harmony features
+provided by its venerable ancestor.
 
-While this package is not going to set the world on fire, it will help
-those with a need to quickly hack-together data-processing scripts, and
-to do so with absolute ease.
+While this package is not going to set the world on fire, it will
+help those with a need to quickly hack-together data-processing
+scripts, and to do so with absolute ease.
 
 #### Examples
 
 To whet the appetite, let's take a look at some example code.
 
-The DBIx-Squirrel distribution ships with a SQLite database (`t/data/chinook.db`),
-which is used for testing. We will use the same database for the examples.
+The DBIx-Squirrel distribution ships with a SQLite database
+(`t/data/chinook.db`), which is used for testing. We will use
+the same database for the examples.
 
 ##### 1. `examples/04.pl`
 
@@ -89,18 +86,19 @@ and this is being assigned to `$artists`. The iterator is based upon
 a standard SQL query, which also takes care of ordering the results.
 
 The `=> sub {$_->Name}` following the SQL query is a single-stage
-transformation returning the result's `Name` attribute. Absent any
-transformations, a row object would be returned.
+transformation returning the result's `Name` attribute. This type of
+iterator allows access to attribute values using accessors. Without the
+transformation, a row object would be returned to the caller.
 
-*The intended purpose of a transformation is to change the shape of
+The intended purpose of a transformation is to change the shape of
 data, ensuring that only the information required by the caller is
 returned. The caller retains the flexibility to tailor results to
 their specific requirements, removing the need for the function's 
-author to anticipate and bake-in those requirements.*
+author to anticipate and bake-in those requirements.
 
-*The manner in which transformations are declared produces a visibly
+The manner in which transformations are declared produces a visibly
 clear and logical association between them and the SQL query from which
-results will emanate.*
+results will emanate.
 
 Next we print out the results, one at a time. The `while $artists->next()`
 postfix while-loop ensures that we do this only while the iterator
@@ -109,7 +107,7 @@ better ways to do it.*
 
 This approach is succinct, clean and elegant, and there is no clutter
 littering the calling context&mdash;*no temporary state, and definitely
-no untangling of the results' innards just to get at the information
+no untangling the innards of results just to get at the information
 we wanted.*
 
 <div align="right">Go to: <a href="#dbix-squirrel-top">Top</a></div>
@@ -161,21 +159,22 @@ transformation, and its purpose is to output the needed debug information
 if the `DEBUG` environment variable contains a truthy value. The result
 is passed unchanged along to the next stage of the transformation.
 
-From this example, we can intuit the following:
+A transformation is presented as a *contiguous* chain of one or
+more CODEREFs at the end of the iterator's argument list. Stages
+are separated other arguments (and each other) using the comma
+(`,`). Separation using the long-comma (`=>`), provided the token
+to its left is not a bare word, is also possible, and is more visually
+expressive since it is a metaphor for the result's direction of travel
+through a transformation.
 
-- the result in its current form enters each stage of transformation as
-`$_`, but also as the first element of `@_` for when we need something
+From these examples, we can intuit the following about transformations:
+
+- the result (in its current form) enters a transformation stage as `$_`,
+and as the first element of the `@_` array, for when we need something
 less ephemeral;
-- the result, which may or may not have changed, is passed along to the
-next stage of the transformation as the final evaluated expression, or
-via an explicit `return` statement;
-- the result of the final stage of a transformation is what the caller
-gets.
-
-A transformation is presented as a *contiguous* chain of CODEREFs at the
-end of the iterator's argument list. You can separate each stage with a
-comma (`,`), though the long-comma (`=>`) is more expressive, since it
-indicates the result's direction of travel through a transformation.
+- the result (which may, or may not, have changed), is passed to the
+next stage of the transformation, or to the caller, as the final
+evaluated expression, or using an explicit `return` statement.
 
 <div align="right">Go to: <a href="#dbix-squirrel-top">Top</a></div>
 
