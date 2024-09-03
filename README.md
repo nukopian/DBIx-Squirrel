@@ -162,10 +162,10 @@ is passed unchanged along to the next stage of the transformation.
 A transformation is presented as a *contiguous* chain of one or
 more CODEREFs at the end of the iterator's argument list. Stages
 are separated other arguments (and each other) using the comma
-(`,`). Separation using the long-comma (`=>`), provided the token
-to its left is not a bare word, is also possible, and is more visually
-expressive since it is a metaphor for the result's direction of travel
-through a transformation.
+(`,`). Separation using the long-comma (`=>`) is also possible, provided
+the token to its left is not a bare word; it also serves as a metaphor
+for the result's direction of travel through the transformation
+process.
 
 From these examples, we can intuit the following about transformations:
 
