@@ -83,7 +83,7 @@ sub slurp {
     my $filename = shift;
     my %options  = @_;
     my $bytes;
-    open my $fh, '<:raw', $filename or throw "$!";
+    open my $fh, '<:raw', $filename or throw "$! - $filename";
     read $fh, $bytes, -s $filename;
     close $fh;
     if ($filename =~ /\.encrypted/) {
