@@ -1,47 +1,45 @@
--ole=unix # Unix line-ending
--utf8     # UTF8 encoding
--st       # Output to STDOUT
--se       # Errors to STDERR
--w        # show all warnings
--l=120    # Max line width is 120 cols
--vmll     # Variable maximum line length
--i=4      # Indent level is 4 cols
--ci=2     # Continuation indent is 2 cols
--vt=1     # Medium vertical tightness
--vtc=0    # Minimum vertical closing tightness
--cti=0    # No extra indentation for closing brackets
--cab=1    # Comma arrow breakpoints 1
--mft=1    # Maximum fields per tabel 1
--otr      # No break between comma and opening token
--sot      # Stack opening tokens
--pt=2     # Tight parentheses
--bt=2     # Tight braces
--sbt=2    # Tight square brackets
--bbt=2    # Tight blocks
--bbvt=1
--nsfs     # No space before semicolons
--nolq     # Don't outdent long quoted strings
--bbao     # Break before all operators
--blbs=1   # Blank line before subs
--nsbl     # No opening sub brace on new line
--nasbl    # Opening anonymous sub brace on same line
--tqw      # Trim space around multiline qw
--tso      # Tight secret operators
--nsak="my local our"
--ssp=0
--bal=1
--ipc
--cpb
--bok
--bot
--boa
--otr
--valign
+-ole=unix           # Unix line-ending
+-utf8               # UTF8 encoding
+-st                 # Output to STDOUT
+-se                 # Errors to STDERR
+-w                  # show all warnings
+-l=80               # Max line width is 80 cols
+-vmll               # Variable maximum line length
+-i=4                # Indent level is 4 cols
+-ci=4               # Continuation indent is  cols
+-cti=0              # No extra indentation for closing brackets
+-cab=1              # Comma arrow breakpoints 1
+-mft=1              # Maximum fields per tabel 1
+-otr                # No break between comma and opening token
+-sot                # Stack opening tokens
+#-sct                # Stack closing tokens
+-pt=2               # Tight parentheses
+-bt=2               # Tight braces
+-sbt=2              # Tight square brackets
+-bbt=0              # Block brace tightness
+-bbvt=0             # Block brace vertical tightness
+-nsfs               # No space before semicolons
+-nolq               # Don't outdent long quoted strings
+-bbao               # Break before all operators
+-blbs=1             # Blank line before subs
+-nsbl               # No opening sub brace on new line
+-nasbl              # Opening anonymous sub brace on same line
+-tqw                # Trim space around multiline qw
+-tso                # Tight secret operators
+-nsak="my local our"# No space after keywords
+-ssp=2              # Space Signature Parens
+-bal=1              # break after label
+-ipc                # ignore perl critic comments
+-cpb                # Cuddled paren brace
+-bok                # break at old keyword points
+-bot                # break at old ternay points
+-boa                # break at old attribute points
+-otr                # opening token right
+-valign             # vertically symbols
 --noblanks-before-comments
 --blank-lines-before-subs=1
 --noblanks-before-blocks
---want-trailing-commas=m
---add-trailing-commas
+--wtc=m --atc --dtc
 --weld-nested-containers
 --weld-fat-comma
 --delete-weld-interfering-commas
