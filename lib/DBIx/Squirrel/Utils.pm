@@ -4,13 +4,13 @@ package    # hide from PAUSE
 use 5.010_001;
 use strict;
 use warnings;
-use Carp                     ();
-use Compress::Bzip2          qw/memBunzip memBzip/;
-use Crypt::Fernet            qw/fernet_decrypt fernet_encrypt/;
-use Devel::GlobalDestruction ();
-use Dotenv                   ();
-use Encode                   ();
-use JSON::Syck               ();
+use Carp                          ();
+use Compress::Bzip2               qw/memBunzip memBzip/;
+use DBIx::Squirrel::Crypt::Fernet qw/fernet_decrypt fernet_encrypt/;
+use Devel::GlobalDestruction      ();
+use Dotenv                        ();
+use Encode                        ();
+use JSON::Syck                    ();
 use Scalar::Util;
 use Sub::Name;
 
@@ -101,12 +101,12 @@ sub slurp {
     }
     if ($filename =~ /\.json/) {
         local $JSON::Syck::ImplicitUnicode = !!1;
-        return do {$_ = JSON::Syck::Load($bytes)};
+        return do { $_ = JSON::Syck::Load($bytes) };
     }
     if (!exists($options{decode_utf8}) || !!$options{decode_utf8}) {
-        return do {$_ = Encode::decode_utf8($bytes)};
+        return do { $_ = Encode::decode_utf8($bytes) };
     }
-    return do {$_ = $bytes};
+    return do { $_ = $bytes };
 }
 
 1;
