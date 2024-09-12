@@ -9,7 +9,8 @@
 # patched Crypt::Fernet package. I'll make *additive* improvements to the
 # original code so that they can be included in any future patches.
 #
-package DBIx::Squirrel::Crypt::Fernet;
+package    # hide from PAUSE
+    DBIx::Squirrel::Crypt::Fernet;
 
 use 5.010_001;
 use strict;
@@ -86,9 +87,9 @@ sub decrypt {
 
 sub encrypt {
     my($key, $data) = @_;
-    my $key_base64  = urlsafe_b64decode($key);
-    my $iv          = Crypt::CBC->random_bytes(16);
-    my $ciphertext  = Crypt::CBC->new(
+    my $key_base64 = urlsafe_b64decode($key);
+    my $iv         = Crypt::CBC->random_bytes(16);
+    my $ciphertext = Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
         -iv          => $iv,
