@@ -3,7 +3,8 @@
 
 requires "Carp" => "0";
 requires "Compress::Bzip2" => "0";
-requires "Crypt::Fernet" => "0";
+requires "Crypt::CBC" => "0";
+requires "Crypt::Rijndael" => "0";
 requires "DBI" => "0";
 requires "Data::Dumper" => "0";
 requires "Devel::GlobalDestruction" => "0";
@@ -12,11 +13,13 @@ requires "Dotenv" => "0";
 requires "Encode" => "0";
 requires "Exporter" => "0";
 requires "JSON::Syck" => "0";
+requires "MIME::Base64::URLSafe" => "0";
 requires "Memoize" => "0";
 requires "Scalar::Util" => "0";
 requires "Sub::Name" => "0";
 requires "Try::Tiny" => "0";
 requires "YAML::Syck" => "0";
+requires "bytes" => "0";
 requires "constant" => "0";
 requires "namespace::clean" => "0";
 requires "perl" => "5.010_001";
