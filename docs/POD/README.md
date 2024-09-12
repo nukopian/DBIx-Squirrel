@@ -4,7 +4,7 @@ DBIx::Squirrel - The little Perl DBI extension that makes working with databases
 
 # VERSION
 
-Version 1.5.2
+Version 1.5.3
 
 # SYNOPSIS
 
@@ -323,28 +323,24 @@ Version 1.5.2
 # DESCRIPTION
 
 Using DBIx-Squirrel is just like using the DBI, but with upgrades.
-
-You can quickly get to a sweet-spot, somewhere between classic DBI and
-and DBIx-Class programming, while being burdened with few, if any,
-cognitive demands, provided that you have some familiarity with
-either (or both) of the alternatives.
+Those with some experience of classic DBI and DBIx-Class programming
+can quickly get to a sweet-spot somewhere between both.
 
 Just as with the DBI, all database queries are crafted with SQL,
-keeping you close to the data. Through iterators and transformations,
-DBIx-Squirrel offers a clean and elegant paradigm for efficiently
-processing results. Even DBIx-Squirrel iterators share interface
-commonalities with those of DBIx-Class result-sets, further
-flattening the learning curve.
+keeping you close to the data. With its built-in support for named,
+positional and legacy parameter placeholders, DBIx-Squirrel makes
+the task of crafting that SQL a lot less bothersome, while its
+iterators and transformations offer a clean and elegant way to
+process results.
 
-Pretty much everything that can be done with the DBI can be done with
-DBIx-Squirrel, if need be, the same way. DBIx-Squirrel enhancements
-are progressive in nature, working in harmony with features provided
-by its venerable ancestor. You won't be forced into a radically
-different mindset just to accomplish simple tasks.
+Most comforting of all, everything that could be done with the DBI
+can still be done using DBIx-Squirrel. Enhancements are subtle and
+progressive in nature, and intended to work in harmony features
+provided by its venerable ancestor.
 
-While this package is not going to set the world on fire, it will help
-those with a need to quickly hack-together data-processing scripts, and
-to do so with absolute ease.
+While this package is not going to set the world on fire, it will
+help those with a need to quickly hack-together data-processing
+scripts, and to do so with absolute ease.
 
 ## IMPORTING
 

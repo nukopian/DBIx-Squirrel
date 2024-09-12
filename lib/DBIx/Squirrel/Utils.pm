@@ -4,19 +4,25 @@ package    # hide from PAUSE
 use 5.010_001;
 use strict;
 use warnings;
-use Carp                     ();
-use Devel::GlobalDestruction ();
+use Carp                          ();
+use Compress::Bzip2               qw/memBunzip memBzip/;
+use DBIx::Squirrel::Crypt::Fernet qw/fernet_decrypt fernet_encrypt/;
+use Devel::GlobalDestruction      ();
+use Dotenv                        ();
+use Encode                        ();
+use JSON::Syck                    ();
 use Scalar::Util;
 use Sub::Name;
 
 BEGIN {
     require Exporter;
-    @DBIx::Squirrel::Utils::ISA = qw/Exporter/;
+    @DBIx::Squirrel::Utils::ISA       = qw/Exporter/;
     @DBIx::Squirrel::Utils::EXPORT_OK = (
         qw/
             args_partition
             global_destruct_phase
             result
+            slurp
             statement_digest
             statement_normalise
             statement_study
@@ -27,6 +33,7 @@ BEGIN {
     );
     %DBIx::Squirrel::Utils::EXPORT_TAGS
         = (all => [@DBIx::Squirrel::Utils::EXPORT_OK]);
+    Dotenv->load() if -e '.env';
 }
 
 sub args_partition {
@@ -70,6 +77,36 @@ sub whine {
             'Unhelpful warning issued';
         }
     };
+}
+
+sub slurp {
+    my $filename = shift;
+    my %options  = @_;
+    my $bytes;
+    open my $fh, '<:raw', $filename or throw "$! - $filename";
+    read $fh, $bytes, -s $filename;
+    close $fh;
+    if ($filename =~ /\.encrypted/) {
+        $bytes = do {
+            if (!exists($options{key})) {
+                fernet_decrypt($ENV{FERNET_KEY}, $bytes);
+            }
+            else {
+                fernet_decrypt($options{key}, $bytes);
+            }
+        };
+    }
+    if ($filename =~ /\.bz2/) {
+        $bytes = memBunzip($bytes);
+    }
+    if ($filename =~ /\.json/) {
+        local $JSON::Syck::ImplicitUnicode = !!1;
+        return do { $_ = JSON::Syck::Load($bytes) };
+    }
+    if (!exists($options{decode_utf8}) || !!$options{decode_utf8}) {
+        return do { $_ = Encode::decode_utf8($bytes) };
+    }
+    return do { $_ = $bytes };
 }
 
 1;
