@@ -46,9 +46,6 @@ foreach my $t (@tests) {
     );
 }
 
-done_testing();
-exit;
-
 is( $artist_legacy->{Statement},
     'SELECT * FROM artists WHERE ArtistId=? LIMIT 1',
     'statement with legacy placeholders ok',
@@ -67,6 +64,17 @@ is($artist_named->{Statement}, $artist_legacy->{Statement}, 'statement with name
 warnings_exist {$artist_named->execute(3)} [qr/Check bind values/, qr/Odd number of elements/],
   'binding positional parameters to named placeholders gives expected warnings',;
 is($artist_named->execute(id => 3), '0E0', 'statement execute ok');
+is($artist_named->fetchrow_hashref->{Name}, 'Aerosmith', 'fetch ok');
+is($artist_named->execute({id => 3}), '0E0', 'statement execute ok');
+is($artist_named->fetchrow_arrayref->[1], 'Aerosmith', 'fetch ok');
+is($artist_named->execute([id => 3]), '0E0', 'statement execute ok');
+is($artist_named->fetchrow_hashref->{Name}, 'Aerosmith', 'fetch ok');
+is($artist_named->execute(':id' => 3), '0E0', 'statement execute ok');
+is($artist_named->fetchrow_arrayref->[1], 'Aerosmith', 'fetch ok');
+is($artist_named->execute({':id' => 3}), '0E0', 'statement execute ok');
+is($artist_named->fetchrow_hashref->{Name}, 'Aerosmith', 'fetch ok');
+is($artist_named->execute([':id' => 3]), '0E0', 'statement execute ok');
+is($artist_named->fetchrow_arrayref->[1], 'Aerosmith', 'fetch ok');
 
 SKIP:
 {   skip "DBD\::SQLite $DBD_SQLite_VERSION too old for \$sth->{ParamValues} tests", 1
