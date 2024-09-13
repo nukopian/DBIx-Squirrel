@@ -49,7 +49,7 @@ sub _bytes_to_time {
     return unpack('V', reverse($bytes));
 }
 
-sub _urlsafe_base64_padded {
+sub _base64_padded {
     my $base64 = urlsafe_b64encode(shift);
     return $base64 . ('=' x (4 - length($base64) % 4));
 }
@@ -70,15 +70,15 @@ sub _timestamp {
 sub decrypt {
     my($key, $token, $ttl) = @_;
     return unless verify($key, $token, $ttl);
-    my $key_base64    = urlsafe_b64decode($key);
-    my $token_base64  = urlsafe_b64decode($token);
-    my $ciphertextlen = length($token_base64) - 25 - 32;
-    my $ciphertext    = substr($token_base64, 25, $ciphertextlen);
+    my $k          = urlsafe_b64decode($key);
+    my $t          = urlsafe_b64decode($token);
+    my $size_c     = length($t) - 25 - 32;
+    my $ciphertext = substr($t, 25, $size_c);
     return Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
-        -iv          => substr($token_base64, 9,  16),
-        -key         => substr($key_base64,   16, 16),
+        -iv          => substr($t, 9,  16),
+        -key         => substr($k, 16, 16),
         -keysize     => 16,
         -literal_key => 1,
         -padding     => 'standard',
@@ -87,40 +87,38 @@ sub decrypt {
 
 sub encrypt {
     my($key, $data) = @_;
-    my $key_base64 = urlsafe_b64decode($key);
+    my $k          = urlsafe_b64decode($key);
     my $iv         = Crypt::CBC->random_bytes(16);
     my $ciphertext = Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
         -iv          => $iv,
-        -key         => substr($key_base64, 16, 16),
+        -key         => substr($k, 16, 16),
         -keysize     => 16,
         -literal_key => 1,
         -padding     => 'standard',
     )->encrypt($data);
-    my $pre_token = $FERNET_TOKEN_VERSION . _timestamp() . $iv . $ciphertext;
-    my $digest    = hmac_sha256($pre_token, substr($key_base64, 0, 16));
-    return _urlsafe_base64_padded($pre_token . $digest);
+    my $t_pref = $FERNET_TOKEN_VERSION . _timestamp() . $iv . $ciphertext;
+    return _base64_padded($t_pref . hmac_sha256($t_pref, substr($k, 0, 16)));
 }
 
 sub generate_key {
-    return _urlsafe_base64_padded(Crypt::CBC->random_bytes(32));
+    return _base64_padded(Crypt::CBC->random_bytes(32));
 }
 
 sub verify {
     my($key, $token, $ttl) = @_;
-    my $key_base64    = urlsafe_b64decode($key);
-    my $message       = urlsafe_b64decode($token);
-    my $token_version = substr($message, 0, 1);
-    return !!0 unless $token_version eq $FERNET_TOKEN_VERSION;
+    my $k = urlsafe_b64decode($key);
+    my $t = urlsafe_b64decode($token);
     return !!0
-        if $ttl
-        && time() - _bytes_to_time(substr($message, 1, 8)) > $ttl;
-    my $token_sign    = substr($message,    length($message) - 32, 32);
-    my $signing_key   = substr($key_base64, 0,                     16);
-    my $pre_token     = substr($message,    0, length($message) - 32);
-    my $verify_digest = hmac_sha256($pre_token, $signing_key);
-    return !!0 unless $token_sign eq $verify_digest;
+        unless $FERNET_TOKEN_VERSION eq substr($t, 0, 1);
+    return !!0
+        if $ttl && time() - _bytes_to_time(substr($t, 1, 8)) > $ttl;
+    my $size_t    = length($t) - 32;
+    my $signature = substr($t, $size_t);
+    my $t_pref    = substr($t, 0, $size_t);
+    return !!0
+        unless $signature eq hmac_sha256($t_pref, substr($k, 0, 16));
     return !!1;
 }
 
