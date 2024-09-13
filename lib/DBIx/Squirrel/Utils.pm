@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Carp                          ();
 use Compress::Bzip2               qw/memBunzip memBzip/;
-use DBIx::Squirrel::Crypt::Fernet qw/fernet_decrypt fernet_encrypt/;
+use DBIx::Squirrel::Crypt::Fernet qw/Fernet/;
 use Devel::GlobalDestruction      ();
 use Dotenv                        ();
 use Encode                        ();
@@ -89,10 +89,10 @@ sub slurp {
     if ($filename =~ /\.encrypted/) {
         $bytes = do {
             if (!exists($options{key})) {
-                fernet_decrypt($ENV{FERNET_KEY}, $bytes);
+                Fernet($ENV{FERNET_KEY})->decrypt($bytes);
             }
             else {
-                fernet_decrypt($options{key}, $bytes);
+                Fernet($options{key})->decrypt($bytes);
             }
         };
     }
