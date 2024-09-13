@@ -15,11 +15,16 @@ package    # hide from PAUSE
 use 5.010_001;
 use strict;
 use warnings;
+use Crypt::Rijndael ();
+use Crypt::CBC      ();
+use Digest::SHA     qw/hmac_sha256/;
 use Exporter;
+use MIME::Base64::URLSafe;
 use namespace::clean;
 
 our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw/
+    Fernet
     fernet_decrypt
     fernet_encrypt
     fernet_genkey
@@ -29,19 +34,13 @@ our %EXPORT_TAGS = ('all' => \@EXPORT_OK);
 our @EXPORT;
 our $VERSION = '0.04';
 
+# Ours is a drop-in replacement for the currently non-functional
+# Crypt::Fernet, so we'll alias the namespace in the hope that my
+# PR with fixes is merged by Crypt::Fernet's author.
+
+*Crypt::Fernet:: = *DBIx::Squirrel::Crypt::Fernet::;
+
 our $FERNET_TOKEN_VERSION = pack("H*", '80');
-
-# Preloaded methods go here.
-
-sub fernet_decrypt { decrypt(@_) }
-sub fernet_encrypt { encrypt(@_) }
-sub fernet_genkey  { generate_key() }
-sub fernet_verify  { verify(@_) }
-
-use Crypt::Rijndael ();
-use Crypt::CBC      ();
-use Digest::SHA     qw/hmac_sha256/;
-use MIME::Base64::URLSafe;
 
 sub _bytes_to_time {
     my($bytes) = @_;
@@ -49,7 +48,7 @@ sub _bytes_to_time {
     return unpack('V', reverse($bytes));
 }
 
-sub _base64_padded {
+sub _b64encode {
     my $base64 = urlsafe_b64encode(shift);
     return $base64 . ('=' x (4 - length($base64) % 4));
 }
@@ -67,18 +66,48 @@ sub _timestamp {
     return $result;
 }
 
+sub fernet_decrypt {
+    return decrypt(@_);
+}
+
+sub fernet_encrypt {
+    return encrypt(@_);
+}
+
+sub fernet_genkey {
+    return generate_key();
+}
+
+sub fernet_verify {
+    return verify(@_);
+}
+
+sub Fernet {
+    return bless(
+        do {
+            \(my $self = defined($_[0]) ? urlsafe_b64decode(shift) : undef);
+        },
+        'Crypt::Fernet',
+    );
+}
+
 sub decrypt {
-    my($key, $token, $ttl) = @_;
-    return unless verify($key, $token, $ttl);
-    my $k          = urlsafe_b64decode($key);
-    my $t          = urlsafe_b64decode($token);
-    my $size_c     = length($t) - 25 - 32;
-    my $ciphertext = substr($t, 25, $size_c);
+    my($key, $token, $ttl) = do {
+        if (UNIVERSAL::isa($_[0], __PACKAGE__)) {
+            ${+shift}, urlsafe_b64decode(shift), @_;
+        }
+        else {
+            urlsafe_b64decode(shift), urlsafe_b64decode(shift), @_;
+        }
+    };
+    return unless verify(_b64encode($key), _b64encode($token), $ttl);
+    my $size_c     = length($token) - 25 - 32;
+    my $ciphertext = substr($token, 25, $size_c);
     return Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
-        -iv          => substr($t, 9,  16),
-        -key         => substr($k, 16, 16),
+        -iv          => substr($token, 9,  16),
+        -key         => substr($key,   16, 16),
         -keysize     => 16,
         -literal_key => 1,
         -padding     => 'standard',
@@ -86,39 +115,59 @@ sub decrypt {
 }
 
 sub encrypt {
-    my($key, $data) = @_;
-    my $k          = urlsafe_b64decode($key);
+    my($key, $data) = do {
+        if (UNIVERSAL::isa($_[0], __PACKAGE__)) {
+            ${+shift}, @_;
+        }
+        else {
+            urlsafe_b64decode(shift), @_;
+        }
+    };
     my $iv         = Crypt::CBC->random_bytes(16);
     my $ciphertext = Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
         -iv          => $iv,
-        -key         => substr($k, 16, 16),
+        -key         => substr($key, 16, 16),
         -keysize     => 16,
         -literal_key => 1,
         -padding     => 'standard',
     )->encrypt($data);
-    my $t_pref = $FERNET_TOKEN_VERSION . _timestamp() . $iv . $ciphertext;
-    return _base64_padded($t_pref . hmac_sha256($t_pref, substr($k, 0, 16)));
+    my $pre_t = $FERNET_TOKEN_VERSION . _timestamp() . $iv . $ciphertext;
+    return _b64encode($pre_t . hmac_sha256($pre_t, substr($key, 0, 16)));
 }
 
 sub generate_key {
-    return _base64_padded(Crypt::CBC->random_bytes(32));
+    return _b64encode(Crypt::CBC->random_bytes(32));
+}
+
+sub key {
+    return generate_key() unless UNIVERSAL::isa($_[0], __PACKAGE__);
+    my $self = shift;
+    if (@_) {
+        ${$self} = defined($_[0]) ? urlsafe_b64decode(shift) : undef;
+    }
+    return ${$self};
 }
 
 sub verify {
-    my($key, $token, $ttl) = @_;
-    my $k = urlsafe_b64decode($key);
-    my $t = urlsafe_b64decode($token);
+    my($key, $token, $ttl) = do {
+        if (UNIVERSAL::isa($_[0], __PACKAGE__)) {
+            ${+shift}, urlsafe_b64decode(shift), @_;
+        }
+        else {
+            urlsafe_b64decode(shift), urlsafe_b64decode(shift), @_;
+        }
+    };
     return !!0
-        unless $FERNET_TOKEN_VERSION eq substr($t, 0, 1);
+        unless $FERNET_TOKEN_VERSION eq substr($token, 0, 1);
     return !!0
-        if $ttl && time() - _bytes_to_time(substr($t, 1, 8)) > $ttl;
-    my $size_t    = length($t) - 32;
-    my $signature = substr($t, $size_t);
-    my $t_pref    = substr($t, 0, $size_t);
+        if $ttl && time() - _bytes_to_time(substr($token, 1, 8)) > $ttl;
+    my $size_t    = length($token) - 32;
+    my $pre_t     = substr($token, 0, $size_t);
+    my $signature = substr($token, $size_t);
     return !!0
-        unless $signature eq hmac_sha256($t_pref, substr($k, 0, 16));
+        unless $signature eq hmac_sha256($pre_t, substr($key, 0, 16));
     return !!1;
 }
 
