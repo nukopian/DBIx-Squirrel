@@ -142,9 +142,6 @@ sub _cache_size_init {
             if (UNIVERSAL::isa($_[0], 'HASH')) {
                 $attr_by_id{$id} = {%{$attr}, %{$_[0]}};
             }
-            elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                $attr_by_id{$id} = {%{$attr}, @{$_[0]}};
-            }
             else {
                 $attr_by_id{$id} = {%{$attr}, @_};
             }
