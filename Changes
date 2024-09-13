@@ -11,6 +11,8 @@ Revision history for DBIx-Squirrel
         63.3 pc.
     -   D3 Improve the SYNOPSIS, which is too long and wastes far too
         much space covering activities that can be done with the DBI.
+
+    -   A few improvements added to the Fernet encryption package.
     1.5.3
     -   Added a new "slurp" exported function to DBIx::Squirrel::Utils
         to read binary files, decrypt them, uncompress them, and parse
