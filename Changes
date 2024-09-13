@@ -5,11 +5,10 @@ Revision history for DBIx-Squirrel
 1.5.4 2024-09-12 20:52 Developer Release (Work In Progress)
 
 -   GOALS 1.5.4
-    -   T2 Increase DBIx::Squirrel::st test coverage appreciably from
-        63.3 pc.
     -   D3 Improve the SYNOPSIS, which is too long and wastes far too
         much space covering activities that can be done with the DBI.
 
+    -   Increased DBIx::Squirrel::st test coverage.
     -   Database entity helpers may now be assigned values more than
         once.
     -   A few improvements to the DBIx::Squirrel::Crypt::Fernet package
