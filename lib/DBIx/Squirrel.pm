@@ -78,12 +78,11 @@ sub import {
     for my $name (@{$helpers}) {
         my $symbol = $class . '::' . $name;
         my $helper = sub {
-            unless (defined(${$symbol})) {
-                if (@_) {
-                    throw E_BAD_ENT_BIND
-                        unless UNIVERSAL::isa($_[0], 'DBI::db')
-                        or UNIVERSAL::isa($_[0], 'DBI::st')
-                        or UNIVERSAL::isa($_[0], 'DBIx::Squirrel::Iterator');
+            if (@_) {
+                if (   UNIVERSAL::isa($_[0], 'DBI::db')
+                    or UNIVERSAL::isa($_[0], 'DBI::st')
+                    or UNIVERSAL::isa($_[0], 'DBIx::Squirrel::Iterator'))
+                {
                     ${$symbol} = shift;
                     return ${$symbol};
                 }
