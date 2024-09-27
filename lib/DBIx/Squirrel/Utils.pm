@@ -106,7 +106,7 @@ sub slurp {
     }
     if ($filename =~ /\.json/) {
         local $JSON::Syck::ImplicitUnicode = !!1;
-        return do { $_ = JSON::Syck::Load($buffer) };
+        return do { $_ = JSON::Syck::Load(Encode::decode_utf8($buffer)) };
     }
     if (!exists($options{decode_utf8}) || !!$options{decode_utf8}) {
         return do { $_ = Encode::decode_utf8($buffer) };
