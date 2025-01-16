@@ -11,7 +11,13 @@ use Exporter;
 use MIME::Base64::URLSafe qw/urlsafe_b64encode urlsafe_b64decode/;
 use namespace::clean;
 
-our @ISA       = qw(Exporter);
+our @ISA    = qw(Exporter);
+our @EXPORT = qw/
+    fernet_decrypt
+    fernet_encrypt
+    fernet_genkey
+    fernet_verify
+    /;
 our @EXPORT_OK = qw/
     Fernet
     fernet_decrypt
@@ -19,8 +25,7 @@ our @EXPORT_OK = qw/
     fernet_genkey
     fernet_verify
     /;
-our %EXPORT_TAGS = ('all' => \@EXPORT_OK);
-our @EXPORT;
+our %EXPORT_TAGS          = ('all' => [@EXPORT_OK]);
 our $VERSION              = '0.04';
 our $FERNET_TOKEN_VERSION = pack("H*", '80');
 
@@ -37,7 +42,7 @@ sub fernet_encrypt {
 }
 
 # Maintain compatibility with Crypt::Fernet interface
-sub fernet_genkey { 
+sub fernet_genkey {
     goto &generate_key;
 }
 
