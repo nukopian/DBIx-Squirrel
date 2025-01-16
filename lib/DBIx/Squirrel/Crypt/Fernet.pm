@@ -42,10 +42,14 @@ sub Fernet {
 }
 
 sub decrypt {
-    my($key, $token, $ttl) = (
-        UNIVERSAL::isa($_[0], __PACKAGE__) ? ${+shift} : urlsafe_b64decode(shift),
-        urlsafe_b64decode(shift), @_,
-    );
+    my($key, $token, $ttl) = do {
+        if (UNIVERSAL::isa($_[0], __PACKAGE__)) {
+            ${+shift};
+        }
+        else {
+            urlsafe_b64decode(shift), urlsafe_b64decode(shift), @_;
+        }
+    };
     return unless verify(encode($key), encode($token), $ttl);
     my $c_size     = length($token) - 25 - 32;
     my $ciphertext = substr($token, 25, $c_size);
@@ -66,9 +70,14 @@ sub encode {
 }
 
 sub encrypt {
-    my($key, $data) = (
-        UNIVERSAL::isa($_[0], __PACKAGE__) ? ${+shift} : urlsafe_b64decode(shift), @_,
-    );
+    my($key, $data) = do {
+        if (UNIVERSAL::isa($_[0], __PACKAGE__)) {
+            ${+shift};
+        }
+        else {
+            urlsafe_b64decode(shift), @_;
+        }
+    };
     my $iv         = Crypt::CBC->random_bytes(16);
     my $ciphertext = Crypt::CBC->new(
         -cipher      => 'Rijndael',
@@ -106,10 +115,14 @@ sub timestamp {
 }
 
 sub verify {
-    my($key, $token, $ttl) = (
-        UNIVERSAL::isa($_[0], __PACKAGE__) ? ${+shift} : urlsafe_b64decode(shift),
-        urlsafe_b64decode(shift), @_,
-    );
+    my($key, $token, $ttl) = do {
+        if (UNIVERSAL::isa($_[0], __PACKAGE__)) {
+            ${+shift};
+        }
+        else {
+            urlsafe_b64decode(shift), urlsafe_b64decode(shift), @_;
+        }
+    };
     return false unless substr($token, 0, 1) eq $FERNET_TOKEN_VERSION;
     return false if $ttl && $ttl < do {
         use bytes;
