@@ -41,11 +41,6 @@ sub Fernet {
     bless $key, 'Crypt::Fernet';
 }
 
-sub encode {
-    my $b64 = urlsafe_b64encode(shift);
-    return $b64 . ('=' x (4 - length($b64) % 4));
-}
-
 sub decrypt {
     my($key, $token, $ttl) = (
         UNIVERSAL::isa($_[0], __PACKAGE__) ? ${+shift} : urlsafe_b64decode(shift),
@@ -65,13 +60,9 @@ sub decrypt {
     )->decrypt($ciphertext);
 }
 
-sub timestamp {
-    local $_;
-    use bytes;
-    my $time       = time();
-    my $time_64bit = '';
-    $time_64bit .= substr(pack('I', ($time >> $_ * 8) & 0xFF), 0, 1) for 0 .. 7;
-    return reverse($time_64bit);
+sub encode {
+    my $b64 = urlsafe_b64encode(shift);
+    return $b64 . ('=' x (4 - length($b64) % 4));
 }
 
 sub encrypt {
@@ -103,6 +94,15 @@ sub key {
         ${$self} = defined($_[0]) ? urlsafe_b64decode(shift) : undef;
     }
     return ${$self};
+}
+
+sub timestamp {
+    local $_;
+    use bytes;
+    my $time       = time();
+    my $time_64bit = '';
+    $time_64bit .= substr(pack('I', ($time >> $_ * 8) & 0xFF), 0, 1) for 0 .. 7;
+    return reverse($time_64bit);
 }
 
 sub verify {
