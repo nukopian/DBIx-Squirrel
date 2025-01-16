@@ -24,17 +24,27 @@ our @EXPORT;
 our $VERSION              = '0.04';
 our $FERNET_TOKEN_VERSION = pack("H*", '80');
 
-sub false () { !!0 }
+sub FALSE () { !!0 }
 
-sub true () { !!1 }
+# Maintain compatibility with Crypt::Fernet interface
+sub fernet_decrypt {
+    goto &decrypt;
+}
 
-sub fernet_decrypt { decrypt(@_) }
+# Maintain compatibility with Crypt::Fernet interface
+sub fernet_encrypt {
+    goto &encrypt;
+}
 
-sub fernet_encrypt { encrypt(@_) }
+# Maintain compatibility with Crypt::Fernet interface
+sub fernet_genkey { 
+    goto &generate_key;
+}
 
-sub fernet_genkey { generate_key() }
-
-sub fernet_verify { verify(@_) }
+# Maintain compatibility with Crypt::Fernet interface
+sub fernet_verify {
+    goto &verify;
+}
 
 sub Fernet {
     my $key = \(my $self = defined($_[0]) ? urlsafe_b64decode(shift) : undef);
@@ -123,8 +133,8 @@ sub verify {
             urlsafe_b64decode(shift), urlsafe_b64decode(shift), @_;
         }
     };
-    return false unless substr($token, 0, 1) eq $FERNET_TOKEN_VERSION;
-    return false if $ttl && $ttl < do {
+    return FALSE unless substr($token, 0, 1) eq $FERNET_TOKEN_VERSION;
+    return FALSE if $ttl && $ttl < do {
         use bytes;
         time() - unpack('V', reverse(substr($token, 1, 8)));
     };
