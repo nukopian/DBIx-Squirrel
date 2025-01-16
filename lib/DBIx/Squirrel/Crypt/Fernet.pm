@@ -116,8 +116,8 @@ sub key {
 }
 
 sub timestamp {
-    local $_;
     use bytes;
+    local $_;
     my $time       = time();
     my $time_64bit = '';
     $time_64bit .= substr(pack('I', ($time >> $_ * 8) & 0xFF), 0, 1) for 0 .. 7;
