@@ -22,6 +22,7 @@ requires "YAML::Syck" => "0";
 requires "bytes" => "0";
 requires "constant" => "0";
 requires "namespace::clean" => "0";
+requires "overload" => "0";
 requires "perl" => "5.010_001";
 requires "strict" => "0";
 requires "warnings" => "0";

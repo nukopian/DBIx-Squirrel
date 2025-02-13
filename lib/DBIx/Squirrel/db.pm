@@ -44,9 +44,6 @@ sub _private_state {
         if (UNIVERSAL::isa($_[0], 'HASH')) {
             $self->{private_ekorn} = {%{$self->{private_ekorn}}, %{$_[0]}};
         }
-        elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
-            $self->{private_ekorn} = {%{$self->{private_ekorn}}, @{$_[0]}};
-        }
         else {
             $self->{private_ekorn} = {%{$self->{private_ekorn}}, @_};
         }

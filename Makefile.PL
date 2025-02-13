@@ -38,6 +38,7 @@ my %WriteMakefileArgs = (
     "bytes" => 0,
     "constant" => 0,
     "namespace::clean" => 0,
+    "overload" => 0,
     "strict" => 0,
     "warnings" => 0
   },
@@ -55,7 +56,7 @@ my %WriteMakefileArgs = (
     "Test::Warnings" => 0,
     "lib" => 0
   },
-  "VERSION" => "1.5.3",
+  "VERSION" => "1.5.4",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -96,6 +97,7 @@ my %FallbackPrereqs = (
   "constant" => 0,
   "lib" => 0,
   "namespace::clean" => 0,
+  "overload" => 0,
   "strict" => 0,
   "warnings" => 0
 );
