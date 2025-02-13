@@ -7,7 +7,6 @@ Revision history for DBIx-Squirrel
 -   GOALS 1.5.4
     -   D3 Improve the SYNOPSIS, which is too long and wastes far too
         much space covering activities that can be done with the DBI.
-
     -   Increased DBIx::Squirrel::st test coverage.
     -   Database entity helpers may now be assigned values more than
         once.
