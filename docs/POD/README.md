@@ -4,7 +4,7 @@ DBIx::Squirrel - The little Perl DBI extension that makes working with databases
 
 # VERSION
 
-Version 1.5.3
+Version 1.5.4
 
 # SYNOPSIS
 
@@ -1442,7 +1442,7 @@ Returns a reference to the current iterator's statement handle object.
 
 # COPYRIGHT AND LICENSE
 
-The DBIx::Squirrel module is Copyright (c) 2020-2014 Iain Campbell.
+The DBIx::Squirrel module is Copyright (c) 2020-2025 Iain Campbell.
 All rights reserved.
 
 You may distribute under the terms of either the GNU General Public

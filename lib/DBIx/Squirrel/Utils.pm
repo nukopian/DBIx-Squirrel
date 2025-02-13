@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Carp                          ();
 use Compress::Bzip2               qw/memBunzip memBzip/;
-use DBIx::Squirrel::Crypt::Fernet qw/fernet_decrypt fernet_encrypt/;
+use DBIx::Squirrel::Crypt::Fernet qw/Fernet/;
 use Devel::GlobalDestruction      ();
 use Dotenv                        ();
 use Encode                        ();
@@ -37,6 +37,8 @@ BEGIN {
 }
 
 sub args_partition {
+    # Gathers trailing, contiguous CODEREFs into their own list, returning
+    # a reference to that list followed by the remaining arguments.
     my $s = @_;
     return [] unless $s;
     my $n = $s;
@@ -50,8 +52,8 @@ sub args_partition {
 }
 
 sub global_destruct_phase {
-    # Perl versions older than 5.14 do not support ${^GLOBAL_PHASE}, so provide
-    # a shim that works around that wrinkle.
+    # Perl versions older than 5.14 don't support ${^GLOBAL_PHASE}, so
+    # provide a shim that works around that wrinkle.
     return Devel::GlobalDestruction::in_global_destruction();
 }
 
@@ -80,33 +82,36 @@ sub whine {
 }
 
 sub slurp {
+    # Read an entire file, which might be encrypted, compressed, JSON-enconded
+    # data, and return the decrypted, uncompressed and parsed data. Used by the
+    # DBIx::Squirrel::db::load_tuples method.
     my $filename = shift;
     my %options  = @_;
-    my $bytes;
+    my $buffer;
     open my $fh, '<:raw', $filename or throw "$! - $filename";
-    read $fh, $bytes, -s $filename;
+    read $fh, $buffer, -s $filename;
     close $fh;
     if ($filename =~ /\.encrypted/) {
-        $bytes = do {
+        $buffer = do {
             if (!exists($options{key})) {
-                fernet_decrypt($ENV{FERNET_KEY}, $bytes);
+                Fernet($ENV{FERNET_KEY})->decrypt($buffer);
             }
             else {
-                fernet_decrypt($options{key}, $bytes);
+                Fernet($options{key})->decrypt($buffer);
             }
         };
     }
     if ($filename =~ /\.bz2/) {
-        $bytes = memBunzip($bytes);
+        $buffer = memBunzip($buffer);
     }
     if ($filename =~ /\.json/) {
         local $JSON::Syck::ImplicitUnicode = !!1;
-        return do { $_ = JSON::Syck::Load($bytes) };
+        return do { $_ = JSON::Syck::Load(Encode::decode_utf8($buffer)) };
     }
     if (!exists($options{decode_utf8}) || !!$options{decode_utf8}) {
-        return do { $_ = Encode::decode_utf8($bytes) };
+        return do { $_ = Encode::decode_utf8($buffer) };
     }
-    return do { $_ = $bytes };
+    return do { $_ = $buffer };
 }
 
 1;

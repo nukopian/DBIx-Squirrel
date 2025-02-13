@@ -20,7 +20,7 @@ use namespace::clean;
 
 BEGIN {
     @DBIx::Squirrel::ISA            = qw/DBI/;
-    $DBIx::Squirrel::VERSION        = "1.005_003";
+    $DBIx::Squirrel::VERSION        = "1.005_004";
     $DBIx::Squirrel::VERSION        = eval($DBIx::Squirrel::VERSION);        ## no critic
     @DBIx::Squirrel::EXPORT_OK      = @DBI::EXPORT_OK;
     %DBIx::Squirrel::EXPORT_TAGS    = %DBI::EXPORT_TAGS;
@@ -78,12 +78,11 @@ sub import {
     for my $name (@{$helpers}) {
         my $symbol = $class . '::' . $name;
         my $helper = sub {
-            unless (defined(${$symbol})) {
-                if (@_) {
-                    throw E_BAD_ENT_BIND
-                        unless UNIVERSAL::isa($_[0], 'DBI::db')
-                        or UNIVERSAL::isa($_[0], 'DBI::st')
-                        or UNIVERSAL::isa($_[0], 'DBIx::Squirrel::Iterator');
+            if (@_) {
+                if (   UNIVERSAL::isa($_[0], 'DBI::db')
+                    or UNIVERSAL::isa($_[0], 'DBI::st')
+                    or UNIVERSAL::isa($_[0], 'DBIx::Squirrel::Iterator'))
+                {
                     ${$symbol} = shift;
                     return ${$symbol};
                 }
