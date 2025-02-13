@@ -20,7 +20,7 @@ use namespace::clean;
 
 BEGIN {
     @DBIx::Squirrel::ISA            = qw/DBI/;
-    $DBIx::Squirrel::VERSION        = "1.005_004";
+    $DBIx::Squirrel::VERSION        = "1.005_005";
     $DBIx::Squirrel::VERSION        = eval($DBIx::Squirrel::VERSION);        ## no critic
     @DBIx::Squirrel::EXPORT_OK      = @DBI::EXPORT_OK;
     %DBIx::Squirrel::EXPORT_TAGS    = %DBI::EXPORT_TAGS;
