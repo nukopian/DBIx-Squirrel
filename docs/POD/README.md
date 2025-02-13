@@ -1442,7 +1442,7 @@ Returns a reference to the current iterator's statement handle object.
 
 # COPYRIGHT AND LICENSE
 
-The DBIx::Squirrel module is Copyright (c) 2020-2014 Iain Campbell.
+The DBIx::Squirrel module is Copyright (c) 2020-2025 Iain Campbell.
 All rights reserved.
 
 You may distribute under the terms of either the GNU General Public

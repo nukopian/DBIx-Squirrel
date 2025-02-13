@@ -38,6 +38,7 @@ my %WriteMakefileArgs = (
     "bytes" => 0,
     "constant" => 0,
     "namespace::clean" => 0,
+    "overload" => 0,
     "strict" => 0,
     "warnings" => 0
   },
@@ -96,6 +97,7 @@ my %FallbackPrereqs = (
   "constant" => 0,
   "lib" => 0,
   "namespace::clean" => 0,
+  "overload" => 0,
   "strict" => 0,
   "warnings" => 0
 );
