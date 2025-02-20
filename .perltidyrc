@@ -1,41 +1,42 @@
--ole=unix           # Unix line-ending
--utf8               # UTF8 encoding
--st                 # Output to STDOUT
--se                 # Errors to STDERR
--w                  # show all warnings
--l=80               # Max line width is 80 cols
--vmll               # Variable maximum line length
--i=4                # Indent level is 4 cols
--ci=4               # Continuation indent is  cols
--cti=0              # No extra indentation for closing brackets
--cab=1              # Comma arrow breakpoints 1
--mft=1              # Maximum fields per tabel 1
--otr                # No break between comma and opening token
--sot                # Stack opening tokens
-#-sct                # Stack closing tokens
--pt=2               # Tight parentheses
--bt=2               # Tight braces
--sbt=2              # Tight square brackets
--bbt=0              # Block brace tightness
--bbvt=0             # Block brace vertical tightness
--nsfs               # No space before semicolons
--nolq               # Don't outdent long quoted strings
--bbao               # Break before all operators
--blbs=1             # Blank line before subs
--nsbl               # No opening sub brace on new line
--nasbl              # Opening anonymous sub brace on same line
--tqw                # Trim space around multiline qw
--tso                # Tight secret operators
--nsak="my local our"# No space after keywords
--ssp=2              # Space Signature Parens
--bal=1              # break after label
--ipc                # ignore perl critic comments
--cpb                # Cuddled paren brace
--bok                # break at old keyword points
--bot                # break at old ternay points
--boa                # break at old attribute points
--otr                # opening token right
--valign             # vertically symbols
+-ole=unix
+-utf8
+-st
+-se
+-w
+-l=80
+-vmll
+-i=4
+-ci=4
+-cti=0
+-cab=1
+-mft=1
+-otr
+-sot
+-vtc=1
+-pt=2
+-bt=2
+-sbt=2
+-bbt=0
+-bbvt=0
+-nsfs
+-nolq
+-bbao
+-nsbl
+-nasbl
+-tqw
+-tso
+-nsak="my local our"
+-ssp=2
+-bal=1
+-ipc
+-cpb
+-bok
+-bot
+-boa
+-boc
+-otr
+-valign
+-asc
 --noblanks-before-comments
 --blank-lines-before-subs=1
 --noblanks-before-blocks
@@ -45,7 +46,6 @@
 --delete-weld-interfering-commas
 --add-missing-else
 --add-missing-else-comment="# ok - no worries"
---trim-pod
 --indent-block-comments
 --no-indent-spaced-block-comments
 --ignore-side-comment-lengths

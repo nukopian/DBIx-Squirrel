@@ -56,14 +56,14 @@ my($expired_key, $expired_token) = (
 {
     note $_ for "", "Testing object-oriented interface", "";
 
-    my $b64_key = Fernet->generate_key();
+    my $b64_key = Fernet->generatekey();
     ok($b64_key, "got key $b64_key");
 
     my $fernet = Fernet($b64_key);
     isa_ok($fernet, 'DBIx::Squirrel::Crypt::Fernet');
 
     my $key = urlsafe_b64decode($b64_key);
-    is(${$fernet}, $key, "object contains decoded key $b64_key");
+    is($fernet->{key}, $key, "object contains decoded key $b64_key");
 
     my $plaintext = 'This is a test';
     my $token     = $fernet->encrypt($plaintext);
@@ -89,8 +89,8 @@ my($expired_key, $expired_token) = (
     my $ttl_decrypttext = Fernet($b64_key)->decrypt($token, $ttl);
     is($ttl_decrypttext, $plaintext, "good unexpired decrypt");
 
-    is($fernet->to_string(), $b64_key, "good to_string serialisation");
-    is("$fernet",            $b64_key, "good stringification");
+    is($fernet->tostring(), $b64_key, "good tostring serialisation");
+    is("$fernet",           $b64_key, "good stringification");
 }
 
 done_testing();
