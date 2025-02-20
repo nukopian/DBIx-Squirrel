@@ -49,7 +49,7 @@ DBIx::Squirrel::Crypt::Fernet
     $bool = $fernet->verify($token, $ttl);
 
     # Retrieve Base64-encoded key
-    $key = $fernet->tostring();
+    $key = $fernet->to_string();
     $key = "$fernet";
 
     ######################
@@ -122,7 +122,7 @@ use Digest::SHA           qw(hmac_sha256);
 use Exporter              ();
 use MIME::Base64::URLSafe qw(urlsafe_b64decode urlsafe_b64encode);
 use namespace::clean;
-use overload '""' => \&tostring;    # overload after namespace::clean for stringification to work
+use overload '""' => \&to_string;    # overload after namespace::clean for stringification to work
 
 my $TOKEN_VERSION = pack("H*", '80');
 
@@ -163,7 +163,7 @@ key may be passed as the only argument.
 
 The blessed scalar reference representing the object wraps the decoded bytes
 of the key. Care should be taken not to display this binary value, but to use
-the C<tostring> method (or stringification) to encode it as Base64.
+the C<to_string> method (or stringification) to encode it as Base64.
 
 =cut
 
@@ -293,7 +293,7 @@ key may be passed as the only argument.
 
 The blessed scalar reference representing the object wraps the decoded bytes
 of the key. Care should be taken not to display this binary value, but to use
-the C<tostring> method (or stringification) to encode it as Base64.
+the C<to_string> method (or stringification) to encode it as Base64.
 
 =cut
 
@@ -417,16 +417,16 @@ sub verify {
     return $digest eq hmac_sha256($token, $signing_key);
 }
 
-=head3 C<tostring>
+=head3 C<to_string>
 
-    $key = $obj->tostring();
+    $key = $obj->to_string();
     $key = "$obj";
 
 Returns the Base64-encoded key.
 
 =cut
 
-sub tostring {
+sub to_string {
     return _padb64(shift->{key});
 }
 

@@ -89,8 +89,8 @@ my($expired_key, $expired_token) = (
     my $ttl_decrypttext = Fernet($b64_key)->decrypt($token, $ttl);
     is($ttl_decrypttext, $plaintext, "good unexpired decrypt");
 
-    is($fernet->tostring(), $b64_key, "good tostring serialisation");
-    is("$fernet",           $b64_key, "good stringification");
+    is($fernet->to_string(), $b64_key, "good to_string serialisation");
+    is("$fernet",            $b64_key, "good stringification");
 }
 
 done_testing();
