@@ -18,15 +18,20 @@ diag join(
     "Perl $]", "$^X",
 );
 
-my($key, $fernet, $message, $encrypted_token, $ttl, $verify, $decrypted_text);
 my($expired_key, $expired_token) = (
     'cJ3Fw3ehXqef-Vqi-U8YDcJtz8Gv-ZHyxultoAGHi4c=',
     'gAAAAABT8bVcdaked9SPOkuQ77KsfkcoG9GvuU4SVWuMa3ewrxpQdreLdCT6cc7rdqkavhyLgqZC41dW2vwZJAHLYllwBmjgdQ==',
 );
 
+# Yes, I know I can use subtests, but subtests create a few more issues
+# on the CPANTS testing matrix. So, I'm keeping things simple by using
+# lexical scopes for groups of related tests.
+
 {
     my $h = '*  Testing object-oriented interface  *';
     note $_ for '', '*' x length($h), $h, '*' x length($h), '';
+
+    my($key, $fernet, $message, $ttl, $verify, $encrypted_token, $decrypted_text);
 
     $key = Fernet->generatekey();
     is length($key), 44, "ok - got base64 key";
@@ -67,6 +72,8 @@ my($expired_key, $expired_token) = (
 {
     my $h = '*  Testing exported interface  *';
     note $_ for '', '*' x length($h), $h, '*' x length($h), '';
+
+    my($key, $fernet, $message, $ttl, $verify, $encrypted_token, $decrypted_text);
 
     $key = fernet_genkey();
     is length($key), 44, "ok - got base64 key";
