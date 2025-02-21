@@ -1,38 +1,40 @@
+use strict;
+use warnings;
+use 5.010_001;
+
 package    # hide from PAUSE
     DBIx::Squirrel::util;
 
-use 5.010_001;
-use strict;
-use warnings;
+our @ISA = qw(Exporter);
+our @EXPORT;
+our %EXPORT_TAGS = (all => [
+    our @EXPORT_OK = qw(
+        args_partition
+        global_destruct_phase
+        result
+        slurp
+        statement_digest
+        statement_normalise
+        statement_study
+        statement_trim
+        throw
+        whine
+    )
+]);
+
 use Carp                          ();
-use Compress::Bzip2               qw/memBunzip memBzip/;
-use DBIx::Squirrel::Crypt::Fernet qw/Fernet/;
+use Compress::Bzip2               qw(memBunzip memBzip);
+use DBIx::Squirrel::Crypt::Fernet qw(Fernet);
 use Devel::GlobalDestruction      ();
 use Dotenv                        ();
 use Encode                        ();
+use Exporter                      ();
 use JSON::Syck                    ();
 use Scalar::Util;
 use Sub::Name;
 
-BEGIN {
-    require Exporter;
-    @DBIx::Squirrel::util::ISA       = qw/Exporter/;
-    @DBIx::Squirrel::util::EXPORT_OK = (
-        qw/
-            args_partition
-            global_destruct_phase
-            result
-            slurp
-            statement_digest
-            statement_normalise
-            statement_study
-            statement_trim
-            throw
-            whine
-            /);
-    %DBIx::Squirrel::util::EXPORT_TAGS
-        = (all => [@DBIx::Squirrel::util::EXPORT_OK]);
-    Dotenv->load() if -e '.env';
+if (-e '.env') {
+    Dotenv->load();
 }
 
 sub args_partition {
@@ -81,22 +83,18 @@ sub whine {
 }
 
 sub slurp {
-    # Read an entire file, which might be encrypted, compressed, JSON-enconded
-    # data, and return the decrypted, uncompressed and parsed data. Used by the
-    # DBIx::Squirrel::db::load_tuples method.
-    my $filename = shift;
-    my %options  = @_;
-    my $buffer;
-    open my $fh, '<:raw', $filename or throw "$! - $filename";
-    read $fh, $buffer, -s $filename;
+    my($filename, $opt) = @_;
+    open my $fh, '<:raw', $filename
+        or throw "$! - $filename";
+    read $fh, my $buffer, -s $filename;
     close $fh;
     if ($filename =~ /\.encrypted/) {
         $buffer = do {
-            if (!exists($options{key})) {
+            if (!exists($opt->{key})) {
                 Fernet($ENV{FERNET_KEY})->decrypt($buffer);
             }
             else {
-                Fernet($options{key})->decrypt($buffer);
+                Fernet($opt->{key})->decrypt($buffer);
             }
         };
     }
@@ -107,7 +105,7 @@ sub slurp {
         local $JSON::Syck::ImplicitUnicode = !!1;
         return do { $_ = JSON::Syck::Load(Encode::decode_utf8($buffer)) };
     }
-    if (!exists($options{decode_utf8}) || !!$options{decode_utf8}) {
+    if (!exists($opt->{decode_utf8}) || !!$opt->{decode_utf8}) {
         return do { $_ = Encode::decode_utf8($buffer) };
     }
     return do { $_ = $buffer };
