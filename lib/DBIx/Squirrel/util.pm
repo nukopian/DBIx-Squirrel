@@ -37,6 +37,22 @@ if (-e '.env') {
     Dotenv->load();
 }
 
+
+=head3 C<isolate_callbacks>
+
+    (\@callbacks, @arguments) = isolate_callbacks(@argments);
+    (\@callbacks, @arguments) = &isolate_callbacks;
+
+While using C<DBIx::Squirrel>, some calls may include a trailing, contiguous
+set of lambdas or callbacks, referred to as a transformation pipeline.
+
+This function takes an array of arguments that may or may not contain a
+transformation pipeline. It moves any and all stages of a pipeline from the
+end of the array of arguments into a separate array, and returns a reference
+to that array, followed by any remaining arguments, to the caller.
+
+=cut
+
 sub isolate_callbacks {
     # Gathers trailing, contiguous CODEREFs into their own list, returning
     # a reference to that list followed by the remaining arguments.
