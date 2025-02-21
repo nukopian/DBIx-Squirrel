@@ -66,6 +66,17 @@ sub global_destruct_phase {
     return Devel::GlobalDestruction::in_global_destruction();
 }
 
+
+=head3 C<confessf>
+
+    confessf [$message];
+    confessf [$format_string[, @arguments]];
+
+Throw an exception with a stack trace. If nothing helpful is passed then C<$@>
+will be re-thrown if it is not empty, or an unknown exception will be thrown.
+
+=cut
+
 sub confessf {
     @_ = do {
         if (@_) {
@@ -85,6 +96,17 @@ sub confessf {
     goto &Carp::confess;
 }
 
+
+=head3 C<cluckf>
+
+    cluckf [$message];
+    cluckf [$format_string[, @arguments]];
+
+Emit a warning with a stack trace. If nothing helpful is passed then an
+equally unhelpful warning is emitted.
+
+=cut
+
 sub cluckf {
     @_ = do {
         if (@_) {
@@ -102,6 +124,7 @@ sub cluckf {
     };
     goto &Carp::cluck;
 }
+
 
 sub slurp {
     my($filename, $opt) = @_;
