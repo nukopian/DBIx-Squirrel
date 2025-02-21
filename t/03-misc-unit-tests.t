@@ -24,7 +24,7 @@ BEGIN {
         || print "Bail out!\n";
     use_ok('DBIx::Squirrel::st', qw/statement_trim statement_study/)
         || print "Bail out!\n";
-    use_ok('DBIx::Squirrel::util', qw/args_partition confessf cluckf/)
+    use_ok('DBIx::Squirrel::util', qw/isolate_callbacks confessf cluckf/)
         || print "Bail out!\n";
 }
 
@@ -139,37 +139,37 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
     my $sub2 = sub { 'DUMMY 2' };
     my $sub3 = sub { 'DUMMY 3' };
 
-    note('DBIx::Squirrel::util::args_partition');
+    note('DBIx::Squirrel::util::isolate_callbacks');
 
     my @tests = (
-        {line => __LINE__, got => [args_partition()],        exp => [[]]},
-        {line => __LINE__, got => [args_partition(1)],       exp => [[], 1]},
-        {line => __LINE__, got => [args_partition(1, 2)],    exp => [[], 1, 2]},
-        {line => __LINE__, got => [args_partition(1, 2, 3)], exp => [[], 1, 2, 3]},
-        {line => __LINE__, got => [args_partition($sub1)],   exp => [[$sub1]]},
+        {line => __LINE__, got => [isolate_callbacks()],        exp => [[]]},
+        {line => __LINE__, got => [isolate_callbacks(1)],       exp => [[], 1]},
+        {line => __LINE__, got => [isolate_callbacks(1, 2)],    exp => [[], 1, 2]},
+        {line => __LINE__, got => [isolate_callbacks(1, 2, 3)], exp => [[], 1, 2, 3]},
+        {line => __LINE__, got => [isolate_callbacks($sub1)],   exp => [[$sub1]]},
         {
-            line => __LINE__, got => [args_partition($sub1, $sub2)],
+            line => __LINE__, got => [isolate_callbacks($sub1, $sub2)],
             exp  => [[$sub1, $sub2]],
         },
         {
-            line => __LINE__, got => [args_partition($sub1, $sub2, $sub3)],
+            line => __LINE__, got => [isolate_callbacks($sub1, $sub2, $sub3)],
             exp  => [[$sub1, $sub2, $sub3]],
         },
-        {line => __LINE__, got => [args_partition(1 => $sub1)], exp => [[$sub1], 1]},
+        {line => __LINE__, got => [isolate_callbacks(1 => $sub1)], exp => [[$sub1], 1]},
         {
-            line => __LINE__, got => [args_partition(1, 2 => $sub1)],
+            line => __LINE__, got => [isolate_callbacks(1, 2 => $sub1)],
             exp  => [[$sub1], 1, 2],
         },
         {
-            line => __LINE__, got => [args_partition(1, 2, 3 => $sub1)],
+            line => __LINE__, got => [isolate_callbacks(1, 2, 3 => $sub1)],
             exp  => [[$sub1], 1, 2, 3],
         },
         {
-            line => __LINE__, got => [args_partition(1, 2, 3 => $sub1, $sub2, $sub3)],
+            line => __LINE__, got => [isolate_callbacks(1, 2, 3 => $sub1, $sub2, $sub3)],
             exp  => [[$sub1, $sub2, $sub3], 1, 2, 3],
         },
         {
-            line => __LINE__, got => [args_partition(1, $sub1, 3 => $sub2, $sub3)],
+            line => __LINE__, got => [isolate_callbacks(1, $sub1, 3 => $sub2, $sub3)],
             exp  => [[$sub2, $sub3], 1, $sub1, 3],
         },
     );

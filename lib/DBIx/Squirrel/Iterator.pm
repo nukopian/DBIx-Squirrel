@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Scalar::Util qw/weaken looks_like_number/;
 use Sub::Name;
-use DBIx::Squirrel::util qw/args_partition confessf cluckf/;
+use DBIx::Squirrel::util qw/isolate_callbacks confessf cluckf/;
 use namespace::clean;
 
 BEGIN {
@@ -58,7 +58,7 @@ sub DESTROY {
 
 sub new {
     my $class = ref($_[0]) ? ref(shift) : shift;
-    my($transforms, $sth, @bind_values) = args_partition(@_);
+    my($transforms, $sth, @bind_values) = isolate_callbacks(@_);
     confessf E_BAD_STH unless UNIVERSAL::isa($sth, 'DBIx::Squirrel::st');
     my $self = bless {}, $class;
     $self->_private_state({
@@ -508,7 +508,7 @@ BEGIN {
 
 sub start {
     my($attr,       $self)        = shift->_private_state;
-    my($transforms, @bind_values) = args_partition(@_);
+    my($transforms, @bind_values) = isolate_callbacks(@_);
     if (@{$transforms}) {
         $attr->{transforms} = [@{$attr->{transforms_initial}}, @{$transforms}];
     }

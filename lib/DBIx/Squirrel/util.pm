@@ -9,7 +9,7 @@ our @ISA = qw(Exporter);
 our @EXPORT;
 our %EXPORT_TAGS = (all => [
     our @EXPORT_OK = qw(
-        args_partition
+        isolate_callbacks
         global_destruct_phase
         result
         slurp
@@ -37,7 +37,7 @@ if (-e '.env') {
     Dotenv->load();
 }
 
-sub args_partition {
+sub isolate_callbacks {
     # Gathers trailing, contiguous CODEREFs into their own list, returning
     # a reference to that list followed by the remaining arguments.
     my $s = @_;
@@ -51,6 +51,7 @@ sub args_partition {
     return [], @_ if $n == $s;
     return [@_[$n .. $#_]], @_[0 .. $n - 1];
 }
+
 
 =head3 C<global_destruct_phase>
 
