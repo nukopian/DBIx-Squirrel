@@ -224,16 +224,16 @@ sub encrypt {
             substr($key, 0, 16), substr($key, 16, 16);
         }
     };
-    my $entropy    = Crypt::CBC->random_bytes(16);
+    my $iv         = Crypt::CBC->random_bytes(16);
     my $ciphertext = Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
-        -iv          => $entropy,
+        -iv          => $iv,
         -key         => $encrypt_key,
         -keysize     => 16,
         -literal_key => 1,
     )->encrypt($data);
-    my $t = $TOKEN_VERSION . _timestamp() . $entropy . $ciphertext;
+    my $t = $TOKEN_VERSION . _timestamp() . $iv . $ciphertext;
     return _pad_b64encode($t . hmac_sha256($t, $signing_key));
 }
 
