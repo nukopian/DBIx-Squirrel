@@ -54,16 +54,10 @@ to that array, followed by any remaining arguments, to the caller.
 =cut
 
 sub isolate_callbacks {
-    # Gathers trailing, contiguous CODEREFs into their own list, returning
-    # a reference to that list followed by the remaining arguments.
-    my $s = @_;
-    return [] unless $s;
-    my $n = $s;
-    while ($n) {
-        last unless UNIVERSAL::isa($_[$n - 1], 'CODE');
-        $n -= 1;
-    }
-    return [@_] if $n == 0;
+    return [] unless @_;
+    my $n = my $s = scalar @_;
+    $n-- while $n && UNIVERSAL::isa($_[$n - 1], 'CODE');
+    return [@_] unless $n;
     return [], @_ if $n == $s;
     return [@_[$n .. $#_]], @_[0 .. $n - 1];
 }
