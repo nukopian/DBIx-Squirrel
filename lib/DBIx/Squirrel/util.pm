@@ -52,9 +52,17 @@ sub args_partition {
     return [@_[$n .. $#_]], @_[0 .. $n - 1];
 }
 
+=head3 C<global_destruct_phase>
+
+    $bool = global_destruct_phase();
+
+Perl versions older than 5.14 don't support ${^GLOBAL_PHASE}, so
+provide a shim that does the same so that DESTROY methods can be
+made safer.
+
+=cut
+
 sub global_destruct_phase {
-    # Perl versions older than 5.14 don't support ${^GLOBAL_PHASE}, so
-    # provide a shim that works around that wrinkle.
     return Devel::GlobalDestruction::in_global_destruction();
 }
 
