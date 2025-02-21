@@ -187,7 +187,7 @@ sub new {
         signing_key => substr($fernet_key, 0,  16),
         encrypt_key => substr($fernet_key, 16, 16),
     };
-    return bless $self, $class;
+    return bless $self, ref($class) || $class;
 }
 
 
