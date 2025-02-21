@@ -5,7 +5,7 @@ use 5.010_001;
 use strict;
 use warnings;
 use Sub::Name;
-use DBIx::Squirrel::util qw/throw/;
+use DBIx::Squirrel::util qw/confessf/;
 use namespace::clean;
 
 BEGIN {
@@ -40,17 +40,17 @@ sub get_column {
     my($self, $name) = @_;
     return unless defined($name);
     if (UNIVERSAL::isa($self, 'ARRAY')) {
-        throw E_STH_EXPIRED unless my $sth = $self->rs->sth;
+        confessf E_STH_EXPIRED unless my $sth = $self->rs->sth;
         my $n = $sth->{NAME_lc_hash}{lc($name)};
-        throw E_UNKNOWN_COLUMN, $name unless defined($n);
+        confessf E_UNKNOWN_COLUMN, $name unless defined($n);
         return $self->[$n];
     }
     else {
-        throw E_BAD_OBJECT unless UNIVERSAL::isa($self, 'HASH');
+        confessf E_BAD_OBJECT unless UNIVERSAL::isa($self, 'HASH');
         return $self->{$name} if exists($self->{$name});
         local($_);
         my($n) = grep { lc eq $_[1] } keys(%{$self});
-        throw E_UNKNOWN_COLUMN, $name unless defined($n);
+        confessf E_UNKNOWN_COLUMN, $name unless defined($n);
         return $self->{$n};
     }
 }
@@ -80,9 +80,9 @@ sub AUTOLOAD {
         # doing the same checks once, before setting up the accessor, just
         # to have the resulting accessor be as fast as it can be!
         if (UNIVERSAL::isa($self, 'ARRAY')) {
-            throw E_STH_EXPIRED unless my $sth = $self->rs->sth;
+            confessf E_STH_EXPIRED unless my $sth = $self->rs->sth;
             my $n = $sth->{NAME_lc_hash}{lc($name)};
-            throw E_UNKNOWN_COLUMN, $name unless defined($n);
+            confessf E_UNKNOWN_COLUMN, $name unless defined($n);
             sub { $_[0][$n] };
         }
         elsif (UNIVERSAL::isa($self, 'HASH')) {
@@ -92,12 +92,12 @@ sub AUTOLOAD {
             else {
                 local($_);
                 my($n) = grep { lc eq $name } keys(%{$self});
-                throw E_UNKNOWN_COLUMN, $name unless defined($n);
+                confessf E_UNKNOWN_COLUMN, $name unless defined($n);
                 sub { $_[0]{$n} };
             }
         }
         else {
-            throw E_BAD_OBJECT;
+            confessf E_BAD_OBJECT;
         }
     };
     *{$symbol} = subname($symbol => $accessor);

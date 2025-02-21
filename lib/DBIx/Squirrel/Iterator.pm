@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Scalar::Util qw/weaken looks_like_number/;
 use Sub::Name;
-use DBIx::Squirrel::util qw/args_partition throw whine/;
+use DBIx::Squirrel::util qw/args_partition confessf cluckf/;
 use namespace::clean;
 
 BEGIN {
@@ -59,7 +59,7 @@ sub DESTROY {
 sub new {
     my $class = ref($_[0]) ? ref(shift) : shift;
     my($transforms, $sth, @bind_values) = args_partition(@_);
-    throw E_BAD_STH unless UNIVERSAL::isa($sth, 'DBIx::Squirrel::st');
+    confessf E_BAD_STH unless UNIVERSAL::isa($sth, 'DBIx::Squirrel::st');
     my $self = bless {}, $class;
     $self->_private_state({
         sth                 => $sth,
@@ -322,8 +322,8 @@ sub all { shift->reset->remaining }
 sub cache_size {
     my($attr, $self) = shift->_private_state;
     if (@_) {
-        throw E_BAD_CACHE_SIZE unless looks_like_number($_[0]);
-        throw E_BAD_CACHE_SIZE
+        confessf E_BAD_CACHE_SIZE unless looks_like_number($_[0]);
+        confessf E_BAD_CACHE_SIZE
             if $_[0] < DEFAULT_CACHE_SIZE || $_[0] > CACHE_SIZE_LIMIT;
         $attr->{cache_size}       = shift;
         $attr->{cache_size_fixed} = !!1;
@@ -459,7 +459,7 @@ sub single {
     my($attr, $self) = shift->_private_state;
     return unless defined($self->start);
     return unless defined($self->_result_fetch);
-    whine W_MORE_ROWS if @{$attr->{buffer}};
+    cluckf W_MORE_ROWS if @{$attr->{buffer}};
     return do { $_ = exists($attr->{results_first}) ? $attr->{results_first} : () };
 }
 
@@ -480,7 +480,7 @@ sub slice {
                 return $self;
             }
         }
-        throw E_BAD_SLICE;
+        confessf E_BAD_SLICE;
     }
     else {
         $attr->{slice} = DEFAULT_SLICE unless $attr->{slice};

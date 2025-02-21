@@ -8,7 +8,7 @@ no strict 'subs';    ## no critic
 use DBI;
 use Sub::Name;
 use DBIx::Squirrel::st   qw/statement_study/;
-use DBIx::Squirrel::util qw/slurp throw/;
+use DBIx::Squirrel::util qw/slurp confessf/;
 use Try::Tiny;
 use namespace::clean;
 
@@ -56,9 +56,9 @@ sub prepare {
     my $statement = shift;
     my($placeholders, $normalised_statement, $original_statement, $digest)
         = statement_study($statement);
-    throw E_EXP_STATEMENT unless defined($normalised_statement);
+    confessf E_EXP_STATEMENT unless defined($normalised_statement);
     my $sth = DBI::db::prepare($self, $normalised_statement, @_)
-        or throw $DBI::errstr;
+        or confessf $DBI::errstr;
     $sth = bless($sth, $self->_root_class . '::st');
     $sth->_private_state({
         Placeholders        => $placeholders,
@@ -74,9 +74,9 @@ sub prepare_cached {
     my $statement = shift;
     my($placeholders, $normalised_statement, $original_statement, $digest)
         = statement_study($statement);
-    throw E_EXP_STATEMENT unless defined($normalised_statement);
+    confessf E_EXP_STATEMENT unless defined($normalised_statement);
     my $sth = DBI::db::prepare_cached($self, $normalised_statement, @_)
-        or throw $DBI::errstr;
+        or confessf $DBI::errstr;
     $sth = bless($sth, $self->_root_class . '::st');
     $sth->_private_state({
         Placeholders        => $placeholders,
@@ -102,7 +102,7 @@ sub do {
                     $self->prepare($statement);
                 }
                 else {
-                    throw E_EXP_REF;
+                    confessf E_EXP_REF;
                 }
             }
             else {
@@ -140,7 +140,7 @@ sub iterate {
                     $self->prepare($statement);
                 }
                 else {
-                    throw E_EXP_REF;
+                    confessf E_EXP_REF;
                 }
             }
             else {
@@ -183,7 +183,7 @@ sub results {
                     $self->prepare($statement);
                 }
                 else {
-                    throw E_EXP_REF;
+                    confessf E_EXP_REF;
                 }
             }
             else {

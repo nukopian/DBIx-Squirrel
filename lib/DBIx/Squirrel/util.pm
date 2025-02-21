@@ -17,8 +17,8 @@ our %EXPORT_TAGS = (all => [
         statement_normalise
         statement_study
         statement_trim
-        throw
-        whine
+        confessf
+        cluckf
     )
 ]);
 
@@ -58,34 +58,47 @@ sub global_destruct_phase {
     return Devel::GlobalDestruction::in_global_destruction();
 }
 
-sub throw {
-    Carp::confess do {
+sub confessf {
+    @_ = do {
         if (@_) {
-            my($f, @a) = @_;
-            @a ? sprintf($f, @a) : $f || $@ || 'Unknown exception thrown';
+            my $format = shift;
+            if (@_) {
+                sprintf($format, @_);
+            }
+            else {
+                $format or $@ or 'Unknown exception thrown';
+
+            }
         }
         else {
-            $@ || 'Unknown exception thrown';
+            $@ or 'Unknown exception thrown';
         }
     };
+    goto &Carp::confess;
 }
 
-sub whine {
-    Carp::cluck do {
+sub cluckf {
+    @_ = do {
         if (@_) {
-            my($f, @a) = @_;
-            @a ? sprintf($f, @a) : $f || 'Unhelpful warning issued';
+            my $format = shift;
+            if (@_) {
+                sprintf($format, @_);
+            }
+            else {
+                $format or 'Unhelpful warning issued';
+            }
         }
         else {
             'Unhelpful warning issued';
         }
     };
+    goto &Carp::cluck;
 }
 
 sub slurp {
     my($filename, $opt) = @_;
     open my $fh, '<:raw', $filename
-        or throw "$! - $filename";
+        or confessf "$! - $filename";
     read $fh, my $buffer, -s $filename;
     close $fh;
     if ($filename =~ /\.encrypted/) {

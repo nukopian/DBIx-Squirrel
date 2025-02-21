@@ -4,7 +4,7 @@ package    # hide from PAUSE
 use 5.010_001;
 use strict;
 use warnings;
-use DBIx::Squirrel::util qw/throw/;
+use DBIx::Squirrel::util qw/confessf/;
 use namespace::clean;
 
 BEGIN {
@@ -33,7 +33,7 @@ sub connect {
     my $invocant = shift;
     my $attrs    = @_ && UNIVERSAL::isa($_[$#_], 'HASH') ? pop : {};
     my $dbh = DBI::connect($invocant, @_, {%{$attrs}, __PACKAGE__->_root_class})
-        or throw $DBI::errstr;
+        or confessf $DBI::errstr;
     return $dbh;
 }
 
@@ -43,7 +43,7 @@ sub connect_cached {
     my $dbh        = DBI::connect_cached(
         $invocant, @_,
         {%{$attributes}, __PACKAGE__->_root_class},
-    ) or throw $DBI::errstr;
+    ) or confessf $DBI::errstr;
     return $dbh;
 }
 

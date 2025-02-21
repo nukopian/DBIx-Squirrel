@@ -7,7 +7,7 @@ use warnings;
 use Digest::SHA qw/sha256_base64/;
 use Memoize;
 use Sub::Name;
-use DBIx::Squirrel::util qw/throw whine/;
+use DBIx::Squirrel::util qw/confessf cluckf/;
 use namespace::clean;
 
 BEGIN {
@@ -77,11 +77,11 @@ sub _placeholders_map_to_values {
             }
             else {
                 if (UNIVERSAL::isa($_[0], 'ARRAY')) {
-                    whine W_ODD_NUMBER_OF_ARGS unless @{$_[0]} && @{$_[0]} % 2 == 0;
+                    cluckf W_ODD_NUMBER_OF_ARGS unless @{$_[0]} && @{$_[0]} % 2 == 0;
                     @{$_[0]};
                 }
                 else {
-                    whine W_ODD_NUMBER_OF_ARGS unless @_ && @_ % 2 == 0;
+                    cluckf W_ODD_NUMBER_OF_ARGS unless @_ && @_ % 2 == 0;
                     @_;
                 }
             }
@@ -107,7 +107,7 @@ sub bind {
             if (my %kv = @{$self->_placeholders_map_to_values(@_)}) {
                 while (my($k, $v) = each(%kv)) {
                     if ($k =~ m/^[\:\$\?]?(?<bind_id>\d+)$/) {
-                        throw E_INVALID_PLACEHOLDER, $k unless $+{bind_id};
+                        confessf E_INVALID_PLACEHOLDER, $k unless $+{bind_id};
                         $self->bind_param($+{bind_id}, $v);
                     }
                     else {
@@ -213,7 +213,7 @@ sub statement_trim {
                 shift->{Statement};
             }
             else {
-                throw(E_EXP_STH);
+                confessf(E_EXP_STH);
             }
         }
         else {

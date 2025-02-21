@@ -15,7 +15,7 @@ use DBIx::Squirrel::st          ();
 use DBIx::Squirrel::Iterator    ();
 use DBIx::Squirrel::ResultSet   ();
 use DBIx::Squirrel::ResultClass ();
-use DBIx::Squirrel::util        qw/throw/;
+use DBIx::Squirrel::util        qw/confessf/;
 use namespace::clean;
 
 BEGIN {
@@ -98,7 +98,7 @@ sub import {
                             %{+shift};
                         }
                         else {
-                            throw E_EXP_HASH_ARR_REF;
+                            confessf E_EXP_HASH_ARR_REF;
                         }
                     }
                     else {

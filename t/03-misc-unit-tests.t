@@ -24,7 +24,7 @@ BEGIN {
         || print "Bail out!\n";
     use_ok('DBIx::Squirrel::st', qw/statement_trim statement_study/)
         || print "Bail out!\n";
-    use_ok('DBIx::Squirrel::util', qw/args_partition throw whine/)
+    use_ok('DBIx::Squirrel::util', qw/args_partition confessf cluckf/)
         || print "Bail out!\n";
 }
 
@@ -33,37 +33,39 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 {
     no strict qw/subs/;    ## no critic
 
-    note('DBIx::Squirrel::util::whine');
+    note('DBIx::Squirrel::util::cluckf');
 
     my @tests = ({
             line => __LINE__,
-            got  => sub { whine },
+            got  => sub { cluckf },
             exp  => qr/Unhelpful warning issued/,
             name => 'no arguments',
         },
         {
             line => __LINE__,
-            got  => sub { whine '' },
+            got  => sub { cluckf '' },
             exp  => qr/Unhelpful warning issued/,
             name => 'an empty string',
         },
         {
             line => __LINE__,
-            got  => sub { whine 'Foo warning' },
+            got  => sub { cluckf 'Foo warning' },
             exp  => qr/Foo warning/,
             name => 'a string',
         },
         {
             line => __LINE__,
-            got  => sub { whine 'Foo warning (%d)', 99 },
+            got  => sub { cluckf 'Foo warning (%d)', 99 },
             exp  => qr/Foo warning \(99\)/,
             name => 'a format string with parameter(s)',
         },
     );
 
     foreach my $t (@tests) {
-        like(warning { $t->{got}->() }, $t->{exp},
-            sprintf('line %d%s', $t->{line}, $t->{name} ? " - $t->{name}" : ''));
+        like(
+            warning { $t->{got}->() }, $t->{exp},
+            sprintf('line %d%s', $t->{line}, $t->{name} ? " - $t->{name}" : ''),
+        );
     }
 }
 
@@ -72,11 +74,11 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 {
     no strict qw/subs/;    ## no critic
 
-    note('DBIx::Squirrel::util::throw');
+    note('DBIx::Squirrel::util::confessf');
 
     my @tests = ({
             line => __LINE__,
-            got  => sub { throw },
+            got  => sub { confessf },
             exp  => qr/Unknown exception thrown/,
             name => 'no arguments and $@ is not set',
         },
@@ -84,14 +86,14 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
             line => __LINE__,
             got  => sub {
                 eval { die 'Oh no, the foo!' };
-                throw;
+                confessf;
             },
             exp  => qr/Oh no, the foo!/,
-            name => 'no arguments and $@ is set',
+            name => "no arguments and \$@='$@'",
         },
         {
             line => __LINE__,
-            got  => sub { throw '' },
+            got  => sub { confessf '' },
             exp  => qr/Unknown exception thrown/,
             name => 'an empty string and $@ is not set',
         },
@@ -99,26 +101,26 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
             line => __LINE__,
             got  => sub {
                 eval { die 'Oh no, the foo!' };
-                throw '';
+                confessf '';
             },
             exp  => qr/Oh no, the foo!/,
             name => 'an empty string and $@ is set',
         },
         {
             line => __LINE__,
-            got  => sub { throw 'Foo thrown' },
-            exp  => qr/Foo thrown/,
+            got  => sub { confessf 'Foo confessfn' },
+            exp  => qr/Foo confessfn/,
             name => 'a string',
         },
         {
             line => __LINE__,
-            got  => sub { throw 'Foo thrown (%d)', 99 },
-            exp  => qr/Foo thrown \(99\)/,
+            got  => sub { confessf 'Foo confessfn (%d)', 99 },
+            exp  => qr/Foo confessfn \(99\)/,
             name => 'a format string with parameter(s)',
         },
         {
             line => __LINE__,
-            got  => sub { throw bless({}, 'AnExceptionObject') },
+            got  => sub { confessf bless({}, 'AnExceptionObject') },
             exp  => qr/AnExceptionObject=/,
             name => 'an exception object',
         },
@@ -146,27 +148,29 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
         {line => __LINE__, got => [args_partition(1, 2, 3)], exp => [[], 1, 2, 3]},
         {line => __LINE__, got => [args_partition($sub1)],   exp => [[$sub1]]},
         {
-            line => __LINE__, got => [args_partition($sub1, $sub2)], exp => [[$sub1, $sub2]]
+            line => __LINE__, got => [args_partition($sub1, $sub2)],
+            exp  => [[$sub1, $sub2]],
         },
         {
             line => __LINE__, got => [args_partition($sub1, $sub2, $sub3)],
-            exp  => [[$sub1, $sub2, $sub3]]
+            exp  => [[$sub1, $sub2, $sub3]],
         },
         {line => __LINE__, got => [args_partition(1 => $sub1)], exp => [[$sub1], 1]},
         {
-            line => __LINE__, got => [args_partition(1, 2 => $sub1)], exp => [[$sub1], 1, 2]
+            line => __LINE__, got => [args_partition(1, 2 => $sub1)],
+            exp  => [[$sub1], 1, 2],
         },
         {
             line => __LINE__, got => [args_partition(1, 2, 3 => $sub1)],
-            exp  => [[$sub1], 1, 2, 3]
+            exp  => [[$sub1], 1, 2, 3],
         },
         {
             line => __LINE__, got => [args_partition(1, 2, 3 => $sub1, $sub2, $sub3)],
-            exp  => [[$sub1, $sub2, $sub3], 1, 2, 3]
+            exp  => [[$sub1, $sub2, $sub3], 1, 2, 3],
         },
         {
             line => __LINE__, got => [args_partition(1, $sub1, 3 => $sub2, $sub3)],
-            exp  => [[$sub2, $sub3], 1, $sub1, 3]
+            exp  => [[$sub2, $sub3], 1, $sub1, 3],
         },
     );
 
@@ -187,19 +191,19 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
         {line => __LINE__, got => [statement_trim("SELECT 1")], exp => ["SELECT 1"]},
         {
             line => __LINE__, got => [statement_trim("SELECT 1  -- COMMENT")],
-            exp  => ["SELECT 1"]
+            exp  => ["SELECT 1"],
         },
         {
             line => __LINE__, got => [statement_trim("SELECT 1\n-- COMMENT")],
-            exp  => ["SELECT 1"]
+            exp  => ["SELECT 1"],
         },
         {
             line => __LINE__, got => [statement_trim("  SELECT 1\n-- COMMENT  ")],
-            exp  => ["SELECT 1"]
+            exp  => ["SELECT 1"],
         },
         {
             line => __LINE__, got => [statement_trim("\tSELECT 1\n-- COMMENT  ")],
-            exp  => ["SELECT 1"]
+            exp  => ["SELECT 1"],
         },
     );
 
@@ -213,7 +217,9 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 {
     note('DBIx::Squirrel::st::statement_study');
 
-    throws_ok { statement_study(bless({}, 'NotAStatementHandle')) }
+    throws_ok {
+        statement_study(bless({}, 'NotAStatementHandle'));
+    }
     qr/Expected a statement handle/, 'got expected exception';
 
     my $db1 = DBIx::Squirrel->connect(@MOCK_DB_CONNECT_ARGS);
@@ -231,11 +237,11 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
         {line => __LINE__, got => [statement_study('')], exp => []},
         {
             line => __LINE__, got => [statement_study('SELECT 1')],
-            exp  => [{}, 'SELECT 1', 'SELECT 1', 'DETERMINISTIC']
+            exp  => [{}, 'SELECT 1', 'SELECT 1', 'DETERMINISTIC'],
         },
         {
             line => __LINE__, got => [statement_study('SELECT ?')],
-            exp  => [{}, 'SELECT ?', 'SELECT ?', 'DETERMINISTIC']
+            exp  => [{}, 'SELECT ?', 'SELECT ?', 'DETERMINISTIC'],
         },
         {
             line => __LINE__,
@@ -259,7 +265,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
         },
         {
             line => __LINE__, got => [statement_study('SELECT ?, ?')],
-            exp  => [{}, 'SELECT ?, ?', 'SELECT ?, ?', 'DETERMINISTIC']
+            exp  => [{}, 'SELECT ?, ?', 'SELECT ?, ?', 'DETERMINISTIC'],
         },
         {
             line => __LINE__,
@@ -283,14 +289,14 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
             line => __LINE__,
             got  => [statement_study('SELECT :foo, :bar')],
             exp  => [
-                {1 => ':foo', 2 => ':bar'}, 'SELECT ?, ?', 'SELECT :foo, :bar', 'DETERMINISTIC'
+                {1 => ':foo', 2 => ':bar'}, 'SELECT ?, ?', 'SELECT :foo, :bar', 'DETERMINISTIC',
             ],
         },
         {
             line => __LINE__,
             got  => [statement_study($st1)],
             exp  => [
-                {1 => ':foo', 2 => ':bar'}, 'SELECT ?, ?', 'SELECT :foo, :bar', 'DETERMINISTIC'
+                {1 => ':foo', 2 => ':bar'}, 'SELECT ?, ?', 'SELECT :foo, :bar', 'DETERMINISTIC',
             ],
         },
         {

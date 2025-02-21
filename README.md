@@ -148,7 +148,7 @@ Summary:
 - gather the names of all artists in alphabetic order;
 - disconnect from the database.
 
-Not too dissimilar from the previous example. This time, we throw caution
+Not too dissimilar from the previous example. This time, we confessf caution
 to the wind and gather *all* of the artists' names into the `@artists`
 array.
 
