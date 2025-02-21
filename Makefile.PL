@@ -19,6 +19,7 @@ my %WriteMakefileArgs = (
   "PREREQ_PM" => {
     "Carp" => 0,
     "Compress::Bzip2" => 0,
+    "Const::Fast" => 0,
     "Crypt::CBC" => 0,
     "Crypt::Rijndael" => 0,
     "DBI" => 0,
@@ -56,7 +57,7 @@ my %WriteMakefileArgs = (
     "Test::Warnings" => 0,
     "lib" => 0
   },
-  "VERSION" => "1.5.4",
+  "VERSION" => "1.5.5",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -66,6 +67,7 @@ my %WriteMakefileArgs = (
 my %FallbackPrereqs = (
   "Carp" => 0,
   "Compress::Bzip2" => 0,
+  "Const::Fast" => 0,
   "Crypt::CBC" => 0,
   "Crypt::Rijndael" => 0,
   "Cwd" => 0,

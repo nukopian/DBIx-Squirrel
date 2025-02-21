@@ -3,6 +3,7 @@
 
 requires "Carp" => "0";
 requires "Compress::Bzip2" => "0";
+requires "Const::Fast" => "0";
 requires "Crypt::CBC" => "0";
 requires "Crypt::Rijndael" => "0";
 requires "DBI" => "0";
