@@ -7,8 +7,8 @@ use warnings;
 no strict 'subs';    ## no critic
 use DBI;
 use Sub::Name;
-use DBIx::Squirrel::st    qw/statement_study/;
-use DBIx::Squirrel::Utils qw/slurp throw/;
+use DBIx::Squirrel::st   qw/statement_study/;
+use DBIx::Squirrel::util qw/slurp throw/;
 use Try::Tiny;
 use namespace::clean;
 

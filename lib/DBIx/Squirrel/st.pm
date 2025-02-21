@@ -7,7 +7,7 @@ use warnings;
 use Digest::SHA qw/sha256_base64/;
 use Memoize;
 use Sub::Name;
-use DBIx::Squirrel::Utils qw/throw whine/;
+use DBIx::Squirrel::util qw/throw whine/;
 use namespace::clean;
 
 BEGIN {
@@ -58,7 +58,7 @@ sub _placeholders_confirm_positional {
     my $placeholders = $self->_private_state->{Placeholders};
     my @placeholders = values(%{$placeholders});
     my $total_count  = @placeholders;
-    my $count        = grep {m/^[\:\$\?]\d+$/} @placeholders;
+    my $count        = grep { m/^[\:\$\?]\d+$/ } @placeholders;
     return $placeholders if $count == $total_count;
     return;
 }
@@ -69,7 +69,7 @@ sub _placeholders_map_to_values {
     my $positional = $self->_placeholders_confirm_positional;
     my @mappings   = do {
         if ($positional) {
-            map {($positional->{$_} => $_[$_ - 1])} keys(%{$positional});
+            map { ($positional->{$_} => $_[$_ - 1]) } keys(%{$positional});
         }
         else {
             if (UNIVERSAL::isa($_[0], 'HASH')) {
@@ -131,12 +131,12 @@ sub bind_param {
                 $+{bind_id}, $value, @attr;
             }
             else {
-                map {($_, $value, @attr)} do {
+                map { ($_, $value, @attr) } do {
                     if ($param =~ m/^[\:\$\?]/) {
-                        grep {$placeholders->{$_} eq $param} keys(%{$placeholders});
+                        grep { $placeholders->{$_} eq $param } keys(%{$placeholders});
                     }
                     else {
-                        grep {$placeholders->{$_} eq ":$param"} keys(%{$placeholders});
+                        grep { $placeholders->{$_} eq ":$param" } keys(%{$placeholders});
                     }
                 };
             }
@@ -179,7 +179,7 @@ BEGIN {
 
 memoize('statement_digest');
 
-sub statement_digest {sha256_base64(shift)}
+sub statement_digest { sha256_base64(shift) }
 
 sub statement_normalise {
     my $statement  = statement_trim(shift);
@@ -194,7 +194,7 @@ sub statement_study {
     return unless length($trimmed);
     my %positions_to_params_map = do {
         if (my @params = $trimmed =~ m{[\:\$\?]\w+\b}g) {
-            map {(1 + $_ => $params[$_])} 0 .. $#params;
+            map { (1 + $_ => $params[$_]) } 0 .. $#params;
         }
         else {
             ();

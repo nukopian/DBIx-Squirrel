@@ -16,7 +16,7 @@ BEGIN {
 
 sub DESTROY {
     no strict 'refs';    ## no critic
-    return if DBIx::Squirrel::Utils::global_destruct_phase();
+    return if DBIx::Squirrel::util::global_destruct_phase();
     local($., $@, $!, $^E, $?, $_);
     my $self      = shift;
     my $row_class = $self->row_class;
@@ -55,7 +55,7 @@ sub _rebless {
         undef &{$rs_fn};
         *{$resultset_fn} = *{$results_fn} = *{$rset_fn} = *{$rs_fn} = do {
             weaken(my $results = $self);
-            subname($results_fn => sub {$results});
+            subname($results_fn => sub { $results });
         };
         @{$row_class . '::ISA'} = ($self->result_class);
     }

@@ -689,7 +689,7 @@ Each stage of a transformation receives the latest version of the result via
 the argument-list (C<$_[0]> to be precise). For the sake of convenience (and
 for convention), this result is also available as C<$_>. If you prefer to
 rely on something like C<$_>, but would like something much less ephemeral,
-just C<use DBIx::Squirrel::Utils 'result'> and use the C<result> function
+just C<use DBIx::Squirrel::util 'result'> and use the C<result> function
 inside your transformation stage.
 
 Handing off to the next stage, or the caller, is with an explicit C<return>

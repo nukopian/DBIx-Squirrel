@@ -5,7 +5,7 @@ use 5.010_001;
 use strict;
 use warnings;
 use Sub::Name;
-use DBIx::Squirrel::Utils qw/throw/;
+use DBIx::Squirrel::util qw/throw/;
 use namespace::clean;
 
 BEGIN {
@@ -49,7 +49,7 @@ sub get_column {
         throw E_BAD_OBJECT unless UNIVERSAL::isa($self, 'HASH');
         return $self->{$name} if exists($self->{$name});
         local($_);
-        my($n) = grep {lc eq $_[1]} keys(%{$self});
+        my($n) = grep { lc eq $_[1] } keys(%{$self});
         throw E_UNKNOWN_COLUMN, $name unless defined($n);
         return $self->{$n};
     }
@@ -83,17 +83,17 @@ sub AUTOLOAD {
             throw E_STH_EXPIRED unless my $sth = $self->rs->sth;
             my $n = $sth->{NAME_lc_hash}{lc($name)};
             throw E_UNKNOWN_COLUMN, $name unless defined($n);
-            sub {$_[0][$n]};
+            sub { $_[0][$n] };
         }
         elsif (UNIVERSAL::isa($self, 'HASH')) {
             if (exists($self->{$name})) {
-                sub {$_[0]{$name}};
+                sub { $_[0]{$name} };
             }
             else {
                 local($_);
-                my($n) = grep {lc eq $name} keys(%{$self});
+                my($n) = grep { lc eq $name } keys(%{$self});
                 throw E_UNKNOWN_COLUMN, $name unless defined($n);
-                sub {$_[0]{$n}};
+                sub { $_[0]{$n} };
             }
         }
         else {

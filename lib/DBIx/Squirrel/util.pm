@@ -1,5 +1,5 @@
 package    # hide from PAUSE
-    DBIx::Squirrel::Utils;
+    DBIx::Squirrel::util;
 
 use 5.010_001;
 use strict;
@@ -16,8 +16,8 @@ use Sub::Name;
 
 BEGIN {
     require Exporter;
-    @DBIx::Squirrel::Utils::ISA       = qw/Exporter/;
-    @DBIx::Squirrel::Utils::EXPORT_OK = (
+    @DBIx::Squirrel::util::ISA       = qw/Exporter/;
+    @DBIx::Squirrel::util::EXPORT_OK = (
         qw/
             args_partition
             global_destruct_phase
@@ -29,10 +29,9 @@ BEGIN {
             statement_trim
             throw
             whine
-            /
-    );
-    %DBIx::Squirrel::Utils::EXPORT_TAGS
-        = (all => [@DBIx::Squirrel::Utils::EXPORT_OK]);
+            /);
+    %DBIx::Squirrel::util::EXPORT_TAGS
+        = (all => [@DBIx::Squirrel::util::EXPORT_OK]);
     Dotenv->load() if -e '.env';
 }
 

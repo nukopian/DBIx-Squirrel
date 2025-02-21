@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Scalar::Util qw/weaken looks_like_number/;
 use Sub::Name;
-use DBIx::Squirrel::Utils qw/args_partition throw whine/;
+use DBIx::Squirrel::util qw/args_partition throw whine/;
 use namespace::clean;
 
 BEGIN {
@@ -41,14 +41,14 @@ use constant E_BAD_CACHE_SIZE =>
 use constant W_MORE_ROWS     => 'Query would yield more than one result';
 use constant E_EXP_ARRAY_REF => 'Expected an ARRAY-REF';
 
-sub DEFAULT_SLICE () {$DBIx::Squirrel::Iterator::DEFAULT_SLICE}
+sub DEFAULT_SLICE () { $DBIx::Squirrel::Iterator::DEFAULT_SLICE }
 
-sub DEFAULT_CACHE_SIZE () {$DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE}
+sub DEFAULT_CACHE_SIZE () { $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE }
 
-sub CACHE_SIZE_LIMIT () {$DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT}
+sub CACHE_SIZE_LIMIT () { $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT }
 
 sub DESTROY {
-    return if DBIx::Squirrel::Utils::global_destruct_phase();
+    return if DBIx::Squirrel::util::global_destruct_phase();
     local($., $@, $!, $^E, $?, $_);
     my $self = shift;
     $self->_private_state_clear;
@@ -153,7 +153,7 @@ sub _cache_size_init {
 sub _private_state_clear {
     local($_);
     my($attr, $self) = shift->_private_state;
-    delete $attr->{$_} foreach grep {exists($attr->{$_})} qw/
+    delete $attr->{$_} foreach grep { exists($attr->{$_}) } qw/
         buffer
         execute_returned
         results_pending
@@ -190,31 +190,31 @@ sub _private_state_reset {
         $_STATEMENT,
     );
 
-    sub database {$_DATABASE}
+    sub database { $_DATABASE }
 
-    sub iterator {$_ITERATOR}
+    sub iterator { $_ITERATOR }
 
-    sub result {$_RESULT}
+    sub result { $_RESULT }
 
     BEGIN {
         *result_current = subname(result_current => \&result);
     }
 
-    sub result_first {$_RESULT_FIRST}
+    sub result_first { $_RESULT_FIRST }
 
-    sub result_number {$_RESULT_NUMBER}
+    sub result_number { $_RESULT_NUMBER }
 
-    sub result_offset {$_RESULT_OFFSET}
+    sub result_offset { $_RESULT_OFFSET }
 
-    sub result_original {$_RESULT_ORIGINAL}
+    sub result_original { $_RESULT_ORIGINAL }
 
-    sub result_prev {$_RESULT_PREV}
+    sub result_prev { $_RESULT_PREV }
 
     BEGIN {
         *result_previous = subname(result_previous => \&result_prev);
     }
 
-    sub statement {$_STATEMENT}
+    sub statement { $_STATEMENT }
 
     sub result_transform {    ## not a method
         my @transforms
@@ -253,7 +253,7 @@ sub _private_state_reset {
         $self->_results_push_pending($results) if @{$results};
         $attr->{results_first} = $result unless $attr->{results_count}++;
         $attr->{results_last}  = $result;
-        return do {$_ = $result};
+        return do { $_ = $result };
     }
 
     sub _result_fetch_pending {
@@ -262,11 +262,11 @@ sub _private_state_reset {
         my $result = shift(@{$attr->{results_pending}});
         $attr->{results_first} = $result unless $attr->{results_count}++;
         $attr->{results_last}  = $result;
-        return do {$_ = $result};
+        return do { $_ = $result };
     }
 
     # Seemingly pointless, here, but intended to be overridden in subclasses.
-    sub _result_preprocess {$_[1]}
+    sub _result_preprocess { $_[1] }
 
     sub _result_process {
         local($_);
@@ -282,7 +282,7 @@ sub _private_state_reset {
                 local($_RESULT_OFFSET) = $attr->{results_count};
                 local($_RESULT_PREV)   = $attr->{results_last};
                 local($_STATEMENT)     = $self->sth;
-                map {result_transform($attr->{transforms}, $self->_result_preprocess($_))}
+                map { result_transform($attr->{transforms}, $self->_result_preprocess($_)) }
                     $result;
             }
             else {
@@ -317,7 +317,7 @@ sub _results_push_pending {
     return $self;
 }
 
-sub all {shift->reset->remaining}
+sub all { shift->reset->remaining }
 
 sub cache_size {
     my($attr, $self) = shift->_private_state;
@@ -363,8 +363,8 @@ sub count {
     unless ($attr->{sth}->{Executed}) {
         return unless defined($self->start);
     }
-    while (defined($self->_result_fetch)) {;}
-    return do {$_ = $attr->{results_count}};
+    while (defined($self->_result_fetch)) { ; }
+    return do { $_ = $attr->{results_count} };
 }
 
 sub count_fetched {
@@ -372,7 +372,7 @@ sub count_fetched {
     unless ($attr->{sth}->{Executed}) {
         return unless defined($self->start);
     }
-    return do {$_ = $attr->{results_count}};
+    return do { $_ = $attr->{results_count} };
 }
 
 sub first {
@@ -388,21 +388,21 @@ sub first {
     };
 }
 
-sub is_active {!!$_[0]->_private_state->{sth}->{Active}}
+sub is_active { !!$_[0]->_private_state->{sth}->{Active} }
 
 sub iterate {
     my $self = shift;
     return unless defined($self->start(@_));
-    return do {$_ = $self};
+    return do { $_ = $self };
 }
 
 sub last {
     my($attr, $self) = shift->_private_state;
     unless ($attr->{sth}->{Executed}) {
         return unless defined($self->start);
-        while (defined($self->_result_fetch)) {;}
+        while (defined($self->_result_fetch)) { ; }
     }
-    return do {$_ = $attr->{results_last}};
+    return do { $_ = $attr->{results_last} };
 }
 
 sub last_fetched {
@@ -411,7 +411,7 @@ sub last_fetched {
         $self->start;
         return;
     }
-    return do {$_ = $attr->{results_last}};
+    return do { $_ = $attr->{results_last} };
 }
 
 sub next {
@@ -420,10 +420,10 @@ sub next {
     unless ($sth->{Executed}) {
         return unless defined($self->start);
     }
-    return do {$_ = $self->_result_fetch};
+    return do { $_ = $self->_result_fetch };
 }
 
-sub not_active {!$_[0]->_private_state->{sth}->{Active}}
+sub not_active { !$_[0]->_private_state->{sth}->{Active} }
 
 sub remaining {
     my $self = shift;
@@ -453,14 +453,14 @@ sub reset {
     return $self;
 }
 
-sub rows {shift->sth->rows}
+sub rows { shift->sth->rows }
 
 sub single {
     my($attr, $self) = shift->_private_state;
     return unless defined($self->start);
     return unless defined($self->_result_fetch);
     whine W_MORE_ROWS if @{$attr->{buffer}};
-    return do {$_ = exists($attr->{results_first}) ? $attr->{results_first} : ()};
+    return do { $_ = exists($attr->{results_first}) ? $attr->{results_first} : () };
 }
 
 BEGIN {
@@ -525,14 +525,15 @@ sub start {
     }
     my $sth = $attr->{sth};
     $self->_private_state_reset;
-    return
-        do {$_ = $attr->{execute_returned} = $sth->execute(@{$attr->{bind_values}})};
+    return do {
+        $_ = $attr->{execute_returned} = $sth->execute(@{$attr->{bind_values}});
+    };
 }
 
 BEGIN {
     *execute = subname(execute => \&start);
 }
 
-sub sth {shift->_private_state->{sth}}
+sub sth { shift->_private_state->{sth} }
 
 1;

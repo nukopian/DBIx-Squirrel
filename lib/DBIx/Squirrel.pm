@@ -15,7 +15,7 @@ use DBIx::Squirrel::st          ();
 use DBIx::Squirrel::Iterator    ();
 use DBIx::Squirrel::ResultSet   ();
 use DBIx::Squirrel::ResultClass ();
-use DBIx::Squirrel::Utils       qw/throw/;
+use DBIx::Squirrel::util        qw/throw/;
 use namespace::clean;
 
 BEGIN {
