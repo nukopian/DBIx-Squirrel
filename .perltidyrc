@@ -52,3 +52,4 @@
 --hanging-side-comments
 --valign-signed-numbers
 --valign-wide-equals
+--maximum-consecutive-blank-lines=2
