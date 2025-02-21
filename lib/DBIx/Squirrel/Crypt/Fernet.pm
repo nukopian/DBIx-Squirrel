@@ -232,7 +232,6 @@ sub encrypt {
         -key         => $encrypt_key,
         -keysize     => 16,
         -literal_key => 1,
-        -padding     => 'standard',
     )->encrypt($data);
     my $t = $TOKEN_VERSION . _timestamp() . $entropy . $ciphertext;
     return _pad_b64encode($t . hmac_sha256($t, $signing_key));
@@ -270,7 +269,6 @@ sub decrypt {
         -key         => $encrypt_key,
         -keysize     => 16,
         -literal_key => 1,
-        -padding     => 'standard',
     )->decrypt($ciphertext);
 }
 
