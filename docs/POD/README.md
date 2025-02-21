@@ -4,7 +4,7 @@ DBIx::Squirrel - The little Perl DBI extension that makes working with databases
 
 # VERSION
 
-Version 1.5.4
+Version 1.5.5
 
 # SYNOPSIS
 
