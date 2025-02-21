@@ -295,7 +295,7 @@ sub verify {
     my $t = urlsafe_b64decode($b64token);
     return !!0 if $TOKEN_VERSION ne substr($t, 0, 1) || $ttl && _age_sec($t) > $ttl;
     my $digest = substr($t, length($t) - $LEN_DIGEST, $LEN_DIGEST, '');    # 4-arg substr removes $digest from $token
-    return $digest = hmac_sha256($t, $signing_key);
+    return $digest eq hmac_sha256($t, $signing_key);
 }
 
 
