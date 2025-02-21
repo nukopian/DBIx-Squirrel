@@ -116,6 +116,7 @@ our @EXPORT_OK = qw(
 our %EXPORT_TAGS = ('all' => \@EXPORT_OK);
 our $VERSION     = '1.0.0';
 
+use Const::Fast;
 use Crypt::CBC            ();
 use Crypt::Rijndael       ();
 use Digest::SHA           qw(hmac_sha256);
@@ -124,13 +125,17 @@ use MIME::Base64::URLSafe qw(urlsafe_b64decode urlsafe_b64encode);
 use namespace::clean;
 use overload '""' => \&to_string;    # overload after namespace::clean for stringification to work
 
-my $TOKEN_VERSION = pack("H*", '80');
+const my $TOKEN_VERSION  => pack("H*", '80');
+const my $LEN_HDR        => 25;
+const my $LEN_DIGEST     => 32;
+const my $LEN_HDR_DIGEST => $LEN_HDR + $LEN_DIGEST;
 
 {
     use bytes;
 
-    sub _timebytes {
-        return unpack('V', reverse(shift));
+    sub _age_sec {
+        my($token) = @_;
+        return time - unpack('V', reverse(substr($token, 1, 8)));
     }
 
     sub _timestamp {
@@ -141,11 +146,11 @@ my $TOKEN_VERSION = pack("H*", '80');
     }
 }
 
-sub _randomkey {
+sub _rand_key {
     return Crypt::CBC->random_bytes(32);
 }
 
-sub _padb64 {
+sub _pad_b64encode {
     my $b64 = urlsafe_b64encode(shift);
     return $b64 . '=' x (4 - length($b64) % 4);
 }
@@ -299,11 +304,10 @@ the C<to_string> method (or stringification) to encode it as Base64.
 
 sub new {
     my($class, $b64key) = @_;
-    my $key  = $b64key ? urlsafe_b64decode($b64key) : _randomkey();
-    my $self = {
-        key            => $key,
-        signing_key    => substr($key, 0,  16),
-        encryption_key => substr($key, 16, 16),
+    my $fernet_key = $b64key ? urlsafe_b64decode($b64key) : _rand_key();
+    my $self       = {
+        signing_key => substr($fernet_key, 0,  16),
+        encrypt_key => substr($fernet_key, 16, 16),
     };
     return bless $self, $class;
 }
@@ -318,7 +322,7 @@ Returns a Base64-encoded randomly-generated key.
 =cut
 
 sub generatekey {
-    return _padb64(_randomkey());
+    return _pad_b64encode(_rand_key());
 }
 
 =head3 C<encrypt>
@@ -330,28 +334,28 @@ Encrypts a message, returning a Base64-encode token.
 =cut
 
 sub encrypt {
-    my($self_or_b64key, $data)           = @_;
-    my($signing_key,    $encryption_key) = do {
+    my($self_or_b64key, $data)        = @_;
+    my($signing_key,    $encrypt_key) = do {
         if (UNIVERSAL::isa($self_or_b64key, __PACKAGE__)) {
-            @{$self_or_b64key}{qw(signing_key encryption_key)};
+            @{$self_or_b64key}{qw(signing_key encrypt_key)};
         }
         else {
             my $key = urlsafe_b64decode($self_or_b64key);
             substr($key, 0, 16), substr($key, 16, 16);
         }
     };
-    my $iv         = Crypt::CBC->random_bytes(16);
+    my $entropy    = Crypt::CBC->random_bytes(16);
     my $ciphertext = Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
-        -iv          => $iv,
-        -key         => $encryption_key,
+        -iv          => $entropy,
+        -key         => $encrypt_key,
         -keysize     => 16,
         -literal_key => 1,
         -padding     => 'standard',
     )->encrypt($data);
-    my $token = $TOKEN_VERSION . _timestamp() . $iv . $ciphertext;
-    return _padb64($token . hmac_sha256($token, $signing_key));
+    my $t = $TOKEN_VERSION . _timestamp() . $entropy . $ciphertext;
+    return _pad_b64encode($t . hmac_sha256($t, $signing_key));
 }
 
 =head3 C<decrypt>
@@ -368,21 +372,21 @@ be returned.
 sub decrypt {
     my($self_or_b64key, $b64token, $ttl) = @_;
     return unless verify($self_or_b64key, $b64token, $ttl);
-    my $encryption_key = do {
+    my $encrypt_key = do {
         if (UNIVERSAL::isa($self_or_b64key, __PACKAGE__)) {
-            $self_or_b64key->{encryption_key};
+            $self_or_b64key->{encrypt_key};
         }
         else {
             substr(urlsafe_b64decode($self_or_b64key), 16, 16);
         }
     };
-    my $token      = urlsafe_b64decode($b64token);
-    my $ciphertext = substr($token, 25, length($token) - 32 - 25);
+    my $t          = urlsafe_b64decode($b64token);
+    my $ciphertext = substr($t, $LEN_HDR, length($t) - $LEN_HDR_DIGEST);
     return Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
-        -iv          => substr($token, 9, 16),
-        -key         => $encryption_key,
+        -iv          => substr($t, 9, 16),
+        -key         => $encrypt_key,
         -keysize     => 16,
         -literal_key => 1,
         -padding     => 'standard',
@@ -409,12 +413,10 @@ sub verify {
             substr(urlsafe_b64decode($self_or_b64key), 0, 16);
         }
     };
-    my $token = urlsafe_b64decode($b64token);
-    return !!0
-        if $TOKEN_VERSION ne substr($token, 0, 1)
-        || $ttl && time - _timebytes(substr($token, 1, 8)) > $ttl;
-    my $digest = substr($token, length($token) - 32, 32, '');    # 4-arg substr removes $digest from $token
-    return $digest eq hmac_sha256($token, $signing_key);
+    my $t = urlsafe_b64decode($b64token);
+    return !!0 if $TOKEN_VERSION ne substr($t, 0, 1) || $ttl && _age_sec($t) > $ttl;
+    my $digest = substr($t, length($t) - $LEN_DIGEST, $LEN_DIGEST, '');    # 4-arg substr removes $digest from $token
+    return $digest eq hmac_sha256($t, $signing_key);
 }
 
 =head3 C<to_string>
@@ -427,7 +429,8 @@ Returns the Base64-encoded key.
 =cut
 
 sub to_string {
-    return _padb64(shift->{key});
+    my($self) = @_;
+    return _pad_b64encode(join('', @{$self}{qw(signing_key encrypt_key)}));
 }
 
 1;

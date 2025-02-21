@@ -62,9 +62,6 @@ my($expired_key, $expired_token) = (
     my $fernet = Fernet($b64_key);
     isa_ok($fernet, 'DBIx::Squirrel::Crypt::Fernet');
 
-    my $key = urlsafe_b64decode($b64_key);
-    is($fernet->{key}, $key, "object contains decoded key $b64_key");
-
     my $plaintext = 'This is a test';
     my $token     = $fernet->encrypt($plaintext);
     ok($token, "got valid token $token");
