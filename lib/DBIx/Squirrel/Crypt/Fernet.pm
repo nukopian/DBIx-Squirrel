@@ -108,13 +108,14 @@ See L<https://github.com/fernet/spec/blob/master/Spec.md> for more detail.
 
 our @ISA = qw(Exporter);
 our @EXPORT;
-our @EXPORT_OK = qw(
-    fernet_decrypt  fernet_encrypt  fernet_genkey   fernet_verify
-    decrypt         encrypt         generatekey     verify
-    Fernet
-);
-our %EXPORT_TAGS = ('all' => \@EXPORT_OK);
-our $VERSION     = '1.0.0';
+our %EXPORT_TAGS = (all => [
+    our @EXPORT_OK = qw(
+        fernet_decrypt  fernet_encrypt  fernet_genkey   fernet_verify
+        decrypt         encrypt         generatekey     verify
+        Fernet
+    )
+]);
+our $VERSION = '1.0.0';
 
 use Const::Fast;
 use Crypt::CBC            ();
