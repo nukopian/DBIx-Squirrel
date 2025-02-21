@@ -224,8 +224,8 @@ sub encrypt {
             substr($key, 0, 16), substr($key, 16, 16);
         }
     };
-    my $iv         = Crypt::CBC->random_bytes(16);
-    my $ciphertext = Crypt::CBC->new(
+    my $iv = Crypt::CBC->random_bytes(16);
+    my $t  = $TOKEN_VERSION . _timestamp() . $iv . Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
         -iv          => $iv,
@@ -233,7 +233,6 @@ sub encrypt {
         -keysize     => 16,
         -literal_key => 1,
     )->encrypt($data);
-    my $t = $TOKEN_VERSION . _timestamp() . $iv . $ciphertext;
     return _pad_b64encode($t . hmac_sha256($t, $signing_key));
 }
 
@@ -260,8 +259,7 @@ sub decrypt {
             substr(urlsafe_b64decode($self_or_b64key), 16, 16);
         }
     };
-    my $t          = urlsafe_b64decode($b64token);
-    my $ciphertext = substr($t, $LEN_HDR, length($t) - $LEN_HDR_DIGEST);
+    my $t = urlsafe_b64decode($b64token);
     return Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
@@ -269,7 +267,7 @@ sub decrypt {
         -key         => $encrypt_key,
         -keysize     => 16,
         -literal_key => 1,
-    )->decrypt($ciphertext);
+    )->decrypt(substr($t, $LEN_HDR, length($t) - $LEN_HDR_DIGEST));
 }
 
 
@@ -297,7 +295,7 @@ sub verify {
     my $t = urlsafe_b64decode($b64token);
     return !!0 if $TOKEN_VERSION ne substr($t, 0, 1) || $ttl && _age_sec($t) > $ttl;
     my $digest = substr($t, length($t) - $LEN_DIGEST, $LEN_DIGEST, '');    # 4-arg substr removes $digest from $token
-    return $digest eq hmac_sha256($t, $signing_key);
+    return $digest = hmac_sha256($t, $signing_key);
 }
 
 
