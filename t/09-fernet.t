@@ -12,82 +12,87 @@ BEGIN {
     );
 }
 
-diag join " " => (
-    "Testing DBIx::Squirrel::Crypt::Fernet",
-    $DBIx::Squirrel::Crypt::Fernet::VERSION,
-    ", Perl $], $^X",
+diag join(
+    ', ',
+    "Testing DBIx::Squirrel::Crypt::Fernet $DBIx::Squirrel::Crypt::Fernet::VERSION",
+    "Perl $]", "$^X",
 );
 
+my($key, $fernet, $message, $encrypted_token, $ttl, $verify, $decrypted_text);
 my($expired_key, $expired_token) = (
     'cJ3Fw3ehXqef-Vqi-U8YDcJtz8Gv-ZHyxultoAGHi4c=',
     'gAAAAABT8bVcdaked9SPOkuQ77KsfkcoG9GvuU4SVWuMa3ewrxpQdreLdCT6cc7rdqkavhyLgqZC41dW2vwZJAHLYllwBmjgdQ==',
 );
 
 {
-    note $_ for "", "Testing legacy exported interface", "";
+    my $h = '*  Testing object-oriented interface  *';
+    note $_ for '', '*' x length($h), $h, '*' x length($h), '';
 
-    my $key = fernet_genkey();
-    ok($key, "got key $key");
+    $key = Fernet->generatekey();
+    is length($key), 44, "ok - got base64 key";
 
-    my $plaintext = 'This is a test';
-    my $token     = fernet_encrypt($key, $plaintext);
-    ok($token, "got token $token");
+    $fernet = Fernet($key);
+    isa_ok $fernet, 'DBIx::Squirrel::Crypt::Fernet';
 
-    my $verify = fernet_verify($key, $token);
-    ok($verify, "good verify");
+    is $fernet->to_string(), $key, "ok - to_string serialisation";
+    is "$fernet",            $key, "ok - stringification";
 
-    my $decrypttext = fernet_decrypt($key, $token);
-    is($decrypttext, $plaintext, "good decrypt");
+    $message         = 'This is a test';
+    $encrypted_token = $fernet->encrypt($message);
+    ok length($encrypted_token) > 0, "ok - encrypt";
 
-    my $ttl            = 10;
-    my $expired_verify = fernet_verify($expired_key, $expired_token, $ttl);
-    ok(!$expired_verify, "bad expired verify (as expected)");
+    $verify = $fernet->verify($encrypted_token);
+    is $verify, !!1, "ok - verify";
 
-    my $expired_decrypttext = fernet_decrypt($expired_key, $expired_token, $ttl);
-    is($expired_decrypttext, undef, "bad expired decrypt (as expected)");
+    $decrypted_text = $fernet->decrypt($encrypted_token);
+    is $decrypted_text, $message, "ok - decrypt";
 
-    my $ttl_verify = fernet_verify($key, $token, $ttl);
-    ok($ttl_verify, "good unexpired verify");
+    ($fernet, $ttl) = (Fernet($expired_key), 10);
 
-    my $ttl_decrypttext = fernet_decrypt($key, $token, $ttl);
-    is($ttl_decrypttext, $plaintext, "good unexpired decrypt");
+    $verify = $fernet->verify($expired_token, $ttl);
+    is $verify, !!0, "ok - verify with ttl (expired)";
+
+    $decrypted_text = $fernet->decrypt($expired_token, $ttl);
+    is $decrypted_text, undef, "ok - decrypt with ttl (expired)";
+
+    $fernet = Fernet($key);
+
+    $verify = $fernet->verify($encrypted_token, $ttl);
+    is $verify, !!1, "ok - verify with ttl";
+
+    $decrypted_text = $fernet->decrypt($encrypted_token, $ttl);
+    is $decrypted_text, $message, "ok - decrypt with ttl";
 }
 
 {
-    note $_ for "", "Testing object-oriented interface", "";
+    my $h = '*  Testing exported interface  *';
+    note $_ for '', '*' x length($h), $h, '*' x length($h), '';
 
-    my $b64_key = Fernet->generatekey();
-    ok($b64_key, "got key $b64_key");
+    $key = fernet_genkey();
+    is length($key), 44, "ok - got base64 key";
 
-    my $fernet = Fernet($b64_key);
-    isa_ok($fernet, 'DBIx::Squirrel::Crypt::Fernet');
+    $message         = 'This is a test';
+    $encrypted_token = fernet_encrypt($key, $message);
+    ok length($encrypted_token) > 0, "ok - encrypt";
 
-    my $plaintext = 'This is a test';
-    my $token     = $fernet->encrypt($plaintext);
-    ok($token, "got valid token $token");
+    $verify = fernet_verify($key, $encrypted_token);
+    is $verify, !!1, "ok - verify";
 
-    my $verify = $fernet->verify($token);
-    ok($verify, "good verify");
+    $decrypted_text = fernet_decrypt($key, $encrypted_token);
+    is $decrypted_text, $message, "ok - decrypt";
 
-    my $decrypttext = $fernet->decrypt($token);
-    is($decrypttext, $plaintext, "good decrypt");
+    $ttl    = 10;
+    $verify = fernet_verify($expired_key, $expired_token, $ttl);
+    is $verify, !!0, "ok - verify with ttl (expired)";
 
-    my $ttl            = 10;
-    my $expired_verify = Fernet($expired_key)->verify($expired_token, $ttl);
-    ok(!$expired_verify, "bad expired verify (as expected)");
+    $decrypted_text = fernet_decrypt($expired_key, $expired_token, $ttl);
+    is $decrypted_text, undef, "ok - decrypt with ttl (expired)";
 
-    my $expired_decrypttext = Fernet($expired_key)->decrypt($expired_token, $ttl);
-    is($expired_decrypttext, undef, "bad expired decrypt (as expected)");
+    $verify = fernet_verify($key, $encrypted_token, $ttl);
+    is $verify, !!1, "ok - verify with ttl";
 
-    $fernet = Fernet($b64_key);
-    my $ttl_verify = Fernet($b64_key)->verify($token, $ttl);
-    ok($ttl_verify, "good unexpired verify");
-
-    my $ttl_decrypttext = Fernet($b64_key)->decrypt($token, $ttl);
-    is($ttl_decrypttext, $plaintext, "good unexpired decrypt");
-
-    is($fernet->to_string(), $b64_key, "good to_string serialisation");
-    is("$fernet",            $b64_key, "good stringification");
+    $decrypted_text = fernet_decrypt($key, $encrypted_token, $ttl);
+    is $decrypted_text, $message, "ok - decrypt with ttl";
 }
 
 done_testing();
