@@ -135,10 +135,7 @@ sub cluckf {
 
 sub readfile {
     my($filename, $opt) = @_;
-    open my $fh, '<:raw', $filename
-        or confessf "$! - $filename";
-    read $fh, my $buffer, -s $filename;
-    close $fh;
+    my $buffer = slurpfile($filename);
     if ($filename =~ /\.encrypted/) {
         $buffer = do {
             if (!exists($opt->{key})) {
@@ -160,6 +157,16 @@ sub readfile {
         return do { $_ = Encode::decode_utf8($buffer) };
     }
     return do { $_ = $buffer };
+}
+
+
+sub slurpfile {
+    my($filename) = @_;
+    open my $fh, '<:raw', $filename
+        or confessf "$! - $filename";
+    read $fh, my $buffer, -s $filename;
+    close $fh;
+    return $buffer;
 }
 
 1;
