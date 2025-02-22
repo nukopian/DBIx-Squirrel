@@ -14,8 +14,8 @@ our %EXPORT_TAGS = (all => [
         global_destruct_phase
         isolate_callbacks
         result
-        readfile
-        slurpfile
+        read_file
+        slurp_file
     )
 ]);
 
@@ -133,9 +133,9 @@ sub cluckf {
 }
 
 
-sub readfile {
+sub read_file {
     my($filename, $opt) = @_;
-    my $buffer = slurpfile($filename);
+    my $buffer = slurp_file($filename);
     if ($filename =~ /\.encrypted/) {
         $buffer = do {
             if (defined($opt->{fernet_key})) {
@@ -166,7 +166,7 @@ sub readfile {
 }
 
 
-sub slurpfile {
+sub slurp_file {
     my($filename) = @_;
     open my $fh, '<:raw', $filename
         or confessf "$! - $filename";

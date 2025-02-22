@@ -8,7 +8,7 @@ no strict 'subs';    ## no critic
 use DBI;
 use Sub::Name;
 use DBIx::Squirrel::st   qw/statement_study/;
-use DBIx::Squirrel::util qw/readfile confessf/;
+use DBIx::Squirrel::util qw/read_file confessf/;
 use Try::Tiny;
 use namespace::clean;
 
@@ -206,7 +206,7 @@ sub results {
 sub load_tuples {
     my $self     = shift;
     my $filename = shift;
-    my $tuples   = readfile($filename)
+    my $tuples   = read_file($filename)
         or die "No data!";
     return $tuples unless @_;
     my $func       = shift;
