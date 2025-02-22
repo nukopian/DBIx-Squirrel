@@ -11,17 +11,20 @@ our %EXPORT_TAGS = (all => [
     our @EXPORT_OK = qw(
         cluckf
         confessf
+        decode_utf8
+        decompress
+        decrypt
+        get_file_contents
         global_destruct_phase
         isolate_callbacks
         result
-        read_file
-        slurp_file
+        slurp
     )
 ]);
 
 use Carp                          ();
-use Compress::Bzip2               qw(memBunzip memBzip);
-use DBIx::Squirrel::Crypt::Fernet qw(Fernet);
+use Compress::Bzip2               ();
+use DBIx::Squirrel::Crypt::Fernet ();
 use Devel::GlobalDestruction      ();
 use Dotenv                        ();
 use Encode                        ();
@@ -133,46 +136,69 @@ sub cluckf {
 }
 
 
-sub read_file {
-    my($filename, $opt) = @_;
-    my $buffer = slurp_file($filename);
-    if ($filename =~ /\.encrypted/) {
-        $buffer = do {
-            if (defined($opt->{fernet_key})) {
-                Fernet($opt->{fernet_key})->decrypt($buffer);
-            }
-            elsif (defined($ENV{FERNET_KEY})) {
-                Fernet($ENV{FERNET_KEY})->decrypt($buffer);
-            }
-            else {
-                confessf [
-                    "Option hash has no 'fernet_key' defined, nor is 'FERNET_KEY'",
-                    "defined in the environment. Decryption is impossible",
-                ];
-            }
-        };
-    }
-    if ($filename =~ /\.bz2/) {
-        $buffer = memBunzip($buffer);
-    }
-    if ($filename =~ /\.json/) {
-        local $JSON::Syck::ImplicitUnicode = !!1;
-        return do { $_ = JSON::Syck::Load(Encode::decode_utf8($buffer)) };
-    }
-    if (!exists($opt->{decode_utf8}) || !!$opt->{decode_utf8}) {
-        return do { $_ = Encode::decode_utf8($buffer) };
-    }
-    return do { $_ = $buffer };
+sub decode_utf8 {
+    my $buffer = shift;
+    return $_ = Encode::decode_utf8($buffer, @_);
 }
 
 
-sub slurp_file {
+sub decompress {
+    my $buffer = shift;
+    return $_ = Compress::Bzip2::memBunzip($buffer);
+}
+
+
+sub decrypt {
+    my($buffer, $fernet) = @_;
+    unless (defined $fernet) {
+        unless (defined $ENV{FERNET_KEY}) {
+            confessf [
+                "Neither a Fernet key nor a Fernet object have been",
+                "defined. Decryption is impossible",
+            ];
+        }
+        $fernet = $ENV{FERNET_KEY};
+    }
+    $fernet = DBIx::Squirrel::Crypt::Fernet->new($fernet)
+        unless UNIVERSAL::isa($fernet, 'DBIx::Squirrel::Crypt::Fernet');
+    return $_ = $fernet->decrypt($buffer);
+}
+
+
+sub get_file_contents {
+    my($filename, $opt) = @_;
+    my $buffer = slurp($filename);
+    if ($filename =~ /\.enc(?:rypted)?\b/ || $opt->{decrypt}) {
+        $buffer = decrypt($buffer, $opt->{fernet});
+    }
+    if ($filename =~ /\.(?:bz2|compressed)\b/ || $opt->{decompress}) {
+        $buffer = decompress($buffer);
+    }
+    if ($filename =~ /\.json\b/ || $opt->{unmarshal}) {
+        return unmarshal($buffer);
+    }
+    unless (exists($opt->{decode_utf8}) && !$opt->{decode_utf8}) {
+        return decode_utf8($buffer);
+    }
+    return $_ = $buffer;
+}
+
+
+sub slurp {
     my($filename) = @_;
     open my $fh, '<:raw', $filename
         or confessf "$! - $filename";
     read $fh, my $buffer, -s $filename;
     close $fh;
-    return $buffer;
+    return $_ = $buffer;
+}
+
+
+sub unmarshal {
+    my $utf8   = @_ > 1 ? !!pop                      : !!1;
+    my $buffer = $utf8  ? Encode::decode_utf8(shift) : shift;
+    local $JSON::Syck::ImplicitUnicode = $utf8;
+    return $_ = JSON::Syck::Load($buffer);
 }
 
 1;
