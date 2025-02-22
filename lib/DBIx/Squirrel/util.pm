@@ -9,16 +9,13 @@ our @ISA = qw(Exporter);
 our @EXPORT;
 our %EXPORT_TAGS = (all => [
     our @EXPORT_OK = qw(
-        isolate_callbacks
+        cluckf
+        confessf
         global_destruct_phase
+        isolate_callbacks
         result
         readfile
-        statement_digest
-        statement_normalise
-        statement_study
-        statement_trim
-        confessf
-        cluckf
+        slurpfile
     )
 ]);
 
