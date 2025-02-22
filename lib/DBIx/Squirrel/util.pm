@@ -54,12 +54,11 @@ to that array, followed by any remaining arguments, to the caller.
 =cut
 
 sub isolate_callbacks {
-    return [] unless @_;
     my $n = my $s = scalar @_;
     $n-- while $n && UNIVERSAL::isa($_[$n - 1], 'CODE');
-    return [@_] unless $n;
-    return [], @_ if $n == $s;
-    return [@_[$n .. $#_]], @_[0 .. $n - 1];
+    return ([],              @_)              if $n == $s;
+    return ([@_[$n .. $#_]], @_[0 .. $n - 1]) if $n;
+    return ([@_]);
 }
 
 
