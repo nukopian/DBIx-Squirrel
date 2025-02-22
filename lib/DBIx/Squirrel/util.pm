@@ -38,42 +38,52 @@ if (-e '.env') {
 }
 
 
-=head3 C<isolate_callbacks>
+=head3 C<cluckf>
 
-    (\@callbacks, @arguments) = isolate_callbacks(@argments);
-    (\@callbacks, @arguments) = &isolate_callbacks;
+Emits a warning with a stack-trace.
 
-While using C<DBIx::Squirrel>, some calls may include a trailing, contiguous
-set of lambdas or callbacks, referred to as a transformation pipeline.
+    cluckf();
 
-This function takes an array of arguments that may or may not contain a
-transformation pipeline. It moves any and all stages of a pipeline from the
-end of the array of arguments into a separate array, and returns a reference
-to that array, followed by any remaining arguments, to the caller.
+The warning will be set to C<$@> if it contains something useful. Otherwise 
+an "Unhelpful warning" will be emitted.
 
-=cut
+    cluckf($message);
+    cluckf(\@message);
 
-sub isolate_callbacks {
-    my $n = my $s = scalar @_;
-    $n-- while $n && UNIVERSAL::isa($_[$n - 1], 'CODE');
-    return ([],              @_)              if $n == $s;
-    return ([@_[$n .. $#_]], @_[0 .. $n - 1]) if $n;
-    return ([@_]);
-}
+The warning will be set to C<$message>, or the concatenated C<@message> array,
+or C<$@>, if there is no viable message. If there is still no viable message
+then an "Unhelpful warning" is emitted.
 
+During concatenation, the elements of the C<@message> array are separated
+by a single space. The intention is to allow for long warning messages to be
+split apart in a tidier manner.
 
-=head3 C<global_destruct_phase>
+    cluckf($format, @arguments);
+    cluckf(\@format, @arguments);
 
-    $bool = global_destruct_phase();
-
-Perl versions older than 5.14 don't support ${^GLOBAL_PHASE}, so
-provide a shim that does the same so that DESTROY methods can be
-made safer.
+The warning is composed using a C<sprintf> format-string (C<$format>), together
+with any remaining arguments. Alternatively, the format-string may be produced
+by concatenating the C<@format> array whose elements are separated by a single
+space.
 
 =cut
 
-sub global_destruct_phase {
-    return Devel::GlobalDestruction::in_global_destruction();
+sub cluckf {
+    @_ = do {
+        if (@_) {
+            my $format = UNIVERSAL::isa($_[0], 'ARRAY') ? join(' ', @{+shift}) : shift;
+            if (@_) {
+                sprintf($format, @_);
+            }
+            else {
+                $format or $@ or 'Unhelpful warning';
+            }
+        }
+        else {
+            $@ or 'Unhelpful warning';
+        }
+    };
+    goto &Carp::cluck;
 }
 
 
@@ -128,55 +138,6 @@ sub confessf {
 }
 
 
-=head3 C<cluckf>
-
-Emits a warning with a stack-trace.
-
-    cluckf();
-
-The warning will be set to C<$@> if it contains something useful. Otherwise 
-an "Unhelpful warning" will be emitted.
-
-    cluckf($message);
-    cluckf(\@message);
-
-The warning will be set to C<$message>, or the concatenated C<@message> array,
-or C<$@>, if there is no viable message. If there is still no viable message
-then an "Unhelpful warning" is emitted.
-
-During concatenation, the elements of the C<@message> array are separated
-by a single space. The intention is to allow for long warning messages to be
-split apart in a tidier manner.
-
-    cluckf($format, @arguments);
-    cluckf(\@format, @arguments);
-
-The warning is composed using a C<sprintf> format-string (C<$format>), together
-with any remaining arguments. Alternatively, the format-string may be produced
-by concatenating the C<@format> array whose elements are separated by a single
-space.
-
-=cut
-
-sub cluckf {
-    @_ = do {
-        if (@_) {
-            my $format = UNIVERSAL::isa($_[0], 'ARRAY') ? join(' ', @{+shift}) : shift;
-            if (@_) {
-                sprintf($format, @_);
-            }
-            else {
-                $format or $@ or 'Unhelpful warning';
-            }
-        }
-        else {
-            $@ or 'Unhelpful warning';
-        }
-    };
-    goto &Carp::cluck;
-}
-
-
 sub decode_utf8 {
     my $buffer = shift;
     return $_ = Encode::decode_utf8($buffer, @_);
@@ -222,6 +183,45 @@ sub get_file_contents {
         return decode_utf8($buffer);
     }
     return $_ = $buffer;
+}
+
+
+=head3 C<global_destruct_phase>
+
+    $bool = global_destruct_phase();
+
+Perl versions older than 5.14 don't support ${^GLOBAL_PHASE}, so
+provide a shim that does the same so that DESTROY methods can be
+made safer.
+
+=cut
+
+sub global_destruct_phase {
+    return Devel::GlobalDestruction::in_global_destruction();
+}
+
+
+=head3 C<isolate_callbacks>
+
+    (\@callbacks, @arguments) = isolate_callbacks(@argments);
+    (\@callbacks, @arguments) = &isolate_callbacks;
+
+While using C<DBIx::Squirrel>, some calls may include a trailing, contiguous
+set of lambdas or callbacks, referred to as a transformation pipeline.
+
+This function takes an array of arguments that may or may not contain a
+transformation pipeline. It moves any and all stages of a pipeline from the
+end of the array of arguments into a separate array, and returns a reference
+to that array, followed by any remaining arguments, to the caller.
+
+=cut
+
+sub isolate_callbacks {
+    my $n = my $s = scalar @_;
+    $n-- while $n && UNIVERSAL::isa($_[$n - 1], 'CODE');
+    return ([],              @_)              if $n == $s;
+    return ([@_[$n .. $#_]], @_[0 .. $n - 1]) if $n;
+    return ([@_]);
 }
 
 
