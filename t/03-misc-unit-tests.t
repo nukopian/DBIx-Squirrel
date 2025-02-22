@@ -38,13 +38,13 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
     my @tests = ({
             line => __LINE__,
             got  => sub { cluckf },
-            exp  => qr/Unhelpful warning issued/,
+            exp  => qr/Unhelpful warning/,
             name => 'no arguments',
         },
         {
             line => __LINE__,
             got  => sub { cluckf '' },
-            exp  => qr/Unhelpful warning issued/,
+            exp  => qr/Unhelpful warning/,
             name => 'an empty string',
         },
         {
@@ -79,7 +79,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
     my @tests = ({
             line => __LINE__,
             got  => sub { confessf },
-            exp  => qr/Unknown exception thrown/,
+            exp  => qr/Unknown error/,
             name => 'no arguments and $@ is not set',
         },
         {
@@ -94,7 +94,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
         {
             line => __LINE__,
             got  => sub { confessf '' },
-            exp  => qr/Unknown exception thrown/,
+            exp  => qr/Unknown error/,
             name => 'an empty string and $@ is not set',
         },
         {

@@ -79,11 +79,32 @@ sub global_destruct_phase {
 
 =head3 C<confessf>
 
-    confessf [$message];
-    confessf [$format_string[, @arguments]];
+Throws and exception with a stack-trace.
 
-Throw an exception with a stack trace. If nothing helpful is passed then C<$@>
-will be re-thrown if it is not empty, or an unknown exception will be thrown.
+    confessf();
+
+The error will be set to C<$@> if it contains something useful (effectivly
+re-throwing the previous exception). Otherwise it will an "Unknown error"
+exception is thrown.
+
+    confessf($message);
+    confessf(\@message);
+
+The error will be set to C<$message>, or the concatenated C<@message> array,
+or C<$@>, if there is no viable message. If there is still no viable message
+then an "Unknown error" is thrown.
+
+During concatenation, the elements of the C<@message> array are separated
+by a single space. The intention is to allow for long error messages to be
+split apart in a tidier manner.
+
+    confessf($format, @arguments);
+    confessf(\@format, @arguments);
+
+The error message is composed using a C<sprintf> format-string (C<$format>),
+together with any remaining arguments. Alternatively, the format-string may
+be produced by concatenating the C<@format> array whose elements are separated
+by a single space.
 
 =cut
 
@@ -95,12 +116,12 @@ sub confessf {
                 sprintf($format, @_);
             }
             else {
-                $format or $@ or 'Unknown exception thrown';
+                $format or $@ or 'Unknown error';
 
             }
         }
         else {
-            $@ or 'Unknown exception thrown';
+            $@ or 'Unknown error';
         }
     };
     goto &Carp::confess;
@@ -109,11 +130,31 @@ sub confessf {
 
 =head3 C<cluckf>
 
-    cluckf [$message];
-    cluckf [$format_string[, @arguments]];
+Emits a warning with a stack-trace.
 
-Emit a warning with a stack trace. If nothing helpful is passed then an
-equally unhelpful warning is emitted.
+    cluckf();
+
+The warning will be set to C<$@> if it contains something useful. Otherwise 
+an "Unhelpful warning" will be emitted.
+
+    cluckf($message);
+    cluckf(\@message);
+
+The warning will be set to C<$message>, or the concatenated C<@message> array,
+or C<$@>, if there is no viable message. If there is still no viable message
+then an "Unhelpful warning" is emitted.
+
+During concatenation, the elements of the C<@message> array are separated
+by a single space. The intention is to allow for long warning messages to be
+split apart in a tidier manner.
+
+    cluckf($format, @arguments);
+    cluckf(\@format, @arguments);
+
+The warning is composed using a C<sprintf> format-string (C<$format>), together
+with any remaining arguments. Alternatively, the format-string may be produced
+by concatenating the C<@format> array whose elements are separated by a single
+space.
 
 =cut
 
@@ -125,11 +166,11 @@ sub cluckf {
                 sprintf($format, @_);
             }
             else {
-                $format or 'Unhelpful warning issued';
+                $format or $@ or 'Unhelpful warning';
             }
         }
         else {
-            'Unhelpful warning issued';
+            $@ or 'Unhelpful warning';
         }
     };
     goto &Carp::cluck;
