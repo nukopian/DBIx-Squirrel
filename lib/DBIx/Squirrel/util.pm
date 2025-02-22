@@ -138,11 +138,15 @@ sub readfile {
     my $buffer = slurpfile($filename);
     if ($filename =~ /\.encrypted/) {
         $buffer = do {
-            if (!exists($opt->{key})) {
+            if (defined($opt->{fernet_key})) {
+                Fernet($opt->{fernet_key})->decrypt($buffer);
+            }
+            elsif (defined($ENV{FERNET_KEY})) {
                 Fernet($ENV{FERNET_KEY})->decrypt($buffer);
             }
             else {
-                Fernet($opt->{key})->decrypt($buffer);
+                confessf "Option hash has no 'fernet_key' defined and no 'FERNET_KEY' "
+                    . "is defined in the environment. Decryption is not possible";
             }
         };
     }
