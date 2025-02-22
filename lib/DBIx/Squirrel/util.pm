@@ -11,13 +11,13 @@ our %EXPORT_TAGS = (all => [
     our @EXPORT_OK = qw(
         cluckf
         confessf
-        decompress
         decrypt
         get_file_contents
         global_destruct_phase
         isolate_callbacks
-        result
         slurp
+        uncompress
+        unmarshal
         utf8decode
     )
 ]);
@@ -135,17 +135,25 @@ sub confessf {
 }
 
 
-=head3 C<decompress>
+=head3 C<decrypt>
 
+    $buffer = decrypt([$buffer, ]$fernet_key);
 
-sub decompress {
-    my $buffer = shift;
-    return $_ = Compress::Bzip2::memBunzip($buffer);
-}
+Decrypts a Fernet-encrypted buffer, returning the decrypted data.
 
+A Fernet key can be provided as the second argument, and this can be a
+Base64-encoded string or a C<DBIx::Squirrel::Crypt::Fernet> instance. If no
+second argument is defined, the function will fall back to using the
+C<FERNET_KEY> environment variable, and if that isn't defined then an
+exception will be thrown.
+
+If C<$buffer> is omitted, C<$_> will be used.
+
+=cut
 
 sub decrypt {
-    my($buffer, $fernet) = @_;
+    my $fernet = pop;
+    my $buffer = @_ ? shift : $_;
     unless (defined $fernet) {
         unless (defined $ENV{FERNET_KEY}) {
             confessf [
@@ -161,22 +169,58 @@ sub decrypt {
 }
 
 
+=head3 C<get_file_contents>
+
+    $contents = get_file_contents($filename[, \%options]);
+
+Return the entire contents of a file to the caller.
+
+The file is read in raw (binary) mode. What happens to the contents after
+reading depends on the file's name and/or the contents of C<%options>:
+
+=over
+
+=item *
+
+If ".encrypted" forms part of the file's name or the C<decrypt> option is
+true, then the file contents will be decrypted after they have been read
+using the Fernet key provided in the C<fernet> option or the C<FERNET_KEY>
+environment variable.
+
+=item *
+
+If ".bz2" forms part of the file's name or the C<uncompress> option is
+true, then the file contents will be uncompressed after they have been read
+and possibly decrypted.
+
+=item *
+
+If ".json" forms part of the file's name or the C<unmarshal> option is
+true, then the file contents will be unmarshalled after they have been read,
+possibly decrypted, and possibly uncompressed.
+
+=item *
+
+If the C<utf8decode> option is true, then the file contents will be decoded
+as a UTF-8 string.
+
+=back
+
+=cut
+
 sub get_file_contents {
-    my($filename, $opt) = @_;
-    my $buffer = slurp($filename);
-    if ($filename =~ /\.enc(?:rypted)?\b/ || $opt->{decrypt}) {
-        $buffer = decrypt($buffer, $opt->{fernet});
-    }
-    if ($filename =~ /\.(?:bz2|compressed)\b/ || $opt->{decompress}) {
-        $buffer = decompress($buffer);
-    }
-    if ($filename =~ /\.json\b/ || $opt->{unmarshal}) {
-        return unmarshal($buffer);
-    }
-    unless (exists($opt->{utf8decode}) && !$opt->{utf8decode}) {
-        return utf8decode($buffer);
-    }
-    return $_ = $buffer;
+    my $filename = shift;
+    my $options  = {utf8decode => !!1, %{shift || {}}};
+    my $contents = slurp($filename);
+    $contents = decrypt($contents, $options->{fernet})
+        if $filename =~ /\.encrypted\b/ || $options->{decrypt};
+    $contents = uncompress($contents)
+        if $filename =~ /\.bz2\b/ || $options->{uncompress};
+    return unmarshal($contents)
+        if $filename =~ /\.json\b/ || $options->{unmarshal};
+    return utf8decode($contents)
+        if $options->{utf8decode};
+    return $_ = $contents;
 }
 
 
@@ -199,15 +243,21 @@ sub global_destruct_phase {
 =head3 C<isolate_callbacks>
 
     (\@callbacks, @arguments) = isolate_callbacks(@argments);
+
+When using C<DBIx::Squirrel>, some calls allow the caller to reshape results
+before they are returned, using transformation pipelines. A transformation
+pipeline is one or more contiguous code-references presented at the end of
+a call's argument list. 
+
+Th C<isolate_callbacks> function inspects an array of arguments, moving any
+trailing code-references from the source array into a separate array — the
+transformation pipeline. It returns a reference to that array, followed by
+any remaining arguments, to the caller.
+
     (\@callbacks, @arguments) = &isolate_callbacks;
 
-While using C<DBIx::Squirrel>, some calls may include a trailing, contiguous
-set of lambdas or callbacks, referred to as a transformation pipeline.
-
-This function takes an array of arguments that may or may not contain a
-transformation pipeline. It moves any and all stages of a pipeline from the
-end of the array of arguments into a separate array, and returns a reference
-to that array, followed by any remaining arguments, to the caller.
+The terse C<&>-sigil calling style causes C<isolate_callbacks> to use the
+calling function's C<@_> array.
 
 =cut
 
@@ -220,8 +270,16 @@ sub isolate_callbacks {
 }
 
 
+=head3 C<slurp>
+
+    $buffer = slurp($filename);
+
+Reads the entirety of the specified file in raw mode, returning the contents.
+
+=cut
+
 sub slurp {
-    my($filename) = @_;
+    my $filename = @_ ? shift : $_;
     open my $fh, '<:raw', $filename
         or confessf "$! - $filename";
     read $fh, my $buffer, -s $filename;
@@ -230,20 +288,49 @@ sub slurp {
 }
 
 
+=head3 C<uncompress>
+
+    $buffer = uncompress($buffer);
+
+Uncompresses a Bzip2-compressed buffer, returning the uncompressed data.
+
+=cut
+
+sub uncompress {
+    my $buffer = @_ ? shift : $_;
+    return $_ = Compress::Bzip2::memBunzip($buffer);
+}
+
+
+=head3 C<unmarshal>
+
+    $data = unmarshal($json);
+    $data = unmarshal($json, $decode);
+
+Unmarshals a JSON-encoded buffer into the data-structure it represents. By
+default, UTF-8 binaries are properly decoded, and this behaviour can be
+inhibited by setting C<$decode> to false.
+
+=cut
+
 sub unmarshal {
-    my $utf8   = @_ > 1 ? !!pop             : !!1;
-    my $buffer = $utf8  ? utf8decode(shift) : shift;
-    local $JSON::Syck::ImplicitUnicode = $utf8;
-    return $_ = JSON::Syck::Load($buffer);
+    my $decode = @_ > 1 ? !!pop : !!1;
+    my $json   = @_     ? shift : $_;
+    local $JSON::Syck::ImplicitUnicode = $decode;
+    return $_ = JSON::Syck::Load($decode ? utf8decode($json) : $json);
 }
 
 
 =head3 C<utf8decode>
 
+    $string = utf8decode($buffer);
+
+Decode a byte buffer, returning a UTF-8 string.
+
 =cut
 
 sub utf8decode {
-    my $buffer = shift;
+    my $buffer = @_ ? shift : $_;
     return $_ = Encode::decode_utf8($buffer, @_);
 }
 
