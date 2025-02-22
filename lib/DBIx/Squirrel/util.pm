@@ -11,7 +11,6 @@ our %EXPORT_TAGS = (all => [
     our @EXPORT_OK = qw(
         cluckf
         confessf
-        decode_utf8
         decompress
         decrypt
         get_file_contents
@@ -19,6 +18,7 @@ our %EXPORT_TAGS = (all => [
         isolate_callbacks
         result
         slurp
+        utf8decode
     )
 ]);
 
@@ -138,10 +138,7 @@ sub confessf {
 }
 
 
-sub decode_utf8 {
-    my $buffer = shift;
-    return $_ = Encode::decode_utf8($buffer, @_);
-}
+=head3 C<decompress>
 
 
 sub decompress {
@@ -179,8 +176,8 @@ sub get_file_contents {
     if ($filename =~ /\.json\b/ || $opt->{unmarshal}) {
         return unmarshal($buffer);
     }
-    unless (exists($opt->{decode_utf8}) && !$opt->{decode_utf8}) {
-        return decode_utf8($buffer);
+    unless (exists($opt->{utf8decode}) && !$opt->{utf8decode}) {
+        return utf8decode($buffer);
     }
     return $_ = $buffer;
 }
@@ -237,10 +234,20 @@ sub slurp {
 
 
 sub unmarshal {
-    my $utf8   = @_ > 1 ? !!pop                      : !!1;
-    my $buffer = $utf8  ? Encode::decode_utf8(shift) : shift;
+    my $utf8   = @_ > 1 ? !!pop             : !!1;
+    my $buffer = $utf8  ? utf8decode(shift) : shift;
     local $JSON::Syck::ImplicitUnicode = $utf8;
     return $_ = JSON::Syck::Load($buffer);
+}
+
+
+=head3 C<utf8decode>
+
+=cut
+
+sub utf8decode {
+    my $buffer = shift;
+    return $_ = Encode::decode_utf8($buffer, @_);
 }
 
 1;
