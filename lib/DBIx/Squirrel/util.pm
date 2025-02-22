@@ -190,9 +190,10 @@ sub get_file_contents {
 
     $bool = global_destruct_phase();
 
-Perl versions older than 5.14 don't support ${^GLOBAL_PHASE}, so
-provide a shim that does the same so that DESTROY methods can be
-made safer.
+Detects whether the Perl program is in the Global Destruct Phase. Knowing
+this can make C<DESTROY> methods safer. Perl versions older than 5.14
+don't support the ${^GLOBAL_PHASE} variable, so provide a shim that
+works regardless of Perl version.
 
 =cut
 
