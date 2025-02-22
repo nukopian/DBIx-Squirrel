@@ -5,6 +5,12 @@ use 5.010_001;
 package    # hide from PAUSE
     DBIx::Squirrel::util;
 
+=pod
+
+=encoding UTF-8
+
+=cut
+
 our @ISA = qw(Exporter);
 our @EXPORT;
 our %EXPORT_TAGS = (all => [
