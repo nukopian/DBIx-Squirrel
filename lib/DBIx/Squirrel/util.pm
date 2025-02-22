@@ -87,7 +87,7 @@ will be re-thrown if it is not empty, or an unknown exception will be thrown.
 sub confessf {
     @_ = do {
         if (@_) {
-            my $format = shift;
+            my $format = UNIVERSAL::isa($_[0], 'ARRAY') ? join(' ', @{+shift}) : shift;
             if (@_) {
                 sprintf($format, @_);
             }
@@ -117,7 +117,7 @@ equally unhelpful warning is emitted.
 sub cluckf {
     @_ = do {
         if (@_) {
-            my $format = shift;
+            my $format = UNIVERSAL::isa($_[0], 'ARRAY') ? join(' ', @{+shift}) : shift;
             if (@_) {
                 sprintf($format, @_);
             }
@@ -145,8 +145,10 @@ sub readfile {
                 Fernet($ENV{FERNET_KEY})->decrypt($buffer);
             }
             else {
-                confessf "Option hash has no 'fernet_key' defined and no 'FERNET_KEY' "
-                    . "is defined in the environment. Decryption is not possible";
+                confessf [
+                    "Option hash has no 'fernet_key' defined, nor is 'FERNET_KEY'",
+                    "defined in the environment. Decryption is impossible",
+                ];
             }
         };
     }
