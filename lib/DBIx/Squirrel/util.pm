@@ -30,13 +30,10 @@ use Dotenv                        ();
 use Encode                        ();
 use Exporter                      ();
 use JSON::Syck                    ();
-use Scalar::Util;
-use Sub::Name;
 
 if (-e '.env') {
     Dotenv->load();
 }
-
 
 =head3 C<cluckf>
 
