@@ -228,7 +228,7 @@ Version 1.5.5
     #
     $itr = $itr->reset(10);
 
-    # Reset the iterator. Set the slice style and how slurpy our row fetches
+    # Reset the iterator. Set the slice style and how y our row fetches
     # are.
     #
     $itr = $itr->reset($slice, $row_count);

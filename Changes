@@ -13,7 +13,7 @@ Revision history for DBIx-Squirrel
     -   A few improvements to the DBIx::Squirrel::Crypt::Fernet package
         interface.
     1.5.3
-    -   Added a new "slurp" exported function to DBIx::Squirrel::util
+    -   Added a new "readfile" exported function to DBIx::Squirrel::util
         to read binary files, decrypt them, uncompress them, and parse
         them as JSON data. This is used by the DBIx::Squirrel::db
         "load_tuples" method for bulk populating/depopulating tables

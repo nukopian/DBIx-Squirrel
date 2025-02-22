@@ -12,7 +12,7 @@ our %EXPORT_TAGS = (all => [
         isolate_callbacks
         global_destruct_phase
         result
-        slurp
+        readfile
         statement_digest
         statement_normalise
         statement_study
@@ -136,7 +136,7 @@ sub cluckf {
 }
 
 
-sub slurp {
+sub readfile {
     my($filename, $opt) = @_;
     open my $fh, '<:raw', $filename
         or confessf "$! - $filename";
