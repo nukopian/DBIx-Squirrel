@@ -473,4 +473,25 @@ sub fernet_verify {
     goto &verify;
 }
 
+=head1 AUTHORS
+
+Iain Campbell E<lt>cpanic@cpan.orgE<gt>
+
+This is a rewrite of C<Crypt::Fernet>, so credit for that original work belongs
+to Wan Leung Wong E<lt>wanleung@linkomnia.comE<gt>.
+
+=head1 COPYRIGHT AND LICENSE
+
+The DBIx::Squirrel module is Copyright (c) 2020-2025 Iain Campbell.
+All rights reserved.
+
+You may distribute under the terms of either the GNU General Public
+License or the Artistic License, as specified in the Perl 5.10.0 README file.
+
+=head1 SUPPORT / WARRANTY
+
+DBIx::Squirrel is free Open Source software. IT COMES WITHOUT WARRANTY OF ANY KIND.
+
+=cut
+
 1;
