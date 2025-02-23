@@ -9,6 +9,14 @@ package    # hide from PAUSE
 
 =encoding UTF-8
 
+=head1 NAME
+
+DBIx::Squirrel::util - Utilities
+
+=head1 DESCRIPTION
+
+A collection of helper functions used by other DBIx::Squirrel packages.
+
 =cut
 
 our @ISA = qw(Exporter);
@@ -40,6 +48,10 @@ use JSON::Syck                    ();
 if (-e '.env') {
     Dotenv->load();
 }
+
+=head2 EXPORTS
+
+Nothing is exported by default.
 
 =head3 C<cluckf>
 
@@ -143,7 +155,8 @@ sub confessf {
 
 =head3 C<decrypt>
 
-    $buffer = decrypt([$buffer, ]$fernet_key);
+    $buffer = decrypt($fernet_key);
+    $buffer = decrypt($buffer, $fernet_key);
 
 Decrypts a Fernet-encrypted buffer, returning the decrypted data.
 
@@ -153,7 +166,7 @@ second argument is defined, the function will fall back to using the
 C<FERNET_KEY> environment variable, and if that isn't defined then an
 exception will be thrown.
 
-If C<$buffer> is omitted, C<$_> will be used.
+If C<$buffer> is omitted then C<$_> will be used.
 
 =cut
 
@@ -278,9 +291,12 @@ sub isolate_callbacks {
 
 =head3 C<slurp>
 
+    $buffer = slurp();
     $buffer = slurp($filename);
 
 Reads the entirety of the specified file in raw mode, returning the contents.
+
+If C<$filename> is omitted then C<$_> will be used.
 
 =cut
 
@@ -296,9 +312,12 @@ sub slurp {
 
 =head3 C<uncompress>
 
+    $buffer = uncompress();
     $buffer = uncompress($buffer);
 
 Uncompresses a Bzip2-compressed buffer, returning the uncompressed data.
+
+If C<$buffer> is omitted then C<$_> will be used.
 
 =cut
 
@@ -329,9 +348,12 @@ sub unmarshal {
 
 =head3 C<utf8decode>
 
+    $string = utf8decode();
     $string = utf8decode($buffer);
 
 Decode a byte buffer, returning a UTF-8 string.
+
+If C<$buffer> is omitted then C<$_> will be used.
 
 =cut
 
@@ -339,5 +361,23 @@ sub utf8decode {
     my $buffer = @_ ? shift : $_;
     return $_ = Encode::decode_utf8($buffer, @_);
 }
+
+=head1 AUTHORS
+
+Iain Campbell <cpanic@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+The DBIx::Squirrel module is Copyright (c) 2020-2025 Iain Campbell.
+All rights reserved.
+
+You may distribute under the terms of either the GNU General Public
+License or the Artistic License, as specified in the Perl 5.10.0 README file.
+
+=head1 SUPPORT / WARRANTY
+
+DBIx::Squirrel is free Open Source software. IT COMES WITHOUT WARRANTY OF ANY KIND.
+
+=cut
 
 1;
