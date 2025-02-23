@@ -1,5 +1,6 @@
 use 5.010_001;
 use strict;
+no strict qw(subs);    ## no critic
 use warnings;
 use Test::Exception;
 use Test::Warnings qw/warning/;
@@ -18,168 +19,22 @@ use Test::More;
 use Test::More::UTF8;
 
 BEGIN {
-    use_ok('DBIx::Squirrel', database_entity => 'db') || print "Bail out!\n";
-    use_ok('T::Squirrel',    qw/:var diagdump/)       || print "Bail out!\n";
+    use_ok('DBIx::Squirrel', database_entity => 'db')
+        or print "Bail out!\n";
+    use_ok('T::Squirrel', qw/:var diagdump/)
+        or print "Bail out!\n";
     use_ok('DBIx::Squirrel::Iterator', qw/result result_transform/)
-        || print "Bail out!\n";
+        or print "Bail out!\n";
     use_ok('DBIx::Squirrel::st', qw/statement_trim statement_study/)
-        || print "Bail out!\n";
-    use_ok('DBIx::Squirrel::util', qw/isolate_callbacks confessf cluckf/)
-        || print "Bail out!\n";
+        or print "Bail out!\n";
 }
 
-diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
+diag join(
+    ', ',
+    "Testing DBIx::Squirrel $DBIx::Squirrel::Crypt::Fernet::VERSION",
+    "Perl $]", "$^X",
+);
 
-{
-    no strict qw/subs/;    ## no critic
-
-    note('DBIx::Squirrel::util::cluckf');
-
-    my @tests = ({
-            line => __LINE__,
-            got  => sub { cluckf },
-            exp  => qr/Unhelpful warning/,
-            name => 'no arguments',
-        },
-        {
-            line => __LINE__,
-            got  => sub { cluckf '' },
-            exp  => qr/Unhelpful warning/,
-            name => 'an empty string',
-        },
-        {
-            line => __LINE__,
-            got  => sub { cluckf 'Foo warning' },
-            exp  => qr/Foo warning/,
-            name => 'a string',
-        },
-        {
-            line => __LINE__,
-            got  => sub { cluckf 'Foo warning (%d)', 99 },
-            exp  => qr/Foo warning \(99\)/,
-            name => 'a format string with parameter(s)',
-        },
-    );
-
-    foreach my $t (@tests) {
-        like(
-            warning { $t->{got}->() }, $t->{exp},
-            sprintf('line %d%s', $t->{line}, $t->{name} ? " - $t->{name}" : ''),
-        );
-    }
-}
-
-##############
-
-{
-    no strict qw/subs/;    ## no critic
-
-    note('DBIx::Squirrel::util::confessf');
-
-    my @tests = ({
-            line => __LINE__,
-            got  => sub { confessf },
-            exp  => qr/Unknown error/,
-            name => 'no arguments and $@ is not set',
-        },
-        {
-            line => __LINE__,
-            got  => sub {
-                eval { die 'Oh no, the foo!' };
-                confessf;
-            },
-            exp  => qr/Oh no, the foo!/,
-            name => "no arguments and \$@='$@'",
-        },
-        {
-            line => __LINE__,
-            got  => sub { confessf '' },
-            exp  => qr/Unknown error/,
-            name => 'an empty string and $@ is not set',
-        },
-        {
-            line => __LINE__,
-            got  => sub {
-                eval { die 'Oh no, the foo!' };
-                confessf '';
-            },
-            exp  => qr/Oh no, the foo!/,
-            name => 'an empty string and $@ is set',
-        },
-        {
-            line => __LINE__,
-            got  => sub { confessf 'Foo confessfn' },
-            exp  => qr/Foo confessfn/,
-            name => 'a string',
-        },
-        {
-            line => __LINE__,
-            got  => sub { confessf 'Foo confessfn (%d)', 99 },
-            exp  => qr/Foo confessfn \(99\)/,
-            name => 'a format string with parameter(s)',
-        },
-        {
-            line => __LINE__,
-            got  => sub { confessf bless({}, 'AnExceptionObject') },
-            exp  => qr/AnExceptionObject=/,
-            name => 'an exception object',
-        },
-    );
-
-    foreach my $t (@tests) {
-        throws_ok { $t->{got}->() } $t->{exp},
-            sprintf('line %d%s', $t->{line}, $t->{name} ? " - $t->{name}" : '');
-    }
-}
-
-##############
-
-{
-    my $sub1 = sub { 'DUMMY 1' };
-    my $sub2 = sub { 'DUMMY 2' };
-    my $sub3 = sub { 'DUMMY 3' };
-
-    note('DBIx::Squirrel::util::isolate_callbacks');
-
-    my @tests = (
-        {line => __LINE__, got => [isolate_callbacks()],        exp => [[]]},
-        {line => __LINE__, got => [isolate_callbacks(1)],       exp => [[], 1]},
-        {line => __LINE__, got => [isolate_callbacks(1, 2)],    exp => [[], 1, 2]},
-        {line => __LINE__, got => [isolate_callbacks(1, 2, 3)], exp => [[], 1, 2, 3]},
-        {line => __LINE__, got => [isolate_callbacks($sub1)],   exp => [[$sub1]]},
-        {
-            line => __LINE__, got => [isolate_callbacks($sub1, $sub2)],
-            exp  => [[$sub1, $sub2]],
-        },
-        {
-            line => __LINE__, got => [isolate_callbacks($sub1, $sub2, $sub3)],
-            exp  => [[$sub1, $sub2, $sub3]],
-        },
-        {line => __LINE__, got => [isolate_callbacks(1 => $sub1)], exp => [[$sub1], 1]},
-        {
-            line => __LINE__, got => [isolate_callbacks(1, 2 => $sub1)],
-            exp  => [[$sub1], 1, 2],
-        },
-        {
-            line => __LINE__, got => [isolate_callbacks(1, 2, 3 => $sub1)],
-            exp  => [[$sub1], 1, 2, 3],
-        },
-        {
-            line => __LINE__, got => [isolate_callbacks(1, 2, 3 => $sub1, $sub2, $sub3)],
-            exp  => [[$sub1, $sub2, $sub3], 1, 2, 3],
-        },
-        {
-            line => __LINE__, got => [isolate_callbacks(1, $sub1, 3 => $sub2, $sub3)],
-            exp  => [[$sub2, $sub3], 1, $sub1, 3],
-        },
-    );
-
-    foreach my $t (@tests) {
-        is_deeply($t->{got}, $t->{exp}, sprintf('line %d', $t->{line}));
-    }
-}
-
-##############
 
 {
     note('DBIx::Squirrel::st::statement_trim');
@@ -212,7 +67,6 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
     }
 }
 
-##############
 
 {
     note('DBIx::Squirrel::st::statement_study');
@@ -319,11 +173,8 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
     $db1->disconnect;
 }
 
-##############
 
 {
-    no strict qw/subs/;    ## no critic
-
     note('DBIx::Squirrel::Iterator::result_transform');
 
     my @tests = (
@@ -370,8 +221,6 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 ##############
 
 {
-    no strict qw/subs/;    ## no critic
-
     note('DBIx::Squirrel::Iterator::ResultClass');
 
     my @tests = ({
