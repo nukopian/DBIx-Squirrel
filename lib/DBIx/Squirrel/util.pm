@@ -339,8 +339,8 @@ inhibited by setting C<$decode> to false.
 =cut
 
 sub unmarshal {
-    my $decode = @_ > 1 ? !!pop : !!1;
-    my $json   = @_     ? shift : $_;
+    my $json   = shift;
+    my $decode = @_ ? !!shift : !!1;
     local $JSON::Syck::ImplicitUnicode = $decode;
     return $_ = JSON::Syck::Load($decode ? utf8decode($json) : $json);
 }
