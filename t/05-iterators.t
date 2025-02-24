@@ -77,7 +77,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 ##############
 
 {
-    note('DBIx::Squirrel::Iterator::ResultClass');
+    note('DBIx::Squirrel::Iterator::rc');
 
     my @tests = (
         {
