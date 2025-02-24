@@ -1,25 +1,26 @@
+use strict;
+use warnings;
+use 5.010_001;
+
 package    # hide from PAUSE
     DBIx::Squirrel::rs;
 
-use 5.010_001;
-use strict;
-use warnings;
-use Scalar::Util qw/weaken/;
-use Sub::Name;
+use Scalar::Util 'weaken';
+use Sub::Name 'subname';
 use namespace::clean;
 
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    $DBIx::Squirrel::rs::VERSION = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::rs::ISA     = qw/DBIx::Squirrel::it/;
+    *DBIx::Squirrel::rs::VERSION = *DBIx::Squirrel::VERSION;
+    @DBIx::Squirrel::rs::ISA     = 'DBIx::Squirrel::it';
 }
 
 sub DESTROY {
-    no strict 'refs';    ## no critic
     return if DBIx::Squirrel::util::global_destruct_phase();
+    my $self = shift;
     local( $., $@, $!, $^E, $?, $_ );
-    my $self      = shift;
     my $row_class = $self->row_class;
+    no strict 'refs';    ## no critic
     $self->_autoloaded_accessors_unload if %{ $row_class . '::' };
     undef &{ $row_class . '::rs' };
     undef &{ $row_class . '::rset' };
@@ -30,23 +31,23 @@ sub DESTROY {
 }
 
 sub _autoloaded_accessors_unload {
-    no strict 'refs';    ## no critic
     my $self = shift;
-    undef &{$_} foreach @{ $self->row_class . '::AUTOLOAD_ACCESSORS' };
+    no strict 'refs';    ## no critic
+    undef &{$_} for @{ $self->row_class . '::AUTOLOAD_ACCESSORS' };
     return $self;
 }
 
 sub _result_preprocess {
     my $self = shift;
-    return ref( $_[0] ) ? $self->_rebless(shift) : shift;
+    return ref $_[0] ? $self->_rebless(shift) : shift;
 }
 
 sub _rebless {
-    no strict 'refs';    ## no critic
     my $self       = shift;
     my $row_class  = $self->row_class;
     my $results_fn = $row_class . '::results';
-    unless ( defined( &{$results_fn} ) ) {
+    no strict 'refs';    ## no critic
+    unless ( defined &{$results_fn} ) {
         my $resultset_fn = $row_class . '::resultset';
         my $rset_fn      = $row_class . '::rset';
         my $rs_fn        = $row_class . '::rs';
@@ -72,17 +73,17 @@ BEGIN {
 
 sub row_class {
     my $self = shift;
-    return sprintf( '%s::Ox%x', ref($self), 0+ $self );
+    return sprintf( '%s::Ox%x', ref $self, 0+ $self );
 }
 
 sub slice {
     no strict 'refs';    ## no critic
     my( $attr, $self ) = shift->_private_state;
     my $slice = shift;
-    my $old   = defined( $attr->{slice} ) ? $attr->{slice} : '';
+    my $old   = defined $attr->{slice} ? $attr->{slice} : '';
     $self->SUPER::slice($slice);
-    if ( my $new = defined( $attr->{slice} ) ? $attr->{slice} : '' ) {
-        if ( ref($new) ne ref($old) ) {
+    if ( my $new = defined $attr->{slice} ? $attr->{slice} : '' ) {
+        if ( ref $new ne ref $old ) {
             $self->_autoloaded_accessors_unload if %{ $self->row_class . '::' };
         }
     }
