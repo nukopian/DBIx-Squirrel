@@ -36,6 +36,7 @@
 -otr
 -valign
 -asc
+-wn
 --noblanks-before-comments
 --blank-lines-before-subs=1
 --noblanks-before-blocks
