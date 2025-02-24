@@ -1,9 +1,9 @@
-use 5.010_001;
 use strict;
 use warnings;
-use Carp qw/croak/;
+use 5.010_001;
+
 use Test::Warn;
-use FindBin qw/$Bin/;
+use FindBin qw($Bin);
 use lib "$Bin/lib";
 
 use Test::More;
@@ -24,6 +24,10 @@ BEGIN {
         or print "Bail out!\n";
 }
 
+sub SQLite_is_too_old {
+    return $DBD::SQLite::VERSION < 1.56;
+}
+
 diag join(
     ', ',
     "Testing DBIx::Squirrel $DBIx::Squirrel::VERSION",
@@ -32,9 +36,8 @@ diag join(
 
 db(DBIx::Squirrel->connect(@TEST_DB_CONNECT_ARGS));
 
-my $artist_legacy = db->prepare(
-    'SELECT * FROM artists WHERE ArtistId=? LIMIT 1',
-);
+my $artist_legacy_sql = 'SELECT * FROM artists WHERE ArtistId=? LIMIT 1';
+my $artist_legacy     = db->prepare($artist_legacy_sql);
 
 for my $s (
     'SELECT * FROM artists WHERE ArtistId=? LIMIT 1',
@@ -61,12 +64,12 @@ for my $s (
         {
             line => __LINE__, name => "ok - statement as $n internal state",
             got  => [$artist_legacy->_private_state->{NormalisedStatement}],
-            exp  => ['SELECT * FROM artists WHERE ArtistId=? LIMIT 1'],
+            exp  => [$artist_legacy_sql],
         },
         {
             line => __LINE__, name => "ok - statement as $n internal state",
             got  => [$artist_legacy->_private_state->{OriginalStatement}],
-            exp  => ['SELECT * FROM artists WHERE ArtistId=? LIMIT 1'],
+            exp  => [$artist_legacy_sql],
         },
         {
             line => __LINE__, name => "ok - statement as $n internal state",
@@ -83,152 +86,174 @@ for my $s (
 }
 
 is(
-    $artist_legacy->{Statement},
-    'SELECT * FROM artists WHERE ArtistId=? LIMIT 1',
-    'statement with legacy placeholders ok',
+    $artist_legacy->{Statement}, $artist_legacy_sql,
+    'ok - normalised (? placeholders)',
 );
-
-is($artist_legacy->execute(3), '0E0', 'statement execute ok');
+is $artist_legacy->execute(3), '0E0', 'ok - execute';
 
 SKIP:
 {
-    skip "DBD\::SQLite $DBD_SQLite_VERSION too old for \$sth->{ParamValues} tests",
-        1
-        unless $DBD_SQLite_VERSION >= 1.56;
-    is_deeply($artist_legacy->{ParamValues}, {1 => 3}, 'statement ParamValues ok');
+    if (SQLite_is_too_old()) {
+        skip "DBD\::SQLite too old for ParamValues check", 1;
+    }
+    is_deeply $artist_legacy->{ParamValues}, {1 => 3}, 'ok - statement ParamValues';
 }
 
 my $artist_named = db->prepare(
     'SELECT * FROM artists WHERE ArtistId=:id LIMIT 1',
 );
+
+is $artist_named->{Statement}, $artist_legacy_sql,
+    'ok - normalised (:named placeholders)';
+
 is(
-    $artist_named->{Statement}, $artist_legacy->{Statement},
-    'statement with named placeholders ok',
+    $artist_named->execute(id => 3), '0E0',
+    'ok - execute (named placeholder, bind key-value list)',
 );
+is(
+    $artist_named->fetchrow_hashref->{Name}, 'Aerosmith',
+    'ok - fetchrow_hashref',
+);
+
+is(
+    $artist_named->execute({id => 3}), '0E0',
+    'ok - execute (named placeholder, bind key-value hashref)',
+);
+is(
+    $artist_named->fetchrow_arrayref->[1], 'Aerosmith',
+    'ok - fetchrow_arrayref',
+);
+
+is(
+    $artist_named->execute([id => 3]), '0E0',
+    'ok - execute (named placeholder, bind key-value arrayref)',
+);
+is(
+    $artist_named->fetchrow_hashref->{Name}, 'Aerosmith',
+    'ok - fetchrow_hashref',
+);
+
+is(
+    $artist_named->execute(':id' => 3), '0E0',
+    'ok - execute (named placeholder, bind :key-value list)',
+);
+is(
+    $artist_named->fetchrow_arrayref->[1], 'Aerosmith',
+    'ok - fetchrow_arrayref',
+);
+
+is(
+    $artist_named->execute({':id' => 3}), '0E0',
+    'ok - execute (named placeholder, bind :key-value hashref)',
+);
+is(
+    $artist_named->fetchrow_hashref->{Name}, 'Aerosmith',
+    'ok - fetchrow_hashref',
+);
+
+is(
+    $artist_named->execute([':id' => 3]), '0E0',
+    'ok - execute (named placeholder, bind :key-value arrayref)',
+);
+is(
+    $artist_named->fetchrow_arrayref->[1], 'Aerosmith',
+    'ok - fetchrow_arrayref',
+);
+
 warnings_exist { $artist_named->execute(3) } (
     [qr/Check bind values/, qr/Odd number of elements/],
-    'binding positional parameters to named placeholders gives expected warnings',
+    'ok - warning on odd number of bind values',
 );
-is($artist_named->execute(id => 3),         '0E0', 'statement execute ok');
-is($artist_named->fetchrow_hashref->{Name}, 'Aerosmith', 'fetch ok');
-is($artist_named->execute({id => 3}),     '0E0',       'statement execute ok');
-is($artist_named->fetchrow_arrayref->[1], 'Aerosmith', 'fetch ok');
-is($artist_named->execute([id => 3]),     '0E0',       'statement execute ok');
-is($artist_named->fetchrow_hashref->{Name}, 'Aerosmith', 'fetch ok');
-is($artist_named->execute(':id' => 3),    '0E0',       'statement execute ok');
-is($artist_named->fetchrow_arrayref->[1], 'Aerosmith', 'fetch ok');
-is($artist_named->execute({':id' => 3}),  '0E0',       'statement execute ok');
-is($artist_named->fetchrow_hashref->{Name}, 'Aerosmith', 'fetch ok');
-is($artist_named->execute([':id' => 3]),  '0E0',       'statement execute ok');
-is($artist_named->fetchrow_arrayref->[1], 'Aerosmith', 'fetch ok');
 
 SKIP:
 {
-    skip "DBD\::SQLite $DBD_SQLite_VERSION too old for \$sth->{ParamValues} tests",
-        1
-        unless $DBD_SQLite_VERSION >= 1.56;
-    is_deeply($artist_named->{ParamValues}, {1 => 3}, 'statement ParamValues ok');
-}
-is($artist_named->execute(":id" => 3), '0E0', 'statement execute ok');
-
-SKIP:
-{
-    skip "DBD\::SQLite $DBD_SQLite_VERSION too old for \$sth->{ParamValues} tests",
-        1
-        unless $DBD_SQLite_VERSION >= 1.56;
-    is_deeply($artist_named->{ParamValues}, {1 => 3}, 'statement ParamValues ok');
+    if (SQLite_is_too_old()) {
+        skip "DBD\::SQLite too old for ParamValues check", 1;
+    }
+    is_deeply $artist_named->{ParamValues}, {1 => 3}, 'ok - statement ParamValues';
 }
 
-my $artist_numbered
-    = db->prepare('SELECT * FROM artists WHERE ArtistId=:1 LIMIT 1');
+is $artist_named->execute(":id" => 3), '0E0', 'ok - execute';
+
+my $artist_numbered = db->prepare([
+    'SELECT * FROM artists',
+    'WHERE ArtistId=:1 LIMIT 1',
+]);
+
 is(
-    $artist_numbered->{Statement}, $artist_legacy->{Statement},
-    'statement with numbered placeholders ok',
+    $artist_numbered->{Statement}, $artist_legacy_sql,
+    'ok - normalised (:n placeholders)',
 );
-is($artist_numbered->execute(3), '0E0', 'statement execute ok');
+is $artist_numbered->execute(3), '0E0', 'ok - execute';
 
 SKIP:
 {
-    skip "DBD\::SQLite $DBD_SQLite_VERSION too old for \$sth->{ParamValues} tests",
-        1
-        unless $DBD_SQLite_VERSION >= 1.56;
-    is_deeply(
-        $artist_numbered->{ParamValues}, {1 => 3},
-        'statement ParamValues ok',
-    );
+    if (SQLite_is_too_old()) {
+        skip "DBD\::SQLite too old for ParamValues check", 1;
+    }
+    is_deeply $artist_numbered->{ParamValues}, {1 => 3},
+        'ok - statement ParamValues';
 }
 
 my $artist_pg = db->prepare('SELECT * FROM artists WHERE ArtistId=$1 LIMIT 1');
 is(
-    $artist_pg->{Statement}, $artist_legacy->{Statement},
-    'statement with Postgres-styled placeholders ok',
+    $artist_pg->{Statement}, $artist_legacy_sql,
+    'ok - normalised ($n placeholders)',
 );
 is($artist_pg->execute(3), '0E0', 'statement execute ok');
 
 SKIP:
 {
-    skip "DBD\::SQLite $DBD_SQLite_VERSION too old for \$sth->{ParamValues} tests",
-        1
-        unless $DBD_SQLite_VERSION >= 1.56;
-    is_deeply($artist_pg->{ParamValues}, {1 => 3}, 'statement ParamValues ok');
+    if (SQLite_is_too_old()) {
+        skip "DBD\::SQLite too old for ParamValues check", 1;
+    }
+    is_deeply $artist_pg->{ParamValues}, {1 => 3}, 'ok - statement ParamValues';
 }
 
 my $artist_sqlite
     = db->prepare('SELECT * FROM artists WHERE ArtistId=?1 LIMIT 1');
 is(
     $artist_sqlite->{Statement}, $artist_legacy->{Statement},
-    'statement with SQLite-styled placeholders ok',
+    'ok - normalised (?n placeholders)',
 );
-is($artist_sqlite->execute(3), '0E0', 'statement execute ok');
+is($artist_sqlite->execute(3), '0E0', 'ok - execute');
 
 SKIP:
 {
-    skip "DBD\::SQLite $DBD_SQLite_VERSION too old for \$sth->{ParamValues} tests",
-        1
-        unless $DBD_SQLite_VERSION >= 1.56;
-    is_deeply($artist_sqlite->{ParamValues}, {1 => 3}, 'statement ParamValues ok');
+    if (SQLite_is_too_old()) {
+        skip "DBD\::SQLite too old for ParamValues check", 1;
+    }
+    is_deeply $artist_sqlite->{ParamValues}, {1 => 3}, 'ok - statement ParamValues';
 }
 
 artists(db->prepare('SELECT * FROM artists'));
 is(
     artists->{Statement}, 'SELECT * FROM artists',
-    'artists helper statement pass-through ok',
+    'ok - statement helper',
 );
 
 artist($artist_legacy);
-is(
-    artist->{Statement}, $artist_legacy->{Statement},
-    'artist helper statement pass-through ok',
-);
-is_deeply(
-    artist->fetchrow_arrayref, [3, 'Aerosmith'],
-    'first fetchrow_arrayref ok',
-);
-is_deeply(
-    artist->fetchrow_arrayref, undef,
-    'second fetchrow_arrayref undef ok',
-);
-ok(!artist->{Active}, 'statement inactive ok');
 
-is(artist(128), '0E0', 'statement execute ok');
+is artist->{Statement}, $artist_legacy_sql, 'ok - statement helper';
+is_deeply artist->fetchrow_arrayref, [3, 'Aerosmith'], 'ok - fetchrow_arrayref';
+is_deeply artist->fetchrow_arrayref, undef, 'ok - fetchrow_arrayref exhausted';
+ok !artist->{Active}, 'ok - statement not Active';
+is artist(128), '0E0', 'ok - execute';
 
 SKIP:
 {
-    skip "DBD\::SQLite $DBD_SQLite_VERSION too old for \$sth->{ParamValues} tests",
-        1
-        unless $DBD_SQLite_VERSION >= 1.56;
-    is_deeply(
-        $artist_legacy->{ParamValues}, {1 => 128},
-        'statement ParamValues ok',
-    );
+    if (SQLite_is_too_old()) {
+        skip "DBD\::SQLite too old for ParamValues check", 1;
+    }
+    is_deeply artist->{ParamValues}, {1 => 128}, 'ok - statement ParamValues';
 }
 
-ok(artist->{Active}, 'statement active ok');
+ok artist->{Active}, 'ok - statement Active';
 is_deeply(
     artist->fetchrow_hashref, {ArtistId => 128, Name => 'Rush'},
-    'first fetchrow_hashref ok',
+    'ok - fetchrow_hashref',
 );
-is_deeply(artist->fetchrow_hashref, undef, 'second fetchrow_hashref undef ok');
-ok(!artist->{Active}, 'statement inactive ok');
+is_deeply(artist->fetchrow_hashref, undef, 'ok - fetchrow_hashref exhausted');
+ok !artist->{Active}, 'statement not Active';
 
 done_testing();
