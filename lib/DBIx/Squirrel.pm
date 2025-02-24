@@ -9,13 +9,13 @@ use DBI;
 use Exporter;
 use Scalar::Util qw/reftype/;
 use Sub::Name;
-use DBIx::Squirrel::dr        ();
-use DBIx::Squirrel::db        ();
-use DBIx::Squirrel::st        ();
-use DBIx::Squirrel::it        ();
-use DBIx::Squirrel::ResultSet ();
-use DBIx::Squirrel::rc        ();
-use DBIx::Squirrel::util      qw/confessf/;
+use DBIx::Squirrel::dr   ();
+use DBIx::Squirrel::db   ();
+use DBIx::Squirrel::st   ();
+use DBIx::Squirrel::it   ();
+use DBIx::Squirrel::rs   ();
+use DBIx::Squirrel::rc   ();
+use DBIx::Squirrel::util qw/confessf/;
 use namespace::clean;
 
 BEGIN {

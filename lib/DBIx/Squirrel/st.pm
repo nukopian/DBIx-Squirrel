@@ -168,7 +168,7 @@ BEGIN {
 }
 
 sub results {
-    return DBIx::Squirrel::ResultSet->new(@_);
+    return DBIx::Squirrel::rs->new(@_);
 }
 
 BEGIN {

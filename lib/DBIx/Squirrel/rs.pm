@@ -1,5 +1,5 @@
 package    # hide from PAUSE
-    DBIx::Squirrel::ResultSet;
+    DBIx::Squirrel::rs;
 
 use 5.010_001;
 use strict;
@@ -10,8 +10,8 @@ use namespace::clean;
 
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    $DBIx::Squirrel::ResultSet::VERSION = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::ResultSet::ISA     = qw/DBIx::Squirrel::it/;
+    $DBIx::Squirrel::rs::VERSION = $DBIx::Squirrel::VERSION;
+    @DBIx::Squirrel::rs::ISA     = qw/DBIx::Squirrel::it/;
 }
 
 sub DESTROY {
