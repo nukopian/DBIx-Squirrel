@@ -36,14 +36,14 @@ our %EXPORT_TAGS = ( all => [
     )
 ] );
 
-use Carp                          ();
-use Compress::Bzip2               ();
-use DBIx::Squirrel::Crypt::Fernet ();
-use Devel::GlobalDestruction      ();
-use Dotenv                        ();
-use Encode                        ();
-use Exporter                      ();
-use JSON::Syck                    ();
+require Carp;
+require Compress::Bzip2;
+require DBIx::Squirrel::Crypt::Fernet;
+require Devel::GlobalDestruction;
+require Dotenv;
+require Encode;
+require Exporter;
+require JSON::Syck;
 
 if ( -e '.env' ) {
     Dotenv->load();
@@ -88,10 +88,10 @@ sub cluckf {
         if (@_) {
             my $format = shift;
             if ( UNIVERSAL::isa( $format, 'ARRAY' ) ) {
-                $format = join( ' ', @$format );
+                $format = join ' ', @$format;
             }
             if (@_) {
-                sprintf( $format, @_ );
+                sprintf $format, @_;
             }
             else {
                 $format or $@ or 'Unhelpful warning';
@@ -141,10 +141,10 @@ sub confessf {
         if (@_) {
             my $format = shift;
             if ( UNIVERSAL::isa( $format, 'ARRAY' ) ) {
-                $format = join( ' ', @$format );
+                $format = join ' ', @$format;
             }
             if (@_) {
-                sprintf( $format, @_ );
+                sprintf $format, @_;
             }
             else {
                 $format or $@ or 'Unknown error';
@@ -289,9 +289,9 @@ calling function's C<@_> array.
 sub isolate_callbacks {
     my $n = my $s = scalar @_;
     $n-- while $n && UNIVERSAL::isa( $_[ $n - 1 ], 'CODE' );
-    return ( [],                  @_ )                if $n == $s;
-    return ( [ @_[ $n .. $#_ ] ], @_[ 0 .. $n - 1 ] ) if $n;
-    return ( [@_] );
+    return [], @_ if $n == $s;
+    return [ @_[ $n .. $#_ ] ], @_[ 0 .. $n - 1 ] if $n;
+    return [@_];
 }
 
 
