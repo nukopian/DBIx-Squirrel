@@ -2,9 +2,11 @@ Revision history for DBIx-Squirrel
 
 1.6.0 2024-09-?? ??:?? Next Stable Release
 
-1.5.4 2024-09-12 20:52 Developer Release (Work In Progress)
+1.5.5 2025-02-24 22:14 Developer Release (Work In Progress)
 
--   GOALS 1.5.4
+-   1.5.5
+    -   Cleaning-up, refactoring, and working on tests.
+-   1.5.4
     -   D3 Improve the SYNOPSIS, which is too long and wastes far too
         much space covering activities that can be done with the DBI.
     -   Increased DBIx::Squirrel::st test coverage.
@@ -12,7 +14,7 @@ Revision history for DBIx-Squirrel
         once.
     -   A few improvements to the DBIx::Squirrel::Crypt::Fernet package
         interface.
-    1.5.3
+-   1.5.3
     -   Added a new "get_file_contents" exported function to DBIx::Squirrel::util
         to read binary files, decrypt them, uncompress them, and parse
         them as JSON data. This is used by the DBIx::Squirrel::db
