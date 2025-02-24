@@ -86,10 +86,14 @@ space.
 sub cluckf {
     @_ = do {
         if (@_) {
-            my $format = shift;
-            if ( UNIVERSAL::isa( $format, 'ARRAY' ) ) {
-                $format = join ' ', @$format;
-            }
+            my $format = do {
+                if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                    join ' ', @{ +shift };
+                }
+                else {
+                    shift;
+                }
+            };
             if (@_) {
                 sprintf $format, @_;
             }
@@ -139,10 +143,14 @@ by a single space.
 sub confessf {
     @_ = do {
         if (@_) {
-            my $format = shift;
-            if ( UNIVERSAL::isa( $format, 'ARRAY' ) ) {
-                $format = join ' ', @$format;
-            }
+            my $format = do {
+                if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                    join ' ', @{ +shift };
+                }
+                else {
+                    shift;
+                }
+            };
             if (@_) {
                 sprintf $format, @_;
             }
