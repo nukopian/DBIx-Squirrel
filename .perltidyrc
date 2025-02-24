@@ -12,9 +12,9 @@
 -mft=1
 -otr
 -vtc=1
--pt=2
--bt=2
--sbt=2
+-pt=1
+-bt=1
+-sbt=1
 -bbt=0
 -bbvt=0
 -nsfs
