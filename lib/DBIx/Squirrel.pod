@@ -946,16 +946,37 @@ the statement, as well as the statement handle:
     $sth = $dbh->prepare($statement)          or die $dbh->errstr;
     $sth = $dbh->prepare($statement, \%attr)  or die $dbh->errstr;
 
-The C<prepare> method interface is identical in form to that provided by the
-C<DBI>.
+The C<prepare> method works just the same as it does in the C<DBI>.
 
-C<DBIx::Squirrel> permits the use of one of a number of valid placeholder
-styles (C<:name>, C<:number>, C<$number>, C<?number>, C<?>) within the
-statement-string.
+The C<$statement> argument must evauate to a string, and may be any of the
+following:
 
-Statement-strings will be "normalised" to use the legacy C<?> style, before
-being handed-off to the C<DBI> method of the same name. In spite of this,
-you should still use key-value bindings if you opted for named placeholders.
+=over
+
+=item *
+
+a simple string containing the SQL statement;
+
+=item *
+
+a reference to an array of simple strings that will be concantenated
+(separated by a space) to form a simple string containing the SQL
+statement;
+
+=item *
+
+a reference to a function returning a simple string or an array of simple
+strings that will be concantenated (separated by a space) to form a simple
+string containing the SQL statement;
+
+=back
+
+C<DBIx::Squirrel> isn't too opinionated about the placeholder style used,
+and will accept C<:name>, C<:number>, C<$number>, C<?number> or C<?>
+placeholders within the statement-string. You must use key-value bindings
+if you opted for named placeholders. All statements are normalised to use
+the legacy C<?> style anyway.
+
 
 =head4 C<prepare_cached> *
 
@@ -963,18 +984,37 @@ you should still use key-value bindings if you opted for named placeholders.
     $sth = $dbh->prepare_cached($statement, \%attr)
     $sth = $dbh->prepare_cached($statement, \%attr, $if_active)
 
-The C<prepare_cached> method interface is identical in form to that provided
-by the C<DBI>.
+The C<prepare> method works just the same as it does in the C<DBI>.
 
-C<DBIx::Squirrel> permits the use of one of a number of valid placeholder
-styles (C<:name>, C<:number>, C<$number>, C<?number>, C<?>) within the
-statement-string.
+The C<$statement> argument must evauate to a string, and may be any of the
+following:
 
-Statement-strings will be "normalised" to use the legacy C<?> style, before
-being handed-off to the C<DBI> method of the same name. In spite of this,
-you should still use key-value bindings if you opted for named placeholders.
+=over
 
-It is the normalised form of the statement that is cached by the C<DBI>.
+=item *
+
+a simple string containing the SQL statement;
+
+=item *
+
+a reference to an array of simple strings that will be concantenated
+(separated by a space) to form a simple string containing the SQL
+statement;
+
+=item *
+
+a reference to a function returning a simple string or an array of simple
+strings that will be concantenated (separated by a space) to form a simple
+string containing the SQL statement;
+
+=back
+
+C<DBIx::Squirrel> isn't too opinionated about the placeholder style used,
+and will accept C<:name>, C<:number>, C<$number>, C<?number> or C<?>
+placeholders within the statement-string. You must use key-value bindings
+if you opted for named placeholders. All statements are normalised to use
+the legacy C<?> style anyway, and it is this normalised statement that is
+cached by the C<DBI>. 
 
 =head4 C<results>
 

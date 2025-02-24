@@ -870,16 +870,24 @@ the statement, as well as the statement handle:
     $sth = $dbh->prepare($statement)          or die $dbh->errstr;
     $sth = $dbh->prepare($statement, \%attr)  or die $dbh->errstr;
 
-The `prepare` method interface is identical in form to that provided by the
-`DBI`.
+The `prepare` method works just the same as it does in the `DBI`.
 
-`DBIx::Squirrel` permits the use of one of a number of valid placeholder
-styles (`:name`, `:number`, `$number`, `?number`, `?`) within the
-statement-string.
+The `$statement` argument must evauate to a string, and may be any of the
+following:
 
-Statement-strings will be "normalised" to use the legacy `?` style, before
-being handed-off to the `DBI` method of the same name. In spite of this,
-you should still use key-value bindings if you opted for named placeholders.
+- a simple string containing the SQL statement;
+- a reference to an array of simple strings that will be concantenated
+(separated by a space) to form a simple string containing the SQL
+statement;
+- a reference to a function returning a simple string or an array of simple
+strings that will be concantenated (separated by a space) to form a simple
+string containing the SQL statement;
+
+`DBIx::Squirrel` isn't too opinionated about the placeholder style used,
+and will accept `:name`, `:number`, `$number`, `?number` or `?`
+placeholders within the statement-string. You must use key-value bindings
+if you opted for named placeholders. All statements are normalised to use
+the legacy `?` style anyway.
 
 #### `prepare_cached` \*
 
@@ -887,18 +895,25 @@ you should still use key-value bindings if you opted for named placeholders.
     $sth = $dbh->prepare_cached($statement, \%attr)
     $sth = $dbh->prepare_cached($statement, \%attr, $if_active)
 
-The `prepare_cached` method interface is identical in form to that provided
-by the `DBI`.
+The `prepare` method works just the same as it does in the `DBI`.
 
-`DBIx::Squirrel` permits the use of one of a number of valid placeholder
-styles (`:name`, `:number`, `$number`, `?number`, `?`) within the
-statement-string.
+The `$statement` argument must evauate to a string, and may be any of the
+following:
 
-Statement-strings will be "normalised" to use the legacy `?` style, before
-being handed-off to the `DBI` method of the same name. In spite of this,
-you should still use key-value bindings if you opted for named placeholders.
+- a simple string containing the SQL statement;
+- a reference to an array of simple strings that will be concantenated
+(separated by a space) to form a simple string containing the SQL
+statement;
+- a reference to a function returning a simple string or an array of simple
+strings that will be concantenated (separated by a space) to form a simple
+string containing the SQL statement;
 
-It is the normalised form of the statement that is cached by the `DBI`.
+`DBIx::Squirrel` isn't too opinionated about the placeholder style used,
+and will accept `:name`, `:number`, `$number`, `?number` or `?`
+placeholders within the statement-string. You must use key-value bindings
+if you opted for named placeholders. All statements are normalised to use
+the legacy `?` style anyway, and it is this normalised statement that is
+cached by the `DBI`. 
 
 #### `results`
 

@@ -54,6 +54,12 @@ sub _private_state {
 sub prepare {
     my $self      = shift;
     my $statement = shift;
+    if (UNIVERSAL::isa($statement, 'CODE')) {
+        $statement = $statement->();
+    }
+    if (UNIVERSAL::isa($statement, 'ARRAY')) {
+        $statement = join(' ', @{$statement});
+    }
     my($placeholders, $normalised_statement, $original_statement, $digest)
         = statement_study($statement);
     confessf E_EXP_STATEMENT unless defined($normalised_statement);
@@ -72,6 +78,12 @@ sub prepare {
 sub prepare_cached {
     my $self      = shift;
     my $statement = shift;
+    if (UNIVERSAL::isa($statement, 'CODE')) {
+        $statement = $statement->();
+    }
+    if (UNIVERSAL::isa($statement, 'ARRAY')) {
+        $statement = join(' ', @{$statement});
+    }
     my($placeholders, $normalised_statement, $original_statement, $digest)
         = statement_study($statement);
     confessf E_EXP_STATEMENT unless defined($normalised_statement);
