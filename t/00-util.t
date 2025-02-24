@@ -20,11 +20,11 @@ use Test::More;
 use Test::More::UTF8;
 
 BEGIN {
-    use_ok('DBIx::Squirrel', database_entity => 'db')
+    use_ok( 'DBIx::Squirrel', database_entity => 'db' )
         or print "Bail out!\n";
-    use_ok('T::Squirrel', qw(:var diagdump))
+    use_ok( 'T::Squirrel', qw(:var diagdump) )
         or print "Bail out!\n";
-    use_ok('DBIx::Squirrel::util', qw(isolate_callbacks confessf cluckf))
+    use_ok( 'DBIx::Squirrel::util', qw(isolate_callbacks confessf cluckf) )
         or print "Bail out!\n";
 }
 
@@ -35,7 +35,8 @@ diag join(
 );
 
 {
-    my @tests = ({
+    my @tests = (
+        {
             line => __LINE__, name => 'ok - cluckf (no arguments)',
             got  => sub { cluckf },
             exp  => qr/Unhelpful warning/,
@@ -60,14 +61,15 @@ diag join(
     for my $t (@tests) {
         like(
             warning { $t->{got}->() }, $t->{exp},
-            sprintf('line %d%s', $t->{line}, $t->{name} ? " $t->{name}" : ''),
+            sprintf( 'line %d%s', $t->{line}, $t->{name} ? " $t->{name}" : '' ),
         );
     }
 }
 
 
 {
-    my @tests = ({
+    my @tests = (
+        {
             line => __LINE__, name => 'ok - confessf (no arguments, $@ undefined)',
             got  => sub { confessf },
             exp  => qr/Unknown error/,
@@ -105,14 +107,14 @@ diag join(
         },
         {
             line => __LINE__, name => 'ok - confessf (exception object)',
-            got  => sub { confessf bless({}, 'AnExceptionObject') },
+            got  => sub { confessf bless( {}, 'AnExceptionObject' ) },
             exp  => qr/AnExceptionObject=/,
         },
     );
 
     for my $t (@tests) {
         throws_ok { $t->{got}->() } $t->{exp},
-            sprintf('line %d%s', $t->{line}, $t->{name} ? " $t->{name}" : '');
+            sprintf( 'line %d%s', $t->{line}, $t->{name} ? " $t->{name}" : '' );
     }
 }
 
@@ -122,60 +124,62 @@ diag join(
     my $sub2 = sub { 'DUMMY 2' };
     my $sub3 = sub { 'DUMMY 3' };
 
-    my @tests = ({
+    my @tests = (
+        {
             line => __LINE__, name => 'ok - isolate_callbacks (no arguments)',
-            got  => [isolate_callbacks()],
-            exp  => [[]],
+            got  => [ isolate_callbacks() ],
+            exp  => [ [] ],
         },
         {
             line => __LINE__, name => 'ok - isolate_callbacks (single argument)',
-            got  => [isolate_callbacks(1)],
-            exp  => [[], 1],
+            got  => [ isolate_callbacks(1) ],
+            exp  => [ [], 1 ],
         },
         {
             line => __LINE__, name => 'ok - isolate_callbacks (multiple arguments)',
-            got  => [isolate_callbacks(1, 2)],
-            exp  => [[], 1, 2],
+            got  => [ isolate_callbacks( 1, 2 ) ],
+            exp  => [ [], 1, 2 ],
         },
         {
             line => __LINE__, name => 'ok - isolate_callbacks (single callback)',
-            got  => [isolate_callbacks($sub1)],
-            exp  => [[$sub1]],
+            got  => [ isolate_callbacks($sub1) ],
+            exp  => [ [$sub1] ],
         },
         {
             line => __LINE__, name => 'ok - isolate_callbacks (multiple callbacks)',
-            got  => [isolate_callbacks($sub1, $sub2)],
-            exp  => [[$sub1, $sub2]],
+            got  => [ isolate_callbacks( $sub1, $sub2 ) ],
+            exp  => [ [ $sub1, $sub2 ] ],
         },
         {
             line => __LINE__,
             name => 'ok - isolate_callbacks (single argument, single callback)',
-            got  => [isolate_callbacks(1 => $sub1)],
-            exp  => [[$sub1], 1],
+            got  => [ isolate_callbacks( 1 => $sub1 ) ],
+            exp  => [ [$sub1], 1 ],
         },
         {
             line => __LINE__,
             name => 'ok - isolate_callbacks (multiple arguments, single callback)',
-            got  => [isolate_callbacks(1, 2 => $sub1)],
-            exp  => [[$sub1], 1, 2],
+            got  => [ isolate_callbacks( 1, 2 => $sub1 ) ],
+            exp  => [ [$sub1], 1, 2 ],
         },
         {
             line => __LINE__,
             name => 'ok - isolate_callbacks (multiple arguments, multiple callbacks)',
-            got  => [isolate_callbacks(1, 2 => $sub1, $sub2)],
-            exp  => [[$sub1, $sub2], 1, 2],
+            got  => [ isolate_callbacks( 1, 2 => $sub1, $sub2 ) ],
+            exp  => [ [ $sub1, $sub2 ], 1, 2 ],
         },
         {
-            line => __LINE__, name =>
+            line => __LINE__,
+            name =>
                 'ok - isolate_callbacks (multiple arguments, multiple callbacks, non-callback argument)',
-            got => [isolate_callbacks(1, $sub1, 3 => $sub2, $sub3)],
-            exp => [[$sub2, $sub3], 1, $sub1, 3],
+            got => [ isolate_callbacks( 1, $sub1, 3 => $sub2, $sub3 ) ],
+            exp => [ [ $sub2, $sub3 ], 1, $sub1, 3 ],
         },
     );
 
     for my $t (@tests) {
         is_deeply $t->{got}, $t->{exp},
-            sprintf('line %d%s', $t->{line}, $t->{name} ? " $t->{name}" : '');
+            sprintf( 'line %d%s', $t->{line}, $t->{name} ? " $t->{name}" : '' );
     }
 }
 

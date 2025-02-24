@@ -109,7 +109,7 @@ See L<https://github.com/fernet/spec/blob/master/Spec.md> for more detail.
 our @ISA = qw(Exporter);
 our @EXPORT;
 
-our %EXPORT_TAGS = (all => [
+our %EXPORT_TAGS = ( all => [
     our @EXPORT_OK = qw(
         fernet_decrypt
         fernet_encrypt
@@ -121,7 +121,7 @@ our %EXPORT_TAGS = (all => [
         verify
         Fernet
     )
-]);
+] );
 our $VERSION = '1.0.0';
 
 require Crypt::CBC;
@@ -137,7 +137,7 @@ use MIME::Base64::URLSafe qw(
 use namespace::clean;
 use overload '""' => \&to_string;    # overload after namespace::clean for stringification to work
 
-const my $TOKEN_VERSION  => pack("H*", '80');
+const my $TOKEN_VERSION  => pack( "H*", '80' );
 const my $LEN_HDR        => 25;
 const my $LEN_DIGEST     => 32;
 const my $LEN_HDR_DIGEST => $LEN_HDR + $LEN_DIGEST;
@@ -146,7 +146,7 @@ const my $LEN_HDR_DIGEST => $LEN_HDR + $LEN_DIGEST;
 sub _age_sec {
     use bytes;
     my($token) = @_;
-    return time - unpack('V', reverse(substr($token, 1, 8)));
+    return time - unpack( 'V', reverse( substr( $token, 1, 8 ) ) );
 }
 
 
@@ -155,8 +155,8 @@ sub _timestamp {
     use bytes;
     local $_;
     my $t = time();
-    my @p = map(substr(pack('I', ($t >> $_ * 8) & 0xFF), 0, 1), 0 .. 7);
-    return join('', reverse(@p));
+    my @p = map( substr( pack( 'I', ( $t >> $_ * 8 ) & 0xFF ), 0, 1 ), 0 .. 7 );
+    return join( '', reverse(@p) );
 }
 
 
@@ -169,7 +169,7 @@ sub _rand_key {
 # Encode a binary string as Base64 with padding.
 sub _pad_b64encode {
     my $b64 = urlsafe_b64encode(shift);
-    return $b64 . '=' x (4 - length($b64) % 4);
+    return $b64 . '=' x ( 4 - length($b64) % 4 );
 }
 
 
@@ -193,11 +193,11 @@ encoded Fernet key.
 =cut
 
 sub new {
-    my($class, $b64key) = @_;
+    my( $class, $b64key ) = @_;
     my $fernet_key = $b64key ? urlsafe_b64decode($b64key) : _rand_key();
     my $self       = {
-        signing_key => substr($fernet_key, 0,  16),
-        encrypt_key => substr($fernet_key, 16, 16),
+        signing_key => substr( $fernet_key, 0,  16 ),
+        encrypt_key => substr( $fernet_key, 16, 16 ),
     };
     return bless $self, ref($class) || $class;
 }
@@ -213,7 +213,7 @@ Returns a Base64-encoded randomly-generated key.
 =cut
 
 sub generatekey {
-    return _pad_b64encode(_rand_key());
+    return _pad_b64encode( _rand_key() );
 }
 
 
@@ -226,14 +226,14 @@ Encrypts a message, returning a Base64-encode token.
 =cut
 
 sub encrypt {
-    my($self_or_b64key, $data)        = @_;
-    my($signing_key,    $encrypt_key) = do {
-        if (UNIVERSAL::isa($self_or_b64key, __PACKAGE__)) {
+    my( $self_or_b64key, $data )        = @_;
+    my( $signing_key,    $encrypt_key ) = do {
+        if ( UNIVERSAL::isa( $self_or_b64key, __PACKAGE__ ) ) {
             @{$self_or_b64key}{qw(signing_key encrypt_key)};
         }
         else {
             my $key = urlsafe_b64decode($self_or_b64key);
-            substr($key, 0, 16), substr($key, 16, 16);
+            substr( $key, 0, 16 ), substr( $key, 16, 16 );
         }
     };
     my $iv = Crypt::CBC->random_bytes(16);
@@ -245,7 +245,7 @@ sub encrypt {
         -keysize     => 16,
         -literal_key => 1,
     )->encrypt($data);
-    return _pad_b64encode($t . hmac_sha256($t, $signing_key));
+    return _pad_b64encode( $t . hmac_sha256( $t, $signing_key ) );
 }
 
 
@@ -261,25 +261,25 @@ further check is made to ensure that the token has not expired.
 =cut
 
 sub decrypt {
-    my($self_or_b64key, $b64token, $ttl) = @_;
-    return unless verify($self_or_b64key, $b64token, $ttl);
+    my( $self_or_b64key, $b64token, $ttl ) = @_;
+    return unless verify( $self_or_b64key, $b64token, $ttl );
     my $encrypt_key = do {
-        if (UNIVERSAL::isa($self_or_b64key, __PACKAGE__)) {
+        if ( UNIVERSAL::isa( $self_or_b64key, __PACKAGE__ ) ) {
             $self_or_b64key->{encrypt_key};
         }
         else {
-            substr(urlsafe_b64decode($self_or_b64key), 16, 16);
+            substr( urlsafe_b64decode($self_or_b64key), 16, 16 );
         }
     };
     my $t = urlsafe_b64decode($b64token);
     return Crypt::CBC->new(
         -cipher      => 'Rijndael',
         -header      => 'none',
-        -iv          => substr($t, 9, 16),
+        -iv          => substr( $t, 9, 16 ),
         -key         => $encrypt_key,
         -keysize     => 16,
         -literal_key => 1,
-    )->decrypt(substr($t, $LEN_HDR, length($t) - $LEN_HDR_DIGEST));
+    )->decrypt( substr( $t, $LEN_HDR, length($t) - $LEN_HDR_DIGEST ) );
 }
 
 
@@ -295,19 +295,20 @@ then a further check is made to ensure that the token has not expired.
 =cut
 
 sub verify {
-    my($self_or_b64key, $b64token, $ttl) = @_;
+    my( $self_or_b64key, $b64token, $ttl ) = @_;
     my $signing_key = do {
-        if (UNIVERSAL::isa($self_or_b64key, __PACKAGE__)) {
+        if ( UNIVERSAL::isa( $self_or_b64key, __PACKAGE__ ) ) {
             $self_or_b64key->{signing_key};
         }
         else {
-            substr(urlsafe_b64decode($self_or_b64key), 0, 16);
+            substr( urlsafe_b64decode($self_or_b64key), 0, 16 );
         }
     };
     my $t = urlsafe_b64decode($b64token);
-    return !!0 if $TOKEN_VERSION ne substr($t, 0, 1) || $ttl && _age_sec($t) > $ttl;
-    my $digest = substr($t, length($t) - $LEN_DIGEST, $LEN_DIGEST, '');    # 4-arg substr removes $digest from $token
-    return $digest eq hmac_sha256($t, $signing_key);
+    return !!0
+        if $TOKEN_VERSION ne substr( $t, 0, 1 ) || $ttl && _age_sec($t) > $ttl;
+    my $digest = substr( $t, length($t) - $LEN_DIGEST, $LEN_DIGEST, '' );    # 4-arg substr removes $digest from $token
+    return $digest eq hmac_sha256( $t, $signing_key );
 }
 
 
@@ -322,7 +323,7 @@ Returns the Base64-encoded key.
 
 sub to_string {
     my($self) = @_;
-    return _pad_b64encode(join('', @{$self}{qw(signing_key encrypt_key)}));
+    return _pad_b64encode( join( '', @{$self}{qw(signing_key encrypt_key)} ) );
 }
 
 

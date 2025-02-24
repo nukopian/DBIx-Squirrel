@@ -21,7 +21,7 @@ A collection of helper functions used by other DBIx::Squirrel packages.
 
 our @ISA = qw(Exporter);
 our @EXPORT;
-our %EXPORT_TAGS = (all => [
+our %EXPORT_TAGS = ( all => [
     our @EXPORT_OK = qw(
         cluckf
         confessf
@@ -34,7 +34,7 @@ our %EXPORT_TAGS = (all => [
         unmarshal
         utf8decode
     )
-]);
+] );
 
 use Carp                          ();
 use Compress::Bzip2               ();
@@ -45,7 +45,7 @@ use Encode                        ();
 use Exporter                      ();
 use JSON::Syck                    ();
 
-if (-e '.env') {
+if ( -e '.env' ) {
     Dotenv->load();
 }
 
@@ -86,9 +86,12 @@ space.
 sub cluckf {
     @_ = do {
         if (@_) {
-            my $format = UNIVERSAL::isa($_[0], 'ARRAY') ? join(' ', @{+shift}) : shift;
+            my $format = shift;
+            if ( UNIVERSAL::isa( $format, 'ARRAY' ) ) {
+                $format = join( ' ', @$format );
+            }
             if (@_) {
-                sprintf($format, @_);
+                sprintf( $format, @_ );
             }
             else {
                 $format or $@ or 'Unhelpful warning';
@@ -136,9 +139,12 @@ by a single space.
 sub confessf {
     @_ = do {
         if (@_) {
-            my $format = UNIVERSAL::isa($_[0], 'ARRAY') ? join(' ', @{+shift}) : shift;
+            my $format = shift;
+            if ( UNIVERSAL::isa( $format, 'ARRAY' ) ) {
+                $format = join( ' ', @$format );
+            }
             if (@_) {
-                sprintf($format, @_);
+                sprintf( $format, @_ );
             }
             else {
                 $format or $@ or 'Unknown error';
@@ -173,8 +179,8 @@ If C<$buffer> is omitted then C<$_> will be used.
 sub decrypt {
     my $fernet = pop;
     my $buffer = @_ ? shift : $_;
-    unless (defined $fernet) {
-        unless (defined $ENV{FERNET_KEY}) {
+    unless ( defined $fernet ) {
+        unless ( defined $ENV{FERNET_KEY} ) {
             confessf [
                 "Neither a Fernet key nor a Fernet object have been",
                 "defined. Decryption is impossible",
@@ -183,7 +189,7 @@ sub decrypt {
         $fernet = $ENV{FERNET_KEY};
     }
     $fernet = DBIx::Squirrel::Crypt::Fernet->new($fernet)
-        unless UNIVERSAL::isa($fernet, 'DBIx::Squirrel::Crypt::Fernet');
+        unless UNIVERSAL::isa( $fernet, 'DBIx::Squirrel::Crypt::Fernet' );
     return $_ = $fernet->decrypt($buffer);
 }
 
@@ -229,9 +235,9 @@ as a UTF-8 string.
 
 sub get_file_contents {
     my $filename = shift;
-    my $options  = {utf8decode => !!1, %{shift || {}}};
+    my $options  = { utf8decode => !!1, %{ shift || {} } };
     my $contents = slurp($filename);
-    $contents = decrypt($contents, $options->{fernet})
+    $contents = decrypt( $contents, $options->{fernet} )
         if $filename =~ /\.encrypted\b/ || $options->{decrypt};
     $contents = uncompress($contents)
         if $filename =~ /\.bz2\b/ || $options->{uncompress};
@@ -282,10 +288,10 @@ calling function's C<@_> array.
 
 sub isolate_callbacks {
     my $n = my $s = scalar @_;
-    $n-- while $n && UNIVERSAL::isa($_[$n - 1], 'CODE');
-    return ([],              @_)              if $n == $s;
-    return ([@_[$n .. $#_]], @_[0 .. $n - 1]) if $n;
-    return ([@_]);
+    $n-- while $n && UNIVERSAL::isa( $_[ $n - 1 ], 'CODE' );
+    return ( [],                  @_ )                if $n == $s;
+    return ( [ @_[ $n .. $#_ ] ], @_[ 0 .. $n - 1 ] ) if $n;
+    return ( [@_] );
 }
 
 
@@ -342,7 +348,7 @@ sub unmarshal {
     my $json   = shift;
     my $decode = @_ ? !!shift : !!1;
     local $JSON::Syck::ImplicitUnicode = $decode;
-    return $_ = JSON::Syck::Load($decode ? utf8decode($json) : $json);
+    return $_ = JSON::Syck::Load( $decode ? utf8decode($json) : $json );
 }
 
 
@@ -359,7 +365,7 @@ If C<$buffer> is omitted then C<$_> will be used.
 
 sub utf8decode {
     my $buffer = @_ ? shift : $_;
-    return $_ = Encode::decode_utf8($buffer, @_);
+    return $_ = Encode::decode_utf8( $buffer, @_ );
 }
 
 =head1 AUTHORS
