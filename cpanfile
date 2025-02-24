@@ -15,7 +15,6 @@ requires "Encode" => "0";
 requires "Exporter" => "0";
 requires "JSON::Syck" => "0";
 requires "MIME::Base64::URLSafe" => "0";
-requires "Memoize" => "0";
 requires "Scalar::Util" => "0";
 requires "Sub::Name" => "0";
 requires "Try::Tiny" => "0";
