@@ -1,51 +1,59 @@
-package    # hide from PAUSE
-    DBIx::Squirrel::db;
-
-use 5.010_001;
 use strict;
-use warnings;
 no strict 'subs';    ## no critic
-use DBI;
-use Sub::Name;
-use DBIx::Squirrel::st   qw/statement_study/;
-use DBIx::Squirrel::util qw/get_file_contents confessf/;
-use Try::Tiny;
-use namespace::clean;
+use warnings;
+use 5.010_001;
 
-BEGIN {
-    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    $DBIx::Squirrel::db::VERSION = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::db::ISA     = qw/DBI::db/;
-}
+package              # hide from PAUSE
+    DBIx::Squirrel::db;
 
 use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
 use constant E_EXP_STATEMENT => 'Expected a statement';
 
+BEGIN {
+    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
+    *DBIx::Squirrel::db::VERSION = *DBIx::Squirrel::VERSION;
+    @DBIx::Squirrel::db::ISA     = 'DBI::db';
+}
+
+require DBI;
+
+use DBIx::Squirrel::st 'statement_study';
+use DBIx::Squirrel::util qw(
+    get_file_contents
+    confessf
+);
+use Sub::Name 'subname';
+use Try::Tiny qw(
+    try
+    catch
+    finally
+);
+use namespace::clean;
+
 sub _root_class {
-    my $root_class = ref($_[0]) || $_[0];
+    my $root_class = ref $_[0] || $_[0];
     $root_class =~ s/::\w+$//;
-    return RootClass => $root_class if wantarray;
-    return $root_class;
+    return wantarray ? ( RootClass => $root_class ) : $root_class;
 }
 
 sub _private_state {
     my $self = shift;
-    $self->{private_ekorn} = {} unless defined($self->{private_ekorn});
+    $self->{private_ekorn} = {} unless defined $self->{private_ekorn};
     unless (@_) {
         return $self->{private_ekorn}, $self if wantarray;
         return $self->{private_ekorn};
     }
-    unless (defined($_[0])) {
+    unless ( defined $_[0] ) {
         delete $self->{private_ekorn};
         shift;
     }
     if (@_) {
-        $self->{private_ekorn} = {} unless defined($self->{private_ekorn});
-        if (UNIVERSAL::isa($_[0], 'HASH')) {
-            $self->{private_ekorn} = {%{$self->{private_ekorn}}, %{$_[0]}};
+        $self->{private_ekorn} = {} unless defined $self->{private_ekorn};
+        if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+            $self->{private_ekorn} = { %{ $self->{private_ekorn} }, %{ $_[0] } };
         }
         else {
-            $self->{private_ekorn} = {%{$self->{private_ekorn}}, @_};
+            $self->{private_ekorn} = { %{ $self->{private_ekorn} }, @_ };
         }
     }
     return $self;
@@ -54,49 +62,49 @@ sub _private_state {
 sub prepare {
     my $self      = shift;
     my $statement = shift;
-    if (UNIVERSAL::isa($statement, 'CODE')) {
+    if ( UNIVERSAL::isa( $statement, 'CODE' ) ) {
         $statement = $statement->();
     }
-    if (UNIVERSAL::isa($statement, 'ARRAY')) {
-        $statement = join(' ', @{$statement});
+    if ( UNIVERSAL::isa( $statement, 'ARRAY' ) ) {
+        $statement = join ' ', @{$statement};
     }
-    my($placeholders, $normalised_statement, $original_statement, $digest)
+    my( $placeholders, $normalised_statement, $original_statement, $digest )
         = statement_study($statement);
-    confessf E_EXP_STATEMENT unless defined($normalised_statement);
-    my $sth = DBI::db::prepare($self, $normalised_statement, @_)
+    confessf E_EXP_STATEMENT unless defined $normalised_statement;
+    my $sth = DBI::db::prepare( $self, $normalised_statement, @_ )
         or confessf $DBI::errstr;
-    $sth = bless($sth, $self->_root_class . '::st');
-    $sth->_private_state({
+    $sth = bless $sth, $self->_root_class . '::st';
+    $sth->_private_state( {
         Placeholders        => $placeholders,
         NormalisedStatement => $normalised_statement,
         OriginalStatement   => $original_statement,
         Hash                => $digest,
-    });
+    } );
     return $sth;
 }
 
 sub prepare_cached {
     my $self      = shift;
     my $statement = shift;
-    if (UNIVERSAL::isa($statement, 'CODE')) {
+    if ( UNIVERSAL::isa( $statement, 'CODE' ) ) {
         $statement = $statement->();
     }
-    if (UNIVERSAL::isa($statement, 'ARRAY')) {
-        $statement = join(' ', @{$statement});
+    if ( UNIVERSAL::isa( $statement, 'ARRAY' ) ) {
+        $statement = join ' ', @{$statement};
     }
-    my($placeholders, $normalised_statement, $original_statement, $digest)
+    my( $placeholders, $normalised_statement, $original_statement, $digest )
         = statement_study($statement);
-    confessf E_EXP_STATEMENT unless defined($normalised_statement);
-    my $sth = DBI::db::prepare_cached($self, $normalised_statement, @_)
+    confessf E_EXP_STATEMENT unless defined $normalised_statement;
+    my $sth = DBI::db::prepare_cached( $self, $normalised_statement, @_ )
         or confessf $DBI::errstr;
-    $sth = bless($sth, $self->_root_class . '::st');
-    $sth->_private_state({
+    $sth = bless $sth, $self->_root_class . '::st';
+    $sth->_private_state( {
         Placeholders        => $placeholders,
         NormalisedStatement => $normalised_statement,
         OriginalStatement   => $original_statement,
         Hash                => $digest,
-        CacheKey            => join('#', (caller(0))[1, 2]),
-    });
+        CacheKey            => join( '#', ( caller 0 )[ 1, 2 ] ),
+    } );
     return $sth;
 }
 
@@ -105,12 +113,12 @@ sub do {
     my $statement = shift;
     my $sth       = do {
         if (@_) {
-            if (ref($_[0])) {
-                if (UNIVERSAL::isa($_[0], 'HASH')) {
+            if ( ref $_[0] ) {
+                if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
                     my $statement_attributes = shift;
-                    $self->prepare($statement, $statement_attributes);
+                    $self->prepare( $statement, $statement_attributes );
                 }
-                elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
                     $self->prepare($statement);
                 }
                 else {
@@ -118,12 +126,12 @@ sub do {
                 }
             }
             else {
-                if (defined($_[0])) {
+                if ( defined $_[0] ) {
                     $self->prepare($statement);
                 }
                 else {
                     shift;
-                    $self->prepare($statement, undef);
+                    $self->prepare( $statement, undef );
                 }
             }
         }
@@ -131,8 +139,7 @@ sub do {
             $self->prepare($statement);
         }
     };
-    return $sth->execute(@_), $sth if wantarray;
-    return $sth->execute(@_);
+    return wantarray ? ( $sth->execute(@_), $sth ) : $sth->execute(@_);
 }
 
 sub iterate {
@@ -140,15 +147,15 @@ sub iterate {
     my $statement = shift;
     my $sth       = do {
         if (@_) {
-            if (ref($_[0])) {
-                if (UNIVERSAL::isa($_[0], 'HASH')) {
+            if ( ref $_[0] ) {
+                if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
                     my $statement_attributes = shift;
-                    $self->prepare($statement, $statement_attributes);
+                    $self->prepare( $statement, $statement_attributes );
                 }
-                elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
                     $self->prepare($statement);
                 }
-                elsif (UNIVERSAL::isa($_[0], 'CODE')) {
+                elsif ( UNIVERSAL::isa( $_[0], 'CODE' ) ) {
                     $self->prepare($statement);
                 }
                 else {
@@ -156,12 +163,12 @@ sub iterate {
                 }
             }
             else {
-                if (defined($_[0])) {
+                if ( defined $_[0] ) {
                     $self->prepare($statement);
                 }
                 else {
                     shift;
-                    $self->prepare($statement, undef);
+                    $self->prepare( $statement, undef );
                 }
             }
         }
@@ -173,9 +180,9 @@ sub iterate {
 }
 
 BEGIN {
-    *iterator = subname(iterator => \&iterate);
-    *itor     = subname(itor     => \&iterate);
-    *it       = subname(it       => \&iterate);
+    *iterator = subname( iterator => \&iterate );
+    *itor     = subname( itor     => \&iterate );
+    *it       = subname( it       => \&iterate );
 }
 
 sub results {
@@ -183,15 +190,15 @@ sub results {
     my $statement = shift;
     my $sth       = do {
         if (@_) {
-            if (ref $_[0]) {
-                if (UNIVERSAL::isa($_[0], 'HASH')) {
+            if ( ref $_[0] ) {
+                if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
                     my $statement_attributes = shift;
-                    $self->prepare($statement, $statement_attributes);
+                    $self->prepare( $statement, $statement_attributes );
                 }
-                elsif (UNIVERSAL::isa($_[0], 'ARRAY')) {
+                elsif ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
                     $self->prepare($statement);
                 }
-                elsif (UNIVERSAL::isa($_[0], 'CODE')) {
+                elsif ( UNIVERSAL::isa( $_[0], 'CODE' ) ) {
                     $self->prepare($statement);
                 }
                 else {
@@ -199,12 +206,12 @@ sub results {
                 }
             }
             else {
-                if (defined($_[0])) {
+                if ( defined $_[0] ) {
                     $self->prepare($statement);
                 }
                 else {
                     shift;
-                    $self->prepare($statement, undef);
+                    $self->prepare( $statement, undef );
                 }
             }
         }
@@ -223,21 +230,21 @@ sub load_tuples {
     return $tuples unless @_;
     my $func       = shift;
     my %options    = @_;
-    my $disconnect = exists($options{'disconnect'}) && !!$options{'disconnect'};
-    my $progress   = !exists($options{'progress'}) || !!$options{'progress'};
+    my $disconnect = exists $options{'disconnect'} && !!$options{'disconnect'};
+    my $progress   = !exists $options{'progress'} || !!$options{'progress'};
     try {
-        my($before, $percent, $count, $length);
+        my( $before, $percent, $count, $length );
         if ($progress) {
             $before = $percent = $count = 0;
-            $length = scalar(@{$tuples});
+            $length = scalar @{$tuples};
             printf STDERR 'Progress %3d%% ', $percent if $progress;
         }
-        for my $tuple (@{$tuples}) {
-            $func->(@{$tuple});
+        for my $tuple ( @{$tuples} ) {
+            $func->( @{$tuple} );
             if ($progress) {
                 $count   += 1;
-                $percent  = int($count / $length * 100);
-                if ($percent > $before) {
+                $percent  = int( $count / $length * 100 );
+                if ( $percent > $before ) {
                     $before = $percent;
                     print STDERR "\b\b\b\b\b";
                     printf STDERR '%3d%% ', $percent;
@@ -248,7 +255,7 @@ sub load_tuples {
     }
     catch {
         warn "$_\n";
-        unless ($self->{AutoCommit}) {
+        unless ( $self->{AutoCommit} ) {
             $self->rollback();
             print STDERR "Database transaction was rolled back";
         }
@@ -260,9 +267,9 @@ sub load_tuples {
 }
 
 BEGIN {
-    *resultset = subname(resultset => \&results);
-    *rset      = subname(rset      => \&results);
-    *rs        = subname(rs        => \&results);
+    *resultset = subname( resultset => \&results );
+    *rset      = subname( rset      => \&results );
+    *rs        = subname( rs        => \&results );
 }
 
 1;
