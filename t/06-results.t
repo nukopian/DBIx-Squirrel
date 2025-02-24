@@ -1,9 +1,10 @@
-use 5.010_001;
 use strict;
 use warnings;
-use Carp qw/croak/;
+use 5.010_001;
+
+use Carp 'croak';
 use Test::Warn;
-use FindBin qw/$Bin/;
+use FindBin '$Bin';
 use lib "$Bin/lib";
 
 use Test::More;
