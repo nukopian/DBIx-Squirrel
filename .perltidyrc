@@ -11,7 +11,6 @@
 -cab=1
 -mft=1
 -otr
-# -sot
 -vtc=1
 -pt=2
 -bt=2
@@ -41,7 +40,6 @@
 --blank-lines-before-subs=1
 --noblanks-before-blocks
 --wtc=m --atc --dtc
---weld-nested-containers
 --weld-fat-comma
 --delete-weld-interfering-commas
 --add-missing-else
