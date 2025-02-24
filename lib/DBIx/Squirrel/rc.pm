@@ -5,13 +5,13 @@ use 5.010_001;
 package    # hide from PAUSE
     DBIx::Squirrel::rc;
 
-use Sub::Name 'subname';
 use DBIx::Squirrel::util 'confessf';
+use Sub::Name 'subname';
 use namespace::clean;
 
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    $DBIx::Squirrel::rc::VERSION = $DBIx::Squirrel::VERSION;
+    *DBIx::Squirrel::rc::VERSION = *DBIx::Squirrel::VERSION;
 }
 
 use constant E_BAD_OBJECT =>
@@ -20,8 +20,8 @@ use constant E_STH_EXPIRED => 'Result is no longer associated with a statement';
 use constant E_UNKNOWN_COLUMN => 'Unrecognised column (%s)';
 
 sub new {
-    my $class = ref( $_[0] ) ? ref(shift) : shift;
-    return ref( $_[0] ) ? bless( shift, $class ) : shift;
+    my $class = ref $_[0] ? ref shift : shift;
+    return ref $_[0] ? bless shift, $class : shift;
 }
 
 sub result_class {
@@ -37,21 +37,22 @@ sub row_class {
 }
 
 sub get_column {
-    local($_);
     my( $self, $name ) = @_;
-    return unless defined($name);
+    return unless defined $name;
     if ( UNIVERSAL::isa( $self, 'ARRAY' ) ) {
         confessf E_STH_EXPIRED unless my $sth = $self->rs->sth;
-        my $n = $sth->{NAME_lc_hash}{ lc($name) };
-        confessf E_UNKNOWN_COLUMN, $name unless defined($n);
+        my $n = $sth->{NAME_lc_hash}{ lc $name };
+        confessf E_UNKNOWN_COLUMN, $name unless defined $n;
         return $self->[$n];
     }
     else {
         confessf E_BAD_OBJECT unless UNIVERSAL::isa( $self, 'HASH' );
-        return $self->{$name} if exists( $self->{$name} );
-        local($_);
-        my($n) = grep { lc eq $_[1] } keys( %{$self} );
-        confessf E_UNKNOWN_COLUMN, $name unless defined($n);
+        return $self->{$name} if exists $self->{$name};
+        my($n) = do {
+            local($_);
+            grep { lc eq $_[1] } keys %{$self};
+        };
+        confessf E_UNKNOWN_COLUMN, $name unless defined $n;
         return $self->{$n};
     }
 }
@@ -68,13 +69,11 @@ sub get_column {
 our $AUTOLOAD;
 
 sub AUTOLOAD {
-    local($_);
-    no strict 'refs';    ## no critic
     return if substr( $AUTOLOAD, -7 ) eq 'DESTROY';
-    my $name = $AUTOLOAD;
-    $name =~ s/.*:://;
-    my($self)    = @_;
-    my $symbol   = $self->row_class . '::' . $name;
+    my($self) = @_;
+    ( my $name = $AUTOLOAD ) =~ s/.*:://;
+    my $symbol = $self->row_class . '::' . $name;
+    no strict 'refs';    ## no critic
     my $accessor = do {
         push @{ $self->row_class . '::AUTOLOAD_ACCESSORS' }, $symbol;
         # I'm not needlessly copying code from the `get_column` method, but
@@ -82,18 +81,20 @@ sub AUTOLOAD {
         # to have the resulting accessor be as fast as it can be!
         if ( UNIVERSAL::isa( $self, 'ARRAY' ) ) {
             confessf E_STH_EXPIRED unless my $sth = $self->rs->sth;
-            my $n = $sth->{NAME_lc_hash}{ lc($name) };
-            confessf E_UNKNOWN_COLUMN, $name unless defined($n);
+            my $n = $sth->{NAME_lc_hash}{ lc $name };
+            confessf E_UNKNOWN_COLUMN, $name unless defined $n;
             sub { $_[0][$n] };
         }
         elsif ( UNIVERSAL::isa( $self, 'HASH' ) ) {
-            if ( exists( $self->{$name} ) ) {
+            if ( exists $self->{$name} ) {
                 sub { $_[0]{$name} };
             }
             else {
-                local($_);
-                my($n) = grep { lc eq $name } keys( %{$self} );
-                confessf E_UNKNOWN_COLUMN, $name unless defined($n);
+                my($n) = do {
+                    local($_);
+                    grep { lc eq $name } keys %{$self};
+                };
+                confessf E_UNKNOWN_COLUMN, $name unless defined $n;
                 sub { $_[0]{$n} };
             }
         }
