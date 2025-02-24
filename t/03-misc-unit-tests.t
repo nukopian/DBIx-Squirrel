@@ -19,19 +19,19 @@ use Test::More;
 use Test::More::UTF8;
 
 BEGIN {
-    use_ok('DBIx::Squirrel', database_entity => 'db')
+    use_ok( 'DBIx::Squirrel', database_entity => 'db' )
         or print "Bail out!\n";
-    use_ok('T::Squirrel', qw/:var diagdump/)
+    use_ok( 'T::Squirrel', qw/:var diagdump/ )
         or print "Bail out!\n";
-    use_ok('DBIx::Squirrel::Iterator', qw/result result_transform/)
+    use_ok( 'DBIx::Squirrel::Iterator', qw/result result_transform/ )
         or print "Bail out!\n";
-    use_ok('DBIx::Squirrel::st', qw/statement_trim statement_study/)
+    use_ok( 'DBIx::Squirrel::st', qw/statement_trim statement_study/ )
         or print "Bail out!\n";
 }
 
 diag join(
     ', ',
-    "Testing DBIx::Squirrel $DBIx::Squirrel::Crypt::Fernet::VERSION",
+    "Testing DBIx::Squirrel $DBIx::Squirrel::VERSION",
     "Perl $]", "$^X",
 );
 
@@ -40,30 +40,32 @@ diag join(
     note('DBIx::Squirrel::st::statement_trim');
 
     my @tests = (
-        {line => __LINE__, got => [statement_trim()],           exp => [""]},
-        {line => __LINE__, got => [statement_trim(undef)],      exp => [""]},
-        {line => __LINE__, got => [statement_trim("")],         exp => [""]},
-        {line => __LINE__, got => [statement_trim("SELECT 1")], exp => ["SELECT 1"]},
+        { line => __LINE__, got => [ statement_trim() ],      exp => [""] },
+        { line => __LINE__, got => [ statement_trim(undef) ], exp => [""] },
+        { line => __LINE__, got => [ statement_trim("") ],    exp => [""] },
         {
-            line => __LINE__, got => [statement_trim("SELECT 1  -- COMMENT")],
+            line => __LINE__, got => [ statement_trim("SELECT 1") ], exp => ["SELECT 1"],
+        },
+        {
+            line => __LINE__, got => [ statement_trim("SELECT 1  -- COMMENT") ],
             exp  => ["SELECT 1"],
         },
         {
-            line => __LINE__, got => [statement_trim("SELECT 1\n-- COMMENT")],
+            line => __LINE__, got => [ statement_trim("SELECT 1\n-- COMMENT") ],
             exp  => ["SELECT 1"],
         },
         {
-            line => __LINE__, got => [statement_trim("  SELECT 1\n-- COMMENT  ")],
+            line => __LINE__, got => [ statement_trim("  SELECT 1\n-- COMMENT  ") ],
             exp  => ["SELECT 1"],
         },
         {
-            line => __LINE__, got => [statement_trim("\tSELECT 1\n-- COMMENT  ")],
+            line => __LINE__, got => [ statement_trim("\tSELECT 1\n-- COMMENT  ") ],
             exp  => ["SELECT 1"],
         },
     );
 
-    foreach my $t (@tests) {
-        is_deeply($t->{got}, $t->{exp}, sprintf('line %2d', $t->{line}));
+    for my $t (@tests) {
+        is_deeply( $t->{got}, $t->{exp}, sprintf( 'line %2d', $t->{line} ) );
     }
 }
 
@@ -72,7 +74,7 @@ diag join(
     note('DBIx::Squirrel::st::statement_study');
 
     throws_ok {
-        statement_study(bless({}, 'NotAStatementHandle'));
+        statement_study( bless( {}, 'NotAStatementHandle' ) );
     }
     qr/Expected a statement handle/, 'got expected exception';
 
@@ -88,80 +90,85 @@ diag join(
     *DBIx::Squirrel::st::statement_digest = sub { 'DETERMINISTIC' };
 
     my @tests = (
-        {line => __LINE__, got => [statement_study('')], exp => []},
+        { line => __LINE__, got => [ statement_study('') ], exp => [] },
         {
-            line => __LINE__, got => [statement_study('SELECT 1')],
-            exp  => [{}, 'SELECT 1', 'SELECT 1', 'DETERMINISTIC'],
+            line => __LINE__, got => [ statement_study('SELECT 1') ],
+            exp  => [ {}, 'SELECT 1', 'SELECT 1', 'DETERMINISTIC' ],
         },
         {
-            line => __LINE__, got => [statement_study('SELECT ?')],
-            exp  => [{}, 'SELECT ?', 'SELECT ?', 'DETERMINISTIC'],
-        },
-        {
-            line => __LINE__,
-            got  => [statement_study('SELECT ?1')],
-            exp  => [{1 => '?1'}, 'SELECT ?', 'SELECT ?1', 'DETERMINISTIC'],
+            line => __LINE__, got => [ statement_study('SELECT ?') ],
+            exp  => [ {}, 'SELECT ?', 'SELECT ?', 'DETERMINISTIC' ],
         },
         {
             line => __LINE__,
-            got  => [statement_study('SELECT :1')],
-            exp  => [{1 => ':1'}, 'SELECT ?', 'SELECT :1', 'DETERMINISTIC'],
+            got  => [ statement_study('SELECT ?1') ],
+            exp  => [ { 1 => '?1' }, 'SELECT ?', 'SELECT ?1', 'DETERMINISTIC' ],
         },
         {
             line => __LINE__,
-            got  => [statement_study('SELECT $1')],
-            exp  => [{1 => '$1'}, 'SELECT ?', 'SELECT $1', 'DETERMINISTIC'],
+            got  => [ statement_study('SELECT :1') ],
+            exp  => [ { 1 => ':1' }, 'SELECT ?', 'SELECT :1', 'DETERMINISTIC' ],
         },
         {
             line => __LINE__,
-            got  => [statement_study('SELECT :foo')],
-            exp  => [{1 => ':foo'}, 'SELECT ?', 'SELECT :foo', 'DETERMINISTIC'],
-        },
-        {
-            line => __LINE__, got => [statement_study('SELECT ?, ?')],
-            exp  => [{}, 'SELECT ?, ?', 'SELECT ?, ?', 'DETERMINISTIC'],
+            got  => [ statement_study('SELECT $1') ],
+            exp  => [ { 1 => '$1' }, 'SELECT ?', 'SELECT $1', 'DETERMINISTIC' ],
         },
         {
             line => __LINE__,
-            got  => [statement_study('SELECT ?1, ?2')],
-            exp  =>
-                [{1 => '?1', 2 => '?2'}, 'SELECT ?, ?', 'SELECT ?1, ?2', 'DETERMINISTIC'],
+            got  => [ statement_study('SELECT :foo') ],
+            exp  => [ { 1 => ':foo' }, 'SELECT ?', 'SELECT :foo', 'DETERMINISTIC' ],
+        },
+        {
+            line => __LINE__, got => [ statement_study('SELECT ?, ?') ],
+            exp  => [ {}, 'SELECT ?, ?', 'SELECT ?, ?', 'DETERMINISTIC' ],
         },
         {
             line => __LINE__,
-            got  => [statement_study('SELECT :1, :2')],
-            exp  =>
-                [{1 => ':1', 2 => ':2'}, 'SELECT ?, ?', 'SELECT :1, :2', 'DETERMINISTIC'],
-        },
-        {
-            line => __LINE__,
-            got  => [statement_study('SELECT $1, $2')],
-            exp  =>
-                [{1 => '$1', 2 => '$2'}, 'SELECT ?, ?', 'SELECT $1, $2', 'DETERMINISTIC'],
-        },
-        {
-            line => __LINE__,
-            got  => [statement_study('SELECT :foo, :bar')],
+            got  => [ statement_study('SELECT ?1, ?2') ],
             exp  => [
-                {1 => ':foo', 2 => ':bar'}, 'SELECT ?, ?', 'SELECT :foo, :bar', 'DETERMINISTIC',
+                { 1 => '?1', 2 => '?2' }, 'SELECT ?, ?', 'SELECT ?1, ?2', 'DETERMINISTIC',
             ],
         },
         {
             line => __LINE__,
-            got  => [statement_study($st1)],
+            got  => [ statement_study('SELECT :1, :2') ],
             exp  => [
-                {1 => ':foo', 2 => ':bar'}, 'SELECT ?, ?', 'SELECT :foo, :bar', 'DETERMINISTIC',
+                { 1 => ':1', 2 => ':2' }, 'SELECT ?, ?', 'SELECT :1, :2', 'DETERMINISTIC',
             ],
         },
         {
             line => __LINE__,
-            got  => [statement_study($st2)],
-            exp  => [{}, 'SELECT ?, ?', 'SELECT ?, ?', 'DETERMINISTIC'],
+            got  => [ statement_study('SELECT $1, $2') ],
+            exp  => [
+                { 1 => '$1', 2 => '$2' }, 'SELECT ?, ?', 'SELECT $1, $2', 'DETERMINISTIC',
+            ],
+        },
+        {
+            line => __LINE__,
+            got  => [ statement_study('SELECT :foo, :bar') ],
+            exp  => [
+                { 1 => ':foo', 2 => ':bar' }, 'SELECT ?, ?', 'SELECT :foo, :bar',
+                'DETERMINISTIC',
+            ],
+        },
+        {
+            line => __LINE__,
+            got  => [ statement_study($st1) ],
+            exp  => [
+                { 1 => ':foo', 2 => ':bar' }, 'SELECT ?, ?', 'SELECT :foo, :bar',
+                'DETERMINISTIC',
+            ],
+        },
+        {
+            line => __LINE__,
+            got  => [ statement_study($st2) ],
+            exp  => [ {}, 'SELECT ?, ?', 'SELECT ?, ?', 'DETERMINISTIC' ],
         },
     );
 
-    foreach my $t (@tests) {
-        is_deeply($t->{got}, $t->{exp}, sprintf('line %d', $t->{line}));
+    for my $t (@tests) {
+        is_deeply( $t->{got}, $t->{exp}, sprintf( 'line %d', $t->{line} ) );
     }
 
     # Test::MockModule gave me some issues on a ubuntu Perl-5.10.1 build
@@ -178,43 +185,45 @@ diag join(
     note('DBIx::Squirrel::Iterator::result_transform');
 
     my @tests = (
-        {line => __LINE__, got => sub { result_transform() },              exp => []},
-        {line => __LINE__, got => sub { result_transform(4) },             exp => [4]},
-        {line => __LINE__, got => sub { scalar(result_transform(4)) },     exp => [1]},
-        {line => __LINE__, got => sub { scalar(result_transform(4)); $_ }, exp => [4]},
+        { line => __LINE__, got => sub { result_transform() },            exp => [] },
+        { line => __LINE__, got => sub { result_transform(4) },           exp => [4] },
+        { line => __LINE__, got => sub { scalar( result_transform(4) ) }, exp => [1] },
+        {
+            line => __LINE__, got => sub { scalar( result_transform(4) ); $_ }, exp => [4],
+        },
         {
             line => __LINE__,
             got  => sub {
-                result_transform([sub { 2 * $_[0] }], 2);
+                result_transform( [ sub { 2 * $_[0] } ], 2 );
             },
             exp => [4],
         },
         {
             line => __LINE__,
             got  => sub {
-                result_transform([sub { 2 * $_[0] } => sub { 2 * $_[0] }], 2);
+                result_transform( [ sub { 2 * $_[0] } => sub { 2 * $_[0] } ], 2 );
             },
             exp => [8],
         },
         {
             line => __LINE__,
             got  => sub {
-                result_transform([sub { 4 * $_ }], 4);
+                result_transform( [ sub { 4 * $_ } ], 4 );
             },
             exp => [16],
         },
         {
             line => __LINE__,
             got  => sub {
-                result_transform([sub { 4 * $_ } => sub { 4 * $_ }], 4);
+                result_transform( [ sub { 4 * $_ } => sub { 4 * $_ } ], 4 );
             },
             exp => [64],
         },
     );
 
-    foreach my $t (@tests) {
-        my $got = [$t->{got}->()];
-        is_deeply($got, $t->{exp}, sprintf('line %2d', $t->{line}));
+    for my $t (@tests) {
+        my $got = [ $t->{got}->() ];
+        is_deeply( $got, $t->{exp}, sprintf( 'line %2d', $t->{line} ) );
     }
 }
 
@@ -223,25 +232,26 @@ diag join(
 {
     note('DBIx::Squirrel::Iterator::ResultClass');
 
-    my @tests = ({
+    my @tests = (
+        {
             line => __LINE__,
             got  => sub {
-                result_transform([sub { 3 * result }], 4);
+                result_transform( [ sub { 3 * result } ], 4 );
             },
             exp => [12],
         },
         {
             line => __LINE__,
             got  => sub {
-                result_transform([sub { 3 * result } => sub { 3 * result }], 4);
+                result_transform( [ sub { 3 * result } => sub { 3 * result } ], 4 );
             },
             exp => [36],
         },
     );
 
-    foreach my $t (@tests) {
-        my $got = [$t->{got}->()];
-        is_deeply($got, $t->{exp}, sprintf('line %2d', $t->{line}));
+    for my $t (@tests) {
+        my $got = [ $t->{got}->() ];
+        is_deeply( $got, $t->{exp}, sprintf( 'line %2d', $t->{line} ) );
     }
 }
 
