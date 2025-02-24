@@ -5,18 +5,6 @@ use 5.010_001;
 package    # hide from PAUSE
     DBIx::Squirrel::it;
 
-use DBIx::Squirrel::util qw(
-    cluckf
-    confessf
-    isolate_callbacks
-);
-use Scalar::Util qw(
-    looks_like_number
-    weaken
-);
-use Sub::Name 'subname';
-use namespace::clean;
-
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     require Exporter;
@@ -49,6 +37,18 @@ use constant E_BAD_CACHE_SIZE =>
     'Maximum row count must be an integer greater than zero';
 use constant W_MORE_ROWS     => 'Query would yield more than one result';
 use constant E_EXP_ARRAY_REF => 'Expected an ARRAY-REF';
+
+use DBIx::Squirrel::util qw(
+    cluckf
+    confessf
+    isolate_callbacks
+);
+use Scalar::Util qw(
+    looks_like_number
+    weaken
+);
+use Sub::Name 'subname';
+use namespace::clean;
 
 sub DEFAULT_CACHE_SIZE {
     if ( $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE < 2 ) {
