@@ -1,43 +1,52 @@
-package    # hide from PAUSE
-    DBIx::Squirrel::st;
-
-use 5.010_001;
 use strict;
 use warnings;
-use Digest::SHA qw(sha256_base64);
-use Sub::Name;
-use DBIx::Squirrel::util qw(confessf cluckf);
-use namespace::clean;
+use 5.010_001;
+
+package    # hide from PAUSE
+    DBIx::Squirrel::st;
 
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     require Exporter;
-    $DBIx::Squirrel::st::VERSION   = $DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::st::ISA       = qw/DBI::st Exporter/;
-    @DBIx::Squirrel::st::EXPORT_OK = qw/
-        statement_digest
-        statement_normalise
-        statement_study
-        statement_trim
-        /;
+    *DBIx::Squirrel::st::VERSION = *DBIx::Squirrel::VERSION;
+    @DBIx::Squirrel::st::ISA     = qw(
+        DBI::st
+        Exporter
+    );
+    %DBIx::Squirrel::st::EXPORT_TAGS = ( all => [
+        @DBIx::Squirrel::st::EXPORT_OK = qw(
+            statement_digest
+            statement_normalise
+            statement_study
+            statement_trim
+        )
+    ] );
 }
+
+require Digest::SHA;
+
+use DBIx::Squirrel::util qw(confessf cluckf);
+use Sub::Name 'subname';
+use namespace::clean;
 
 use constant E_EXP_STH             => 'Expected a statement handle';
 use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';
 use constant W_ODD_NUMBER_OF_ARGS =>
     'Check bind values match placeholder scheme';
 
-our $STATEMENT_DIGEST             = sub { goto &sha256_base64 };
 our $FINISH_ACTIVE_BEFORE_EXECUTE = !!1;
+our $STATEMENT_DIGEST             = sub {
+    goto &Digest::SHA::sha256_base64;
+};
 
 sub _private_state {
     my $self = shift;
-    $self->{private_ekorn} = {} unless defined( $self->{private_ekorn} );
+    $self->{private_ekorn} = {} unless defined $self->{private_ekorn};
     unless (@_) {
         return $self->{private_ekorn}, $self if wantarray;
         return $self->{private_ekorn};
     }
-    unless ( defined( $_[0] ) ) {
+    unless ( defined $_[0] ) {
         delete $self->{private_ekorn};
         shift;
     }
@@ -53,23 +62,25 @@ sub _private_state {
 }
 
 sub _placeholders_confirm_positional {
-    local($_);
     my $self         = shift;
     my $placeholders = $self->_private_state->{Placeholders};
-    my @placeholders = values( %{$placeholders} );
+    my @placeholders = values %{$placeholders};
     my $total_count  = @placeholders;
-    my $count        = grep { m/^[\:\$\?]\d+$/ } @placeholders;
-    return $placeholders if $count == $total_count;
-    return;
+    my $count        = do {
+        local($_);
+        grep { m/^[\:\$\?]\d+$/ } @placeholders;
+    };
+    return unless $count == $total_count;
+    return $placeholders;
 }
 
 sub _placeholders_map_to_values {
-    local($_);
     my $self       = shift;
     my $positional = $self->_placeholders_confirm_positional;
     my @mappings   = do {
+        local($_);
         if ($positional) {
-            map { ( $positional->{$_} => $_[ $_ - 1 ] ) } keys( %{$positional} );
+            map { ( $positional->{$_} => $_[ $_ - 1 ] ) } keys %{$positional};
         }
         else {
             if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
@@ -87,25 +98,23 @@ sub _placeholders_map_to_values {
             }
         }
     };
-    return @mappings if wantarray;
-    return \@mappings;
+    return wantarray ? @mappings : \@mappings;
 }
 
 sub bind {
-    local($_);
     my $self = shift;
     if (@_) {
         if ( $self->_placeholders_confirm_positional ) {
             if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
-                $self->bind_param( $_, $_[0][ $_ - 1 ] ) for 1 .. scalar( @{ $_[0] } );
+                $self->bind_param( $_, $_[0][ $_ - 1 ] ) for 1 .. scalar @{ $_[0] };
             }
             else {
-                $self->bind_param( $_, $_[ $_ - 1 ] ) for 1 .. scalar(@_);
+                $self->bind_param( $_, $_[ $_ - 1 ] ) for 1 .. scalar @_;
             }
         }
         else {
             if ( my %kv = @{ $self->_placeholders_map_to_values(@_) } ) {
-                while ( my( $k, $v ) = each(%kv) ) {
+                while ( my( $k, $v ) = each %kv ) {
                     if ( $k =~ m/^[\:\$\?]?(?<bind_id>\d+)$/ ) {
                         confessf E_INVALID_PLACEHOLDER, $k unless $+{bind_id};
                         $self->bind_param( $+{bind_id}, $v );
@@ -121,7 +130,6 @@ sub bind {
 }
 
 sub bind_param {
-    local($_);
     my $self = shift;
     my @args = do {
         my( $param, $value, @attr ) = @_;
@@ -131,12 +139,13 @@ sub bind_param {
                 $+{bind_id}, $value, @attr;
             }
             else {
+                local($_);
                 map { ( $_, $value, @attr ) } do {
                     if ( $param =~ m/^[\:\$\?]/ ) {
-                        grep { $placeholders->{$_} eq $param } keys( %{$placeholders} );
+                        grep { $placeholders->{$_} eq $param } keys %{$placeholders};
                     }
                     else {
-                        grep { $placeholders->{$_} eq ":$param" } keys( %{$placeholders} );
+                        grep { $placeholders->{$_} eq ":$param" } keys %{$placeholders};
                     }
                 };
             }
@@ -146,8 +155,7 @@ sub bind_param {
         }
     };
     return unless $self->SUPER::bind_param(@args);
-    return @args if wantarray;
-    return \@args;
+    return wantarray ? @args : \@args;
 }
 
 sub execute {
@@ -177,7 +185,9 @@ BEGIN {
     *rs        = subname( rs        => \&results );
 }
 
-sub statement_digest { $STATEMENT_DIGEST->(@_) }
+sub statement_digest {
+    return $STATEMENT_DIGEST->(@_);
+}
 
 sub statement_normalise {
     my $statement  = statement_trim(shift);
@@ -187,12 +197,12 @@ sub statement_normalise {
 }
 
 sub statement_study {
-    local($_);
     my( $normal, $trimmed, $digest ) = statement_normalise(shift);
-    return unless length($trimmed);
+    return unless length $trimmed;
     my %positions_to_params_map = do {
         if ( my @params = $trimmed =~ m{[\:\$\?]\w+\b}g ) {
-            map { ( 1 + $_ => $params[$_] ) } 0 .. $#params;
+            local($_);
+            map { 1 + $_ => $params[$_] } 0 .. $#params;
         }
         else {
             ();
@@ -203,7 +213,7 @@ sub statement_study {
 
 sub statement_trim {
     my $statement = do {
-        if ( ref( $_[0] ) ) {
+        if ( ref $_[0] ) {
             if ( UNIVERSAL::isa( $_[0], 'DBIx::Squirrel::st' ) ) {
                 shift->_private_state->{OriginalStatement};
             }
@@ -215,14 +225,13 @@ sub statement_trim {
             }
         }
         else {
-            defined( $_[0] ) ? shift : '';
+            defined $_[0] ? shift : '';
         }
     };
-    $statement                  =~ s{\s+--\s+.*$}{}gm;
-    $statement                  =~ s{^[[:blank:]\r\n]+}{}gm;
-    $statement                  =~ s{[[:blank:]\r\n]+$}{}gm;
-    return '' unless $statement =~ m/\S/;
-    return $statement;
+    $statement        =~ s{\s+--\s+.*$}{}gm;
+    $statement        =~ s{^[[:blank:]\r\n]+}{}gm;
+    $statement        =~ s{[[:blank:]\r\n]+$}{}gm;
+    return $statement =~ m/\S/ ? $statement : '';
 }
 
 1;
