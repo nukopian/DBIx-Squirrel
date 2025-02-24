@@ -94,7 +94,7 @@ $private = artists->_private_state;
 
 is $private->{cache_size_fixed}, !!0, 'artists->{cache_size_fixed}';
 is(
-    $private->{cache_size}, &DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT,
+    $private->{cache_size}, &DBIx::Squirrel::it::CACHE_SIZE_LIMIT,
     'ok - fixed cache size',
 );
 

@@ -158,7 +158,7 @@ sub execute {
 }
 
 sub iterate {
-    return DBIx::Squirrel::Iterator->new(@_);
+    return DBIx::Squirrel::it->new(@_);
 }
 
 BEGIN {

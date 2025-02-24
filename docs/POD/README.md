@@ -1075,8 +1075,8 @@ at that value, preventing the kind of automatic adjustment described above.
 
 The following package globals define the relevant default settings:
 
-    $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
+    $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::it::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
 #### `cache_size_slice`
 
@@ -1117,9 +1117,9 @@ at that value, preventing the kind of automatic adjustment described above.
 
 The following package globals define the relevant default settings:
 
-    $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
-    $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
+    $DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
+    $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::it::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
 #### `count`
 
@@ -1302,7 +1302,7 @@ used to change the slicing strategy, a reference to the iterator is returned.
 
 The following package global defines the default setting:
 
-    $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
+    $DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
 
 #### `slice_buffer_size`
 
@@ -1347,9 +1347,9 @@ at that value, preventing the kind of automatic adjustment described above.
 
 The following package globals define the relevant default settings:
 
-    $DBIx::Squirrel::Iterator::DEFAULT_SLICE       = [];  # slicing strategy
-    $DBIx::Squirrel::Iterator::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
-    $DBIx::Squirrel::Iterator::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
+    $DBIx::Squirrel::it::DEFAULT_SLICE       = [];  # slicing strategy
+    $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = 2;   # initial buffer-size
+    $DBIx::Squirrel::it::CACHE_SIZE_LIMIT   = 64;  # maximum buffer-size
 
 #### `start`
 
@@ -1378,7 +1378,7 @@ Returns the iterator's underlying statement handle object.
 
 ### Iterator Exports
 
-The `DBIx::Squirrel::Iterator` package exports a number of subroutines that
+The `DBIx::Squirrel::it` package exports a number of subroutines that
 may be used within the stages of a transformation pipeline. These provide
 information about the current transformation context.
 

@@ -22,14 +22,14 @@ BEGIN {
         or print "Bail out!\n";
     use_ok( 'T::Squirrel', qw/:var diagdump/ )
         or print "Bail out!\n";
-    use_ok( 'DBIx::Squirrel::Iterator', qw/result result_transform/ )
+    use_ok( 'DBIx::Squirrel::it', qw/result result_transform/ )
         or print "Bail out!\n";
 }
 
 diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 
 {
-    note('DBIx::Squirrel::Iterator::result_transform');
+    note('DBIx::Squirrel::it::result_transform');
 
     my @tests = (
         { line => __LINE__, got => sub { result_transform() },            exp => [] },
@@ -77,7 +77,7 @@ diag("Testing DBIx::Squirrel $DBIx::Squirrel::VERSION, Perl $], $^X");
 ##############
 
 {
-    note('DBIx::Squirrel::Iterator::rc');
+    note('DBIx::Squirrel::it::rc');
 
     my @tests = (
         {

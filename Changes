@@ -51,7 +51,7 @@ Revision history for DBIx-Squirrel
         to be consistent with the re-worked reset method.
     -   Non-breaking change to the reset method, which may now be used
         to change cache size and/oor slicing strategy.
-    -   The DBIx::Squirrel::Iterator package now has and exports new
+    -   The DBIx::Squirrel::it package now has and exports new
         functions that expose aspects of the iterator's current context
         to stages in a transformation pipeline.
 -   REFACTOR / FIX
