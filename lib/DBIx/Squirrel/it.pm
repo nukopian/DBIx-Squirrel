@@ -5,6 +5,20 @@ use 5.010_001;
 package    # hide from PAUSE
     DBIx::Squirrel::it;
 
+=head1 NAME
+
+DBIx::Squirrel::it - Statement iterator iterator base class
+
+=head1 SYNOPSIS
+
+
+=head1 DESCRIPTION
+
+This module provides a base class for statement iterators. It is usable as
+is, but is also subclassed by the L<DBIx::Squirrel::rs> (Results) class.
+
+=cut
+
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     require Exporter;
@@ -51,6 +65,10 @@ use Sub::Name 'subname';
 use namespace::clean;
 
 sub DEFAULT_CACHE_SIZE {
+    my $class = shift;
+    if (@_) {
+        $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = shift;
+    }
     if ( $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE < 2 ) {
         $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = 2;
     }
@@ -58,6 +76,10 @@ sub DEFAULT_CACHE_SIZE {
 }
 
 sub CACHE_SIZE_LIMIT {
+    my $class = shift;
+    if (@_) {
+        $DBIx::Squirrel::it::CACHE_SIZE_LIMIT = shift;
+    }
     if ( $DBIx::Squirrel::it::CACHE_SIZE_LIMIT > 64 ) {
         $DBIx::Squirrel::it::CACHE_SIZE_LIMIT = 64;
     }
@@ -65,6 +87,10 @@ sub CACHE_SIZE_LIMIT {
 }
 
 sub DEFAULT_SLICE {
+    my $class = shift;
+    if (@_) {
+        $DBIx::Squirrel::it::DEFAULT_SLICE = shift;
+    }
     return $DBIx::Squirrel::it::DEFAULT_SLICE;
 }
 
@@ -76,6 +102,20 @@ sub DESTROY {
     $self->_private_state(undef);
     return;
 }
+
+=head3 C<new>
+
+    my $it = DBIx::Squirrel::it->new($sth);
+    my $it = DBIx::Squirrel::it->new($sth, @bind_values);
+    my $it = DBIx::Squirrel::it->new($sth, @bind_values, @transforms);
+
+Creates a new iterator object.
+
+This method is not intended to be called directly by the developer. It
+is called indirectly, via from the C<iterate> or C<results> methods in
+the statement and database handle objects.
+
+=cut
 
 sub new {
     my $class = ref $_[0] ? ref shift : shift;
@@ -89,6 +129,7 @@ sub new {
     } );
     return $self;
 }
+
 
 sub _cache_charge {
     my( $attr, $self ) = shift->_private_state;
@@ -291,7 +332,7 @@ sub _private_state_reset {
         my( $transformed, $results, $result );
         do {
             return $self->_result_fetch_pending if $self->_results_pending;
-            return                              if $self->_cache_empty && !$sth->{Active};
+            return unless $self->is_active;
             if ( $self->_cache_empty ) {
                 return unless $self->_cache_charge;
             }
@@ -314,7 +355,7 @@ sub _private_state_reset {
         return do { $_ = $result };
     }
 
-    # Seemingly pointless, here, but intended to be overridden in subclasses.
+    # Seemingly pointless here, but intended to be overridden in subclasses.
     sub _result_preprocess {
         return $_[1];
     }
@@ -452,6 +493,7 @@ sub is_active {
 }
 
 BEGIN {
+    *active   = subname( active   => \&is_active );
     *not_done = subname( not_done => \&is_active );
 }
 
@@ -494,7 +536,8 @@ sub not_active {
 }
 
 BEGIN {
-    *is_done = subname( is_done => \&not_active );
+    *inactive = subname( inactive => \&not_active );
+    *is_done  = subname( is_done  => \&not_active );
 }
 
 sub remaining {
@@ -613,5 +656,24 @@ BEGIN {
 sub sth {
     return shift->_private_state->{sth};
 }
+
+=head1 AUTHORS
+
+Iain Campbell E<lt>cpanic@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+The DBIx::Squirrel module is Copyright (c) 2020-2025 Iain Campbell.
+All rights reserved.
+
+You may distribute under the terms of either the GNU General Public
+License or the Artistic License, as specified in the Perl 5.10.0 README file.
+
+=head1 SUPPORT / WARRANTY
+
+DBIx::Squirrel is free Open Source software. IT COMES WITHOUT WARRANTY OF ANY
+KIND.
+
+=cut
 
 1;
