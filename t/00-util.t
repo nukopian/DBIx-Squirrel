@@ -24,7 +24,7 @@ BEGIN {
         or print "Bail out!\n";
     use_ok( 'T::Squirrel', qw(:var diagdump) )
         or print "Bail out!\n";
-    use_ok( 'DBIx::Squirrel::util', qw(isolate_callbacks confessf cluckf) )
+    use_ok( 'DBIx::Squirrel::util', qw(carpf cluckf confessf isolate_callbacks) )
         or print "Bail out!\n";
 }
 
@@ -38,22 +38,55 @@ diag join(
     my @tests = (
         {
             line => __LINE__, name => 'ok - cluckf (no arguments)',
-            got  => sub { cluckf },
+            got  => sub { cluckf() },
             exp  => qr/Unhelpful warning/,
         },
         {
             line => __LINE__, name => 'ok - cluckf (empty string)',
-            got  => sub { cluckf '' },
+            got  => sub { cluckf('') },
             exp  => qr/Unhelpful warning/,
         },
         {
             line => __LINE__, name => 'ok - cluckf (string)',
-            got  => sub { cluckf 'Foo' },
+            got  => sub { cluckf('Foo') },
             exp  => qr/Foo/,
         },
         {
             line => __LINE__, name => 'ok - cluckf (format-string, argument)',
-            got  => sub { cluckf 'Foo (%d)', 99 },
+            got  => sub { cluckf( 'Foo (%d)', 99 ) },
+            exp  => qr/Foo \(99\)/,
+        },
+    );
+
+    for my $t (@tests) {
+        like(
+            warning { $t->{got}->() }, $t->{exp},
+            sprintf( 'line %d%s', $t->{line}, $t->{name} ? " $t->{name}" : '' ),
+        );
+    }
+}
+
+
+{
+    my @tests = (
+        {
+            line => __LINE__, name => 'ok - carpf (no arguments)',
+            got  => sub { carpf() },
+            exp  => qr/Unhelpful warning/,
+        },
+        {
+            line => __LINE__, name => 'ok - carpf (empty string)',
+            got  => sub { carpf('') },
+            exp  => qr/Unhelpful warning/,
+        },
+        {
+            line => __LINE__, name => 'ok - carpf (string)',
+            got  => sub { carpf('Foo') },
+            exp  => qr/Foo/,
+        },
+        {
+            line => __LINE__, name => 'ok - carpf (format-string, argument)',
+            got  => sub { carpf( 'Foo (%d)', 99 ) },
             exp  => qr/Foo \(99\)/,
         },
     );
@@ -71,43 +104,43 @@ diag join(
     my @tests = (
         {
             line => __LINE__, name => 'ok - confessf (no arguments, $@ undefined)',
-            got  => sub { confessf },
+            got  => sub { confessf() },
             exp  => qr/Unknown error/,
         },
         {
             line => __LINE__, name => 'ok - confessf (no arguments, $@ defined)',
             got  => sub {
                 eval { die 'Oh no, the foo!' };
-                confessf;
+                confessf();
             },
             exp => qr/Oh no, the foo!/,
         },
         {
             line => __LINE__, name => 'ok - confessd (empty string, $@ undefined)',
-            got  => sub { confessf '' },
+            got  => sub { confessf('') },
             exp  => qr/Unknown error/,
         },
         {
             line => __LINE__, name => 'ok - confessf (empty string, $@ defined)',
             got  => sub {
                 eval { die 'Oh no, the foo!' };
-                confessf '';
+                confessf('');
             },
             exp => qr/Oh no, the foo!/,
         },
         {
             line => __LINE__, name => 'ok - confessf (string)',
-            got  => sub { confessf 'Foo' },
+            got  => sub { confessf('Foo') },
             exp  => qr/Foo/,
         },
         {
             line => __LINE__, name => 'ok - confessf (format-string, argument)',
-            got  => sub { confessf 'Foo (%d)', 99 },
+            got  => sub { confessf( 'Foo (%d)', 99 ) },
             exp  => qr/Foo \(99\)/,
         },
         {
             line => __LINE__, name => 'ok - confessf (exception object)',
-            got  => sub { confessf bless( {}, 'AnExceptionObject' ) },
+            got  => sub { confessf( bless( {}, 'AnExceptionObject' ) ) },
             exp  => qr/AnExceptionObject=/,
         },
     );

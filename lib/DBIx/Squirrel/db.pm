@@ -19,8 +19,9 @@ require DBI;
 
 use DBIx::Squirrel::st 'statement_study';
 use DBIx::Squirrel::util qw(
-    get_file_contents
+    carpf
     confessf
+    get_file_contents
 );
 use Sub::Name 'subname';
 use Try::Tiny qw(
@@ -265,7 +266,7 @@ sub load_tuples {
         $self->commit() unless $self->{AutoCommit};
     }
     catch {
-        warn "$_\n";
+        carpf("$_\n");
         unless ( $self->{AutoCommit} ) {
             $self->rollback();
             print STDERR "Database transaction was rolled back";
