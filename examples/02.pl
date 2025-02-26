@@ -18,23 +18,23 @@ db do {
 
 get_artist_by_id do {
     db->results( [
-        'SELECT *',
-        'FROM artists',
-        'WHERE ArtistId=?',
+        'SELECT *',            # Long queries may be split into
+        'FROM artists',        # multiple strings inside an array,
+        'WHERE ArtistId=?',    # making code easier to read
         'LIMIT 1',
     ] )->slice( {} );
 };
 
 for my $id ( 1 .. 9 ) {
-    get_artist_by_id(
-        $id => sub {
-            print STDERR result_offset, " ";     # result_offset is "0"
+    get_artist_by_id( $id => (
+        sub {
+            print STDERR result_offset, " ";     # result_offset is "0" (consider it a row_id)
             print STDERR iterator,      "\n";    # the iterator instance "DBIx::Squirrel::rs=HASH(0xXXXXXXXX)"
             result;                              # Return the result to next stage
         },
         as_json(),                               # transform the result into JSON
         stderr("%s\n"),
-    )->single();
+    ) )->single();
 }
 
 db->disconnect();
