@@ -233,6 +233,12 @@ sub results {
     return $sth->results(@_);
 }
 
+BEGIN {
+    *resultset = subname( resultset => \&results );
+    *rset      = subname( rset      => \&results );
+    *rs        = subname( rs        => \&results );
+}
+
 sub load_tuples {
     my $self     = shift;
     my $filename = shift;
@@ -276,12 +282,6 @@ sub load_tuples {
         $self->disconnect() if $opts->{disconnect};
         print STDERR "\n"   if $opts->{progress};
     }
-}
-
-BEGIN {
-    *resultset = subname( resultset => \&results );
-    *rset      = subname( rset      => \&results );
-    *rs        = subname( rs        => \&results );
 }
 
 1;
