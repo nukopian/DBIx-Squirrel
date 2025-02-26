@@ -196,30 +196,19 @@ sub _private_state_reset {
 }
 
 {
-    # The following package globals are intended to be private. They are
-    # modified by private methods in this lexical block, using runtime-
-    # scoping. Their current values can be inspected within any stage of
-    # a transformation pipeline by importing and using the public
-    # subroutines defined in this lexical block.
-    our(
-        $_DATABASE,
-        $_ITERATOR,
-        $_RESULT,
-        $_RESULT_FIRST,
-        $_RESULT_NUMBER,
-        $_RESULT_OFFSET,
-        $_RESULT_ORIGINAL,
-        $_RESULT_PREV,
-        $_STATEMENT,
-    );
+    our $_DATABASE;
 
     sub database {
         return $_DATABASE;
     }
 
+    our $_ITERATOR;
+
     sub iterator {
         return $_ITERATOR;
     }
+
+    our $_RESULT;
 
     sub result {
         return $_RESULT;
@@ -229,21 +218,31 @@ sub _private_state_reset {
         *result_current = subname( result_current => \&result );
     }
 
+    our $_RESULT_FIRST;
+
     sub result_first {
         return $_RESULT_FIRST;
     }
+
+    our $_RESULT_NUMBER;
 
     sub result_number {
         return $_RESULT_NUMBER;
     }
 
+    our $_RESULT_OFFSET;
+
     sub result_offset {
         return $_RESULT_OFFSET;
     }
 
+    our $_RESULT_ORIGINAL;
+
     sub result_original {
         return $_RESULT_ORIGINAL;
     }
+
+    our $_RESULT_PREV;
 
     sub result_prev {
         return $_RESULT_PREV;
@@ -252,6 +251,8 @@ sub _private_state_reset {
     BEGIN {
         *result_previous = subname( result_previous => \&result_prev );
     }
+
+    our $_STATEMENT;
 
     sub statement {
         return $_STATEMENT;
@@ -281,7 +282,7 @@ sub _private_state_reset {
         }
         return @results if wantarray;
         $_ = $results[0];
-        return scalar @results;
+        return @results;
     }
 
     sub _result_fetch {
