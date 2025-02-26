@@ -258,10 +258,17 @@ sub _private_state_reset {
     }
 
     sub result_transform {    ## not a method
-        my @transforms
-            = UNIVERSAL::isa( $_[0], 'ARRAY' ) ? @{ +shift }
-            : UNIVERSAL::isa( $_[0], 'CODE' )  ? shift
-            :                                    ();
+        my @transforms = do {
+            if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                @{ +shift };
+            }
+            elsif ( UNIVERSAL::isa( $_[0], 'CODE' ) ) {
+                shift;
+            }
+            else {
+                ();
+            }
+        };
         my @results = @_;
         if ( @transforms && @_ ) {
             local($_RESULT_ORIGINAL) = @results;
@@ -274,7 +281,7 @@ sub _private_state_reset {
         }
         return @results if wantarray;
         $_ = $results[0];
-        return @results;
+        return scalar @results;
     }
 
     sub _result_fetch {
