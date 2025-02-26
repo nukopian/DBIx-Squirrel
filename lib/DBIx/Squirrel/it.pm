@@ -283,7 +283,7 @@ sub _private_state_reset {
         my( $transformed, $results, $result );
         do {
             return $self->_result_fetch_pending if $self->_results_pending;
-            return unless $sth->{Active};
+            return                              if $self->_cache_empty && !$sth->{Active};
             if ( $self->_cache_empty ) {
                 return unless $self->_cache_charge;
             }
@@ -439,7 +439,12 @@ sub first {
 }
 
 sub is_active {
-    return !!$_[0]->_private_state->{sth}->{Active};
+    my( $attr, $self ) = shift->_private_state;
+    return $attr->{sth}->{Active} || !$self->_cache_empty;
+}
+
+BEGIN {
+    *not_done = subname( not_done => \&is_active );
 }
 
 sub iterate {
@@ -476,7 +481,12 @@ sub next {
 }
 
 sub not_active {
-    return !$_[0]->_private_state->{sth}->{Active};
+    my( $attr, $self ) = shift->_private_state;
+    return !$attr->{sth}->{Active} && $self->_cache_empty;
+}
+
+BEGIN {
+    *is_done = subname( is_done => \&not_active );
 }
 
 sub remaining {
@@ -486,7 +496,9 @@ sub remaining {
         return unless defined $self->start;
     }
     my @rows;
-    push @rows, $self->_result_fetch while $sth->{Active};
+    while ( $self->not_done ) {
+        push @rows, $self->_result_fetch;
+    }
     return wantarray ? @rows : \@rows;
 }
 
