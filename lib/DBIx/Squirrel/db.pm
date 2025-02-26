@@ -68,9 +68,14 @@ sub prepare {
     if ( UNIVERSAL::isa( $statement, 'ARRAY' ) ) {
         $statement = join ' ', @{$statement};
     }
-    my( $placeholders, $normalised_statement, $original_statement, $digest )
-        = statement_study($statement);
-    confessf E_EXP_STATEMENT unless defined $normalised_statement;
+    my(
+        $placeholders,
+        $normalised_statement,
+        $original_statement,
+        $digest,
+    ) = statement_study($statement);
+    confessf E_EXP_STATEMENT
+        unless defined $normalised_statement;
     my $sth = DBI::db::prepare( $self, $normalised_statement, @_ )
         or confessf $DBI::errstr;
     $sth = bless $sth, $self->_root_class . '::st';
@@ -92,9 +97,14 @@ sub prepare_cached {
     if ( UNIVERSAL::isa( $statement, 'ARRAY' ) ) {
         $statement = join ' ', @{$statement};
     }
-    my( $placeholders, $normalised_statement, $original_statement, $digest )
-        = statement_study($statement);
-    confessf E_EXP_STATEMENT unless defined $normalised_statement;
+    my(
+        $placeholders,
+        $normalised_statement,
+        $original_statement,
+        $digest,
+    ) = statement_study($statement);
+    confessf E_EXP_STATEMENT
+        unless defined $normalised_statement;
     my $sth = DBI::db::prepare_cached( $self, $normalised_statement, @_ )
         or confessf $DBI::errstr;
     $sth = bless $sth, $self->_root_class . '::st';
