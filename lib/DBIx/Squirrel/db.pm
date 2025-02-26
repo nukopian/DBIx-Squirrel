@@ -235,23 +235,24 @@ sub results {
 sub load_tuples {
     my $self     = shift;
     my $filename = shift;
-    my $tuples   = get_file_contents($filename)
-        or die "No data!";
+    my $tuples   = get_file_contents($filename) or die "No data!";
     return $tuples unless @_;
-    my $func       = shift;
-    my %options    = @_;
-    my $disconnect = exists $options{'disconnect'} && !!$options{'disconnect'};
-    my $progress   = !exists $options{'progress'} || !!$options{'progress'};
+    my $func = shift;
+    my $opts = {
+        disconnect => !!0,
+        progress   => !!1,
+        %{ shift || {} },
+    };
     try {
         my( $before, $percent, $count, $length );
-        if ($progress) {
+        if ( $opts->{progress} ) {
             $before = $percent = $count = 0;
             $length = scalar @{$tuples};
-            printf STDERR 'Progress %3d%% ', $percent if $progress;
+            printf STDERR 'Progress %3d%% ', $percent;
         }
         for my $tuple ( @{$tuples} ) {
             $func->( @{$tuple} );
-            if ($progress) {
+            if ( $opts->{progress} ) {
                 $count   += 1;
                 $percent  = int( $count / $length * 100 );
                 if ( $percent > $before ) {
@@ -271,8 +272,8 @@ sub load_tuples {
         }
     }
     finally {
-        $self->disconnect() if $disconnect;
-        print STDERR "\n"   if $progress;
+        $self->disconnect() if $opts->{disconnect};
+        print STDERR "\n"   if $opts->{progress};
     }
 }
 
