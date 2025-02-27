@@ -1,6 +1,13 @@
 Revision history for DBIx-Squirrel
 
-1.6.1 2025-02-26 22:15
+1.6.1 2025-02-27 13:00
+
+-   Fixed a bug in DBIx::Squirrel::it::_fetch_result in which the
+    act of reading the final buffer of results turned off the underlying
+    statement handle's Active attribute. Since that was the only way
+    I was determing if the statement was done, it often meant that
+    final buffer's worth of results would not be returned when required.
+-   Some minor documentation updates and clean-up.
 
 1.6.0 2025-02-25 22:15 Next Stable Release
 
