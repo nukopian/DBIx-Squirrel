@@ -1,5 +1,9 @@
 Revision history for DBIx-Squirrel
 
+1.6.2
+
+-   Clean-up and refactoring.
+
 1.6.1 2025-02-27 13:00
 
 -   Fixed a bug in DBIx::Squirrel::it::_fetch_result in which the
