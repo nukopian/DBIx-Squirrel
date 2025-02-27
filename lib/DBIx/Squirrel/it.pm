@@ -64,72 +64,15 @@ use Scalar::Util qw(
 use Sub::Name 'subname';
 use namespace::clean;
 
-sub DEFAULT_CACHE_SIZE {
-    my $class = shift;
-    if (@_) {
-        $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = shift;
-    }
-    if ( $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE < 2 ) {
-        $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = 2;
-    }
-    return $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE;
-}
-
-sub CACHE_SIZE_LIMIT {
-    my $class = shift;
-    if (@_) {
-        $DBIx::Squirrel::it::CACHE_SIZE_LIMIT = shift;
-    }
-    if ( $DBIx::Squirrel::it::CACHE_SIZE_LIMIT > 64 ) {
-        $DBIx::Squirrel::it::CACHE_SIZE_LIMIT = 64;
-    }
-    return $DBIx::Squirrel::it::CACHE_SIZE_LIMIT;
-}
-
-sub DEFAULT_SLICE {
-    my $class = shift;
-    if (@_) {
-        $DBIx::Squirrel::it::DEFAULT_SLICE = shift;
-    }
-    return $DBIx::Squirrel::it::DEFAULT_SLICE;
-}
-
-sub DESTROY {
-    return if DBIx::Squirrel::util::global_destruct_phase();
-    my $self = shift;
-    local( $., $@, $!, $^E, $?, $_ );
-    $self->_private_state_clear;
-    $self->_private_state(undef);
-    return;
-}
-
-=head3 C<new>
-
-    my $it = DBIx::Squirrel::it->new($sth);
-    my $it = DBIx::Squirrel::it->new($sth, @bind_values);
-    my $it = DBIx::Squirrel::it->new($sth, @bind_values, @transforms);
-
-Creates a new iterator object.
-
-This method is not intended to be called directly by the developer. It
-is called indirectly, via from the C<iterate> or C<results> methods in
-the statement and database handle objects.
-
-=cut
-
-sub new {
-    my $class = ref $_[0] ? ref shift : shift;
-    my( $transforms, $sth, @bind_values ) = isolate_callbacks(@_);
-    confessf E_BAD_STH unless UNIVERSAL::isa( $sth, 'DBIx::Squirrel::st' );
-    my $self = bless {}, $class;
-    $self->_private_state( {
-        sth                 => $sth,
-        bind_values_initial => [@bind_values],
-        transforms_initial  => $transforms,
-    } );
-    return $self;
-}
-
+our $_DATABASE;
+our $_ITERATOR;
+our $_RESULT;
+our $_RESULT_FIRST;
+our $_RESULT_NUMBER;
+our $_RESULT_OFFSET;
+our $_RESULT_ORIGINAL;
+our $_RESULT_PREV;
+our $_STATEMENT;
 
 sub _cache_charge {
     my( $attr, $self ) = shift->_private_state;
@@ -182,34 +125,32 @@ sub _cache_size_init {
     return $self;
 }
 
-{
-    my %attr_by_id;
+my %attr_by_id;
 
-    sub _private_state {
-        my $self = shift;
-        my $id   = 0+ $self;
-        my $attr = do {
-            $attr_by_id{$id} = {} unless defined $attr_by_id{$id};
-            $attr_by_id{$id};
-        };
-        unless (@_) {
-            return wantarray ? ( $attr, $self ) : $attr;
-        }
-        unless ( defined( $_[0] ) ) {
-            delete $attr_by_id{$id};
-            shift;
-        }
-        if (@_) {
-            $attr_by_id{$id} = {} unless defined $attr_by_id{$id};
-            if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
-                $attr_by_id{$id} = { %{$attr}, %{ $_[0] } };
-            }
-            else {
-                $attr_by_id{$id} = { %{$attr}, @_ };
-            }
-        }
-        return $self;
+sub _private_state {
+    my $self = shift;
+    my $id   = 0+ $self;
+    my $attr = do {
+        $attr_by_id{$id} = {} unless defined $attr_by_id{$id};
+        $attr_by_id{$id};
+    };
+    unless (@_) {
+        return wantarray ? ( $attr, $self ) : $attr;
     }
+    unless ( defined( $_[0] ) ) {
+        delete $attr_by_id{$id};
+        shift;
+    }
+    if (@_) {
+        $attr_by_id{$id} = {} unless defined $attr_by_id{$id};
+        if ( UNIVERSAL::isa( $_[0], 'HASH' ) ) {
+            $attr_by_id{$id} = { %{$attr}, %{ $_[0] } };
+        }
+        else {
+            $attr_by_id{$id} = { %{$attr}, @_ };
+        }
+    }
+    return $self;
 }
 
 sub _private_state_clear {
@@ -236,157 +177,74 @@ sub _private_state_reset {
     shift->_private_state_clear->_private_state_init;
 }
 
-{
-    our $_DATABASE;
+sub database {
+    return $_DATABASE;
+}
 
-    sub database {
-        return $_DATABASE;
-    }
+sub iterator {
+    return $_ITERATOR;
+}
 
-    our $_ITERATOR;
-
-    sub iterator {
-        return $_ITERATOR;
-    }
-
-    our $_RESULT;
-
-    sub result {
-        return $_RESULT;
-    }
-
-    BEGIN {
-        *result_current = subname( result_current => \&result );
-    }
-
-    our $_RESULT_FIRST;
-
-    sub result_first {
-        return $_RESULT_FIRST;
-    }
-
-    our $_RESULT_NUMBER;
-
-    sub result_number {
-        return $_RESULT_NUMBER;
-    }
-
-    our $_RESULT_OFFSET;
-
-    sub result_offset {
-        return $_RESULT_OFFSET;
-    }
-
-    our $_RESULT_ORIGINAL;
-
-    sub result_original {
-        return $_RESULT_ORIGINAL;
-    }
-
-    our $_RESULT_PREV;
-
-    sub result_prev {
-        return $_RESULT_PREV;
-    }
-
-    BEGIN {
-        *result_previous = subname( result_previous => \&result_prev );
-    }
-
-    our $_STATEMENT;
-
-    sub statement {
-        return $_STATEMENT;
-    }
-
-    sub result_transform {    ## not a method
-        my @transforms = do {
-            if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
-                @{ +shift };
-            }
-            elsif ( UNIVERSAL::isa( $_[0], 'CODE' ) ) {
-                shift;
-            }
-            else {
-                ();
-            }
-        };
-        my @results = @_;
-        if ( @transforms && @_ ) {
-            local($_RESULT_ORIGINAL) = @results;
-            for my $transform (@transforms) {
-                last unless @results = do {
-                    local($_) = local($_RESULT) = @results;
-                    $transform->(@results);
-                };
-            }
+sub _result_fetch {
+    my( $attr, $self ) = shift->_private_state;
+    my $sth = $attr->{sth};
+    my( $transformed, $results, $result );
+    do {
+        return $self->_result_fetch_pending if $self->_results_pending;
+        return unless $self->is_active;
+        if ( $self->_cache_empty ) {
+            return unless $self->_cache_charge;
         }
-        return @results if wantarray;
-        $_ = $results[0];
-        return @results;
-    }
+        $result = shift( @{ $attr->{buffer} } );
+        ( $results, $transformed ) = $self->_result_process($result);
+    } while $transformed && !@{$results};
+    $result = shift( @{$results} );
+    $self->_results_push_pending($results) if @{$results};
+    $attr->{results_first} = $result unless $attr->{results_count}++;
+    $attr->{results_last}  = $result;
+    return do { $_ = $result };
+}
 
-    sub _result_fetch {
-        my( $attr, $self ) = shift->_private_state;
-        my $sth = $attr->{sth};
-        my( $transformed, $results, $result );
-        do {
-            return $self->_result_fetch_pending if $self->_results_pending;
-            return unless $self->is_active;
-            if ( $self->_cache_empty ) {
-                return unless $self->_cache_charge;
-            }
-            $result = shift( @{ $attr->{buffer} } );
-            ( $results, $transformed ) = $self->_result_process($result);
-        } while $transformed && !@{$results};
-        $result = shift( @{$results} );
-        $self->_results_push_pending($results) if @{$results};
-        $attr->{results_first} = $result unless $attr->{results_count}++;
-        $attr->{results_last}  = $result;
-        return do { $_ = $result };
-    }
+sub _result_fetch_pending {
+    my( $attr, $self ) = shift->_private_state;
+    return unless defined( $attr->{results_pending} );
+    my $result = shift( @{ $attr->{results_pending} } );
+    $attr->{results_first} = $result unless $attr->{results_count}++;
+    $attr->{results_last}  = $result;
+    return do { $_ = $result };
+}
 
-    sub _result_fetch_pending {
-        my( $attr, $self ) = shift->_private_state;
-        return unless defined( $attr->{results_pending} );
-        my $result = shift( @{ $attr->{results_pending} } );
-        $attr->{results_first} = $result unless $attr->{results_count}++;
-        $attr->{results_last}  = $result;
-        return do { $_ = $result };
-    }
+# Seemingly pointless here, but intended to be overridden in subclasses.
+sub _result_preprocess {
+    return $_[1];
+}
 
-    # Seemingly pointless here, but intended to be overridden in subclasses.
-    sub _result_preprocess {
-        return $_[1];
-    }
-
-    sub _result_process {
-        my( $attr, $self ) = shift->_private_state;
-        my $result    = $self->_result_preprocess(shift);
-        my $transform = !!@{ $attr->{transforms} };
-        my @results   = do {
-            local($_);
-            if ($transform) {
-                local($_DATABASE)      = $self->sth->{Database};
-                local($_ITERATOR)      = $self;
-                local($_RESULT_FIRST)  = $attr->{results_first};
-                local($_RESULT_NUMBER) = $attr->{results_count} + 1;
-                local($_RESULT_OFFSET) = $attr->{results_count};
-                local($_RESULT_PREV)   = $attr->{results_last};
-                local($_STATEMENT)     = $self->sth;
-                map {
-                    result_transform(
-                        $attr->{transforms},
-                        $self->_result_preprocess($_),
-                    )
-                } $result;
-            }
-            else {
-                $result;
-            }
-        };
-        return wantarray ? ( \@results, $transform ) : \@results;
-    }
+sub _result_process {
+    my( $attr, $self ) = shift->_private_state;
+    my $result    = $self->_result_preprocess(shift);
+    my $transform = !!@{ $attr->{transforms} };
+    my @results   = do {
+        local($_);
+        if ($transform) {
+            local($_DATABASE)      = $self->sth->{Database};
+            local($_ITERATOR)      = $self;
+            local($_RESULT_FIRST)  = $attr->{results_first};
+            local($_RESULT_NUMBER) = $attr->{results_count} + 1;
+            local($_RESULT_OFFSET) = $attr->{results_count};
+            local($_RESULT_PREV)   = $attr->{results_last};
+            local($_STATEMENT)     = $self->sth;
+            map {
+                result_transform(
+                    $attr->{transforms},
+                    $self->_result_preprocess($_),
+                )
+            } $result;
+        }
+        else {
+            $result;
+        }
+    };
+    return wantarray ? ( \@results, $transform ) : \@results;
 }
 
 # The total number of rows fetched since execute was called.
@@ -410,6 +268,45 @@ sub _results_push_pending {
     $attr->{results_pending} = [] unless defined $attr->{results_pending};
     push @{ $attr->{results_pending} }, @{$results};
     return $self;
+}
+
+sub DEFAULT_CACHE_SIZE {
+    my $class = shift;
+    if (@_) {
+        $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = shift;
+    }
+    if ( $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE < 2 ) {
+        $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = 2;
+    }
+    return $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE;
+}
+
+sub CACHE_SIZE_LIMIT {
+    my $class = shift;
+    if (@_) {
+        $DBIx::Squirrel::it::CACHE_SIZE_LIMIT = shift;
+    }
+    if ( $DBIx::Squirrel::it::CACHE_SIZE_LIMIT > 64 ) {
+        $DBIx::Squirrel::it::CACHE_SIZE_LIMIT = 64;
+    }
+    return $DBIx::Squirrel::it::CACHE_SIZE_LIMIT;
+}
+
+sub DEFAULT_SLICE {
+    my $class = shift;
+    if (@_) {
+        $DBIx::Squirrel::it::DEFAULT_SLICE = shift;
+    }
+    return $DBIx::Squirrel::it::DEFAULT_SLICE;
+}
+
+sub DESTROY {
+    return if DBIx::Squirrel::util::global_destruct_phase();
+    my $self = shift;
+    local( $., $@, $!, $^E, $?, $_ );
+    $self->_private_state_clear;
+    $self->_private_state(undef);
+    return;
 }
 
 sub all {
@@ -521,6 +418,35 @@ sub last_fetched {
     return $_ = $attr->{results_last};
 }
 
+
+=head3 C<new>
+
+    my $it = DBIx::Squirrel::it->new($sth);
+    my $it = DBIx::Squirrel::it->new($sth, @bind_values);
+    my $it = DBIx::Squirrel::it->new($sth, @bind_values, @transforms);
+
+Creates a new iterator object.
+
+This method is not intended to be called directly, but rather indirectly
+via the C<iterate> or C<results> methods of L<DBIx::Squirrel::st> and
+L<DBIx::Squirrel::db> packages.
+
+=cut
+
+sub new {
+    my $class = ref $_[0] ? ref shift : shift;
+    my( $transforms, $sth, @bind_values ) = isolate_callbacks(@_);
+    confessf E_BAD_STH unless UNIVERSAL::isa( $sth, 'DBIx::Squirrel::st' );
+    my $self = bless {}, $class;
+    $self->_private_state( {
+        sth                 => $sth,
+        bind_values_initial => [@bind_values],
+        transforms_initial  => $transforms,
+    } );
+    return $self;
+}
+
+
 sub next {
     my $self = shift;
     my $sth  = $self->sth;
@@ -567,6 +493,66 @@ sub reset {
     }
     $self->start;
     return $self;
+}
+
+
+sub result {
+    return $_RESULT;
+}
+
+BEGIN {
+    *result_current = subname( result_current => \&result );
+}
+
+sub result_first {
+    return $_RESULT_FIRST;
+}
+
+sub result_number {
+    return $_RESULT_NUMBER;
+}
+
+sub result_offset {
+    return $_RESULT_OFFSET;
+}
+
+sub result_original {
+    return $_RESULT_ORIGINAL;
+}
+
+sub result_prev {
+    return $_RESULT_PREV;
+}
+
+BEGIN {
+    *result_previous = subname( result_previous => \&result_prev );
+}
+
+sub result_transform {    ## not a method
+    my @transforms = do {
+        if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+            @{ +shift };
+        }
+        elsif ( UNIVERSAL::isa( $_[0], 'CODE' ) ) {
+            shift;
+        }
+        else {
+            ();
+        }
+    };
+    my @results = @_;
+    if ( @transforms && @_ ) {
+        local($_RESULT_ORIGINAL) = @results;
+        for my $transform (@transforms) {
+            last unless @results = do {
+                local($_) = local($_RESULT) = @results;
+                $transform->(@results);
+            };
+        }
+    }
+    return @results if wantarray;
+    $_ = $results[0];
+    return @results;
 }
 
 sub rows {
@@ -651,6 +637,10 @@ sub start {
 
 BEGIN {
     *execute = subname( execute => \&start );
+}
+
+sub statement {
+    return $_STATEMENT;
 }
 
 sub sth {
