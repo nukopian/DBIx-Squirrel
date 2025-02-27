@@ -19,8 +19,9 @@ require DBI;
 
 use DBIx::Squirrel::st 'statement_study';
 use DBIx::Squirrel::util qw(
-    get_file_contents
+    carpf
     confessf
+    get_file_contents
 );
 use Sub::Name 'subname';
 use Try::Tiny qw(
@@ -68,9 +69,14 @@ sub prepare {
     if ( UNIVERSAL::isa( $statement, 'ARRAY' ) ) {
         $statement = join ' ', @{$statement};
     }
-    my( $placeholders, $normalised_statement, $original_statement, $digest )
-        = statement_study($statement);
-    confessf E_EXP_STATEMENT unless defined $normalised_statement;
+    my(
+        $placeholders,
+        $normalised_statement,
+        $original_statement,
+        $digest,
+    ) = statement_study($statement);
+    confessf E_EXP_STATEMENT
+        unless defined $normalised_statement;
     my $sth = DBI::db::prepare( $self, $normalised_statement, @_ )
         or confessf $DBI::errstr;
     $sth = bless $sth, $self->_root_class . '::st';
@@ -92,9 +98,14 @@ sub prepare_cached {
     if ( UNIVERSAL::isa( $statement, 'ARRAY' ) ) {
         $statement = join ' ', @{$statement};
     }
-    my( $placeholders, $normalised_statement, $original_statement, $digest )
-        = statement_study($statement);
-    confessf E_EXP_STATEMENT unless defined $normalised_statement;
+    my(
+        $placeholders,
+        $normalised_statement,
+        $original_statement,
+        $digest,
+    ) = statement_study($statement);
+    confessf E_EXP_STATEMENT
+        unless defined $normalised_statement;
     my $sth = DBI::db::prepare_cached( $self, $normalised_statement, @_ )
         or confessf $DBI::errstr;
     $sth = bless $sth, $self->_root_class . '::st';
@@ -222,26 +233,33 @@ sub results {
     return $sth->results(@_);
 }
 
+BEGIN {
+    *resultset = subname( resultset => \&results );
+    *rset      = subname( rset      => \&results );
+    *rs        = subname( rs        => \&results );
+}
+
 sub load_tuples {
     my $self     = shift;
     my $filename = shift;
-    my $tuples   = get_file_contents($filename)
-        or die "No data!";
+    my $tuples   = get_file_contents($filename) or die "No data!";
     return $tuples unless @_;
-    my $func       = shift;
-    my %options    = @_;
-    my $disconnect = exists $options{'disconnect'} && !!$options{'disconnect'};
-    my $progress   = !exists $options{'progress'} || !!$options{'progress'};
+    my $func = shift;
+    my $opts = {
+        disconnect => !!0,
+        progress   => !!1,
+        %{ shift || {} },
+    };
     try {
         my( $before, $percent, $count, $length );
-        if ($progress) {
+        if ( $opts->{progress} ) {
             $before = $percent = $count = 0;
             $length = scalar @{$tuples};
-            printf STDERR 'Progress %3d%% ', $percent if $progress;
+            printf STDERR 'Progress %3d%% ', $percent;
         }
         for my $tuple ( @{$tuples} ) {
             $func->( @{$tuple} );
-            if ($progress) {
+            if ( $opts->{progress} ) {
                 $count   += 1;
                 $percent  = int( $count / $length * 100 );
                 if ( $percent > $before ) {
@@ -254,22 +272,16 @@ sub load_tuples {
         $self->commit() unless $self->{AutoCommit};
     }
     catch {
-        warn "$_\n";
+        carpf("$_\n");
         unless ( $self->{AutoCommit} ) {
             $self->rollback();
             print STDERR "Database transaction was rolled back";
         }
     }
     finally {
-        $self->disconnect() if $disconnect;
-        print STDERR "\n"   if $progress;
+        $self->disconnect() if $opts->{disconnect};
+        print STDERR "\n"   if $opts->{progress};
     }
-}
-
-BEGIN {
-    *resultset = subname( resultset => \&results );
-    *rset      = subname( rset      => \&results );
-    *rs        = subname( rs        => \&results );
 }
 
 1;

@@ -5,6 +5,29 @@ use 5.010_001;
 package    # hide from PAUSE
     DBIx::Squirrel::rs;
 
+=head1 NAME
+
+DBIx::Squirrel::rs - Statement results iterator class
+
+=head1 SYNOPSIS
+
+
+=head1 DESCRIPTION
+
+This module subclasses L<DBIx::Squirrel::it> to provides another type of
+statement results iterator. 
+
+While it may be used in exactly the same way as L<DBIx::Squirrel::it>,
+it also abstracts away the implementation details of the underlying
+statement results. Results are returned as objects of a class that is
+dynamically created for each statement results iterator, and column
+data is accessed via accessor methods that are also dynamically
+created. Thus, the user need not be concerned with whether the
+underlying statement results are arrayrefs or hashrefs, or even
+what case is used for the column names.
+
+=cut
+
 use Scalar::Util 'weaken';
 use Sub::Name 'subname';
 use namespace::clean;
@@ -89,5 +112,24 @@ sub slice {
     }
     return $self;
 }
+
+=head1 AUTHORS
+
+Iain Campbell E<lt>cpanic@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+The DBIx::Squirrel module is Copyright (c) 2020-2025 Iain Campbell.
+All rights reserved.
+
+You may distribute under the terms of either the GNU General Public
+License or the Artistic License, as specified in the Perl 5.10.0 README file.
+
+=head1 SUPPORT / WARRANTY
+
+DBIx::Squirrel is free Open Source software. IT COMES WITHOUT WARRANTY OF ANY
+KIND.
+
+=cut
 
 1;

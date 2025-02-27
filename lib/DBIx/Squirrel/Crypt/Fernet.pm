@@ -7,7 +7,7 @@ package    # hide from PAUSE
 
 =head1 NAME
 
-DBIx::Squirrel::Crypt::Fernet
+DBIx::Squirrel::Crypt::Fernet - Fernet symmetric encryption
 
 =head1 SYNOPSIS
 
