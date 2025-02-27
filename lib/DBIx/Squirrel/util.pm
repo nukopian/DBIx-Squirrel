@@ -23,6 +23,7 @@ our @ISA = qw(Exporter);
 our @EXPORT;
 our %EXPORT_TAGS = ( all => [
     our @EXPORT_OK = qw(
+        carpf
         cluckf
         confessf
         decrypt
@@ -52,6 +53,62 @@ if ( -e '.env' ) {
 =head2 EXPORTS
 
 Nothing is exported by default.
+
+=head3 C<carpf>
+
+Emits a warning without a stack-trace.
+
+    carpf();
+
+The warning will be set to C<$@> if it contains something useful. Otherwise 
+an "Unhelpful warning" will be emitted.
+
+    carpf($message);
+    carpf(\@message);
+
+The warning will be set to C<$message>, or the concatenated C<@message> array,
+or C<$@>, if there is no viable message. If there is still no viable message
+then an "Unhelpful warning" is emitted.
+
+During concatenation, the elements of the C<@message> array are separated
+by a single space. The intention is to allow for long warning messages to be
+split apart in a tidier manner.
+
+    carpf($format, @arguments);
+    carpf(\@format, @arguments);
+
+The warning is composed using a C<sprintf> format-string (C<$format>), together
+with any remaining arguments. Alternatively, the format-string may be produced
+by concatenating the C<@format> array whose elements are separated by a single
+space.
+
+=cut
+
+sub carpf {
+    @_ = do {
+        if (@_) {
+            my $format = do {
+                if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                    join ' ', @{ +shift };
+                }
+                else {
+                    shift;
+                }
+            };
+            if (@_) {
+                sprintf $format, @_;
+            }
+            else {
+                $format or $@ or 'Unhelpful warning';
+            }
+        }
+        else {
+            $@ or 'Unhelpful warning';
+        }
+    };
+    goto &Carp::carp;
+}
+
 
 =head3 C<cluckf>
 

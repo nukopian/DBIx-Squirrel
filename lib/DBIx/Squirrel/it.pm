@@ -5,6 +5,20 @@ use 5.010_001;
 package    # hide from PAUSE
     DBIx::Squirrel::it;
 
+=head1 NAME
+
+DBIx::Squirrel::it - Statement iterator iterator base class
+
+=head1 SYNOPSIS
+
+
+=head1 DESCRIPTION
+
+This module provides a base class for statement iterators. It is usable as
+is, but is also subclassed by the L<DBIx::Squirrel::rs> (Results) class.
+
+=cut
+
 BEGIN {
     require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
     require Exporter;
@@ -51,6 +65,10 @@ use Sub::Name 'subname';
 use namespace::clean;
 
 sub DEFAULT_CACHE_SIZE {
+    my $class = shift;
+    if (@_) {
+        $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = shift;
+    }
     if ( $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE < 2 ) {
         $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = 2;
     }
@@ -58,6 +76,10 @@ sub DEFAULT_CACHE_SIZE {
 }
 
 sub CACHE_SIZE_LIMIT {
+    my $class = shift;
+    if (@_) {
+        $DBIx::Squirrel::it::CACHE_SIZE_LIMIT = shift;
+    }
     if ( $DBIx::Squirrel::it::CACHE_SIZE_LIMIT > 64 ) {
         $DBIx::Squirrel::it::CACHE_SIZE_LIMIT = 64;
     }
@@ -65,6 +87,10 @@ sub CACHE_SIZE_LIMIT {
 }
 
 sub DEFAULT_SLICE {
+    my $class = shift;
+    if (@_) {
+        $DBIx::Squirrel::it::DEFAULT_SLICE = shift;
+    }
     return $DBIx::Squirrel::it::DEFAULT_SLICE;
 }
 
@@ -76,6 +102,20 @@ sub DESTROY {
     $self->_private_state(undef);
     return;
 }
+
+=head3 C<new>
+
+    my $it = DBIx::Squirrel::it->new($sth);
+    my $it = DBIx::Squirrel::it->new($sth, @bind_values);
+    my $it = DBIx::Squirrel::it->new($sth, @bind_values, @transforms);
+
+Creates a new iterator object.
+
+This method is not intended to be called directly by the developer. It
+is called indirectly, via from the C<iterate> or C<results> methods in
+the statement and database handle objects.
+
+=cut
 
 sub new {
     my $class = ref $_[0] ? ref shift : shift;
@@ -89,6 +129,7 @@ sub new {
     } );
     return $self;
 }
+
 
 sub _cache_charge {
     my( $attr, $self ) = shift->_private_state;
@@ -196,30 +237,19 @@ sub _private_state_reset {
 }
 
 {
-    # The following package globals are intended to be private. They are
-    # modified by private methods in this lexical block, using runtime-
-    # scoping. Their current values can be inspected within any stage of
-    # a transformation pipeline by importing and using the public
-    # subroutines defined in this lexical block.
-    our(
-        $_DATABASE,
-        $_ITERATOR,
-        $_RESULT,
-        $_RESULT_FIRST,
-        $_RESULT_NUMBER,
-        $_RESULT_OFFSET,
-        $_RESULT_ORIGINAL,
-        $_RESULT_PREV,
-        $_STATEMENT,
-    );
+    our $_DATABASE;
 
     sub database {
         return $_DATABASE;
     }
 
+    our $_ITERATOR;
+
     sub iterator {
         return $_ITERATOR;
     }
+
+    our $_RESULT;
 
     sub result {
         return $_RESULT;
@@ -229,21 +259,31 @@ sub _private_state_reset {
         *result_current = subname( result_current => \&result );
     }
 
+    our $_RESULT_FIRST;
+
     sub result_first {
         return $_RESULT_FIRST;
     }
+
+    our $_RESULT_NUMBER;
 
     sub result_number {
         return $_RESULT_NUMBER;
     }
 
+    our $_RESULT_OFFSET;
+
     sub result_offset {
         return $_RESULT_OFFSET;
     }
 
+    our $_RESULT_ORIGINAL;
+
     sub result_original {
         return $_RESULT_ORIGINAL;
     }
+
+    our $_RESULT_PREV;
 
     sub result_prev {
         return $_RESULT_PREV;
@@ -253,15 +293,24 @@ sub _private_state_reset {
         *result_previous = subname( result_previous => \&result_prev );
     }
 
+    our $_STATEMENT;
+
     sub statement {
         return $_STATEMENT;
     }
 
     sub result_transform {    ## not a method
-        my @transforms
-            = UNIVERSAL::isa( $_[0], 'ARRAY' ) ? @{ +shift }
-            : UNIVERSAL::isa( $_[0], 'CODE' )  ? shift
-            :                                    ();
+        my @transforms = do {
+            if ( UNIVERSAL::isa( $_[0], 'ARRAY' ) ) {
+                @{ +shift };
+            }
+            elsif ( UNIVERSAL::isa( $_[0], 'CODE' ) ) {
+                shift;
+            }
+            else {
+                ();
+            }
+        };
         my @results = @_;
         if ( @transforms && @_ ) {
             local($_RESULT_ORIGINAL) = @results;
@@ -283,7 +332,7 @@ sub _private_state_reset {
         my( $transformed, $results, $result );
         do {
             return $self->_result_fetch_pending if $self->_results_pending;
-            return unless $sth->{Active};
+            return unless $self->is_active;
             if ( $self->_cache_empty ) {
                 return unless $self->_cache_charge;
             }
@@ -306,7 +355,7 @@ sub _private_state_reset {
         return do { $_ = $result };
     }
 
-    # Seemingly pointless, here, but intended to be overridden in subclasses.
+    # Seemingly pointless here, but intended to be overridden in subclasses.
     sub _result_preprocess {
         return $_[1];
     }
@@ -439,7 +488,13 @@ sub first {
 }
 
 sub is_active {
-    return !!$_[0]->_private_state->{sth}->{Active};
+    my( $attr, $self ) = shift->_private_state;
+    return $attr->{sth}->{Active} || !$self->_cache_empty;
+}
+
+BEGIN {
+    *active   = subname( active   => \&is_active );
+    *not_done = subname( not_done => \&is_active );
 }
 
 sub iterate {
@@ -476,7 +531,13 @@ sub next {
 }
 
 sub not_active {
-    return !$_[0]->_private_state->{sth}->{Active};
+    my( $attr, $self ) = shift->_private_state;
+    return !$attr->{sth}->{Active} && $self->_cache_empty;
+}
+
+BEGIN {
+    *inactive = subname( inactive => \&not_active );
+    *is_done  = subname( is_done  => \&not_active );
 }
 
 sub remaining {
@@ -486,7 +547,9 @@ sub remaining {
         return unless defined $self->start;
     }
     my @rows;
-    push @rows, $self->_result_fetch while $sth->{Active};
+    while ( $self->not_done ) {
+        push @rows, $self->_result_fetch;
+    }
     return wantarray ? @rows : \@rows;
 }
 
@@ -593,5 +656,24 @@ BEGIN {
 sub sth {
     return shift->_private_state->{sth};
 }
+
+=head1 AUTHORS
+
+Iain Campbell E<lt>cpanic@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+The DBIx::Squirrel module is Copyright (c) 2020-2025 Iain Campbell.
+All rights reserved.
+
+You may distribute under the terms of either the GNU General Public
+License or the Artistic License, as specified in the Perl 5.10.0 README file.
+
+=head1 SUPPORT / WARRANTY
+
+DBIx::Squirrel is free Open Source software. IT COMES WITHOUT WARRANTY OF ANY
+KIND.
+
+=cut
 
 1;
