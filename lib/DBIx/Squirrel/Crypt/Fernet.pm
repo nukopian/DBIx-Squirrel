@@ -108,7 +108,6 @@ See L<https://github.com/fernet/spec/blob/master/Spec.md> for more detail.
 
 our @ISA = qw(Exporter);
 our @EXPORT;
-
 our %EXPORT_TAGS = ( all => [
     our @EXPORT_OK = qw(
         fernet_decrypt
@@ -122,7 +121,7 @@ our %EXPORT_TAGS = ( all => [
         Fernet
     )
 ] );
-our $VERSION = '1.0.0';
+our $VERSION = 1.000_000;
 
 require Crypt::CBC;
 require Crypt::Rijndael;
