@@ -19,9 +19,8 @@ use DBIx::Squirrel::util qw/confessf/;
 use namespace::clean;
 
 BEGIN {
-    @DBIx::Squirrel::ISA            = qw/DBI/;
-    $DBIx::Squirrel::VERSION        = "1.006_002";
-    $DBIx::Squirrel::VERSION        = eval($DBIx::Squirrel::VERSION);        ## no critic
+    @DBIx::Squirrel::ISA            = 'DBI';
+    $DBIx::Squirrel::VERSION        = '1.6.4';
     @DBIx::Squirrel::EXPORT_OK      = @DBI::EXPORT_OK;
     %DBIx::Squirrel::EXPORT_TAGS    = %DBI::EXPORT_TAGS;
     *DBIx::Squirrel::err            = *DBI::err;
