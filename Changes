@@ -1,6 +1,14 @@
 Revision history for DBIx-Squirrel
 
-1.6.2
+1.6.4 2025-02-28 15:37
+
+-   Trying to get PAUSE to reindex the package again.
+-   Fix non-idiomatic version number.
+-   Clean-up and refactoring.
+
+1.6.3 NOT RELEASED
+
+1.6.2 2025-02-27 22:00
 
 -   Trying to get PAUSE to reindex the package again.
 -   Clean-up and refactoring.
