@@ -121,7 +121,7 @@ our %EXPORT_TAGS = ( all => [
         Fernet
     )
 ] );
-our $VERSION = 1.000_000;
+our $VERSION = '1.0.0';
 
 require Crypt::CBC;
 require Crypt::Rijndael;

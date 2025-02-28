@@ -6,30 +6,30 @@ use 5.010_001;
 package              # hide from PAUSE
     DBIx::Squirrel::db;
 
-use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
-use constant E_EXP_STATEMENT => 'Expected a statement';
-
-BEGIN {
-    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    *DBIx::Squirrel::db::VERSION = *DBIx::Squirrel::VERSION;
-    @DBIx::Squirrel::db::ISA     = 'DBI::db';
-}
-
-require DBI;
-
-use DBIx::Squirrel::st 'statement_study';
-use DBIx::Squirrel::util qw(
-    carpf
-    confessf
-    get_file_contents
-);
+use DBI;
 use Sub::Name 'subname';
 use Try::Tiny qw(
     try
     catch
     finally
 );
+use DBIx::Squirrel::st 'statement_study';
+use DBIx::Squirrel::util qw(
+    carpf
+    confessf
+    get_file_contents
+);
 use namespace::clean;
+
+use constant E_EXP_REF       => 'Expected a reference to a HASH or ARRAY';
+use constant E_EXP_STATEMENT => 'Expected a statement';
+
+BEGIN {
+    require DBIx::Squirrel
+        unless keys %DBIx::Squirrel::;
+    *DBIx::Squirrel::db::VERSION = *DBIx::Squirrel::VERSION;
+    @DBIx::Squirrel::db::ISA     = 'DBI::db';
+}
 
 sub _root_class {
     my $root_class = ref $_[0] || $_[0];

@@ -5,19 +5,20 @@ use 5.010_001;
 package    # hide from PAUSE
     DBIx::Squirrel::rc;
 
-use DBIx::Squirrel::util 'confessf';
 use Sub::Name 'subname';
+use DBIx::Squirrel::util 'confessf';
 use namespace::clean;
-
-BEGIN {
-    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    *DBIx::Squirrel::rc::VERSION = *DBIx::Squirrel::VERSION;
-}
 
 use constant E_BAD_OBJECT =>
     'A reference to either an array or hash was expected';
 use constant E_STH_EXPIRED => 'Result is no longer associated with a statement';
 use constant E_UNKNOWN_COLUMN => 'Unrecognised column (%s)';
+
+BEGIN {
+    require DBIx::Squirrel
+        unless keys %DBIx::Squirrel::;
+    *DBIx::Squirrel::rc::VERSION = *DBIx::Squirrel::VERSION;
+}
 
 sub new {
     my $class = ref $_[0] ? ref shift : shift;

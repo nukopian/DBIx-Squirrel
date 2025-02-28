@@ -37,14 +37,14 @@ our %EXPORT_TAGS = ( all => [
     )
 ] );
 
-require Carp;
-require Compress::Bzip2;
-require DBIx::Squirrel::Crypt::Fernet;
-require Devel::GlobalDestruction;
-require Dotenv;
-require Encode;
-require Exporter;
-require JSON::Syck;
+use Carp                          ();
+use Compress::Bzip2               ();
+use Devel::GlobalDestruction      ();
+use Dotenv                        ();
+use Encode                        ();
+use Exporter                      ();
+use JSON::Syck                    ();
+use DBIx::Squirrel::Crypt::Fernet ();
 
 if ( -e '.env' ) {
     Dotenv->load();

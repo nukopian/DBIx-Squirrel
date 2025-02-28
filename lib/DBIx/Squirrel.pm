@@ -1,27 +1,30 @@
+use strict;
+use warnings;
+use 5.010_001;
+
 package DBIx::Squirrel;
 
 # ABSTRACT: The little Perl DBI extension that makes working with databases a lot easier.
 
-use 5.010_001;
-use strict;
-use warnings;
-use DBI;
-use Exporter;
-use Scalar::Util qw/reftype/;
-use Sub::Name;
-use DBIx::Squirrel::dr   ();
-use DBIx::Squirrel::db   ();
-use DBIx::Squirrel::st   ();
-use DBIx::Squirrel::it   ();
-use DBIx::Squirrel::rs   ();
-use DBIx::Squirrel::rc   ();
-use DBIx::Squirrel::util qw/confessf/;
+use DBI      ();
+use Exporter ();
+use Scalar::Util 'reftype';
+use Sub::Name 'subname';
+use DBIx::Squirrel::db ();
+use DBIx::Squirrel::dr ();
+use DBIx::Squirrel::it ();
+use DBIx::Squirrel::rc ();
+use DBIx::Squirrel::rs ();
+use DBIx::Squirrel::st ();
+use DBIx::Squirrel::util 'confessf';
 use namespace::clean;
 
+use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
+use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
+
 BEGIN {
-    @DBIx::Squirrel::ISA            = qw/DBI/;
-    $DBIx::Squirrel::VERSION        = "1.006_002";
-    $DBIx::Squirrel::VERSION        = eval($DBIx::Squirrel::VERSION);        ## no critic
+    @DBIx::Squirrel::ISA            = 'DBI';
+    $DBIx::Squirrel::VERSION        = '1.6.4';
     @DBIx::Squirrel::EXPORT_OK      = @DBI::EXPORT_OK;
     %DBIx::Squirrel::EXPORT_TAGS    = %DBI::EXPORT_TAGS;
     *DBIx::Squirrel::err            = *DBI::err;
@@ -37,9 +40,6 @@ BEGIN {
     *DBIx::Squirrel::DEFAULT_CACHE_SIZE = *DBIx::Squirrel::it::DEFAULT_CACHE_SIZE;
     *DBIx::Squirrel::CACHE_SIZE_LIMIT   = *DBIx::Squirrel::it::CACHE_SIZE_LIMIT;
 }
-
-use constant E_BAD_ENT_BIND     => 'Cannot associate with an invalid object';
-use constant E_EXP_HASH_ARR_REF => 'Expected a reference to a HASH or ARRAY';
 
 # Divide the argumments into two lists:
 # 1. a list of helper function names;

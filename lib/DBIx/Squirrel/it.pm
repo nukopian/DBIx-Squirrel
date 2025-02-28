@@ -19,9 +19,29 @@ is, but is also subclassed by the L<DBIx::Squirrel::rs> (Results) class.
 
 =cut
 
+use Exporter     ();
+use Scalar::Util qw(
+    looks_like_number
+    weaken
+);
+use Sub::Name 'subname';
+use DBIx::Squirrel::util qw(
+    cluckf
+    confessf
+    isolate_callbacks
+);
+use namespace::clean;
+
+use constant E_BAD_STH   => 'Expected a statement handle object';
+use constant E_BAD_SLICE => 'Slice must be a reference to an ARRAY or HASH';
+use constant E_BAD_CACHE_SIZE =>
+    'Maximum row count must be an integer greater than zero';
+use constant W_MORE_ROWS     => 'Query would yield more than one result';
+use constant E_EXP_ARRAY_REF => 'Expected an ARRAY-REF';
+
 BEGIN {
-    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    require Exporter;
+    require DBIx::Squirrel
+        unless keys %DBIx::Squirrel::;
     *DBIx::Squirrel::it::VERSION     = *DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::it::ISA         = 'Exporter';
     %DBIx::Squirrel::it::EXPORT_TAGS = ( all => [
@@ -44,25 +64,6 @@ BEGIN {
     $DBIx::Squirrel::it::DEFAULT_CACHE_SIZE = 2;     # Initial buffer size and autoscaling increment
     $DBIx::Squirrel::it::CACHE_SIZE_LIMIT   = 64;    # Absolute maximum buffersize
 }
-
-use constant E_BAD_STH   => 'Expected a statement handle object';
-use constant E_BAD_SLICE => 'Slice must be a reference to an ARRAY or HASH';
-use constant E_BAD_CACHE_SIZE =>
-    'Maximum row count must be an integer greater than zero';
-use constant W_MORE_ROWS     => 'Query would yield more than one result';
-use constant E_EXP_ARRAY_REF => 'Expected an ARRAY-REF';
-
-use DBIx::Squirrel::util qw(
-    cluckf
-    confessf
-    isolate_callbacks
-);
-use Scalar::Util qw(
-    looks_like_number
-    weaken
-);
-use Sub::Name 'subname';
-use namespace::clean;
 
 our $_DATABASE;
 our $_ITERATOR;
