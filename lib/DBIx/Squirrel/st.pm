@@ -5,9 +5,24 @@ use 5.010_001;
 package    # hide from PAUSE
     DBIx::Squirrel::st;
 
+require Digest::SHA;
+
+use Exporter ();
+use Sub::Name 'subname';
+use DBIx::Squirrel::util qw(
+    confessf
+    cluckf
+);
+use namespace::clean;
+
+use constant E_EXP_STH             => 'Expected a statement handle';
+use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';
+use constant W_ODD_NUMBER_OF_ARGS =>
+    'Check bind values match placeholder scheme';
+
 BEGIN {
-    require DBIx::Squirrel unless keys(%DBIx::Squirrel::);
-    require Exporter;
+    require DBIx::Squirrel
+        unless keys %DBIx::Squirrel::;
     *DBIx::Squirrel::st::VERSION = *DBIx::Squirrel::VERSION;
     @DBIx::Squirrel::st::ISA     = qw(
         DBI::st
@@ -22,17 +37,6 @@ BEGIN {
         )
     ] );
 }
-
-require Digest::SHA;
-
-use DBIx::Squirrel::util qw(confessf cluckf);
-use Sub::Name 'subname';
-use namespace::clean;
-
-use constant E_EXP_STH             => 'Expected a statement handle';
-use constant E_INVALID_PLACEHOLDER => 'Cannot bind invalid placeholder (%s)';
-use constant W_ODD_NUMBER_OF_ARGS =>
-    'Check bind values match placeholder scheme';
 
 our $FINISH_ACTIVE_BEFORE_EXECUTE = !!1;
 our $STATEMENT_DIGEST             = sub {

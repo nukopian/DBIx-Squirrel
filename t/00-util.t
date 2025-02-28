@@ -30,7 +30,7 @@ BEGIN {
 
 diag join(
     ', ',
-    "Testing DBIx::Squirrel $DBIx::Squirrel::Crypt::Fernet::VERSION",
+    "Testing DBIx::Squirrel $DBIx::Squirrel::VERSION",
     "Perl $]", "$^X",
 );
 
