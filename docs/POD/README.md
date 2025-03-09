@@ -499,9 +499,13 @@ The method will allow you to clone database connections created by the
 
 ## PREPARING STATEMENTS
 
-Preparing a statement using `DBIx::Squirrel` may be done exactly as
-it would be done using the `DBI`'s `prepare_cached` and `prepare`
-methods.
+Preparing a statement using `DBIx::Squirrel` may be done exactly as it
+would be done using the `DBI`'s `prepare_cached` and `prepare` methods.
+
+Where, `DBI` expects a SQL statement string, `DBIx::Sqirrel` also accepts
+a reference to an array of smaller strings; these will be concatenated
+using a single SPACE separator. Other `DBIx::Squirrel` methods taking a
+SQL statement provide the same accommodation.
 
 ### Placeholders
 
@@ -540,9 +544,15 @@ style (`?`) supported by all drivers.
         $res = $sth->execute('Aerosmith');
         $res = $sth->execute(['Aerosmith']);
 
-- PostgreSQL positional placeholders (`$number`):
+- PostgreSQL positional placeholders (`$number`), demonstrating the use of
+the statement-as-array feature:
 
-        $sth = $dbh->prepare('SELECT * FROM artists WHERE Name=$1 LIMIT 1');
+        $sth = $dbh->prepare([
+            'SELECT *',
+            'FROM artists',
+            'WHERE Name=$1',
+            'LIMIT 1',
+        ]);
 
         # Any of the following value-binding styles will work:
         $res = $sth->execute('Aerosmith');
@@ -587,7 +597,7 @@ method may be used to alter this behaviour.
 #### How to create a basic iterator
 
     $itr = $dbh->iterate(
-        $query,
+        $query|\@query,
         [undef|\%attr,]
         [@bindvalues,]
         [@transforms]
@@ -612,7 +622,7 @@ created the first time they are used.
 #### How to create a fancy iterator
 
     $itr = $dbh->results(
-        $query,
+        $query|\@query,
         [undef|\%attr,]
         [@bindvalues,]
         [@transforms]
@@ -646,7 +656,7 @@ each:
     Basic Iterators              |  Fancy Iterators
     -----------------------------|------------------------------
     $itr = $dbh->iterate(        |  $itr = $dbh->results(
-        $query,                  |      $query,
+        $query|\@query,          |      $query|\@query,
         [undef|\%attr,]          |      [undef|\%attr,]
         [@bindvalues,]           |      [@bindvalues,]
         [@transforms]            |      [@transforms]
@@ -693,14 +703,19 @@ will apply to it.
         };
 
         get_artist_id_by_name do {
-            db->results(
-                "SELECT ArtistId, Name FROM artists WHERE Name=? LIMIT 1" => sub {
-                    my($artist) = @_;
-                    print "----\n";
-                    print "Name: ", $artist->Name, "\n";
-                    return $artist;
-                } => sub {$_->ArtistId}
-            );
+            db->results([
+                'SELECT ArtistId, Name',
+                'FROM artists',
+                'WHERE Name=?',
+                'LIMIT 1',
+            ] => sub {
+                my($artist) = @_;
+                print "----\n";
+                print "Name: ", $artist->Name, "\n";
+                return $artist;
+            } => sub {
+                $_->ArtistId
+            });
         };
 
         foreach my $name ("AC/DC", "Aerosmith", "Darling West", "Rush") {
@@ -798,25 +813,25 @@ accessible via `DBIx::Squirrel`.
 
 #### `do` \*
 
-    $rows = $dbh->do($statement)
+    $rows = $dbh->do($statement|\@statement)
                 or die $dbh->errstr;
-    $rows = $dbh->do($statement, \%attr)
+    $rows = $dbh->do($statement|\@statement, \%attr)
                 or die ...;
-    $rows = $dbh->do($statement, \%attr, @bind_values)
+    $rows = $dbh->do($statement|\@statement, \%attr, @bind_values)
                 or die ...;
-    $rows = $dbh->do($statement, \%attr, %bind_mappings)
+    $rows = $dbh->do($statement|\@statement, \%attr, %bind_mappings)
                 or die ...;
-    $rows = $dbh->do($statement, \%attr, \@bind_values)
+    $rows = $dbh->do($statement|\@statement, \%attr, \@bind_values)
                 or die ...;
-    $rows = $dbh->do($statement, \%attr, \%bind_mappings)
+    $rows = $dbh->do($statement|\@statement, \%attr, \%bind_mappings)
                 or die ...;
-    $rows = $dbh->do($statement, @bind_values)
+    $rows = $dbh->do($statement|\@statement, @bind_values)
                 or die ...;
-    $rows = $dbh->do($statement, %bind_mappings)
+    $rows = $dbh->do($statement|\@statement, %bind_mappings)
                 or die ...;
-    $rows = $dbh->do($statement, \@bind_values)
+    $rows = $dbh->do($statement|\@statement, \@bind_values)
                 or die ...;
-    $rows = $dbh->do($statement, undef, \%bind_mappings)
+    $rows = $dbh->do($statement|\@statement, undef, \%bind_mappings)
                 or die ...;
 
 Calling `do` in scalar-context works just as it does when using the `DBI`,
@@ -826,74 +841,74 @@ Calling `do` in list-context, however, is new behaviour and results in the
 return of a list comprised of two elements: the number of rows affected by
 the statement, as well as the statement handle:
 
-    ($rows, $sth) = $dbh->do($statement)
+    ($rows, $sth) = $dbh->do($statement|\@statement)
                 or die $dbh->errstr;
-    ($rows, $sth) = $dbh->do($statement, \%attr)
+    ($rows, $sth) = $dbh->do($statement|\@statement, \%attr)
                 or die ...;
-    ($rows, $sth) = $dbh->do($statement, \%attr, @bind_values)
+    ($rows, $sth) = $dbh->do($statement|\@statement, \%attr, @bind_values)
                 or die ...;
-    ($rows, $sth) = $dbh->do($statement, \%attr, %bind_mappings)
+    ($rows, $sth) = $dbh->do($statement|\@statement, \%attr, %bind_mappings)
                 or die ...;
-    ($rows, $sth) = $dbh->do($statement, \%attr, \@bind_values)
+    ($rows, $sth) = $dbh->do($statement|\@statement, \%attr, \@bind_values)
                 or die ...;
-    ($rows, $sth) = $dbh->do($statement, \%attr, \%bind_mappings)
+    ($rows, $sth) = $dbh->do($statement|\@statement, \%attr, \%bind_mappings)
                 or die ...;
-    ($rows, $sth) = $dbh->do($statement, @bind_values)
+    ($rows, $sth) = $dbh->do($statement|\@statement, @bind_values)
                 or die ...;
-    ($rows, $sth) = $dbh->do($statement, %bind_mappings)
+    ($rows, $sth) = $dbh->do($statement|\@statement, %bind_mappings)
                 or die ...;
-    ($rows, $sth) = $dbh->do($statement, \@bind_values)
+    ($rows, $sth) = $dbh->do($statement|\@statement, \@bind_values)
                 or die ...;
-    ($rows, $sth) = $dbh->do($statement, undef, \%bind_mappings)
+    ($rows, $sth) = $dbh->do($statement|\@statement, undef, \%bind_mappings)
                 or die ...;
 
 #### `iterate`
 
-    $itor = $dbh->iterate($statement)
+    $itor = $dbh->iterate($statement|\@statement)
                 or die $dbh->errstr;
-    $itor = $dbh->iterate($statement, @transforms)
+    $itor = $dbh->iterate($statement|\@statement, @transforms)
                 or die $dbh->errstr;
-    $itor = $dbh->iterate($statement, \%attr)
+    $itor = $dbh->iterate($statement|\@statement, \%attr)
                 or die ...;
-    $itor = $dbh->iterate($statement, \%attr, @transforms)
+    $itor = $dbh->iterate($statement|\@statement, \%attr, @transforms)
                 or die ...;
-    $itor = $dbh->iterate($statement, \%attr, @bind_values)
+    $itor = $dbh->iterate($statement|\@statement, \%attr, @bind_values)
                 or die ...;
-    $itor = $dbh->iterate($statement, \%attr, @bind_values, @transforms)
+    $itor = $dbh->iterate($statement|\@statement, \%attr, @bind_values, @transforms)
                 or die ...;
-    $itor = $dbh->iterate($statement, \%attr, %bind_mappings)
+    $itor = $dbh->iterate($statement|\@statement, \%attr, %bind_mappings)
                 or die ...;
-    $itor = $dbh->iterate($statement, \%attr, %bind_mappings, @transforms)
+    $itor = $dbh->iterate($statement|\@statement, \%attr, %bind_mappings, @transforms)
                 or die ...;
-    $itor = $dbh->iterate($statement, \%attr, \@bind_values)
+    $itor = $dbh->iterate($statement|\@statement, \%attr, \@bind_values)
                 or die ...;
-    $itor = $dbh->iterate($statement, \%attr, [@bind_values, @transforms])
+    $itor = $dbh->iterate($statement|\@statement, \%attr, [@bind_values, @transforms])
                 or die ...;
-    $itor = $dbh->iterate($statement, \%attr, \%bind_mappings)
+    $itor = $dbh->iterate($statement|\@statement, \%attr, \%bind_mappings)
                 or die ...;
-    $itor = $dbh->iterate($statement, \%attr, \%bind_mappings, @transforms)
+    $itor = $dbh->iterate($statement|\@statement, \%attr, \%bind_mappings, @transforms)
                 or die ...;
-    $itor = $dbh->iterate($statement, @bind_values)
+    $itor = $dbh->iterate($statement|\@statement, @bind_values)
                 or die ...;
-    $itor = $dbh->iterate($statement, @bind_values, @transforms)
+    $itor = $dbh->iterate($statement|\@statement, @bind_values, @transforms)
                 or die ...;
-    $itor = $dbh->iterate($statement, %bind_mappings)
+    $itor = $dbh->iterate($statement|\@statement, %bind_mappings)
                 or die ...;
-    $itor = $dbh->iterate($statement, %bind_mappings, @transforms)
+    $itor = $dbh->iterate($statement|\@statement, %bind_mappings, @transforms)
                 or die ...;
-    $itor = $dbh->iterate($statement, \@bind_values)
+    $itor = $dbh->iterate($statement|\@statement, \@bind_values)
                 or die ...;
-    $itor = $dbh->iterate($statement, [@bind_values, @transforms])
+    $itor = $dbh->iterate($statement|\@statement, [@bind_values, @transforms])
                 or die ...;
-    $itor = $dbh->iterate($statement, undef, \%bind_mappings)
+    $itor = $dbh->iterate($statement|\@statement, undef, \%bind_mappings)
                 or die ...;
-    $itor = $dbh->iterate($statement, undef, \%bind_mappings, @transforms)
+    $itor = $dbh->iterate($statement|\@statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
 #### `prepare` \*
 
-    $sth = $dbh->prepare($statement)          or die $dbh->errstr;
-    $sth = $dbh->prepare($statement, \%attr)  or die $dbh->errstr;
+    $sth = $dbh->prepare($statement|\@statement)          or die $dbh->errstr;
+    $sth = $dbh->prepare($statement|\@statement, \%attr)  or die $dbh->errstr;
 
 The `prepare` method works just the same as it does in the `DBI`.
 
@@ -916,9 +931,9 @@ the legacy `?` style anyway.
 
 #### `prepare_cached` \*
 
-    $sth = $dbh->prepare_cached($statement)
-    $sth = $dbh->prepare_cached($statement, \%attr)
-    $sth = $dbh->prepare_cached($statement, \%attr, $if_active)
+    $sth = $dbh->prepare_cached($statement|\@statement)
+    $sth = $dbh->prepare_cached($statement|\@statement, \%attr)
+    $sth = $dbh->prepare_cached($statement|\@statement, \%attr, $if_active)
 
 The `prepare` method works just the same as it does in the `DBI`.
 
@@ -942,45 +957,45 @@ cached by the `DBI`.
 
 #### `results`
 
-    $itor = $dbh->results($statement)
+    $itor = $dbh->results($statement|\@statement)
                 or die $dbh->errstr;
-    $itor = $dbh->results($statement, @transforms)
+    $itor = $dbh->results($statement|\@statement, @transforms)
                 or die $dbh->errstr;
-    $itor = $dbh->results($statement, \%attr)
+    $itor = $dbh->results($statement|\@statement, \%attr)
                 or die ...;
-    $itor = $dbh->results($statement, \%attr, @transforms)
+    $itor = $dbh->results($statement|\@statement, \%attr, @transforms)
                 or die ...;
-    $itor = $dbh->results($statement, \%attr, @bind_values)
+    $itor = $dbh->results($statement|\@statement, \%attr, @bind_values)
                 or die ...;
-    $itor = $dbh->results($statement, \%attr, @bind_values, @transforms)
+    $itor = $dbh->results($statement|\@statement, \%attr, @bind_values, @transforms)
                 or die ...;
-    $itor = $dbh->results($statement, \%attr, %bind_mappings)
+    $itor = $dbh->results($statement|\@statement, \%attr, %bind_mappings)
                 or die ...;
-    $itor = $dbh->results($statement, \%attr, %bind_mappings, @transforms)
+    $itor = $dbh->results($statement|\@statement, \%attr, %bind_mappings, @transforms)
                 or die ...;
-    $itor = $dbh->results($statement, \%attr, \@bind_values)
+    $itor = $dbh->results($statement|\@statement, \%attr, \@bind_values)
                 or die ...;
-    $itor = $dbh->results($statement, \%attr, [@bind_values, @transforms])
+    $itor = $dbh->results($statement|\@statement, \%attr, [@bind_values, @transforms])
                 or die ...;
-    $itor = $dbh->results($statement, \%attr, \%bind_mappings)
+    $itor = $dbh->results($statement|\@statement, \%attr, \%bind_mappings)
                 or die ...;
-    $itor = $dbh->results($statement, \%attr, \%bind_mappings, @transforms)
+    $itor = $dbh->results($statement|\@statement, \%attr, \%bind_mappings, @transforms)
                 or die ...;
-    $itor = $dbh->results($statement, @bind_values)
+    $itor = $dbh->results($statement|\@statement, @bind_values)
                 or die ...;
-    $itor = $dbh->results($statement, @bind_values, @transforms)
+    $itor = $dbh->results($statement|\@statement, @bind_values, @transforms)
                 or die ...;
-    $itor = $dbh->results($statement, %bind_mappings)
+    $itor = $dbh->results($statement|\@statement, %bind_mappings)
                 or die ...;
-    $itor = $dbh->results($statement, %bind_mappings, @transforms)
+    $itor = $dbh->results($statement|\@statement, %bind_mappings, @transforms)
                 or die ...;
-    $itor = $dbh->results($statement, \@bind_values)
+    $itor = $dbh->results($statement|\@statement, \@bind_values)
                 or die ...;
-    $itor = $dbh->results($statement, [@bind_values, @transforms])
+    $itor = $dbh->results($statement|\@statement, [@bind_values, @transforms])
                 or die ...;
-    $itor = $dbh->results($statement, undef, \%bind_mappings)
+    $itor = $dbh->results($statement|\@statement, undef, \%bind_mappings)
                 or die ...;
-    $itor = $dbh->results($statement, undef, \%bind_mappings, @transforms)
+    $itor = $dbh->results($statement|\@statement, undef, \%bind_mappings, @transforms)
                 or die ...;
 
 ### Statement Handle Methods
