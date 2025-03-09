@@ -457,7 +457,7 @@ to dip a toe in the water ahead of time:
             'FROM artists',
             'WHERE Name=?',
             'LIMIT 1',
-        ));
+        ]));
 
         # Address the helper ("artist"), passing it a bind-value, to get
         # the ArtistId of the artist whose name is "Aerosmith".
