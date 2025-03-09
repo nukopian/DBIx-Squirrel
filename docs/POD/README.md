@@ -82,6 +82,16 @@ Version 1.6.4
     # MySQL, MariaDB and legacy
     $sth = $dbh->prepare('SELECT * FROM product WHERE id=?');
 
+    # Statements can be presented as arrays of smaller strings,
+    # which will be concatenated before use, using a single SPACE
+    # as a separator. This is true of "prepare", "prepare_cached",
+    # "iterate", "do", and "results" methods.
+    $sth = $dbh->prepare([
+        'SELECT *',
+        'FROM product',
+        'WHERE id=?',
+    ]);
+
     # Able to bind values to individual parameters for both positional
     # and named placeholder schemes.
 
@@ -245,7 +255,11 @@ Version 1.6.4
         print "Id: $row->[0]\n"
     }
 
-    $itr = $dbh->iterate('SELECT Id, Name FROM product WHERE Name=?')->reset({});
+    $itr = $dbh->iterate([
+        'SELECT Id, Name',
+        'FROM product',
+        'WHERE Name=?',
+    ])->reset({});
     if ($row = $itr->iterate('Acme Rocket')->single) {
         print "Id: $row->{Id}\n"
     }
@@ -300,9 +314,13 @@ Version 1.6.4
         print "Id: $id\n"
     }
 
-    $itr = $dbh->results(
-        'SELECT Id, Name FROM product WHERE Name=?' => sub {$_->Id},
-    );
+    $itr = $dbh->results([
+        'SELECT Id, Name',
+        'FROM product',
+        'WHERE Name=?',
+    ] => sub {
+        $_->Id;
+    });
     if ($id = $itr->iterate('Acme Rocket')->single) {
         print "Id: $id\n"
     }
