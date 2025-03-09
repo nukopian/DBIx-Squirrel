@@ -452,18 +452,25 @@ to dip a toe in the water ahead of time:
         # associate helpers ("artist" and "artists") with different
         # result sets:
 
-        artist( db->results('SELECT * FROM artists WHERE Name=? LIMIT 1') );
-        artists( db->results('SELECT * FROM artists') );
+        artist(db->results([
+            'SELECT *',
+            'FROM artists',
+            'WHERE Name=?',
+            'LIMIT 1',
+        ));
 
         # Address the helper ("artist"), passing it a bind-value, to get
         # the ArtistId of the artist whose name is "Aerosmith".
         #
-        # We could have called "next" to get the only matching record, but by
-        # calling "single" (or "first") we can ensure that there are no warnings
-        # about dangling active statements emitted when we disconnect from the
-        # database.
+        # We could call "next" to get the next matching record, and that would
+        # be just fine. However, by calling "single" (or "first"), we ensure
+        # that there are no warnings about dangling active statements when we
+        # disconnect from the database. Furthermore, we would be warned if
+        # the result set contained additional rows.
 
         print artist('Aerosmith')->single->ArtistId, "\n";
+
+        artists(db->results('SELECT * FROM artists'));
 
         # Iterate over the "artists" result set, printing the Name-column for
         # each artist. We don't need to trigger execution manually because
