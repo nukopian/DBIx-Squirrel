@@ -1072,6 +1072,10 @@ cached by the `DBI`.
 
 ### Iterator Methods
 
+#### `active`
+
+Alias (see `is_active`).
+
 #### `all`
 
     @results = $itor->all();
@@ -1200,6 +1204,10 @@ is fetched and cached. The cached value is returned.
 
 The result of the statement's execution will be returned.
 
+#### `inactive`
+
+Alias (see `not_active`).
+
 #### `is_active`
 
     $bool = $itor->is_active();
@@ -1233,15 +1241,15 @@ executed, otherwise the method returns `undef`.
 
     $result = $itor->last();
 
-Returns the last result in the result set.
+Returns the last result of the result set, fetching and discarding any
+remaining results before it.
 
-If the iterator's statement has not yet been executed, it will be, and `undef`
-will be returned if the statement was not executed successfully.
+If the iterator's statement has not yet been executed, it will be. If the
+statement cannot be executed successfuly, the method will return `undef`.
 
-Any results remaining to be fetched are then fetched and discarded, and the
-last result fetched is returned.
-
-_**BEWARE** that you should not use `next` after this method has been used!_
+Once `last` has been called, the iterator should be reset before calling
+methods such as `all`, `first`, `next`, `remaining` or `single`, nothing
+is returned.
 
 #### `last_fetched`
 
@@ -1276,8 +1284,12 @@ in the result set.
 
     $bool = $itor->not_active();
 
-Returns true (`!!1`) if there are no more results to fetch, otherwise false
-(`!!0`) is returned.
+Returns true if there are no more results to fetch, otherwise false is
+returned.
+
+#### `not_done`
+
+Alias (see `is_active`).
 
 #### `one`
 
