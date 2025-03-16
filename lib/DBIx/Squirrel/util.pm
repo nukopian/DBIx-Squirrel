@@ -23,12 +23,14 @@ our @ISA = qw(Exporter);
 our @EXPORT;
 our %EXPORT_TAGS = ( all => [
     our @EXPORT_OK = qw(
+        callbacks
         carpf
         cluckf
         confessf
         decrypt
         get_file_contents
         global_destruct_phase
+        has_callbacks
         isolate_callbacks
         slurp
         uncompress
@@ -352,11 +354,63 @@ calling function's C<@_> array.
 =cut
 
 sub isolate_callbacks {
-    my $n = my $s = scalar @_;
-    $n-- while $n && UNIVERSAL::isa( $_[ $n - 1 ], 'CODE' );
-    return [], @_ if $n == $s;
-    return [ @_[ $n .. $#_ ] ], @_[ 0 .. $n - 1 ] if $n;
-    return [@_];
+    return [], @_ unless my @callbacks = callbacks( \@_ );
+    return \@callbacks, @_;
+}
+
+
+=head3 C<has_callbacks>
+
+    ($position, $count) = has_callbacks(\@array);
+
+When called in list-context, this function returns the starting position
+and a count of the trailing CODEREFs found in the array referenced in the
+only argument. If no trailing CODEREFs were found then the function will
+return an empty list.
+
+When called in scalar-context then a truthy value indicating the presence
+of callbacks will be returned.
+
+=cut
+
+sub has_callbacks {
+    return unless 1 == @_ && UNIVERSAL::isa( $_[0], 'ARRAY' );
+    goto &_has_callbacks;
+}
+
+sub _has_callbacks {
+    my $n = my $s = scalar @{ $_[0] };
+    $n-- while $n && UNIVERSAL::isa( $_[0][ $n - 1 ], 'CODE' );
+    return if $n == $s;
+    return $n ? ( $n, $s - $n ) : ( 0, $s );
+}
+
+
+=head3 C<callbacks>
+
+    @callbacks = callbacks(\@array);
+    $count = callbacks(\@array);
+
+When called in list-context, this function removes and returns any trailing
+CODEREFs found in the array referenced by the only argument. Be mindful that
+this operation potentially alters the referenced array.
+
+When called in scalar-context then the function returns a non-zero count of
+the number of trailing CODEREFs found, or C<undef> if there were none. When
+called in scalar-context then the array is not altered, even if there were
+trailing CODEREFs.
+
+=cut
+
+sub callbacks {
+    return unless 1 == @_ && UNIVERSAL::isa( $_[0], 'ARRAY' );
+    goto &_callbacks;
+}
+
+sub _callbacks {
+    return unless my @splice = _has_callbacks( $_[0] );
+    return $splice[1] unless wantarray;
+    return splice @{ $_[0] }, $splice[0], $splice[1];
 }
 
 
