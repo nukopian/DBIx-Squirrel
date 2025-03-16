@@ -24,7 +24,8 @@ BEGIN {
         or print "Bail out!\n";
     use_ok( 'T::Squirrel', qw(:var diagdump) )
         or print "Bail out!\n";
-    use_ok( 'DBIx::Squirrel::util', qw(carpf cluckf confessf isolate_callbacks) )
+    use_ok( 'DBIx::Squirrel::util',
+        qw(callbacks carpf cluckf confessf has_callbacks isolate_callbacks) )
         or print "Bail out!\n";
 }
 
@@ -216,5 +217,42 @@ diag join(
     }
 }
 
+
+{
+    for (
+        {
+            loc => __LINE__,
+            got => [ has_callbacks( [] ) ],
+            exp => [],
+        },
+        {
+            loc => __LINE__,
+            got => [ has_callbacks( [1] ) ],
+            exp => [],
+        },
+        {
+            loc => __LINE__,
+            got => [ has_callbacks( [ 1, 2, 3 ] ) ],
+            exp => [],
+        },
+        {
+            loc => __LINE__,
+            got => [ has_callbacks( [ sub { }, 1, 2, 3 ] ) ],
+            exp => [],
+        },
+        {
+            loc => __LINE__,
+            got => [ has_callbacks( [ sub { } ] ) ],
+            exp => [ 0, 1 ],
+        },
+        {
+            loc => __LINE__,
+            got => [ has_callbacks( [ 1, 2, 3, sub { } ] ) ],
+            exp => [ 3, 1 ],
+        },
+    ) {
+        is_deeply $_->{got}, $_->{exp}, "has_callbacks, line $_->{loc}";
+    }
+}
 
 done_testing();
