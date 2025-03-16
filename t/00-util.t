@@ -24,7 +24,8 @@ BEGIN {
         or print "Bail out!\n";
     use_ok( 'T::Squirrel', qw(:var diagdump) )
         or print "Bail out!\n";
-    use_ok( 'DBIx::Squirrel::util', qw(carpf cluckf confessf isolate_callbacks) )
+    use_ok( 'DBIx::Squirrel::util',
+        qw(callbacks carpf cluckf confessf has_callbacks isolate_callbacks) )
         or print "Bail out!\n";
 }
 
