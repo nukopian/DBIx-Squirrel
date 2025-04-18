@@ -12,6 +12,10 @@
     <p>• <a href="http://fast-matrix.cpantesters.org/?dist=DBIx-Squirrel%201.6.4">Current release status on the CPAN Testers Matrix</a> •</p>
 </div>
 
+## Development Halted
+
+I'm at a fork in the road. I want future versions of this project to move in a different direction, while using a more modern approach. To that end, <a href="https://github.com/nukopian/dbix-squirrel-v2"><tt>DBIx::Squirrel::v2</tt></a> is being forged in its own separate repository in order to preserve this one.
+
 ## Table of Contents
 
 - [Introduction](#introduction)
