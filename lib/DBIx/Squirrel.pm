@@ -172,7 +172,11 @@ To end the pipeline early, call L</Stop>. With no stages, C<pipe>
 returns the database handle.
 
 Called in list context, C<pipe> returns all the values. In scalar
-context, it returns the first, or C<undef> if there are none.
+context, it returns the first, or C<undef> if there are none. To count
+the values instead, assign them to an empty list, and take that in
+scalar context:
+
+    my $count = () = $dbh->pipe(@stages);
 
 If a stage dies, C<pipe> croaks at the line that called it, naming the
 stage by its position, from C<#1>:
