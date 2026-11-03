@@ -6,14 +6,16 @@ use DBIx::Squirrel::Pipeline qw();
 
 # Run the invocant through a pipeline of stages.
 sub pipe ($self, @stages) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my @res = DBIx::Squirrel::Pipeline->new(@stages)->($self);
-    return wantarray ? @res : $res[0];
+    my $pipeline = DBIx::Squirrel::Pipeline->new(@stages);
+    my @results  = $pipeline->($self);
+    return wantarray ? @results : $results[0];
 }
 
 # Run the invocant through a pipeline of stages for their side-effects, and
 # return the invocant.
 sub tap ($self, @stages) {
-    DBIx::Squirrel::Pipeline->new(@stages)->($self);
+    my $pipeline = DBIx::Squirrel::Pipeline->new(@stages);
+    $pipeline->($self);
     return $self;
 }
 
