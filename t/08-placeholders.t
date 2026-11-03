@@ -27,15 +27,36 @@ subtest 'study_sql, in each placeholder style' => sub {
 };
 
 subtest 'study_sql numbers placeholders by position' => sub {
-    my($placeholders, $normalised) = study_sql('SELECT :a, $2, :a, ?1');
-    is $normalised, 'SELECT ?, ?, ?, ?', 'normalised';
-    is $placeholders, {1 => ':a', 2 => '$2', 3 => ':a', 4 => '?1'},
+    my($placeholders, $normalised) = study_sql('SELECT :a, :b, :a');
+    is $normalised, 'SELECT ?, ?, ?', 'normalised';
+    is $placeholders, {1 => ':a', 2 => ':b', 3 => ':a'},
         'every one, repeats included';
 
-    ($placeholders, $normalised) = study_sql('SELECT ?, :a, ?');
-    is $normalised, 'SELECT ?, ?, ?', 'mixed with bare ?, normalised';
-    is $placeholders, {1 => '?', 2 => ':a', 3 => '?'},
-        'mixed with bare ?, counting each';
+    ($placeholders, $normalised) = study_sql('SELECT $2, $1, $2');
+    is $placeholders, {1 => '$2', 2 => '$1', 3 => '$2'},
+        'numbered, in any order';
+
+    ($placeholders, $normalised) = study_sql('SELECT ?, ?');
+    is $placeholders, {1 => '?', 2 => '?'}, 'bare';
+};
+
+subtest 'study_sql croaks on mixed styles' => sub {
+    my %mixed = (
+        'SELECT ?, $1'        => '?, $1',
+        'SELECT ?1, :1'       => '?1, :1',
+        'SELECT :1, :name'    => ':1, :name',
+        'SELECT $1, $name'    => '$1, $name',
+        'SELECT :a, $2, ?1'   => ':name, $1, ?1',
+        'SELECT ?, :a, ?, :b' => '?, :name',
+    );
+    for my $sql (sort keys %mixed) {
+        my $line = __LINE__ + 1;
+        my $err  = dies { study_sql($sql) };
+        is $err,
+            "Expected one placeholder style, not several ($mixed{$sql})"
+            . " at ${\__FILE__} line $line.\n",
+            $sql;
+    }
 };
 
 subtest 'study_sql leaves alone what only looks like one' => sub {
@@ -58,11 +79,11 @@ subtest 'study_sql leaves alone what only looks like one' => sub {
 subtest 'study_sql finds placeholders beside them' => sub {
     my($placeholders, $normalised)
         = study_sql(
-            q{SELECT x::int, '10:30' /* :y */ FROM t WHERE a = :a AND b = ?AND});
+            q{SELECT x::int, '10:30' /* :y */ FROM t WHERE a = ? AND b = ?AND});
     is $normalised,
         q{SELECT x::int, '10:30' /* :y */ FROM t WHERE a = ? AND b = ?AND},
         'normalised';
-    is $placeholders, {1 => ':a', 2 => '?'},
+    is $placeholders, {1 => '?', 2 => '?'},
         'a ? touching a keyword is a bare ?';
     ($placeholders, $normalised) = study_sql('SELECT :naïve');
     is $placeholders, {1 => ':naïve'}, 'a name is taken whole';
@@ -119,10 +140,39 @@ my @dialects = (
 subtest 'study_sql in each dialect' => sub {
     for my $case (@dialects) {
         my($name, $driver, $statement, $want, $want_placeholders) = @$case;
-        my($placeholders, $normalised) = study_sql($statement, $driver);
+        my($placeholders, $normalised)
+            = study_sql($statement, {ekorn_dialect => $driver});
         is $normalised,   $want,              "$name: normalised";
         is $placeholders, $want_placeholders, "$name: placeholders";
     }
+};
+
+subtest "study_sql with DBD::Pg's placeholder options" => sub {
+    my $sql = q{SELECT a ?# b, d[:2], :x, ?, $1, $1};
+
+    my($placeholders, $normalised) = study_sql(
+        $sql,
+        {ekorn_dialect => 'Pg', pg_placeholder_dollaronly => 1},
+    );
+    is $normalised, $sql, 'dollar-only: the statement is left as it is';
+    is $placeholders, {1 => '$1', 2 => '$1'}, 'dollar-only: only $1';
+
+    ($placeholders, $normalised) = study_sql(
+        q{SELECT a \?# b, d[:2], :x, $1, $1},
+        {ekorn_dialect => 'Pg', pg_placeholder_nocolons => 1},
+    );
+    is $normalised, q{SELECT a \?# b, d[:2], :x, ?, ?},
+        'no colons: $1 rewritten, :x and :2 left';
+    is $placeholders, {1 => '$1', 2 => '$1'}, 'no colons: only $1';
+
+    ($placeholders, $normalised) = study_sql(
+        q{SELECT :x, :y},
+        {ekorn_dialect => 'SQLite', pg_placeholder_dollaronly => 1},
+    );
+    is $normalised, 'SELECT ?, ?', "ignored for another driver";
+
+    ($placeholders, $normalised) = study_sql(q{SELECT :x, :y});
+    is $normalised, 'SELECT ?, ?', 'no options at all';
 };
 
 subtest 'study_sql of a blank statement' => sub {

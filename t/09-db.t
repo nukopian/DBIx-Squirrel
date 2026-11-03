@@ -37,12 +37,13 @@ subtest 'prepare rewrites each placeholder style as ?' => sub {
 
 subtest 'the statement handle keeps what was studied' => sub {
     my $dbh = connect_both()->{squirrel};
-    my $sth = $dbh->prepare(" SELECT :a, \$2 -- two\n ");
-    is $sth->{private_ekorn}, {
-        Placeholders      => {1 => ':a', 2 => '$2'},
-        OriginalStatement => 'SELECT :a, $2 -- two',
+    my $sth = $dbh->prepare(" SELECT :a, :b -- two\n ");
+    like $sth->{private_ekorn}, {
+        Placeholders      => {1 => ':a', 2 => ':b'},
+        OriginalStatement => 'SELECT :a, :b -- two',
+        Options           => {ekorn_dialect => 'SQLite'},
         },
-        'placeholders and the original statement';
+        'placeholders, the original statement, and the options';
 };
 
 subtest 'the forms a statement can take' => sub {
@@ -81,6 +82,16 @@ subtest 'a statement of only a comment goes to the database' => sub {
         ok $sth->execute, "$kind: executes";
         is $sth->{NUM_OF_FIELDS}, 0, "$kind: with no columns";
     }
+};
+
+subtest 'prepare croaks at the caller on mixed placeholder styles' => sub {
+    my $dbh  = connect_both()->{squirrel};
+    my $line = __LINE__ + 1;
+    my $err  = dies { $dbh->prepare('SELECT ?, :x') };
+    is $err,
+        "Expected one placeholder style, not several (?, :name)"
+        . " at ${\__FILE__} line $line.\n",
+        'Expected one placeholder style';
 };
 
 subtest 'prepare croaks without RaiseError' => sub {
@@ -147,9 +158,47 @@ subtest "prepare reads a statement by its driver's rules" => sub {
     # No MySQL server here, so give _study a handle naming its driver.
     my $mysql = {Driver => {Name => 'mysql'}};
     my($normalised, $state)
-        = DBIx::Squirrel::db::_study($mysql, q{SELECT 'it\'s :no', :x});    ## no critic (Subroutines::ProtectPrivateSubs)
+        = DBIx::Squirrel::db::_study($mysql, q{SELECT 'it\'s :no', :x}, undef);    ## no critic (Subroutines::ProtectPrivateSubs)
     is $normalised, q{SELECT 'it\'s :no', ?}, 'MySQL: it does';
     is $state->{Placeholders}, {1 => ':x'}, 'MySQL: one placeholder';
+};
+
+## no critic (Subroutines::ProtectPrivateSubs)
+# No PostgreSQL or MySQL server here, so give _study handles naming their
+# drivers.
+subtest 'the options a statement is studied with' => sub {
+    my $sql         = q{SELECT :x, :y};
+    my $pg          = {Driver => {Name => 'Pg'}, pg_placeholder_dollaronly => 1};
+    my($normalised) = DBIx::Squirrel::db::_study($pg, $sql, undef);
+    is $normalised, $sql, "DBD::Pg's options are read from the handle";
+    ($normalised) = DBIx::Squirrel::db::_study(
+        $pg, $sql,
+        {pg_placeholder_dollaronly => 0},
+    );
+    is $normalised, 'SELECT ?, ?', "and prepare's attributes override them";
+
+    my $sqlite = {Driver => {Name => 'SQLite'}, pg_placeholder_dollaronly => 1};
+    ($normalised) = DBIx::Squirrel::db::_study($sqlite, $sql, undef);
+    is $normalised, 'SELECT ?, ?', "they're not read from another driver";
+
+    my($state, $dbi_attrs);
+    ($normalised, $state, $dbi_attrs) = DBIx::Squirrel::db::_study(
+        $sqlite, q{SELECT 'it\'s :no', :x},
+        {ekorn_dialect => 'mysql', RaiseError => 1},
+    );
+    is $normalised, q{SELECT 'it\'s :no', ?},
+        'ekorn_dialect overrides the driver, as for MySQL through ODBC';
+    is $dbi_attrs, {RaiseError => 1}, "and doesn't reach the DBI";
+    is +(DBIx::Squirrel::db::_study($sqlite, $sql, undef))[2], undef,
+        'no attributes in, none out';
+};
+## use critic
+
+subtest 'prepare takes ekorn_ attributes' => sub {
+    my $dbh = connect_both()->{squirrel};
+    my $sth = $dbh->prepare('SELECT :x', {ekorn_dialect => 'SQLite'});
+    $sth->execute(1);
+    is $sth->fetchrow_arrayref, [1], 'and prepares the statement';
 };
 
 todo 'binding an array reference waits on DBIx::Squirrel::st' => sub {

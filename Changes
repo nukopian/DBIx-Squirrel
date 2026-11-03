@@ -3,12 +3,18 @@ Revision history for DBIx-Squirrel
 Unreleased
 
     - prepare and prepare_cached take placeholders in the styles ?,
-      ?1, :1, $1 and :name, rewriting each as ? for the DBI, but
-      leaving alone quoted strings and identifiers, comments,
+      ?1, :1, $1 and :name, one style to a statement, croaking if
+      they're mixed, and rewrite each as ? for the DBI, leaving
+      alone quoted strings and identifiers, comments,
       PostgreSQL's dollar-quoted bodies and casts, and a ?, : or $
       with a backslash before it, as DBD::Pg allows for its ?
       operators. Strings are read by the driver's rules, so MySQL's
-      and MariaDB's backslash escapes are understood. They take a
+      and MariaDB's backslash escapes are understood; the
+      ekorn_dialect attribute names another, for a database reached
+      through DBD::ODBC or DBD::Proxy. DBD::Pg's
+      pg_placeholder_dollaronly and pg_placeholder_nocolons options
+      are followed, from the handle or prepare. Attributes starting
+      ekorn_ aren't passed on to the DBI. They take a
       statement as a string, lines in an array reference, a code
       reference returning either, or a statement handle. Both croak
       if the statement can't be prepared, whatever RaiseError says.

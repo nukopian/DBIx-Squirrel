@@ -15,9 +15,9 @@ our @ISA = ('DBI::db', 'DBIx::Squirrel::Pipes');
 
 # Prepare a statement, with placeholders in any style, and return its
 # handle.
-sub prepare ($self, $statement, @args) {
-    my($normalised, $state) = _study($self, $statement);
-    my $sth = $self->SUPER::prepare($normalised, @args)
+sub prepare ($self, $statement, $attrs = undef, @args) {
+    my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
+    my $sth = $self->SUPER::prepare($normalised, $dbi_attrs, @args)
         or croak $self->errstr;
     $sth->{private_ekorn} = $state;
     return $sth;
@@ -26,9 +26,9 @@ sub prepare ($self, $statement, @args) {
 
 # Prepare a statement, with placeholders in any style, using the DBI's
 # cache of statement handles, and return its handle.
-sub prepare_cached ($self, $statement, @args) {
-    my($normalised, $state) = _study($self, $statement);
-    my $sth = $self->SUPER::prepare_cached($normalised, @args)
+sub prepare_cached ($self, $statement, $attrs = undef, @args) {
+    my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
+    my $sth = $self->SUPER::prepare_cached($normalised, $dbi_attrs, @args)
         or croak $self->errstr;
     $sth->{private_ekorn} = $state;
     return $sth;
@@ -45,15 +45,28 @@ sub do ($self, $statement, @args) {
 
 
 # Return a statement with its placeholders rewritten as "?", for the DBI
-# to prepare, and what its statement handle keeps about it.
-sub _study ($self, $statement) {
+# to prepare, what its statement handle keeps about it, and the attributes
+# to prepare it with, without DBIx::Squirrel's own. Study it with the
+# driver's name, DBD::Pg's placeholder options from the handle, and the
+# attributes given, each overriding the last.
+sub _study ($self, $statement, $attrs) {
+    my $driver  = $self->{Driver}{Name};
+    my @pg      = qw(pg_placeholder_dollaronly pg_placeholder_nocolons);
+    my %options = (
+        ekorn_dialect => $driver,
+        ($driver eq 'Pg' ? map { ($_ => $self->{$_}) } @pg : ()),
+        %{ $attrs // {} },
+    );
     my($placeholders, $normalised, $original)
-        = study_sql(_statement_text($statement), $self->{Driver}{Name})
+        = study_sql(_statement_text($statement), \%options)
         or croak 'Expected a statement';
+    my $dbi_attrs = $attrs
+        && {map { ($_ => $attrs->{$_}) } grep { !/^ekorn_/x } keys %$attrs};
     return $normalised, {
         Placeholders      => $placeholders,
         OriginalStatement => $original,
-    };
+        Options           => \%options,
+    }, $dbi_attrs;
 }
 
 
@@ -120,10 +133,14 @@ rewritten as C<?> before the DBI sees them:
     SELECT * FROM artist WHERE id = $1
     SELECT * FROM artist WHERE id = :id
 
-Placeholders are bound by position, as with C<?>, counting every
-placeholder in the statement, whatever its style. One that appears
-twice, such as C<$1>, is two placeholders, each needing its own value.
-Binding named placeholders by name is still to come.
+A statement uses one style of placeholder throughout; C<prepare> croaks
+if it finds more than one. The same placeholder can appear more than
+once.
+
+Placeholders are bound by position, as with C<?>. For now, one that
+appears twice, such as C<$1>, is two placeholders, each needing its own
+value. Binding a numbered placeholder once, wherever it appears, and
+named placeholders by name, is still to come.
 
 Placeholders are looked for only in the SQL itself. Anything that looks
 like one inside a quoted string or identifier (C<'10:30'>, C<"a:b">,
@@ -136,10 +153,18 @@ Strings are read by the rules of the database handle's driver. With
 DBD::mysql and DBD::MariaDB, a backslash escapes a character in a string
 (C<'it\'s'>), C<"..."> is a string, and C<#> starts a comment. With other
 drivers, a backslash is an ordinary character in a string (C<'C:\'>),
-except in PostgreSQL's C<E'...'> strings. A driver used through another,
-such as DBD::ODBC or DBD::Proxy, is read by the standard rules, whatever
-the database behind it. MySQL's C<NO_BACKSLASH_ESCAPES> mode isn't
-noticed.
+except in PostgreSQL's C<E'...'> strings. MySQL's
+C<NO_BACKSLASH_ESCAPES> mode isn't noticed.
+
+A driver used through another, such as DBD::ODBC or DBD::Proxy, is read
+by the standard rules, whatever the database behind it. To read it as
+another dialect, name that dialect's driver in the C<ekorn_dialect>
+attribute:
+
+    $dbh->prepare($statement, {ekorn_dialect => 'mysql'});
+
+Attributes starting C<ekorn_> are DBIx::Squirrel's own, and aren't
+passed on to the DBI.
 
 To use a C<?>, C<:> or C<$> that isn't a placeholder, such as one of
 PostgreSQL's C<?>, C<?|> and C<?&> operators, put a backslash before it,
@@ -147,6 +172,13 @@ as L<DBD::Pg> allows. The backslash and the character after it are
 passed on as they are, and DBD::Pg removes the backslash:
 
     $dbh->prepare(q{SELECT * FROM doc WHERE data \? 'key' AND id = :id});
+
+DBD::Pg's own placeholder options are followed too, whether set on the
+database handle or passed to C<prepare>. With C<pg_placeholder_dollaronly>,
+only C<$1>-style placeholders are recognised, and the statement is passed
+on as written, for DBD::Pg to read. With C<pg_placeholder_nocolons>, the
+C<:1> and C<:name> styles aren't placeholders, so array slices such as
+C<data[:2]> are left alone.
 
 The statement can be a string, an array reference of lines, which are
 joined with spaces, a code reference returning either, or a statement
@@ -179,6 +211,12 @@ taken as the attributes only if it's a hash reference or C<undef>.
 =head1 DIAGNOSTICS
 
 =over
+
+=item Expected one placeholder style, not several (%s)
+
+The statement used more than one style of placeholder, such as C<?> and
+C<:name>. The styles found are listed, each as an example: C<?>, C<?1>,
+C<:1>, C<$1>, C<:name> or C<$name>.
 
 =item Expected a statement
 

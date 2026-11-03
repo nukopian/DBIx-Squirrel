@@ -13,8 +13,9 @@ my %imported = (
     'DBIx::Squirrel'     => [qw(croak is_hashref)],
     'DBIx::Squirrel::db' =>
         [qw(croak is_arrayref is_coderef is_hashref is_ref study_sql)],
-    'DBIx::Squirrel::Pipeline' => [qw(croak is_coderef)],
-    'DBIx::Squirrel::Stop'     => [qw(croak)],
+    'DBIx::Squirrel::Pipeline'     => [qw(croak is_coderef)],
+    'DBIx::Squirrel::Placeholders' => [qw(croak uniq)],
+    'DBIx::Squirrel::Stop'         => [qw(croak)],
 );
 
 for my $pkg (sort keys %imported) {

@@ -2,7 +2,9 @@ use v5.36;
 
 package DBIx::Squirrel::Placeholders;
 
-use Exporter qw(import);
+use Carp       qw(croak);
+use Exporter   qw(import);
+use List::Util qw(uniq);
 
 use namespace::clean -except => 'import';
 
@@ -11,19 +13,22 @@ our @EXPORT_OK = qw(
     trim_sql
 );
 
+our @CARP_NOT = qw(DBIx::Squirrel::db);
+
 # Remove the blank space from around a statement; return what's left, or
 # an empty string if it was all blank.
 sub trim_sql ($statement) {
     return ($statement // '') =~ s/ \A \s+ | \s+ \z //gxr;
 }
 
-# Study a statement, written for the DBI driver named; return a map of its
+# Study a statement, with the options given; return a map of its
 # placeholders' positions, from 1, to their names, the statement with each
 # placeholder rewritten as "?", and the statement as trimmed. Return
 # nothing if the statement is blank.
-sub study_sql ($statement, $driver = undef) {
+sub study_sql ($statement, $options = {}) {
     my $trimmed = trim_sql($statement);
     return unless length $trimmed;
+    my $dialect = $options->{ekorn_dialect} // '';
 
     # What isn't SQL code, and is stepped over unchanged: quoted strings and
     # identifiers, comments, PostgreSQL's dollar-quoted bodies, and a
@@ -50,10 +55,24 @@ sub study_sql ($statement, $driver = undef) {
     # a name; not after a colon, as in a cast, or inside an identifier.
     state $PLACEHOLDER = qr( (?<! [:\w\$] ) (?: \? \d* | [:\$] \w+ ) )x;
 
-    my $not_sql = $NOT_SQL_FOR{$driver // ''} // $NOT_SQL;
+    # The same, for DBD::Pg's options: only "$" and a position, or anything
+    # but ":" and a position or a name.
+    state $DOLLAR_ONLY = qr( (?<! [:\w\$] ) \$ \d+ )x;
+    state $NO_COLONS   = qr( (?<! [:\w\$] ) (?: \? \d* | \$ \w+ ) )x;
+
+    # With pg_placeholder_dollaronly, DBD::Pg reads the placeholders itself,
+    # so the statement is left as it is.
+    my $pg          = $dialect eq 'Pg';
+    my $dollar_only = $pg && $options->{pg_placeholder_dollaronly};
+    my $placeholder
+        = $dollar_only                               ? $DOLLAR_ONLY
+        : $pg && $options->{pg_placeholder_nocolons} ? $NO_COLONS
+        :                                              $PLACEHOLDER;
+
+    my $not_sql = $NOT_SQL_FOR{$dialect} // $NOT_SQL;
     my @placeholders;
     my $normalised = $trimmed =~ s(
-        (?<not_sql> $not_sql ) | (?<placeholder> $PLACEHOLDER )
+        (?<not_sql> $not_sql ) | (?<placeholder> $placeholder )
     )(
         if (exists $+{not_sql}) {
             $+{not_sql};
@@ -63,9 +82,24 @@ sub study_sql ($statement, $driver = undef) {
             '?';
         }
     )gerx;
+    $normalised = $trimmed if $dollar_only;
+
+    # One style of placeholder to a statement.
+    my @styles = uniq map { _style($_) } @placeholders;
+    croak "Expected one placeholder style, not several (@{[ join ', ', @styles ]})"
+        if @styles > 1;
 
     my %positions = map { ($_ + 1 => $placeholders[$_]) } keys @placeholders;
     return \%positions, $normalised, $trimmed;
+}
+
+# Return a placeholder's style, as an example of it: "?", "?1", ":1", "$1",
+# ":name" or "$name".
+sub _style ($placeholder) {
+    my($sigil, $rest) = $placeholder =~ m/ \A (.) (.*) \z /xs;
+    return $sigil      if $rest eq '';
+    return "${sigil}1" if $rest =~ m/ \A \d+ \z /x;
+    return "${sigil}name";
 }
 
 1;
@@ -96,12 +130,15 @@ Neither is exported by default.
 =head2 study_sql
 
     ($positions, $normalised, $trimmed) = study_sql($statement);
-    ($positions, $normalised, $trimmed) = study_sql($statement, $driver);
+    ($positions, $normalised, $trimmed) = study_sql($statement, \%options);
 
 Returns a hash reference mapping each placeholder's position, from 1, to
 the placeholder as written (C<?>, C<?1>, C<:1>, C<$1> or C<:name>); the
 statement with each placeholder rewritten as C<?>; and the statement as
 L</trim_sql> returns it. Returns nothing if the statement is blank.
+
+Croaks if the statement uses more than one style of placeholder: one of
+C<?>, C<?1>, C<:1>, C<$1>, C<:name> or C<$name>, used throughout.
 
 Placeholders are looked for only in the SQL itself, not in quoted
 strings or identifiers, comments or PostgreSQL's dollar-quoted bodies,
@@ -110,11 +147,32 @@ such as C<v$session>. A C<?>, C<:> or C<$> with a backslash before it
 isn't a placeholder either, and both are left as they are, for
 L<DBD::Pg>, which removes the backslash.
 
-C<$driver> is the name of the DBI driver the statement is for, as in
-C<< $dbh->{Driver}{Name} >>. For C<mysql> and C<MariaDB>, a backslash
+C<%options> can hold:
+
+=over
+
+=item ekorn_dialect
+
+The SQL dialect the statement is written in, named as its DBI driver
+is, as in C<< $dbh->{Driver}{Name} >>. For C<mysql> and C<MariaDB>, a backslash
 escapes a character in a string, C<"..."> is a string, and C<#> starts a
-comment. For any other driver, or none, a backslash is an ordinary
+comment. For any other dialect, or none, a backslash is an ordinary
 character in a string, except in PostgreSQL's C<E'...'> strings.
+
+=item pg_placeholder_dollaronly
+
+With C<ekorn_dialect> C<Pg>, only C<$1>-style placeholders are found,
+and the statement is returned as it is, for L<DBD::Pg> to read.
+
+=item pg_placeholder_nocolons
+
+With C<ekorn_dialect> C<Pg>, the C<:1> and C<:name> styles aren't
+placeholders.
+
+=back
+
+Anything else in C<%options> is ignored, so the attributes passed to
+C<prepare> can be given as they are.
 
 =head2 trim_sql
 
