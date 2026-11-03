@@ -159,8 +159,8 @@ out.
 The closure returns an empty list when the values run out, or once a
 stage has stopped the pipeline and the values its stop carried are
 handed out, and on every call after that. After a stop, the source
-isn't called again. Read it in list context, so an C<undef> value isn't taken
-for the end:
+isn't called again. Read it in list context, so an C<undef> value
+isn't mistaken as the end:
 
     while (my($x) = $next->()) { ... }
 
