@@ -2,6 +2,13 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    - prepare and prepare_cached take placeholders in the styles ?,
+      ?1, :1, $1 and :name, rewriting each as ? for the DBI, and a
+      statement as a string, lines in an array reference, a code
+      reference returning either, or a statement handle. Both croak
+      if the statement can't be prepared, whatever RaiseError says.
+    - do takes bind values with the attributes left out, and returns
+      what the DBI's do returns.
     - connect croaks on failure, and clones an existing database
       handle passed in place of a data source.
     - connect returns DBIx::Squirrel's own handles: database handles

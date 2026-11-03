@@ -10,7 +10,9 @@ use DBIx::Squirrel::Stop ();
 # Imported functions are cleaned out of each package, so they can't be
 # called as methods.
 my %imported = (
-    'DBIx::Squirrel'           => [qw(croak is_hashref split_stages)],
+    'DBIx::Squirrel'     => [qw(croak is_hashref split_stages)],
+    'DBIx::Squirrel::db' =>
+        [qw(croak is_arrayref is_coderef is_hashref is_ref statement_study)],
     'DBIx::Squirrel::Helpers'  => [qw(is_coderef)],
     'DBIx::Squirrel::Pipeline' => [qw(croak is_coderef)],
     'DBIx::Squirrel::Stop'     => [qw(croak)],
