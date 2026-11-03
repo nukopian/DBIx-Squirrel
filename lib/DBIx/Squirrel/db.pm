@@ -6,7 +6,7 @@ use Carp      qw(croak);
 use DBI       qw();
 use Ref::Util qw(is_arrayref is_coderef is_hashref is_ref);
 
-use DBIx::Squirrel::Helpers qw(statement_study);
+use DBIx::Squirrel::Helpers qw(study_statement);
 use DBIx::Squirrel::Pipes   qw();
 
 use namespace::clean;
@@ -48,7 +48,7 @@ sub do ($self, $statement, @args) {
 # to prepare, and what its statement handle keeps about it.
 sub _study ($statement) {
     my($placeholders, $normalised, $original)
-        = statement_study(_statement_text($statement))
+        = study_statement(_statement_text($statement))
         or croak 'Expected a statement';
     return $normalised, {
         Placeholders      => $placeholders,
@@ -120,13 +120,22 @@ rewritten as C<?> before the DBI sees them:
     SELECT * FROM artist WHERE id = $1
     SELECT * FROM artist WHERE id = :id
 
-Positional placeholders are bound by position, as with C<?>. Binding
-named placeholders by name is still to come.
+Placeholders are bound by position, as with C<?>, counting every
+placeholder in the statement, whatever its style. One that appears
+twice, such as C<$1>, is two placeholders, each needing its own value.
+Binding named placeholders by name is still to come.
+
+Placeholders are looked for only in the SQL itself. Anything that looks
+like one inside a quoted string or identifier (C<'10:30'>, C<"a:b">,
+C<`c?`>), a comment (C<-- :x>, C</* $1 */>) or a PostgreSQL
+dollar-quoted body (C<$$ ... $$>, C<$tag$ ... $tag$>) is left as it is,
+and so is a cast, such as C<x::int>, or an identifier containing C<$>,
+such as C<v$session>.
 
 The statement can be a string, an array reference of lines, which are
 joined with spaces, a code reference returning either, or a statement
-handle, whose statement is prepared again. Lines are trimmed, and
-anything after C< -- > on a line is removed as a comment.
+handle, whose statement is prepared again. Blank space around the
+statement is removed; comments are passed on to the database.
 
 Unlike the DBI's C<prepare>, it B<always croaks> if the statement can't
 be prepared, whatever C<RaiseError> is set to.

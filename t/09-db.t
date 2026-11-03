@@ -40,7 +40,7 @@ subtest 'the statement handle keeps what was studied' => sub {
     my $sth = $dbh->prepare(" SELECT :a, \$2 -- two\n ");
     is $sth->{private_ekorn}, {
         Placeholders      => {1 => ':a', 2 => '$2'},
-        OriginalStatement => 'SELECT :a, $2',
+        OriginalStatement => 'SELECT :a, $2 -- two',
         },
         'placeholders and the original statement';
 };
@@ -67,10 +67,19 @@ subtest 'the forms a statement can take' => sub {
 subtest 'prepare croaks at the caller' => sub {
     my $dbh  = connect_both()->{squirrel};
     my $line = __LINE__ + 2;
-    for my $bad ('', " -- nothing\n", undef, {}, \'SELECT 1') {
+    for my $bad ('', " \n\t", undef, {}, \'SELECT 1') {
         is dies { $dbh->prepare($bad) },
             "Expected a statement at ${\__FILE__} line $line.\n",
             'Expected a statement';
+    }
+};
+
+subtest 'a statement of only a comment goes to the database' => sub {
+    my $dbh = connect_both();
+    for my $kind (sort keys %$dbh) {
+        my $sth = $dbh->{$kind}->prepare(" -- nothing\n");
+        ok $sth->execute, "$kind: executes";
+        is $sth->{NUM_OF_FIELDS}, 0, "$kind: with no columns";
     }
 };
 
