@@ -3,17 +3,16 @@ use Test2::V0;
 use Test2::Plugin::NoWarnings;
 
 use DBIx::Squirrel;
-use DBIx::Squirrel::Helpers;
 use DBIx::Squirrel::Pipeline;
+use DBIx::Squirrel::Placeholders;
 use DBIx::Squirrel::Stop ();
 
 # Imported functions are cleaned out of each package, so they can't be
 # called as methods.
 my %imported = (
-    'DBIx::Squirrel'     => [qw(croak is_hashref split_stages)],
+    'DBIx::Squirrel'     => [qw(croak is_hashref)],
     'DBIx::Squirrel::db' =>
-        [qw(croak is_arrayref is_coderef is_hashref is_ref study_statement)],
-    'DBIx::Squirrel::Helpers'  => [qw(is_coderef)],
+        [qw(croak is_arrayref is_coderef is_hashref is_ref study_sql)],
     'DBIx::Squirrel::Pipeline' => [qw(croak is_coderef)],
     'DBIx::Squirrel::Stop'     => [qw(croak)],
 );
@@ -25,8 +24,8 @@ for my $pkg (sort keys %imported) {
 }
 
 subtest 'what the packages need is kept' => sub {
-    ok +DBIx::Squirrel::Helpers->can('import'), 'Helpers can export';
-    ok +DBIx::Squirrel::Stop->can('import'),    'Stop can export';
+    ok +DBIx::Squirrel::Placeholders->can('import'), 'Placeholders can export';
+    ok +DBIx::Squirrel::Stop->can('import'),         'Stop can export';
 
     my $p = DBIx::Squirrel::Pipeline->new(sub { $_ * 2 });
     is [$p->(1, 2)], [2, 4], 'a pipeline can be called';

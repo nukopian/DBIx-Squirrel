@@ -20,7 +20,9 @@ Unreleased
     - DBIx::Squirrel::Pipeline runs values through a list of stages,
       each taking one value and returning any number. A pipeline is
       called with values, or makes an iterator pulling them from a
-      source one at a time.
+      source one at a time. DBIx::Squirrel::Pipeline->from_args makes
+      one from the code references at the end of a list, and returns
+      it with the rest of the list.
     - pipe runs a database or statement handle through a pipeline of
       stages, and returns what comes out: all of it in list context,
       the first value in scalar context.

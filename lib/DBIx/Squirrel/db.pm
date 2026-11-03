@@ -6,8 +6,8 @@ use Carp      qw(croak);
 use DBI       qw();
 use Ref::Util qw(is_arrayref is_coderef is_hashref is_ref);
 
-use DBIx::Squirrel::Helpers qw(study_statement);
-use DBIx::Squirrel::Pipes   qw();
+use DBIx::Squirrel::Placeholders qw(study_sql);
+use DBIx::Squirrel::Pipes        qw();
 
 use namespace::clean;
 
@@ -48,7 +48,7 @@ sub do ($self, $statement, @args) {
 # to prepare, and what its statement handle keeps about it.
 sub _study ($statement) {
     my($placeholders, $normalised, $original)
-        = study_statement(_statement_text($statement))
+        = study_sql(_statement_text($statement))
         or croak 'Expected a statement';
     return $normalised, {
         Placeholders      => $placeholders,

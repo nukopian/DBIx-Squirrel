@@ -32,6 +32,15 @@ sub new ($class, @stages) {
     }, $class;
 }
 
+# Split the trailing code-references off a list; return a pipeline running
+# values through them, and the rest of the list.
+sub from_args ($class, @args) {
+    my $n = @args;
+    while ($n && is_coderef($args[$n - 1])) { $n -= 1 }
+    my @stages = splice @args, $n;
+    return $class->new(@stages), @args;
+}
+
 # Return a closure handing out, one per call, the values from $source run
 # through the stages.
 sub iterator ($self, $source) {
@@ -145,6 +154,19 @@ A pipeline is an object that can be called as a code reference. Called
 with values, it returns the list that comes out of the last stage:
 
     my @ys = $p->(@xs);
+
+=head2 from_args
+
+    my($p, @rest) = DBIx::Squirrel::Pipeline->from_args(@args);
+
+Splits the code references at the end of C<@args> off as stages, and
+returns a pipeline running values through them, followed by the rest
+of C<@args>, in order. A code reference with anything but code
+references after it stays in the rest. With no code references at the
+end, the pipeline has no stages, and returns its values as they are.
+
+It's for methods taking other arguments followed by stages, such as bind
+values and the stages their rows go through.
 
 =head2 iterator
 

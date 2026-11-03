@@ -6,10 +6,9 @@ use Carp      qw(croak);
 use DBI       qw();
 use Ref::Util qw(is_hashref);
 
-use DBIx::Squirrel::Helpers qw(split_stages);
-use DBIx::Squirrel::Stop    qw();
-use DBIx::Squirrel::db      qw();
-use DBIx::Squirrel::st      qw();
+use DBIx::Squirrel::Stop qw();
+use DBIx::Squirrel::db   qw();
+use DBIx::Squirrel::st   qw();
 
 use namespace::clean;
 
