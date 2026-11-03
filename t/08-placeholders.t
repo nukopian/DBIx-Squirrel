@@ -68,6 +68,63 @@ subtest 'study_sql finds placeholders beside them' => sub {
     is $placeholders, {1 => ':naïve'}, 'a name is taken whole';
 };
 
+# Each case: the driver, the statement, the statement as normalised, and
+# the placeholders found. ":no" is never a placeholder.
+my @dialects = (
+    [
+        'standard rules: a backslash ends nothing',
+        undef, q{SELECT 'C:\', :x}, q{SELECT 'C:\', ?}, {1 => ':x'},
+    ],
+    [
+        'doubled quotes',
+        'Pg', q{SELECT 'it''s :no', '''', ':no''', :x},
+        q{SELECT 'it''s :no', '''', ':no''', ?}, {1 => ':x'},
+    ],
+    [
+        'an E string takes backslashes and doubled quotes',
+        'Pg', q{SELECT E'a''b\' :no', e'\\', :x},
+        q{SELECT E'a''b\' :no', e'\\', ?}, {1 => ':x'},
+    ],
+    [
+        'a backslash before a sigil, for DBD::Pg',
+        'Pg', q{SELECT d \? 'k', d \?| a, d \?& a, \:no, \$1, :x},
+        q{SELECT d \? 'k', d \?| a, d \?& a, \:no, \$1, ?}, {1 => ':x'},
+    ],
+    [
+        '# is not a comment, but an operator',
+        'Pg', q{SELECT a # :x}, q{SELECT a # ?}, {1 => ':x'},
+    ],
+    [
+        'MySQL: a backslash escapes a quote',
+        'mysql', q{SELECT 'it\'s :no', :x}, q{SELECT 'it\'s :no', ?},
+        {1 => ':x'},
+    ],
+    [
+        'MySQL: "..." is a string, taking backslashes',
+        'mysql', q{SELECT "say \"hi :no\"", :x},
+        q{SELECT "say \"hi :no\"", ?}, {1 => ':x'},
+    ],
+    [
+        'MySQL: # starts a comment',
+        'mysql', qq{SELECT :x # :no\n, :y}, qq{SELECT ? # :no\n, ?},
+        {1 => ':x', 2 => ':y'},
+    ],
+    [
+        'MariaDB: the same as MySQL',
+        'MariaDB', q{SELECT 'it\'s :no', :x}, q{SELECT 'it\'s :no', ?},
+        {1 => ':x'},
+    ],
+);
+
+subtest 'study_sql in each dialect' => sub {
+    for my $case (@dialects) {
+        my($name, $driver, $statement, $want, $want_placeholders) = @$case;
+        my($placeholders, $normalised) = study_sql($statement, $driver);
+        is $normalised,   $want,              "$name: normalised";
+        is $placeholders, $want_placeholders, "$name: placeholders";
+    }
+};
+
 subtest 'study_sql of a blank statement' => sub {
     is [study_sql('  ')],  [], 'returns nothing';
     is [study_sql(undef)], [], 'nor for undef';

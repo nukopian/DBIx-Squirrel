@@ -137,6 +137,21 @@ subtest 'do croaks on a reference other than a HASH or ARRAY' => sub {
         'a code reference';
 };
 
+subtest "prepare reads a statement by its driver's rules" => sub {
+    my $dbh = connect_both()->{squirrel};
+    my $sth = $dbh->prepare(q{SELECT 'C:\', :x});
+    $sth->execute('y');
+    is $sth->fetchrow_arrayref, ['C:\\', 'y'],
+        "SQLite: a backslash doesn't escape the quote";
+
+    # No MySQL server here, so give _study a handle naming its driver.
+    my $mysql = {Driver => {Name => 'mysql'}};
+    my($normalised, $state)
+        = DBIx::Squirrel::db::_study($mysql, q{SELECT 'it\'s :no', :x});    ## no critic (Subroutines::ProtectPrivateSubs)
+    is $normalised, q{SELECT 'it\'s :no', ?}, 'MySQL: it does';
+    is $state->{Placeholders}, {1 => ':x'}, 'MySQL: one placeholder';
+};
+
 todo 'binding an array reference waits on DBIx::Squirrel::st' => sub {
     my $dbh = connect_both()->{squirrel};
     my $rv

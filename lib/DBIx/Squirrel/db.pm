@@ -16,7 +16,7 @@ our @ISA = ('DBI::db', 'DBIx::Squirrel::Pipes');
 # Prepare a statement, with placeholders in any style, and return its
 # handle.
 sub prepare ($self, $statement, @args) {
-    my($normalised, $state) = _study($statement);
+    my($normalised, $state) = _study($self, $statement);
     my $sth = $self->SUPER::prepare($normalised, @args)
         or croak $self->errstr;
     $sth->{private_ekorn} = $state;
@@ -27,7 +27,7 @@ sub prepare ($self, $statement, @args) {
 # Prepare a statement, with placeholders in any style, using the DBI's
 # cache of statement handles, and return its handle.
 sub prepare_cached ($self, $statement, @args) {
-    my($normalised, $state) = _study($statement);
+    my($normalised, $state) = _study($self, $statement);
     my $sth = $self->SUPER::prepare_cached($normalised, @args)
         or croak $self->errstr;
     $sth->{private_ekorn} = $state;
@@ -46,9 +46,9 @@ sub do ($self, $statement, @args) {
 
 # Return a statement with its placeholders rewritten as "?", for the DBI
 # to prepare, and what its statement handle keeps about it.
-sub _study ($statement) {
+sub _study ($self, $statement) {
     my($placeholders, $normalised, $original)
-        = study_sql(_statement_text($statement))
+        = study_sql(_statement_text($statement), $self->{Driver}{Name})
         or croak 'Expected a statement';
     return $normalised, {
         Placeholders      => $placeholders,
@@ -131,6 +131,22 @@ C<`c?`>), a comment (C<-- :x>, C</* $1 */>) or a PostgreSQL
 dollar-quoted body (C<$$ ... $$>, C<$tag$ ... $tag$>) is left as it is,
 and so is a cast, such as C<x::int>, or an identifier containing C<$>,
 such as C<v$session>.
+
+Strings are read by the rules of the database handle's driver. With
+DBD::mysql and DBD::MariaDB, a backslash escapes a character in a string
+(C<'it\'s'>), C<"..."> is a string, and C<#> starts a comment. With other
+drivers, a backslash is an ordinary character in a string (C<'C:\'>),
+except in PostgreSQL's C<E'...'> strings. A driver used through another,
+such as DBD::ODBC or DBD::Proxy, is read by the standard rules, whatever
+the database behind it. MySQL's C<NO_BACKSLASH_ESCAPES> mode isn't
+noticed.
+
+To use a C<?>, C<:> or C<$> that isn't a placeholder, such as one of
+PostgreSQL's C<?>, C<?|> and C<?&> operators, put a backslash before it,
+as L<DBD::Pg> allows. The backslash and the character after it are
+passed on as they are, and DBD::Pg removes the backslash:
+
+    $dbh->prepare(q{SELECT * FROM doc WHERE data \? 'key' AND id = :id});
 
 The statement can be a string, an array reference of lines, which are
 joined with spaces, a code reference returning either, or a statement

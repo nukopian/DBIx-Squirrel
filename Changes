@@ -5,7 +5,10 @@ Unreleased
     - prepare and prepare_cached take placeholders in the styles ?,
       ?1, :1, $1 and :name, rewriting each as ? for the DBI, but
       leaving alone quoted strings and identifiers, comments,
-      PostgreSQL's dollar-quoted bodies and casts, and a
+      PostgreSQL's dollar-quoted bodies and casts, and a ?, : or $
+      with a backslash before it, as DBD::Pg allows for its ?
+      operators. Strings are read by the driver's rules, so MySQL's
+      and MariaDB's backslash escapes are understood. They take a
       statement as a string, lines in an array reference, a code
       reference returning either, or a statement handle. Both croak
       if the statement can't be prepared, whatever RaiseError says.
