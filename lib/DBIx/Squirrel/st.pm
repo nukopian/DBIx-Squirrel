@@ -4,12 +4,13 @@ package DBIx::Squirrel::st;
 
 use DBI        qw();
 use List::Util qw(max);
-use Ref::Util  qw(is_arrayref is_hashref);
+use Ref::Util  qw(is_hashref);
 
 use DBIx::Squirrel::Errors   qw(at_caller croakf);
 use DBIx::Squirrel::Iterator qw();
 use DBIx::Squirrel::Results  qw();
 use DBIx::Squirrel::Pipes    qw();
+use DBIx::Squirrel::Util     qw(unwrap_values);
 
 use namespace::clean;
 
@@ -93,15 +94,12 @@ sub results ($self, @args) {
 }
 
 # Return the values given, or those in an array reference given alone,
-# unless it's a value itself. DBD::Pg binds an array reference as a
-# PostgreSQL array, so, with DBD::Pg, one given to a statement taking one
-# value is that value, as it would be with the DBI.
+# as unwrap_values does.
 sub _unwrap ($self, @args) {
-    return @args
-        unless @args == 1 && is_arrayref($args[0]);
-    return @args
-        if $self->{Database}{Driver}{Name} eq 'Pg' && _values_taken($self) == 1;
-    return @{ $args[0] };
+    return unwrap_values(
+        $self->{Database}{Driver}{Name},
+        sub { _values_taken($self) }, @args,
+    );
 }
 
 # Return how many values the statement takes in order: one for each

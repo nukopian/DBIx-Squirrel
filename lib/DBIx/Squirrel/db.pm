@@ -10,7 +10,9 @@ use Ref::Util  qw(is_arrayref is_coderef is_hashref is_ref);
 use DBIx::Squirrel::Errors       qw(at_caller croakf failed in_method);
 use DBIx::Squirrel::Placeholders qw(study_sql);
 use DBIx::Squirrel::Pipes        qw();
-use DBIx::Squirrel::Util         qw(canonical shift_attrs split_attrs);
+use DBIx::Squirrel::Util         qw(
+    canonical shift_attrs split_attrs unwrap_values
+);
 
 use namespace::clean;
 
@@ -82,11 +84,10 @@ sub do ($self, $statement, @args) {
             return $sth->execute(@args);
         };
     }
-    @args = @{ $args[0] }
-        if @args == 1
-        && is_arrayref($args[0])
-        && !($self->{Driver}{Name} eq 'Pg'
-            && _values_taken($state->{Placeholders}) == 1);
+    @args = unwrap_values(
+        $self->{Driver}{Name},
+        sub { _values_taken($state->{Placeholders}) }, @args,
+    );
     return at_caller { $self->SUPER::do($normalised, $dbi_attrs, @args) };
 }
 
@@ -400,14 +401,19 @@ be left out.
 As L</iterate>, returning a L<DBIx::Squirrel::Results>, whose rows are
 objects with a method for each column.
 
-=head2 selectrow_array, selectrow_arrayref, selectrow_hashref
+=head2 The select methods
 
-=head2 selectall_arrayref, selectall_hashref, selectcol_arrayref
+    @row_ary  = $dbh->selectrow_array($statement, \%attr, @bind_values);
+    $ary_ref  = $dbh->selectrow_arrayref($statement, \%attr, @bind_values);
+    $hash_ref = $dbh->selectrow_hashref($statement, \%attr, @bind_values);
+    $ary_ref  = $dbh->selectall_arrayref($statement, \%attr, @bind_values);
+    $hash_ref = $dbh->selectall_hashref($statement, $key_field, \%attr,
+                                        @bind_values);
+    $ary_ref  = $dbh->selectcol_arrayref($statement, \%attr, @bind_values);
 
-    $ary_ref = $dbh->selectrow_arrayref($statement, \%attr, @bind_values);
-    $hash_ref = $dbh->selectall_hashref($statement, $key_field, \%attr, @bind_values);
-
-As the DBI's, preparing the statement as L</prepare> does, unless it's
+C<selectrow_array>, C<selectrow_arrayref>, C<selectrow_hashref>,
+C<selectall_arrayref>, C<selectall_hashref> and C<selectcol_arrayref>
+work as the DBI's, preparing the statement as L</prepare> does, unless it's
 already a statement handle, and binding the values as
 L<DBIx::Squirrel::st/bind> binds them. The DBI's C<selectall_array>
 goes through C<selectall_arrayref>, so it does too. Unlike L</prepare>,

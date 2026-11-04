@@ -18,6 +18,7 @@ our @EXPORT_OK = qw(
     shift_attrs
     split_attrs
     split_stages
+    unwrap_values
 );
 
 # Croak at the line that called DBIx::Squirrel.
@@ -70,6 +71,19 @@ sub split_stages ($args) {
     my $n = @$args;
     $n -= 1 while $n && is_coderef($args->[$n - 1]);
     return splice @$args, $n;
+}
+
+# Return the bind values given, or those in an array reference given
+# alone, unless it's a value itself. DBD::Pg binds an array reference as a
+# PostgreSQL array, so, with DBD::Pg, one given to a statement taking one
+# value is that value, as it would be with the DBI. The driver's name is
+# given, and code returning how many values the statement takes.
+sub unwrap_values ($driver, $taken, @args) {
+    return @args
+        unless @args == 1 && is_arrayref($args[0]);
+    return @args
+        if $driver eq 'Pg' && $taken->() == 1;
+    return @{ $args[0] };
 }
 
 1;

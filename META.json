@@ -48,12 +48,15 @@
       },
       "runtime" : {
          "requires" : {
+            "Carp" : "0",
             "DBI" : "0",
             "Data::Dumper" : "0",
             "Digest::SHA" : "0",
+            "Exporter" : "0",
             "List::Util" : "0",
             "Ref::Util" : "0",
             "Sub::Util" : "0",
+            "experimental" : "0",
             "namespace::clean" : "0",
             "perl" : "v5.36.0"
          }

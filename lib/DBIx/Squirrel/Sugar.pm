@@ -124,9 +124,7 @@ sub _run_statement ($definition, @args) {
     $sth = $dbh->prepare(@statement)
         if DBIx::Squirrel::Iterator::_going($sth);    ## no critic (Subroutines::ProtectPrivateSubs)
     my @stages = (@{ $definition->{stages} }, split_stages(\@args));
-    return $sth->iterate(@args, @stages)->all if @stages;
-    defined $sth->execute(@args) or return;
-    return $sth;
+    return _execute($sth, @args, @stages);
 }
 
 # Run what a database's function is given: nothing, for the handle; a
@@ -136,17 +134,24 @@ sub _run ($name, @args) {
     my $dbh = database($name);
     return $dbh unless @args;
     my $statement = shift @args;
-    my $stages    = @args && is_coderef($args[-1]);
-    if ($statement isa 'DBI::st') {
-        return $statement->iterate(@args)->all if $stages;
-        defined $statement->execute(@args) or return;
-        return $statement;
-    }
-    return $dbh->iterate($statement, @args)->all if $stages;
+    return _execute($statement, @args)           if $statement isa 'DBI::st';
+    return $dbh->iterate($statement, @args)->all if _ends_in_stages(\@args);
     my $attrs = shift_attrs(\@args);
-    my $sth   = $dbh->prepare($statement, $attrs);
+    return _execute($dbh->prepare($statement, $attrs), @args);
+}
+
+# Execute a statement handle with the bind values given, and return it,
+# or nothing if it couldn't be executed; or, with stages after the bind
+# values, return the results.
+sub _execute ($sth, @args) {
+    return $sth->iterate(@args)->all if _ends_in_stages(\@args);
     defined $sth->execute(@args) or return;
     return $sth;
+}
+
+# Return true if a list of arguments ends in a stage.
+sub _ends_in_stages ($args) {
+    return @$args && is_coderef($args->[-1]);
 }
 
 # Give a package a named function, croaking if it has one of that name,

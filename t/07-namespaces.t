@@ -22,13 +22,12 @@ my %imported = (
         qw(
             at_caller   canonical  croak     croakf failed is_arrayref
             is_coderef  is_hashref in_method is_ref max    shift_attrs
-            split_attrs study_sql
+            split_attrs study_sql  unwrap_values
         ),
     ],
-    'DBIx::Squirrel::Errors'   => [qw(croak  is_ref)],
-    'DBIx::Squirrel::Iterator' => [qw(croakf is_coderef split_stages weaken)],
-    'DBIx::Squirrel::Pipeline' =>
-        [qw(croak croakf is_coderef is_ref split_stages)],
+    'DBIx::Squirrel::Errors'       => [qw(croak  is_ref)],
+    'DBIx::Squirrel::Iterator'     => [qw(croakf is_coderef split_stages weaken)],
+    'DBIx::Squirrel::Pipeline'     => [qw(croak  croakf     is_coderef   is_ref)],
     'DBIx::Squirrel::Placeholders' => [qw(croakf uniq)],
     'DBIx::Squirrel::Result'       =>
         [qw(croakf install_sub is_name sha1_hex set_subname)],
@@ -40,7 +39,7 @@ my %imported = (
             is_hashref is_name     shift_attrs split_stages
         ),
     ],
-    'DBIx::Squirrel::st'   => [qw(at_caller croakf is_arrayref is_hashref max)],
+    'DBIx::Squirrel::st'   => [qw(at_caller croakf is_hashref max unwrap_values)],
     'DBIx::Squirrel::Util' => [
         qw(croakf is_arrayref is_coderef is_hashref is_ref set_subname subname),
     ],
