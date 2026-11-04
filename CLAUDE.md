@@ -203,12 +203,29 @@ installed, as DBD::Pg links to its `libpq` by full path.
   The second runs them under Devel::Cover, and the third prints the
   coverage.
 - The core tests run on DBD::SQLite, so they need no server. Tests
-  against MySQL and PostgreSQL are extra, and skip without a database
-  to connect to; `Test2::Plugin::DBIProfile` can profile the DBI calls
-  a test makes.
+  against MySQL and PostgreSQL (`t/12-mysql.t`, `t/13-pg.t`) are extra,
+  and skip unless `DBIX_SQUIRREL_TEST_MYSQL` or `DBIX_SQUIRREL_TEST_PG`
+  names a data source; `Test2::Plugin::DBIProfile` can profile the DBI
+  calls a test makes.
 - Users installing from CPAN run the tests with whatever harness their
   installer uses, so they must pass under `prove` too. yath is the
   maintainers' choice, not a requirement.
+
+On Iain's Mac, each server has a test account of its own, set up on
+2026-11-04, which can reach only its own database, `dbix_squirrel_test`:
+`dbix_squirrel@localhost` on MySQL 8.4, whose password is in
+`~/.config/dbix-squirrel/my.cnf` (mode 600, never in the repository),
+and the role `dbix_squirrel` on Postgres.app's PostgreSQL 18, which
+trusts local connections. To run every test against both:
+
+```
+export DBIX_SQUIRREL_TEST_MYSQL="dbi:mysql:mysql_read_default_file=${HOME}/.config/dbix-squirrel/my.cnf;mysql_read_default_group=dbix_squirrel"
+export DBIX_SQUIRREL_TEST_PG='dbi:Pg:dbname=dbix_squirrel_test;host=localhost;user=dbix_squirrel'
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test
+```
+
+Iain's own `mysql --login-path=root` is root on MySQL, for setting up
+accounts, not for tests.
 
 The library `perl-5.36.3@dbix-squirrel-2` has Test2::Harness (yath)
 1.000180 and the optional extras installed on 2026-10-22: coverage
