@@ -112,6 +112,8 @@ subtest 'through the database handle' => sub {
         'selectrow_array, numbered';
     is [$dbh->selectrow_array('SELECT :a + :a', undef, a => 2)], [4],
         'and named';
+    is [$dbh->selectrow_array('SELECT ?, ?', undef, [1, 2])], [1, 2],
+        'and ? from an array reference';
 
     my $line = __LINE__ + 1;
     my $err  = dies { $dbh->selectrow_array('SELECT $1, $2', undef, 1) };

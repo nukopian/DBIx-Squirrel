@@ -13,21 +13,7 @@ with the last one. It must be gone before `main` moves.
 The v1 code referred to is in
 `/Users/icampbell/Git/github.com/nukopian/DBIx-Squirrel-1`.
 
-## 1. DBI errors report db.pm's line under RaiseError
-
-**What.** With `RaiseError` on, the DBI's own errors from `prepare`
-say "at lib/DBIx/Squirrel/db.pm line 20" (the `SUPER::prepare` call),
-not the caller's line. Errors DBIx::Squirrel raises itself already
-report the caller's line.
-
-**Files.** `lib/DBIx/Squirrel/db.pm`; the DBI's docs on `RaiseError`,
-`HandleError` and `ShowErrorStatement`.
-
-**Done when.** `prepare('SELEC 1')` on a `RaiseError` handle dies
-naming the test file and line, with a test, or Iain decides it isn't
-worth it.
-
-## 2. iterate and results on the database handle
+## 1. iterate and results on the database handle
 
 **What.** v1's `lib/DBIx/Squirrel/db.pm` has `iterate` (lines 156-191)
 and `results` (199-234), which prepare a statement and hand it to
@@ -41,7 +27,7 @@ with `DBIx::Squirrel::Pipeline->from_args`.
 **Files.** `lib/DBIx/Squirrel/db.pm`, `lib/DBIx/Squirrel/st.pm`, v1's
 `it.pm` and `rs.pm`.
 
-## 3. Test against real MySQL and PostgreSQL servers
+## 2. Test against real MySQL and PostgreSQL servers
 
 **What.** The MySQL dialect, `\?`, DBD::Pg's placeholder options, and
 DBD::Pg's array references (`_unwrap` in `lib/DBIx/Squirrel/st.pm`)
@@ -57,7 +43,7 @@ a local one: MySQL's `'it\'s :no'`, PostgreSQL's `data \? 'k'`,
 `execute([1, 2])` on `SELECT 2 = ANY(?)` binding one PostgreSQL array,
 on `SELECT ?, ?` binding two values.
 
-## 4. do replaces the driver's own do
+## 3. do replaces the driver's own do
 
 **What.** `DBIx::Squirrel::db::do` prepares and executes, so a
 driver's own `do` is never called. DBD::SQLite's runs several

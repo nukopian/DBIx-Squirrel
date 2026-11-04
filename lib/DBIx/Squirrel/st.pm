@@ -6,15 +6,20 @@ use Carp      qw(croak);
 use DBI       qw();
 use Ref::Util qw(is_arrayref is_hashref);
 
-use DBIx::Squirrel::Pipes qw();
+use DBIx::Squirrel::Errors qw(at_caller);
+use DBIx::Squirrel::Pipes  qw();
 
 use namespace::clean;
 
 our @ISA = ('DBI::st', 'DBIx::Squirrel::Pipes');
 
-# Croak at the line that called the DBI, or DBIx::Squirrel's database
-# handle, not at theirs.
-our @CARP_NOT = qw(DBI::st DBI::db DBIx::Squirrel::db);
+# Croak at the line that called DBIx::Squirrel, past the DBI's own code,
+# which calls execute from its select methods, and DBIx::Squirrel's.
+our @CARP_NOT = qw(
+    DBI            DBI::db            DBI::st
+    DBD::_::common DBD::_::db         DBD::_::st
+    DBIx::Squirrel DBIx::Squirrel::db DBIx::Squirrel::Errors
+);
 
 # Bind values to the statement's placeholders, without executing it, and
 # return the handle, or nothing if the DBI couldn't bind one. Numbered
@@ -31,7 +36,8 @@ sub _bind ($self, @args) {
     my $binds = _binds($self);
     unless ($binds) {
         for my $position (1 .. @args) {
-            $self->SUPER::bind_param($position, $args[$position - 1]) or return;
+            at_caller { $self->SUPER::bind_param($position, $args[$position - 1]) }
+                or return;
         }
         return $self;
     }
@@ -48,18 +54,19 @@ sub _bind ($self, @args) {
 # of that placeholder in the statement. Return what the DBI returns.
 sub bind_param ($self, $param, $value, @attrs) {
     my $binds = _binds($self)
-        or return $self->SUPER::bind_param($param, $value, @attrs);
+        or return at_caller { $self->SUPER::bind_param($param, $value, @attrs) };
     my $positions = $binds->{_key($param)};
     unless ($positions) {
 
         # A position, for a statement with named placeholders.
-        return $self->SUPER::bind_param($param, $value, @attrs)
-            if $param =~ m( \A \d+ \z )x && !_numbered($binds);
+        return at_caller { $self->SUPER::bind_param($param, $value, @attrs) }
+        if $param =~ m( \A \d+ \z )x && !_numbered($binds);
         croak "Expected a placeholder of the statement ($param)";
     }
     my $rv;
     for my $position (@$positions) {
-        $rv = $self->SUPER::bind_param($position, $value, @attrs) or return $rv;
+        $rv = at_caller { $self->SUPER::bind_param($position, $value, @attrs) }
+            or return $rv;
     }
     return $rv;
 }
@@ -73,10 +80,10 @@ sub execute ($self, @args) {
     $self->finish
         if $self->{Active} && $state && $state->{Options}{ekorn_finish_active};
     @args = _unwrap($self, @args);
-    return $self->SUPER::execute(@args)
-        unless @args && _binds($self);
+    return at_caller { $self->SUPER::execute(@args) }
+    unless @args && _binds($self);
     _bind($self, @args) or return;
-    return $self->SUPER::execute;
+    return at_caller { $self->SUPER::execute };
 }
 
 

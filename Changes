@@ -32,6 +32,16 @@ Unreleased
       placeholders.
     - prepare_cached gives statements rewritten the same, such as
       SELECT :a, :b and SELECT :b, :a, a handle each.
+    - Errors are reported at the caller's line, including the DBI's
+      own under RaiseError, which named a line inside DBIx::Squirrel,
+      and errors from prepare_cached, which named one inside DBI.pm.
+    - Errors read as plain DBI's under RaiseError, whatever RaiseError
+      is set to: connect, prepare and prepare_cached croaked with the
+      DBI's errstr alone, and errors in do and the select methods named
+      the prepare or execute inside them, not the method called.
+    - The select methods pass values for ? placeholders to the DBI, as
+      plain DBI does, so it rejects too many, rather than binding them
+      first through bind_param, which DBD::SQLite let pass.
     - The ekorn_finish_active attribute, on connect or prepare,
       finishes a statement still active before executing it again.
       The DBI doesn't, and by default neither does DBIx::Squirrel.

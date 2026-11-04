@@ -3,6 +3,7 @@ use Test2::V0;
 use Test2::Plugin::NoWarnings;
 
 use DBIx::Squirrel;
+use DBIx::Squirrel::Errors;
 use DBIx::Squirrel::Pipeline;
 use DBIx::Squirrel::Placeholders;
 use DBIx::Squirrel::Stop ();
@@ -11,11 +12,16 @@ use DBIx::Squirrel::Stop ();
 # called as methods.
 my %imported = (
     'DBIx::Squirrel'     => [qw(croak is_hashref)],
-    'DBIx::Squirrel::db' =>
-        [qw(croak is_arrayref is_coderef is_hashref is_ref study_sql)],
-    'DBIx::Squirrel::Pipeline'     => [qw(croak is_coderef)],
-    'DBIx::Squirrel::Placeholders' => [qw(croak uniq)],
-    'DBIx::Squirrel::st'           => [qw(croak is_arrayref is_hashref)],
+    'DBIx::Squirrel::db' => [
+        qw(
+            at_caller  croak     failed is_arrayref is_coderef
+            is_hashref in_method is_ref study_sql
+        ),
+    ],
+    'DBIx::Squirrel::Pipeline'     => [qw(croak     is_coderef)],
+    'DBIx::Squirrel::Placeholders' => [qw(croak     uniq)],
+    'DBIx::Squirrel::st'           => [qw(at_caller croak is_arrayref is_hashref)],
+    'DBIx::Squirrel::Errors'       => [qw(croak     is_ref)],
     'DBIx::Squirrel::Stop'         => [qw(croak)],
 );
 

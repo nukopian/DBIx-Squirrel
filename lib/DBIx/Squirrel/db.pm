@@ -6,6 +6,7 @@ use Carp      qw(croak);
 use DBI       qw();
 use Ref::Util qw(is_arrayref is_coderef is_hashref is_ref);
 
+use DBIx::Squirrel::Errors       qw(at_caller failed in_method);
 use DBIx::Squirrel::Placeholders qw(study_sql);
 use DBIx::Squirrel::Pipes        qw();
 
@@ -13,12 +14,20 @@ use namespace::clean;
 
 our @ISA = ('DBI::db', 'DBIx::Squirrel::Pipes');
 
+# Croak at the line that called DBIx::Squirrel, past the DBI's own code,
+# which calls prepare from its prepare_cached, and DBIx::Squirrel's.
+our @CARP_NOT = qw(
+    DBI            DBI::db            DBI::st
+    DBD::_::common DBD::_::db         DBD::_::st
+    DBIx::Squirrel DBIx::Squirrel::st DBIx::Squirrel::Errors
+);
+
 # Prepare a statement, with placeholders in any style, and return its
 # handle.
 sub prepare ($self, $statement, $attrs = undef, @args) {
     my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
-    my $sth = $self->SUPER::prepare($normalised, $dbi_attrs, @args)
-        or croak $self->errstr;
+    my $sth = at_caller { $self->SUPER::prepare($normalised, $dbi_attrs, @args) }
+        or croak failed($self, 'prepare');
     $sth->{private_ekorn} = $state;
     return $sth;
 }
@@ -37,8 +46,10 @@ sub prepare_cached ($self, $statement, $attrs = undef, @args) {
         %{ $dbi_attrs // {} },
         private_ekorn_statement => $state->{OriginalStatement},
     };
-    my $sth = $self->SUPER::prepare_cached($normalised, $dbi_attrs, @args)
-        or croak $self->errstr;
+    my $sth = in_method $self, 'prepare_cached', sub {
+        at_caller { $self->SUPER::prepare_cached($normalised, $dbi_attrs, @args) }
+            or croak failed($self, 'prepare_cached');
+    };
     $sth->{private_ekorn} = $state;
     return $sth;
 }
@@ -48,8 +59,9 @@ sub prepare_cached ($self, $statement, $attrs = undef, @args) {
 # DBI's do does. Unlike the DBI's, the attributes may be left out.
 sub do ($self, $statement, @args) {
     my $attrs = _shift_attrs(\@args);
-    my $sth   = $self->prepare($statement, $attrs);
-    return $sth->execute(@args);
+    return in_method $self, 'do', sub {
+        $self->prepare($statement, $attrs)->execute(@args);
+    };
 }
 
 
@@ -94,15 +106,21 @@ sub selectcol_arrayref ($self, $statement, $attrs = undef, @args) {
 # unless it was given one, and with any values bound. Return what the
 # DBI's method returns.
 sub _select ($self, $method, $statement, $before, $attrs, @args) {
-    my $sth
-        = $statement isa 'DBI::st'
-        ? $statement
-        : $self->prepare($statement, $attrs);
-    if (@args) {
-        $sth->bind(@args) or return;
-    }
-    my $super = "SUPER::$method";
-    return $self->$super($sth, @$before, $attrs);
+    return in_method $self, $method, sub {
+        my $sth
+            = $statement isa 'DBI::st'
+            ? $statement
+            : $self->prepare($statement, $attrs);
+        # Values for ? placeholders go to the DBI, which checks them as
+        # plain DBI does; those for numbered or named ones are bound.
+        my @values = DBIx::Squirrel::st::_unwrap($sth, @args);    ## no critic (Subroutines::ProtectPrivateSubs)
+        if (@values && $sth->{private_ekorn}{Binds}) {
+            $sth->bind(@values) or return;
+            @values = ();
+        }
+        my $super = "SUPER::$method";
+        at_caller { $self->$super($sth, @$before, $attrs, @values) };
+    };
 }
 
 
@@ -275,7 +293,9 @@ handle, whose statement is prepared again. Blank space around the
 statement is removed; comments are passed on to the database.
 
 Unlike the DBI's C<prepare>, it B<always croaks> if the statement can't
-be prepared, whatever C<RaiseError> is set to.
+be prepared, whatever C<RaiseError> is set to, with the message the DBI
+raises under C<RaiseError>, such as
+C<DBD::SQLite::db prepare failed: near "SELEC": syntax error>.
 
 =head2 prepare_cached
 
@@ -283,7 +303,8 @@ be prepared, whatever C<RaiseError> is set to.
     $sth = $dbh->prepare_cached($statement, \%attr);
     $sth = $dbh->prepare_cached($statement, \%attr, $if_active);
 
-As L</prepare>, using the DBI's cache of statement handles.
+As L</prepare>, using the DBI's cache of statement handles. Its errors
+name C<prepare_cached>, as the DBI's do.
 
 =head2 do
 
@@ -296,7 +317,9 @@ Prepares a statement, as L</prepare> does, executes it, and returns the
 number of rows affected, as the DBI's C<do> does. Unlike the DBI's, the
 attributes may be left out: the first argument after the statement is
 taken as the attributes only if it's a hash reference or C<undef>. The
-values are bound as L<DBIx::Squirrel::st/bind> binds them.
+values are bound as L<DBIx::Squirrel::st/bind> binds them. An error in
+preparing or executing the statement names C<do>, as the DBI's does:
+C<DBD::SQLite::db do failed: ...>.
 
 =head2 selectrow_array, selectrow_arrayref, selectrow_hashref
 

@@ -27,7 +27,7 @@ sub connect ($class, $source, @args) {
         $source, $username, $password,
         _connect_attrs($class, $attrs),
     );
-    croak $DBI::errstr
+    croak _connect_failed($class, $source, $attrs->{Username} // $username)
         unless $dbh;
     return _discern_dialect($dbh);
 }
@@ -36,10 +36,19 @@ sub connect ($class, $source, @args) {
 # another connection.
 sub _connect_dbh ($class, $dbh, @args) {
     my $attrs = @args && is_hashref($args[0]) ? shift @args : {};
-    $dbh = $dbh->clone(_connect_attrs($class, $attrs, $dbh->{private_ekorn}));
-    croak $DBI::errstr
-        unless $dbh;
-    return _discern_dialect($dbh);
+    my $clone = $dbh->clone(_connect_attrs($class, $attrs, $dbh->{private_ekorn}))
+        or croak _connect_failed($class, $dbh->{Name}, $dbh->{Username});
+    return _discern_dialect($clone);
+}
+
+
+# Return the message the DBI raises under RaiseError when it can't
+# connect, without the dbi:Driver: prefix of the data source, as the
+# DBI's message has none.
+sub _connect_failed ($class, $source, $username) {
+    my $dsn = $source =~ s( \A dbi: \w*? (?: \( .*? \) )? : )()xir;
+    return "$class connect('$dsn','@{[ $username // '' ]}',...) failed: "
+        . ($DBI::errstr // '(no error string)');
 }
 
 # Return the attributes to connect with. DBIx::Squirrel's own, those
@@ -169,7 +178,9 @@ L<DBIx::Squirrel::st>s. Both are subclasses of the DBI's own, so they
 do everything the DBI's handles do.
 
 Unlike the DBI's C<connect>, it B<always croaks> if the connection
-fails, whatever C<RaiseError> is set to, with the DBI's error message,
+fails, whatever C<RaiseError> is set to, with the message the DBI
+raises under C<RaiseError>, such as
+C<DBIx::Squirrel connect('dbname=music.db','',...) failed: ...>,
 reported at the line that called C<connect>. The DBI returns C<undef>
 unless C<RaiseError> is set.
 
@@ -328,6 +339,18 @@ Called outside a stage, it dies with "Stop used outside a pipeline".
 L<DBIx::Squirrel::Stop> says more, including what a stop carries.
 
 =head1 DIAGNOSTICS
+
+Errors are reported at the line of your code that called DBIx::Squirrel,
+never at a line inside it or the DBI. That includes the DBI's own errors
+under C<RaiseError>, such as
+C<DBD::SQLite::db prepare failed: near "SELEC": syntax error>, which keep
+the DBI's message. An error DBIx::Squirrel raises in the DBI's place,
+where it croaks and the DBI would return C<undef>, has the message the
+DBI raises under C<RaiseError>, so an error reads the same whatever
+C<RaiseError> is set to. Each names the method you called, as plain DBI
+does: C<do> and the select methods, not the C<prepare> or C<execute>
+they call. An error from a C<HandleError> callback, or one that isn't a
+string, is passed on as it was raised.
 
 =over
 
