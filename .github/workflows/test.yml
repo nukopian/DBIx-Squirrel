@@ -53,6 +53,21 @@ jobs:
           done
           exit $status
 
+  # The tests under Devel::Cover, on Perl 5.36, the floor, failing if the
+  # coverage of lib/ falls below the floors in scripts/coverage. There's
+  # no MySQL or PostgreSQL here, so the floors are what SQLite reaches.
+  coverage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: "5.36"
+      - name: dependencies
+        run: cpanm --notest --installdeps --with-develop .
+      - name: coverage
+        run: scripts/coverage
+
   # Secrets in any commit, not only the latest: gitleaks over the whole
   # history, since all of it is published with the repository. Its release
   # is checked against its published SHA-256 before it's used.

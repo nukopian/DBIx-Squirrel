@@ -75,6 +75,25 @@ perlbrew exec --with perl-5.36.3@dbix-squirrel-2 perlcritic lib
 for f in $(git ls-files 'lib/*.pm' 't/*.t'); do perlbrew exec --quiet --with perl-5.36.3@dbix-squirrel-2 perltidy "$f" | diff -u "$f" -; done
 ```
 
+After a change to the code, check its coverage too, as CI does.
+`scripts/coverage` runs the tests under Devel::Cover, from an empty
+`cover_db`, and fails if the coverage of `lib/` falls below any of the
+floors at its top, printing each with what the tests reached. New code
+comes with the tests that keep it above them. When coverage rises,
+raise the floors to just under it; lower one only with the reason in
+the commit message.
+
+```
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 ~/Git/github.com/nukopian/DBIx-Squirrel-2/scripts/coverage
+```
+
+To see which lines and branches the tests miss, after it has run:
+
+```
+cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cover -report text -select_re '^lib/'
+```
+
 `Build.PL`, `META.json` and `README.md` are generated, and committed so
 that `cpanm` can install from GitHub. After a change to `cpanfile`,
 `minil.toml`, `README.pod` or the main module's POD, generate them

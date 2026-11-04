@@ -19,8 +19,12 @@ on test => sub {
 on develop => sub {
     requires 'CPAN::Uploader';
     requires 'Data::Dump';
+    requires 'Devel::Cover';
+    requires 'Devel::NYTProf';
     requires 'Perl::Critic';
     requires 'Perl::Tidy';
+    requires 'Pod::Coverage';
     requires 'Test2::Harness';
+    requires 'Test2::Plugin::Cover';
     requires 'UUID';
 };

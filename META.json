@@ -35,9 +35,13 @@
          "requires" : {
             "CPAN::Uploader" : "0",
             "Data::Dump" : "0",
+            "Devel::Cover" : "0",
+            "Devel::NYTProf" : "0",
             "Perl::Critic" : "0",
             "Perl::Tidy" : "0",
+            "Pod::Coverage" : "0",
             "Test2::Harness" : "0",
+            "Test2::Plugin::Cover" : "0",
             "Test::CPAN::Meta" : "0",
             "Test::MinimumVersion::Fast" : "0.04",
             "Test::PAUSE::Permissions" : "0.07",

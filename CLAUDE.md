@@ -199,12 +199,23 @@ installed, as DBD::Pg links to its `libpq` by full path.
 
   ```
   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test
-  perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test --cover
-  perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cover -report text
   ```
 
-  The second runs them under Devel::Cover, and the third prints the
-  coverage.
+- **Coverage has floors, which it mustn't fall below.**
+  `scripts/coverage` runs the tests under Devel::Cover, from an empty
+  `cover_db`, and fails if the coverage of `lib/` falls below the floors
+  at its top; CI runs it on every push. New code comes with the tests
+  that keep coverage above them. Raise a floor when coverage rises, and
+  lower one only with the reason in the commit message. The floors are
+  set from a run without MySQL or PostgreSQL, as CI has neither.
+
+  ```
+  perlbrew exec --with perl-5.36.3@dbix-squirrel-2 scripts/coverage
+  perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cover -report text -select_re '^lib/'
+  ```
+
+  The second, after the first, shows the lines and branches the tests
+  miss.
 - The core tests run on DBD::SQLite, so they need no server. Tests
   against MySQL and PostgreSQL (`t/12-mysql.t`, `t/13-pg.t`) are extra,
   and skip unless `DBIX_SQUIRREL_TEST_MYSQL` or `DBIX_SQUIRREL_TEST_PG`
@@ -235,7 +246,8 @@ The library `perl-5.36.3@dbix-squirrel-2` has Test2::Harness (yath)
 (Test2::Plugin::Cover, Devel::Cover), Test2::Plugin::IOEvents,
 DBIProfile, NoWarnings, MemUsage and UUID, Test2::Tools::Explain, and
 yath's suggested helpers (Cpanel::JSON::XS and JSON::MaybeXS for its
-logs, Term::ANSIColor, IO::Pager, Email::Stuffer).
+logs, Term::ANSIColor, IO::Pager, Email::Stuffer). Devel::NYTProf
+6.16, for profiling, joined them on 2026-11-04.
 
 ## Style and tools
 
