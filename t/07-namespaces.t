@@ -10,7 +10,8 @@ use DBIx::Squirrel::Result;
 use DBIx::Squirrel::Results;
 use DBIx::Squirrel::Pipeline;
 use DBIx::Squirrel::Placeholders;
-use DBIx::Squirrel::Stop ();
+use DBIx::Squirrel::Stop  ();
+use DBIx::Squirrel::Sugar ();
 
 # Imported functions are cleaned out of each package, so they can't be
 # called as methods.
@@ -29,7 +30,8 @@ my %imported = (
     'DBIx::Squirrel::Result'       => [qw(croakf sha1_hex set_subname)],
     'DBIx::Squirrel::Results'      => [qw(croakf)],
     'DBIx::Squirrel::Stop'         => [qw(croak)],
-    'DBIx::Squirrel::st'           => [qw(at_caller croakf is_arrayref is_hashref)],
+    'DBIx::Squirrel::Sugar' => [qw(croakf    is_arrayref is_coderef  is_hashref)],
+    'DBIx::Squirrel::st'    => [qw(at_caller croakf      is_arrayref is_hashref)],
 );
 
 for my $pkg (sort keys %imported) {
@@ -41,6 +43,8 @@ for my $pkg (sort keys %imported) {
 subtest 'what the packages need is kept' => sub {
     ok +DBIx::Squirrel::Placeholders->can('import'), 'Placeholders can export';
     ok +DBIx::Squirrel::Stop->can('import'),         'Stop can export';
+    ok +DBIx::Squirrel::Sugar->can('import'),        'Sugar can export';
+    ok +DBIx::Squirrel::Sugar->can('database'),      'and keeps database';
 
     my $p = DBIx::Squirrel::Pipeline->new(sub { $_ * 2 });
     is [$p->(1, 2)], [2, 4], 'a pipeline can be called';

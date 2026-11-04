@@ -192,7 +192,8 @@ rewritten for Perl 5.36 or later, and isn't released yet.
 The database handle's own methods are in L<DBIx::Squirrel::db>, and the
 statement handle's in L<DBIx::Squirrel::st>. L<DBIx::Squirrel::Iterator>
 and L<DBIx::Squirrel::Results> describe what C<iterate> and C<results>
-return.
+return. L<DBIx::Squirrel::Sugar> gives each database a function of its
+own name.
 
 =head1 METHODS
 
@@ -427,6 +428,7 @@ L</Stop> was called where no pipeline was running to catch it.
 L<DBI>, L<DBIx::Squirrel::db>, L<DBIx::Squirrel::st>,
 L<DBIx::Squirrel::Iterator>, L<DBIx::Squirrel::Results>,
 L<DBIx::Squirrel::Result>, L<DBIx::Squirrel::Context>,
+L<DBIx::Squirrel::Sugar>,
 L<DBIx::Squirrel::Pipes>, L<DBIx::Squirrel::Pipeline>,
 L<DBIx::Squirrel::Stop>
 
