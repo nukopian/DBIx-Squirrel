@@ -132,6 +132,19 @@ DBIx::Squirrel - DBI, minus the boilerplate, plus a pipeline
         'SELECT * FROM artist WHERE id = $1 OR parent_id = $1', undef, 2,
     );
 
+    # Iterate over the results, each run through a pipeline of stages
+    my $names = $dbh->iterate(
+        'SELECT name FROM artist WHERE name LIKE ?', 'A%',
+        sub ($row) { $row->[0] },
+    );
+    while (my($name) = $names->next) {
+        say $name;
+    }
+
+    # Or have each row as an object, with a method for each column
+    my $artist = $dbh->results('SELECT * FROM artist WHERE id = :id', id => 1)->single;
+    say $artist->name;
+
     # A new connection with the same parameters as an existing one
     my $other = DBIx::Squirrel->connect($dbh, \%attr);
 
@@ -159,9 +172,12 @@ where the two do the same thing they give the same result. This page
 notes where they differ.
 
 B<In development.> This is the successor to DBIx-Squirrel 1.x, being
-rewritten for Perl 5.36 or later, and much of it is still to come. In
-particular, DBIx::Squirrel's statement handles have only L</pipe> and
-L</tap> of their own so far.
+rewritten for Perl 5.36 or later, and isn't released yet.
+
+The database handle's own methods are in L<DBIx::Squirrel::db>, and the
+statement handle's in L<DBIx::Squirrel::st>. L<DBIx::Squirrel::Iterator>
+and L<DBIx::Squirrel::Results> describe what C<iterate> and C<results>
+return.
 
 =head1 METHODS
 
@@ -198,11 +214,33 @@ Attributes starting C<ekorn_> are DBIx::Squirrel's own. They aren't
 passed on to the DBI, but kept in the database handle's C<private_ekorn>
 attribute, as the defaults for each statement it prepares. Attributes
 passed to L<DBIx::Squirrel::db/prepare> override them, for that
-statement.
+statement. There are four:
 
-The one that matters most, C<ekorn_dialect>, names the driver whose
-rules statements are read by, and C<connect> works it out when it isn't
-given: it's the driver's own name, such as C<mysql> or C<Pg>. A driver
+=over
+
+=item C<ekorn_dialect>
+
+The driver whose rules statements are read by, described below.
+
+=item C<ekorn_finish_active>
+
+Finish a statement still active before executing it again, as
+L<DBIx::Squirrel::st/execute> describes.
+
+=item C<ekorn_slice>
+
+The shape an iterator fetches rows in, as
+L<DBIx::Squirrel::Iterator> describes.
+
+=item C<ekorn_result_class>
+
+The base class of the rows a result set hands out, as
+L<DBIx::Squirrel::Result> describes.
+
+=back
+
+C<ekorn_dialect> names the driver whose rules statements are read by,
+and C<connect> works it out when it isn't given: it's the driver's own name, such as C<mysql> or C<Pg>. A driver
 that passes the connection on to another database (DBD::ADO, DBD::Gofer,
 DBD::JDBC, DBD::ODBC or DBD::Proxy) is asked, through the DBI's
 C<get_info>, what the database is, and MariaDB, MySQL, PostgreSQL and
@@ -372,6 +410,8 @@ L</Stop> was called where no pipeline was running to catch it.
 =head1 SEE ALSO
 
 L<DBI>, L<DBIx::Squirrel::db>, L<DBIx::Squirrel::st>,
+L<DBIx::Squirrel::Iterator>, L<DBIx::Squirrel::Results>,
+L<DBIx::Squirrel::Result>, L<DBIx::Squirrel::Context>,
 L<DBIx::Squirrel::Pipes>, L<DBIx::Squirrel::Pipeline>,
 L<DBIx::Squirrel::Stop>
 

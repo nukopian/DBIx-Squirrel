@@ -15,37 +15,28 @@ query.
 
 ## Synopsis
 
-What works so far, from [DBIx::Squirrel](https://metacpan.org/pod/DBIx%3A%3ASquirrel)'s own documentation:
+A taste of what works so far; [DBIx::Squirrel](https://metacpan.org/pod/DBIx%3A%3ASquirrel)'s own documentation has
+more:
 
     use DBIx::Squirrel;
 
-    my $dbh = DBIx::Squirrel->connect($data_source, $username, $password, \%attr);
+    my $dbh = DBIx::Squirrel->connect($data_source, $username, $password);
 
     # Placeholders in the style you like: ?, ?1, :1, $1 or :name
-    my $sth = $dbh->prepare('SELECT * FROM artist WHERE id = :id OR name = :name');
+    my $sth = $dbh->prepare('SELECT * FROM artist WHERE id = :id');
+    $sth->execute(id => 1);
 
-    # Named placeholders bound by name, as pairs or in a hash reference
-    $sth->execute(id => 1, name => 'AC/DC');
-
-    # A numbered placeholder takes one value, wherever it appears
-    my $row = $dbh->selectrow_hashref(
-        'SELECT * FROM artist WHERE id = $1 OR parent_id = $1', undef, 2,
+    # Iterate over the results, each run through a pipeline of stages
+    my $names = $dbh->iterate(
+        'SELECT name FROM artist WHERE name LIKE ?', 'A%',
+        sub ($row) { $row->[0] },
     );
+    while (my($name) = $names->next) {
+        say $name;
+    }
 
-    # A new connection with the same parameters as an existing one
-    my $other = DBIx::Squirrel->connect($dbh, \%attr);
-
-    # Run the database handle through a pipeline of stages
-    my @results = $dbh->pipe(
-        sub ($dbh)   { ... },
-        sub ($value) { ... },
-    );
-
-    # The same, as a branch off to the side: get the handle back
-    $dbh = $dbh->tap(
-        sub ($dbh)   { ... },
-        sub ($value) { ... },
-    );
+    # Or have each row as an object, with a method for each column
+    say $dbh->results('SELECT * FROM artist WHERE id = $1', 1)->single->name;
 
 The repository is called DBIx-Squirrel-2 while it's in development. At
 release it takes the original name, DBIx-Squirrel.
