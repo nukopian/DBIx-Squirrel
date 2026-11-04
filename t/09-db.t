@@ -254,6 +254,41 @@ subtest 'the options a statement is studied with' => sub {
     is +(DBIx::Squirrel::db::_study($sqlite, $sql, undef))[2], undef,
         'no attributes in, none out';
 };
+
+subtest 'a statement is studied once for each handle' => sub {
+    my $dbh = connect_both()->{squirrel};
+    my $sql = 'SELECT name FROM artist WHERE id = :id';
+    my $one = $dbh->prepare($sql);
+    my $two = $dbh->prepare($sql);
+    ok $dbh->{private_ekorn_studied}{Statements}{$sql}, 'kept by the handle';
+    is $two->{private_ekorn}, $one->{private_ekorn}, 'each handle the same';
+    ref_is_not $two->{private_ekorn}, $one->{private_ekorn}, 'but its own';
+    my @names = $one->iterate(id => 1)->all;
+    ok !$two->{private_ekorn}{Iterator}, "so an iterator isn't another's";
+    my $other = 'SELECT id FROM artist WHERE name = :name';
+    $dbh->prepare($other, {ekorn_slice => {}});
+    ok !$dbh->{private_ekorn_studied}{Statements}{$other},
+        'not kept with attributes';
+
+    my $pg = {
+        Driver                    => {Name => 'Pg'},
+        pg_placeholder_dollaronly => 1,
+    };
+    my($normalised) = DBIx::Squirrel::db::_study($pg, 'SELECT :x', undef);
+    is $normalised, 'SELECT :x', "with DBD::Pg's options on the handle";
+    $pg->{pg_placeholder_dollaronly} = 0;
+    ($normalised) = DBIx::Squirrel::db::_study($pg, 'SELECT :x', undef);
+    is $normalised, 'SELECT ?', 'kept apart when they change';
+
+    my $sqlite = {Driver => {Name => 'SQLite'}};
+    DBIx::Squirrel::db::_study($sqlite, "SELECT $_", undef) for 1 .. 1000;
+    is scalar(keys %{ $sqlite->{private_ekorn_studied}{Statements} }), 1000,
+        'up to 1000';
+    DBIx::Squirrel::db::_study($sqlite, 'SELECT 1001', undef);
+    is [keys %{ $sqlite->{private_ekorn_studied}{Statements} }],
+        ['SELECT 1001'],
+        'then started again';
+};
 ## use critic
 
 subtest 'prepare takes ekorn_ attributes' => sub {

@@ -21,6 +21,9 @@ our @ISA = ('DBI::db', 'DBIx::Squirrel::Pipes');
 # Croak at the line that called DBIx::Squirrel.
 our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
+# DBD::Pg's options that change which placeholders it reads.
+my @PG_OPTIONS = qw(pg_placeholder_dollaronly pg_placeholder_nocolons);
+
 # Prepare a statement, with placeholders in any style, and return its
 # handle.
 sub prepare ($self, $statement, $attrs = undef, @args) {
@@ -193,13 +196,45 @@ sub _select ($self, $method, $statement, $before, $attrs, @args) {
 # driver's name, DBD::Pg's placeholder options from the handle, the
 # handle's own defaults, from connect, and the attributes given, each
 # overriding the last.
+#
+# A statement given as a string, without attributes, as most are, is
+# studied once for each handle, which keeps what was found in its
+# private_ekorn_studied attribute, keyed by the statement and, with DBD::Pg, its placeholder options, as they can be
+# changed on the handle. Each statement handle has a copy of its own of
+# what the statement handle keeps, as an iterator adds to it. The handle
+# keeps no more than $STUDIED statements, starting again when it has
+# that many, so statements made as the program runs can't fill memory.
 sub _study ($self, $statement, $attrs) {
+    state $STUDIED = 1000;
+    return _study_afresh($self, $statement, $attrs)
+        if ($attrs && %$attrs)
+        || !defined $statement
+        || is_ref($statement);
+    my $cache = $self->{private_ekorn_studied} //= {
+        Pg         => $self->{Driver}{Name} eq 'Pg',
+        Statements => {},
+    };
+    my $key
+        = $cache->{Pg}
+        ? join("\0", $statement, map { $self->{$_} // '' } @PG_OPTIONS)
+        : $statement;
+    my $studied = $cache->{Statements};
+    my $found   = $studied->{$key};
+    unless ($found) {
+        my($normalised, $kept) = _study_afresh($self, $statement, undef);
+        %$studied = () if keys %$studied >= $STUDIED;
+        $found    = $studied->{$key} = [$normalised, $kept];
+    }
+    return $found->[0], {%{ $found->[1] }}, undef, {};
+}
+
+# Study a statement, as _study does, without keeping what was found.
+sub _study_afresh ($self, $statement, $attrs) {
     my $driver  = $self->{Driver}{Name};
     my $state   = $self->{private_ekorn};
-    my @pg      = qw(pg_placeholder_dollaronly pg_placeholder_nocolons);
     my %options = (
         ekorn_dialect => $driver,
-        ($driver eq 'Pg' ? map { ($_ => $self->{$_}) } @pg : ()),
+        ($driver eq 'Pg' ? map { ($_ => $self->{$_}) } @PG_OPTIONS : ()),
         %{ $state && $state->{Options} // {} },
         %{ $attrs // {} },
     );
