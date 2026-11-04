@@ -15,6 +15,7 @@ my %imported = (
         [qw(croak is_arrayref is_coderef is_hashref is_ref study_sql)],
     'DBIx::Squirrel::Pipeline'     => [qw(croak is_coderef)],
     'DBIx::Squirrel::Placeholders' => [qw(croak uniq)],
+    'DBIx::Squirrel::st'           => [qw(croak is_arrayref is_hashref)],
     'DBIx::Squirrel::Stop'         => [qw(croak)],
 );
 

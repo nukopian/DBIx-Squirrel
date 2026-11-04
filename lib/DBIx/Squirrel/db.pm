@@ -26,8 +26,17 @@ sub prepare ($self, $statement, $attrs = undef, @args) {
 
 # Prepare a statement, with placeholders in any style, using the DBI's
 # cache of statement handles, and return its handle.
+#
+# The DBI caches a handle by its statement and attributes, and different
+# statements can be rewritten the same, as "SELECT :a, :b" and
+# "SELECT :b, :a" both are, so the original statement goes in a private
+# attribute, to keep their handles apart.
 sub prepare_cached ($self, $statement, $attrs = undef, @args) {
     my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
+    $dbi_attrs = {
+        %{ $dbi_attrs // {} },
+        private_ekorn_statement => $state->{OriginalStatement},
+    };
     my $sth = $self->SUPER::prepare_cached($normalised, $dbi_attrs, @args)
         or croak $self->errstr;
     $sth->{private_ekorn} = $state;
@@ -41,6 +50,59 @@ sub do ($self, $statement, @args) {
     my $attrs = _shift_attrs(\@args);
     my $sth   = $self->prepare($statement, $attrs);
     return $sth->execute(@args);
+}
+
+
+# The DBI's select methods, each preparing the statement and binding its
+# values as DBIx::Squirrel does. Drivers built on the DBI's own C code,
+# such as DBD::SQLite, DBD::mysql and DBD::Pg, bind and execute in C, not
+# through DBIx::Squirrel's methods, so each is given a statement handle
+# with its values already bound.
+sub selectrow_array ($self, $statement, $attrs = undef, @args) {
+    return _select($self, 'selectrow_array', $statement, [], $attrs, @args);
+}
+
+
+sub selectrow_arrayref ($self, $statement, $attrs = undef, @args) {
+    return _select($self, 'selectrow_arrayref', $statement, [], $attrs, @args);
+}
+
+
+sub selectrow_hashref ($self, $statement, $attrs = undef, @args) {
+    return _select($self, 'selectrow_hashref', $statement, [], $attrs, @args);
+}
+
+
+sub selectall_arrayref ($self, $statement, $attrs = undef, @args) {
+    return _select($self, 'selectall_arrayref', $statement, [], $attrs, @args);
+}
+
+
+sub selectall_hashref ($self, $statement, $key_field, $attrs = undef, @args) {
+    return _select(
+        $self, 'selectall_hashref', $statement, [$key_field], $attrs, @args,
+    );
+}
+
+
+sub selectcol_arrayref ($self, $statement, $attrs = undef, @args) {
+    return _select($self, 'selectcol_arrayref', $statement, [], $attrs, @args);
+}
+
+
+# Call one of the DBI's select methods with a statement handle, prepared,
+# unless it was given one, and with any values bound. Return what the
+# DBI's method returns.
+sub _select ($self, $method, $statement, $before, $attrs, @args) {
+    my $sth
+        = $statement isa 'DBI::st'
+        ? $statement
+        : $self->prepare($statement, $attrs);
+    if (@args) {
+        $sth->bind(@args) or return;
+    }
+    my $super = "SUPER::$method";
+    return $self->$super($sth, @$before, $attrs);
 }
 
 
@@ -69,7 +131,29 @@ sub _study ($self, $statement, $attrs) {
         Placeholders      => $placeholders,
         OriginalStatement => $original,
         Options           => \%options,
+        Binds             => scalar _binds($placeholders, $normalised, $original),
     }, $dbi_attrs;
+}
+
+
+# Return a map of each number or name a statement's placeholders use to
+# the positions using it, from 1, or nothing if the statement goes to the
+# DBI as written: with "?" placeholders or none, or with placeholders left
+# for DBD::Pg to read.
+sub _binds ($placeholders, $normalised, $original) {
+    return if $normalised eq $original;
+    my %binds;
+    for my $position (sort { $a <=> $b } keys %$placeholders) {
+        my $placeholder = $placeholders->{$position};
+        my $key         = $placeholder =~ s( \A [?:\$] )()xr;
+        if ($key =~ m( \A \d+ \z )x) {
+            croak "Expected placeholders numbered from 1 ($placeholder)"
+                if $key == 0;
+            $key += 0;
+        }
+        push @{ $binds{$key} }, $position;
+    }
+    return \%binds;
 }
 
 
@@ -124,8 +208,8 @@ L<DBIx::Squirrel/tap> from L<DBIx::Squirrel::Pipes>.
     $sth = $dbh->prepare($statement, \%attr);
 
 Prepares a statement, as the DBI's C<prepare> does, and returns a
-L<DBIx::Squirrel::st>. The DBI's other methods that take a statement,
-such as C<selectrow_array>, prepare it this way too.
+L<DBIx::Squirrel::st>. L</do> and the DBI's select methods, such as
+C<selectrow_array>, prepare a statement this way too.
 
 The statement can use placeholders in any of these styles, which are
 rewritten as C<?> before the DBI sees them:
@@ -140,10 +224,9 @@ A statement uses one style of placeholder throughout; C<prepare> croaks
 if it finds more than one. The same placeholder can appear more than
 once.
 
-Placeholders are bound by position, as with C<?>. For now, one that
-appears twice, such as C<$1>, is two placeholders, each needing its own
-value. Binding a numbered placeholder once, wherever it appears, and
-named placeholders by name, is still to come.
+A numbered placeholder is bound once, wherever it appears, and a named
+one by name, as L<DBIx::Squirrel::st/bind> describes. Numbers start
+from 1.
 
 Placeholders are looked for only in the SQL itself. Anything that looks
 like one inside a quoted string or identifier (C<'10:30'>, C<"a:b">,
@@ -212,7 +295,20 @@ As L</prepare>, using the DBI's cache of statement handles.
 Prepares a statement, as L</prepare> does, executes it, and returns the
 number of rows affected, as the DBI's C<do> does. Unlike the DBI's, the
 attributes may be left out: the first argument after the statement is
-taken as the attributes only if it's a hash reference or C<undef>.
+taken as the attributes only if it's a hash reference or C<undef>. The
+values are bound as L<DBIx::Squirrel::st/bind> binds them.
+
+=head2 selectrow_array, selectrow_arrayref, selectrow_hashref
+
+=head2 selectall_arrayref, selectall_hashref, selectcol_arrayref
+
+    $ary_ref = $dbh->selectrow_arrayref($statement, \%attr, @bind_values);
+    $hash_ref = $dbh->selectall_hashref($statement, $key_field, \%attr, @bind_values);
+
+As the DBI's, preparing the statement as L</prepare> does, unless it's
+already a statement handle, and binding the values as
+L<DBIx::Squirrel::st/bind> binds them. The DBI's C<selectall_array>
+goes through C<selectall_arrayref>, so it does too.
 
 =head1 DIAGNOSTICS
 
@@ -223,6 +319,10 @@ taken as the attributes only if it's a hash reference or C<undef>.
 The statement used more than one style of placeholder, such as C<?> and
 C<:name>. The styles found are listed, each as an example: C<?>, C<?1>,
 C<:1>, C<$1>, C<:name> or C<$name>.
+
+=item Expected placeholders numbered from 1 (%s)
+
+The statement had a numbered placeholder such as C<$0>.
 
 =item Expected a statement
 

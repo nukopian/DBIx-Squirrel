@@ -20,6 +20,19 @@ Unreleased
       if the statement can't be prepared, whatever RaiseError says.
     - do takes bind values with the attributes left out, and returns
       what the DBI's do returns.
+    - Statement handles bind values by placeholder: a numbered
+      placeholder takes one value wherever it appears, in order of
+      number, and named ones take a value by name, as pairs or in a
+      hash reference, with or without the sigil. An array reference
+      of values stands for the values in it. execute, bind_param, a
+      new bind, do and the DBI's select methods all bind this way,
+      croaking at the caller if the values don't match the
+      placeholders.
+    - prepare_cached gives statements rewritten the same, such as
+      SELECT :a, :b and SELECT :b, :a, a handle each.
+    - The ekorn_finish_active attribute, on connect or prepare,
+      finishes a statement still active before executing it again.
+      The DBI doesn't, and by default neither does DBIx::Squirrel.
     - connect croaks on failure, and clones an existing database
       handle passed in place of a data source.
     - connect takes ekorn_ attributes, such as ekorn_dialect, as the

@@ -30,8 +30,8 @@ subtest 'prepare rewrites each placeholder style as ?' => sub {
         isa_ok $sth, ['DBIx::Squirrel::st'], "$p: a statement handle";
         is $sth->{Statement}, 'SELECT name FROM artist WHERE id = ?',
             "$p: the DBI sees ?";
-        $sth->execute(2);
-        is $sth->fetchrow_arrayref, ['Accept'], "$p: binds by position";
+        $sth->execute($p eq ':id' ? (id => 2) : 2);
+        is $sth->fetchrow_arrayref, ['Accept'], "$p: binds the value";
     }
 };
 
@@ -129,8 +129,9 @@ subtest 'do gives the same result as the DBI' => sub {
 
 subtest 'do takes bind values without attributes' => sub {
     my $dbh = connect_both()->{squirrel};
-    is $dbh->do('UPDATE artist SET name = :name WHERE id = :id', 'z', 2), 1,
-        'rows affected';
+    is $dbh->do('UPDATE artist SET name = :name WHERE id = :id', name => 'z',
+        id => 2),
+        1, 'rows affected';
     is $dbh->selectrow_array(
         'SELECT name FROM artist WHERE id = $1',
         undef, 2,
@@ -151,7 +152,7 @@ subtest 'do croaks on a reference other than a HASH or ARRAY' => sub {
 subtest "prepare reads a statement by its driver's rules" => sub {
     my $dbh = connect_both()->{squirrel};
     my $sth = $dbh->prepare(q{SELECT 'C:\', :x});
-    $sth->execute('y');
+    $sth->execute(x => 'y');
     is $sth->fetchrow_arrayref, ['C:\\', 'y'],
         "SQLite: a backslash doesn't escape the quote";
 
@@ -197,7 +198,7 @@ subtest 'the options a statement is studied with' => sub {
 subtest 'prepare takes ekorn_ attributes' => sub {
     my $dbh = connect_both()->{squirrel};
     my $sth = $dbh->prepare('SELECT :x', {ekorn_dialect => 'SQLite'});
-    $sth->execute(1);
+    $sth->execute(x => 1);
     is $sth->fetchrow_arrayref, [1], 'and prepares the statement';
 };
 
@@ -268,11 +269,32 @@ subtest 'connect discerns the dialect' => sub {
     is $gofer->{RaiseError}, T(), 'leaving RaiseError as it was';
 };
 
-todo 'binding an array reference waits on DBIx::Squirrel::st' => sub {
+subtest 'do binds an array reference of values' => sub {
     my $dbh = connect_both()->{squirrel};
-    my $rv
-        = eval { $dbh->do('UPDATE artist SET name = ? WHERE id = ?', ['w', 1]); };
-    is $rv, 1, 'an array reference of bind values';
+    is $dbh->do('UPDATE artist SET name = ? WHERE id = ?', ['w', 1]), 1,
+        'with ? placeholders';
+    is $dbh->do('UPDATE artist SET name = $1 WHERE id = $2', ['x', 1]), 1,
+        'and numbered ones';
+    is $dbh->selectrow_array('SELECT name FROM artist WHERE id = 1'), 'x',
+        'binding each value to its own placeholder';
+};
+
+subtest 'prepare_cached keeps statements rewritten the same apart' => sub {
+    my $dbh = connect_both()->{squirrel};
+    my $ab  = $dbh->prepare_cached('SELECT :a, :b');
+    my $ba  = $dbh->prepare_cached('SELECT :b, :a');
+    ok $ab != $ba, 'giving each its own handle';
+    is $ab->{private_ekorn}{Placeholders}, {1 => ':a', 2 => ':b'},
+        'the first keeps its placeholders';
+    is $ba->{private_ekorn}{Placeholders}, {1 => ':b', 2 => ':a'},
+        'and so does the second';
+    $ab->execute(a => 1, b => 2);
+    is $ab->fetchrow_arrayref, [1, 2], 'each binding by its own names';
+    $ba->execute(a => 1, b => 2);
+    is $ba->fetchrow_arrayref, [2, 1], 'in its own order';
+    $_->finish for $ab, $ba;
+    ref_is $dbh->prepare_cached('SELECT :b, :a'), $ba,
+        'and the same statement still gets the cached handle';
 };
 
 done_testing;

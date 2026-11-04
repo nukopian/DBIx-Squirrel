@@ -26,9 +26,10 @@ program-extensions = .pl .t
 [ClassHierarchies::ProhibitExplicitISA]
 severity = 2
 
-# The DBI's API names its methods connect and do, so subclasses must too.
+# The DBI's API names its methods connect and do, so subclasses must too,
+# and the statement handle's bind keeps the name DBIx-Squirrel 1 gave it.
 [Subroutines::ProhibitBuiltinHomonyms]
-allow = connect do
+allow = bind connect do
 
 # $DBI::errstr and its kin are the DBI's documented interface.
 [Variables::ProhibitPackageVars]

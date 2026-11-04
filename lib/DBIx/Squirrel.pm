@@ -50,7 +50,7 @@ sub _connect_attrs ($class, $attrs, $state = undef) {
     my %dbi_attrs = %$attrs;
     my %options   = (
         %{ $state && $state->{Options} // {} },
-        map { ($_ => delete $dbi_attrs{$_}) } grep { /^ekorn_/x } keys %$attrs,
+        map { ($_ => delete $dbi_attrs{$_}) } grep { m( \A ekorn_ )x } keys %$attrs,
     );
     return {
         %dbi_attrs,
@@ -80,10 +80,10 @@ sub _discern_dialect ($dbh) {
 sub _dialect ($dbh) {
     state %PASSES_ON = map { ($_ => 1) } qw(ADO Gofer JDBC ODBC Proxy);
     state @DIALECTS  = (
-        [qr/mariadb/xi  => 'MariaDB'],
-        [qr/mysql/xi    => 'mysql'],
-        [qr/postgres/xi => 'Pg'],
-        [qr/sqlite/xi   => 'SQLite'],
+        [qr( mariadb )xi  => 'MariaDB'],
+        [qr( mysql )xi    => 'mysql'],
+        [qr( postgres )xi => 'Pg'],
+        [qr( sqlite )xi   => 'SQLite'],
     );
     my $driver = $dbh->{Driver}{Name};
     return $driver
@@ -112,6 +112,17 @@ DBIx::Squirrel - DBI, minus the boilerplate, plus a pipeline
     use DBIx::Squirrel;
 
     my $dbh = DBIx::Squirrel->connect($data_source, $username, $password, \%attr);
+
+    # Placeholders in the style you like: ?, ?1, :1, $1 or :name
+    my $sth = $dbh->prepare('SELECT * FROM artist WHERE id = :id OR name = :name');
+
+    # Named placeholders bound by name, as pairs or in a hash reference
+    $sth->execute(id => 1, name => 'AC/DC');
+
+    # A numbered placeholder takes one value, wherever it appears
+    my $row = $dbh->selectrow_hashref(
+        'SELECT * FROM artist WHERE id = $1 OR parent_id = $1', undef, 2,
+    );
 
     # A new connection with the same parameters as an existing one
     my $other = DBIx::Squirrel->connect($dbh, \%attr);
