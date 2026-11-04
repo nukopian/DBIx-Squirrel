@@ -103,6 +103,14 @@ such as C<can>, C<isa> or C<get_column>, or one of its own. When two
 columns have one name, as in C<SELECT a.id, b.id>, the method is the
 first's. L</get_column> reaches every column.
 
+To give such a column a method, give it another name in the statement,
+with C<AS>:
+
+    my $row = $dbh->results(
+        'SELECT COUNT(*) AS total, class AS kind, b.id AS b_id FROM ...'
+    )->single;
+    say $row->total, ' ', $row->kind, ' ', $row->b_id;
+
 =head1 METHODS
 
 =head2 get_column
