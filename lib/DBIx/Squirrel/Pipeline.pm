@@ -8,6 +8,7 @@ use Carp      qw(croak);
 use Ref::Util qw(is_coderef is_ref);
 
 use DBIx::Squirrel::Errors qw(croakf);
+use DBIx::Squirrel::Util   qw(split_stages);
 
 use namespace::clean;
 
@@ -38,9 +39,7 @@ sub new ($class, @stages) {
 # Split the trailing code references off a list; return a pipeline running
 # values through them, and the rest of the list.
 sub from_args ($class, @args) {
-    my $n = @args;
-    while ($n && is_coderef($args[$n - 1])) { $n -= 1 }
-    my @stages = splice @args, $n;
+    my @stages = split_stages(\@args);
     return $class->new(@stages), @args;
 }
 
@@ -159,7 +158,7 @@ returns its values as they are.
 A pipeline is an object that can be called as a code reference. Called
 with values, it returns the list that comes out of the last stage:
 
-    my @ys = $p->(@xs);
+    my @results = $p->(@values);
 
 =head2 from_args
 

@@ -23,6 +23,7 @@ our @INTERNAL = qw(
     DBIx::Squirrel::Context  DBIx::Squirrel::Errors  DBIx::Squirrel::Iterator
     DBIx::Squirrel::Pipeline DBIx::Squirrel::Pipes   DBIx::Squirrel::Placeholders
     DBIx::Squirrel::Result   DBIx::Squirrel::Results DBIx::Squirrel::Sugar
+    DBIx::Squirrel::Util
 );
 our @CARP_NOT = @INTERNAL;
 

@@ -3,9 +3,9 @@ use v5.36;
 package DBIx::Squirrel::Result;
 
 use Digest::SHA qw(sha1_hex);
-use Sub::Util   qw(set_subname);
 
 use DBIx::Squirrel::Errors qw(croakf);
+use DBIx::Squirrel::Util   qw(install_sub is_name);
 
 use namespace::clean;
 
@@ -43,19 +43,12 @@ sub class_for ($base, $names) {
         @{ "${class}::ISA" } = ($base);
     }
     for my $name (keys %position) {
-        next if $name !~ m( \A [^\W\d] \w* \z )x || $base->can($name);
+        next if !is_name($name) || $base->can($name);
         my $n = $position{$name};
-        _install("${class}::$name", sub ($row) { $row->[$n] });
+        install_sub("${class}::$name", sub ($row) { $row->[$n] });
     }
     $position_of{$class} = \%position;
     return $class;
-}
-
-# Install a named subroutine.
-sub _install ($name, $code) {
-    no strict 'refs';    ## no critic (TestingAndDebugging::ProhibitNoStrict)
-    *{ $name } = set_subname($name, $code);
-    return;
 }
 
 1;

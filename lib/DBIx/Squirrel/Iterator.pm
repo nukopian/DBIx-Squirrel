@@ -4,12 +4,12 @@ package DBIx::Squirrel::Iterator;
 
 use experimental qw(builtin);
 
-use builtin   qw(weaken);
-use Ref::Util qw(is_coderef);
+use builtin qw(weaken);
 
 use DBIx::Squirrel::Context  qw();
 use DBIx::Squirrel::Errors   qw(croakf);
 use DBIx::Squirrel::Pipeline qw();
+use DBIx::Squirrel::Util     qw(split_stages);
 
 use namespace::clean;
 
@@ -24,7 +24,7 @@ my $BATCH_SIZE = 100;
 sub new ($class, $sth, @args) {
     croakf 'Expected a statement handle'
         unless $sth isa 'DBIx::Squirrel::st';
-    my @stages = _split_stages(\@args);
+    my @stages = split_stages(\@args);
     return bless {
         sth                 => $sth,
         bind_values_initial => \@args,
@@ -70,7 +70,7 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     croakf "Expected the statement handle's other iterator to be finished"
         if $other && $other != $self;
 
-    my @stages = _split_stages(\@args);
+    my @stages = split_stages(\@args);
     $self->{stages}        = [@{ $self->{stages_initial} }, @stages] if @stages;
     $self->{stages}      //= [@{ $self->{stages_initial} }];
     $self->{bind_values}   = \@args if @args;
@@ -79,8 +79,7 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     $sth->finish if $sth->{Active};
     $state->{Iterator} = $self;
     weaken $state->{Iterator};
-    %$self = (
-        %$self,
+    my %fresh = (
         executed  => 1,
         done      => 0,
         buffer    => [],
@@ -90,6 +89,7 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
         original  => undef,
         slice     => $self->_slice,
     );
+    @$self{keys %fresh} = values %fresh;
     $self->{done} = 1
         unless defined $sth->execute(@{ $self->{bind_values} });
     my $pipeline = DBIx::Squirrel::Pipeline->new(@{ $self->{stages} });
@@ -189,14 +189,6 @@ sub _slice ($self) {
 # subclass can make something else of it.
 sub _row ($self, $row) {
     return $row;
-}
-
-# Take the code references off the end of a list of arguments, and return
-# them.
-sub _split_stages ($args) {
-    my $n = @$args;
-    $n -= 1 while $n && is_coderef($args->[$n - 1]);
-    return splice @$args, $n;
 }
 
 1;

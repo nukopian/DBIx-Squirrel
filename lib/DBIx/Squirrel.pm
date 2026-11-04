@@ -3,12 +3,12 @@ use v5.36;
 package DBIx::Squirrel;
 
 use Carp                    qw(croak);
-use Data::Dumper            qw();
 use DBI                     qw();
 use DBI::Const::GetInfoType qw(%GetInfoType);
 use Ref::Util               qw(is_hashref);
 
 use DBIx::Squirrel::Stop qw();
+use DBIx::Squirrel::Util qw(canonical split_attrs);
 use DBIx::Squirrel::db   qw();
 use DBIx::Squirrel::st   qw();
 
@@ -29,7 +29,7 @@ sub connect ($class, $source, @args) {
     # The options go to the DBI as a string, so connect_cached, which keys
     # its cache on every attribute's value, finds a handle made with the
     # same ones. A handle it finds has them already.
-    $dbi_attrs->{private_ekorn_options} = _canonical($options) if %$options;
+    $dbi_attrs->{private_ekorn_options} = canonical($options) if %$options;
     my $dbh = $class->SUPER::connect($source, $username, $password, $dbi_attrs);
     croak _connect_failed($class, $source, $attrs->{Username} // $username)
         unless $dbh;
@@ -59,12 +59,10 @@ sub _connect_failed ($class, $source, $username) {
 # own, those starting "ekorn_", the defaults for the statements the handle
 # prepares, over any a cloned handle already had.
 sub _split_attrs ($class, $attrs, $state = undef) {
-    my %dbi_attrs = (%$attrs, RootClass => ref($class) || $class);
-    my %options   = (
-        %{ $state && $state->{Options} // {} },
-        map { ($_ => delete $dbi_attrs{$_}) } grep { m( \A ekorn_ )x } keys %$attrs,
-    );
-    return \%dbi_attrs, \%options;
+    my($dbi_attrs, $ekorn) = split_attrs($attrs);
+    $dbi_attrs->{RootClass} = ref($class) || $class;
+    my %options = (%{ $state && $state->{Options} // {} }, %$ekorn);
+    return $dbi_attrs, \%options;
 }
 
 # Return the attributes to clone a handle with, DBIx::Squirrel's own kept
@@ -73,11 +71,6 @@ sub _connect_attrs ($class, $attrs, $state = undef) {
     my($dbi_attrs, $options) = _split_attrs($class, $attrs, $state);
     $dbi_attrs->{private_ekorn} = {Options => $options} if %$options;
     return $dbi_attrs;
-}
-
-# Return options as a string, the same for the same options.
-sub _canonical ($options) {
-    return Data::Dumper->new([$options])->Indent(0)->Sortkeys(1)->Terse(1)->Dump;
 }
 
 # Give a handle the dialect its statements are read by, unless it was

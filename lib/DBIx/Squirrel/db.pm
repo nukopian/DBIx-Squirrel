@@ -2,14 +2,15 @@ use v5.36;
 
 package DBIx::Squirrel::db;
 
-use Carp         qw(croak);
-use Data::Dumper qw();
-use DBI          qw();
-use Ref::Util    qw(is_arrayref is_coderef is_hashref is_ref);
+use Carp       qw(croak);
+use DBI        qw();
+use List::Util qw(max);
+use Ref::Util  qw(is_arrayref is_coderef is_hashref is_ref);
 
 use DBIx::Squirrel::Errors       qw(at_caller croakf failed in_method);
 use DBIx::Squirrel::Placeholders qw(study_sql);
 use DBIx::Squirrel::Pipes        qw();
+use DBIx::Squirrel::Util         qw(canonical shift_attrs split_attrs);
 
 use namespace::clean;
 
@@ -29,6 +30,11 @@ sub prepare ($self, $statement, $attrs = undef, @args) {
 # nothing, as the DBI's prepare does, if it can't be prepared.
 sub _prepare ($self, $statement, $attrs, @args) {
     my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
+    return _prepare_studied($self, $normalised, $state, $dbi_attrs, @args);
+}
+
+# Prepare a statement studied already, as _prepare does.
+sub _prepare_studied ($self, $normalised, $state, $dbi_attrs, @args) {
     my $sth = at_caller { $self->SUPER::prepare($normalised, $dbi_attrs, @args) }
         or return;
     $sth->{private_ekorn} = $state;
@@ -44,13 +50,11 @@ sub _prepare ($self, $statement, $attrs, @args) {
 # attribute, to keep their handles apart, with DBIx::Squirrel's own
 # attributes, which the DBI doesn't see, as a string.
 sub prepare_cached ($self, $statement, $attrs = undef, @args) {
-    my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
-    my %ekorn = map { ($_ => $attrs->{$_}) }
-        grep { m( \A ekorn_ )x } keys %{ $attrs // {} };
+    my($normalised, $state, $dbi_attrs, $ekorn) = _study($self, $statement, $attrs);
     $dbi_attrs = {
         %{ $dbi_attrs // {} },
         private_ekorn_statement => $state->{OriginalStatement},
-        (%ekorn ? (private_ekorn_options => _canonical(\%ekorn)) : ()),
+        (%$ekorn ? (private_ekorn_options => canonical($ekorn)) : ()),
     };
     my $sth = in_method $self, 'prepare_cached', sub {
         at_caller { $self->SUPER::prepare_cached($normalised, $dbi_attrs, @args) }
@@ -62,11 +66,6 @@ sub prepare_cached ($self, $statement, $attrs = undef, @args) {
     return $sth;
 }
 
-# Return options as a string, the same for the same options.
-sub _canonical ($options) {
-    return Data::Dumper->new([$options])->Indent(0)->Sortkeys(1)->Terse(1)->Dump;
-}
-
 # Run a statement, and return what the DBI's do returns. Unlike the DBI's,
 # the attributes may be left out. A statement DBIx::Squirrel doesn't
 # rewrite goes to the driver's own do, as with plain DBI, so the driver's
@@ -74,11 +73,12 @@ sub _canonical ($options) {
 # apply; any other is prepared and executed, returning undef, as the DBI
 # does, if it can't be prepared.
 sub do ($self, $statement, @args) {
-    my $attrs = _shift_attrs(\@args);
+    my $attrs = shift_attrs(\@args);
     my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
     if ($state->{Binds}) {
         return in_method $self, 'do', sub {
-            my $sth = _prepare($self, $statement, $attrs) or return;
+            my $sth = _prepare_studied($self, $normalised, $state, $dbi_attrs)
+                or return;
             return $sth->execute(@args);
         };
     }
@@ -96,23 +96,27 @@ sub _values_taken ($placeholders) {
     my @placeholders = values %$placeholders;
     return scalar @placeholders
         unless @placeholders && $placeholders[0] =~ m( \A \$ )x;
-    my($highest) = sort { $b <=> $a } map { s( \A \$ )()xr } @placeholders;
-    return $highest;
+    return max map { s( \A \$ )()xr } @placeholders;
 }
 
 # Prepare a statement, and return an iterator over its results, executed
 # with the bind values given, and run through the stages given after
 # them. As with do, the attributes may be left out.
 sub iterate ($self, $statement, @args) {
-    my $attrs = @args && is_coderef($args[0]) ? undef : _shift_attrs(\@args);
-    return $self->prepare($statement, $attrs)->iterate(@args);
+    return _prepare_to_iterate($self, $statement, \@args)->iterate(@args);
 }
 
 # Prepare a statement, and return a result set over its results, as
 # iterate does.
 sub results ($self, $statement, @args) {
-    my $attrs = @args && is_coderef($args[0]) ? undef : _shift_attrs(\@args);
-    return $self->prepare($statement, $attrs)->results(@args);
+    return _prepare_to_iterate($self, $statement, \@args)->results(@args);
+}
+
+# Prepare a statement for iterate or results, taking the attributes off
+# the front of their arguments, unless a stage is there.
+sub _prepare_to_iterate ($self, $statement, $args) {
+    my $attrs = @$args && is_coderef($args->[0]) ? undef : shift_attrs($args);
+    return $self->prepare($statement, $attrs);
 }
 
 # The DBI's select methods, each preparing the statement and binding its
@@ -182,8 +186,9 @@ sub _select ($self, $method, $statement, $before, $attrs, @args) {
 }
 
 # Return a statement with its placeholders rewritten as "?", for the DBI
-# to prepare, what its statement handle keeps about it, and the attributes
-# to prepare it with, without DBIx::Squirrel's own. Study it with the
+# to prepare, what its statement handle keeps about it, the attributes to
+# prepare it with, without DBIx::Squirrel's own, and DBIx::Squirrel's own,
+# those given, apart from the handle's defaults. Study it with the
 # driver's name, DBD::Pg's placeholder options from the handle, the
 # handle's own defaults, from connect, and the attributes given, each
 # overriding the last.
@@ -203,14 +208,13 @@ sub _study ($self, $statement, $attrs) {
     my($placeholders, $normalised, $original)
         = study_sql(_statement_text($statement), \%options)
         or croakf 'Expected a statement';
-    my $dbi_attrs = $attrs
-        && {map { ($_ => $attrs->{$_}) } grep { !m( \A ekorn_ )x } keys %$attrs};
-    return $normalised, {
+    my %state = (
         Placeholders      => $placeholders,
         OriginalStatement => $original,
         Options           => \%options,
         Binds             => scalar _binds($placeholders, $normalised, $original),
-    }, $dbi_attrs;
+    );
+    return $normalised, \%state, split_attrs($attrs);
 }
 
 # Return a map of each number or name a statement's placeholders use to
@@ -245,18 +249,6 @@ sub _statement_text ($statement) {
     }
     croakf 'Expected a statement' if is_ref($statement);
     return $statement;
-}
-
-# Take the attributes off the front of the arguments to do, if they're
-# there: a hash reference, or undef, as the DBI allows. An array reference
-# or a plain value there is a bind value, and is left in place.
-sub _shift_attrs ($args) {
-    return unless @$args;
-    my $first = $args->[0];
-    return shift @$args if !defined $first || is_hashref($first);
-    croakf 'Expected a reference to a HASH or ARRAY'
-        if is_ref($first) && !is_arrayref($first);
-    return;
 }
 
 1;

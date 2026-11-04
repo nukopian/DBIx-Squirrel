@@ -6,6 +6,7 @@ use Ref::Util qw(is_arrayref is_coderef is_hashref);
 
 use DBIx::Squirrel         qw();
 use DBIx::Squirrel::Errors qw(croakf);
+use DBIx::Squirrel::Util   qw(install_sub is_name shift_attrs split_stages);
 
 use namespace::clean;
 
@@ -79,7 +80,7 @@ sub statement ($name, $database, $statement, @rest) {
 # the function.
 sub _define ($package, $name, @connect) {
     croakf 'Expected a name for a database (%s)', $name
-        unless _is_name($name);
+        unless is_name($name);
     croakf 'Expected a database defined once (%s)', $name
         if $connect_args{$name};
     my $function = sub (@args) { _run($name, @args) };
@@ -93,7 +94,7 @@ sub _define ($package, $name, @connect) {
 sub _define_statement ($package, $name, @definition) {
     my($database, $statement, @rest) = @definition;
     croakf 'Expected a name for a statement (%s)', $name
-        unless _is_name($name);
+        unless is_name($name);
     croakf 'Expected a database and a statement for %s', $name
         unless defined $database && defined $statement;
     my $attrs = @rest
@@ -122,17 +123,10 @@ sub _run_statement ($definition, @args) {
     my $sth       = $dbh->prepare_cached(@statement, 3);
     $sth = $dbh->prepare(@statement)
         if DBIx::Squirrel::Iterator::_going($sth);    ## no critic (Subroutines::ProtectPrivateSubs)
-    my $n = @args;
-    $n -= 1 while $n && is_coderef($args[$n - 1]);
-    my @stages = (@{ $definition->{stages} }, splice @args, $n);
+    my @stages = (@{ $definition->{stages} }, split_stages(\@args));
     return $sth->iterate(@args, @stages)->all if @stages;
     defined $sth->execute(@args) or return;
     return $sth;
-}
-
-# Return true if a name can be a function's.
-sub _is_name ($name) {
-    return $name =~ m( \A [^\W\d] \w* \z )x;
 }
 
 # Run what a database's function is given: nothing, for the handle; a
@@ -149,7 +143,7 @@ sub _run ($name, @args) {
         return $statement;
     }
     return $dbh->iterate($statement, @args)->all if $stages;
-    my $attrs = DBIx::Squirrel::db::_shift_attrs(\@args);    ## no critic (Subroutines::ProtectPrivateSubs)
+    my $attrs = shift_attrs(\@args);
     my $sth   = $dbh->prepare($statement, $attrs);
     defined $sth->execute(@args) or return;
     return $sth;
@@ -162,8 +156,7 @@ sub _install ($package, $name, $code) {
     return if $have && $have == $code;
     croakf 'Expected no function of the name in %s already (%s)', $package, $name
         if $have;
-    no strict 'refs';    ## no critic (TestingAndDebugging::ProhibitNoStrict)
-    *{ "${package}::$name" } = $code;
+    install_sub("${package}::$name", $code);
     return;
 }
 

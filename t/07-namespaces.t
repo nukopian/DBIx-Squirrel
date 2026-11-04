@@ -12,26 +12,38 @@ use DBIx::Squirrel::Pipeline;
 use DBIx::Squirrel::Placeholders;
 use DBIx::Squirrel::Stop  ();
 use DBIx::Squirrel::Sugar ();
+use DBIx::Squirrel::Util;
 
 # Imported functions are cleaned out of each package, so they can't be
 # called as methods.
 my %imported = (
-    'DBIx::Squirrel'     => [qw(croak is_hashref)],
+    'DBIx::Squirrel'     => [qw(canonical croak is_hashref split_attrs)],
     'DBIx::Squirrel::db' => [
         qw(
-            at_caller  croak     croakf failed is_arrayref is_coderef
-            is_hashref in_method is_ref study_sql
+            at_caller   canonical  croak     croakf failed is_arrayref
+            is_coderef  is_hashref in_method is_ref max    shift_attrs
+            split_attrs study_sql
         ),
     ],
-    'DBIx::Squirrel::Errors'       => [qw(croak  is_ref)],
-    'DBIx::Squirrel::Iterator'     => [qw(croakf is_coderef weaken)],
-    'DBIx::Squirrel::Pipeline'     => [qw(croak  croakf     is_coderef)],
+    'DBIx::Squirrel::Errors'   => [qw(croak  is_ref)],
+    'DBIx::Squirrel::Iterator' => [qw(croakf is_coderef split_stages weaken)],
+    'DBIx::Squirrel::Pipeline' =>
+        [qw(croak croakf is_coderef is_ref split_stages)],
     'DBIx::Squirrel::Placeholders' => [qw(croakf uniq)],
-    'DBIx::Squirrel::Result'       => [qw(croakf sha1_hex set_subname)],
-    'DBIx::Squirrel::Results'      => [qw(croakf)],
-    'DBIx::Squirrel::Stop'         => [qw(croak)],
-    'DBIx::Squirrel::Sugar' => [qw(croakf    is_arrayref is_coderef  is_hashref)],
-    'DBIx::Squirrel::st'    => [qw(at_caller croakf      is_arrayref is_hashref)],
+    'DBIx::Squirrel::Result'       =>
+        [qw(croakf install_sub is_name sha1_hex set_subname)],
+    'DBIx::Squirrel::Results' => [qw(croakf)],
+    'DBIx::Squirrel::Stop'    => [qw(croak)],
+    'DBIx::Squirrel::Sugar'   => [
+        qw(
+            croakf     install_sub is_arrayref is_coderef
+            is_hashref is_name     shift_attrs split_stages
+        ),
+    ],
+    'DBIx::Squirrel::st'   => [qw(at_caller croakf is_arrayref is_hashref max)],
+    'DBIx::Squirrel::Util' => [
+        qw(croakf is_arrayref is_coderef is_hashref is_ref set_subname subname),
+    ],
 );
 
 for my $pkg (sort keys %imported) {
@@ -45,6 +57,7 @@ subtest 'what the packages need is kept' => sub {
     ok +DBIx::Squirrel::Stop->can('import'),         'Stop can export';
     ok +DBIx::Squirrel::Sugar->can('import'),        'Sugar can export';
     ok +DBIx::Squirrel::Sugar->can('database'),      'and keeps database';
+    ok +DBIx::Squirrel::Util->can('import'),         'Util can export';
 
     my $p = DBIx::Squirrel::Pipeline->new(sub { $_ * 2 });
     is [$p->(1, 2)], [2, 4], 'a pipeline can be called';

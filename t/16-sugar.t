@@ -3,6 +3,7 @@ use Test2::V0;
 use Test2::Plugin::NoWarnings;
 
 use DBIx::Squirrel;
+use Sub::Util qw();
 
 # An in-memory SQLite database lasts as long as its handle, which
 # connect_cached keeps, so each use of music sees the same one.
@@ -35,6 +36,9 @@ subtest 'defined on use' => sub {
     ref_is music,             music, 'the same handle each time';
     ref_is database('music'), music, 'database gives it too';
     ok main->can('database'), 'database is imported';
+    is Sub::Util::subname(\&music), 'main::music', 'named, for stack traces';
+    is Sub::Util::subname(\&database), 'DBIx::Squirrel::Sugar::database',
+        'leaving the name of one imported';
 };
 
 subtest 'a statement, executed' => sub {

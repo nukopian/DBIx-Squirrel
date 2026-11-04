@@ -2,8 +2,9 @@ use v5.36;
 
 package DBIx::Squirrel::st;
 
-use DBI       qw();
-use Ref::Util qw(is_arrayref is_hashref);
+use DBI        qw();
+use List::Util qw(max);
+use Ref::Util  qw(is_arrayref is_hashref);
 
 use DBIx::Squirrel::Errors   qw(at_caller croakf);
 use DBIx::Squirrel::Iterator qw();
@@ -110,8 +111,7 @@ sub _values_taken ($self) {
         or return $self->{NUM_OF_PARAMS};
     return 0
         unless _numbered($binds);
-    my($highest) = sort { $b <=> $a } keys %$binds;
-    return $highest;
+    return max keys %$binds;
 }
 
 # Return the statement's map of each placeholder's number or name to its
@@ -137,7 +137,7 @@ sub _numbered ($binds) {
 # croaking unless there's a value for each, and no other.
 sub _values_for ($binds, @args) {
     if (_numbered($binds)) {
-        my($needed) = sort { $b <=> $a } keys %$binds;
+        my $needed = max keys %$binds;
         croakf 'Expected %d bind values, not %d', $needed, scalar @args
             unless @args == $needed;
         return map { ($_ => $args[$_ - 1]) } keys %$binds;
