@@ -45,7 +45,7 @@ sub next ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
 # Return the results not yet fetched, or, in scalar context, how many
 # there were.
-sub all ($self) {
+sub all ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     _executed($self);
     my @results;
     push @results, _take($self) while _peek($self);
