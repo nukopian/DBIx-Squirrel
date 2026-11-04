@@ -32,7 +32,6 @@ sub bind ($self, @args) {
     return _bind($self, _unwrap($self, @args));
 }
 
-
 # Bind values, as bind does, given as a list.
 sub _bind ($self, @args) {
     my $binds = _binds($self);
@@ -49,7 +48,6 @@ sub _bind ($self, @args) {
     }
     return $self;
 }
-
 
 # Bind a value to a placeholder, as the DBI's bind_param does, given its
 # number or its name, with or without the sigil, and bind it to every use
@@ -73,7 +71,6 @@ sub bind_param ($self, $param, $value, @attrs) {
     return $rv;
 }
 
-
 # Execute the statement, as the DBI's execute does, binding any values
 # given as bind does first. With the ekorn_finish_active attribute, a
 # statement still active from an earlier execute is finished first.
@@ -88,20 +85,17 @@ sub execute ($self, @args) {
     return at_caller { $self->SUPER::execute };
 }
 
-
 # Return an iterator over the statement's results, executed with the bind
 # values given, and run through the stages given after them.
 sub iterate ($self, @args) {
     return DBIx::Squirrel::Iterator->new($self, @args);
 }
 
-
 # Return a result set over the statement's results: an iterator handing
 # out rows as objects.
 sub results ($self, @args) {
     return DBIx::Squirrel::Results->new($self, @args);
 }
-
 
 # Return the values given, or those in an array reference given alone,
 # unless it's a value itself. DBD::Pg binds an array reference as a
@@ -115,7 +109,6 @@ sub _unwrap ($self, @args) {
     return @{ $args[0] };
 }
 
-
 # Return how many values the statement takes in order: one for each
 # placeholder the DBI sees, or each number, or none if they're named.
 sub _values_taken ($self) {
@@ -127,7 +120,6 @@ sub _values_taken ($self) {
     return $highest;
 }
 
-
 # Return the statement's map of each placeholder's number or name to its
 # positions, or nothing if the statement went to the DBI as written.
 sub _binds ($self) {
@@ -135,20 +127,17 @@ sub _binds ($self) {
     return $state && $state->{Binds};
 }
 
-
 # Return a placeholder's number or name, as the statement's map keys it.
 sub _key ($param) {
     my $key = $param =~ s( \A [?:\$] )()xr;
     return $key =~ m( \A \d+ \z )x ? 0+ $key : $key;
 }
 
-
 # Return true if a statement's placeholders are numbered, not named.
 sub _numbered ($binds) {
     my($key) = keys %$binds;
     return $key =~ m( \A \d+ \z )x;
 }
-
 
 # Return each placeholder's number or name, with the value given for it,
 # croaking unless there's a value for each, and no other.

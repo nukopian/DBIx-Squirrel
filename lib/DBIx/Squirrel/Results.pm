@@ -25,14 +25,12 @@ sub _slice ($self) {    ## no critic (Subroutines::ProhibitUnusedPrivateSubrouti
     return [];
 }
 
-
 # Bless a row into the class for the statement's columns. The iterator
 # calls it for each row it fetches.
 sub _row ($self, $row) {    ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
     $self->{row_class} //= _base_class($self)->class_for($self->sth->{NAME_lc});
     return bless $row, $self->{row_class};
 }
-
 
 # Return the base class of the rows' class: the ekorn_result_class
 # attribute, or DBIx::Squirrel::Result.

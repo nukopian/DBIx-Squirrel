@@ -19,18 +19,15 @@ sub iterator (@) {
     return $context{iterator};
 }
 
-
 # The number of the result being made, from 1.
 sub result_number (@) {
     return $context{number};
 }
 
-
 # The row the result is being made from, as it was fetched.
 sub result_original (@) {
     return $context{original};
 }
-
 
 # For DBIx::Squirrel's iterators: run code with the context given, and
 # return what it returns.
@@ -38,7 +35,6 @@ sub within ($values, $code) {
     local @context{keys %$values} = values %$values;
     return $code->();
 }
-
 
 # For DBIx::Squirrel's iterators: change the original row while code run
 # by within runs.

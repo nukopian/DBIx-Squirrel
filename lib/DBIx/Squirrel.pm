@@ -41,7 +41,6 @@ sub _connect_dbh ($class, $dbh, @args) {
     return _discern_dialect($clone);
 }
 
-
 # Return the message the DBI raises under RaiseError when it can't
 # connect, without the dbi:Driver: prefix of the data source, as the
 # DBI's message has none.

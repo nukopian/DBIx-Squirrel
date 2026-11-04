@@ -45,7 +45,6 @@ sub at_caller : prototype(&) ($code) {    ## no critic (Subroutines::RequireFina
     }
 }
 
-
 # Croak with a message made by sprintf from a format and its arguments,
 # as croak itself would, at the same line: goto leaves no frame of its
 # own for Carp to see. It's a sub without a signature, as goto passes @_.
@@ -55,13 +54,11 @@ sub croakf {    ## no critic (Subroutines::RequireArgUnpacking)
     goto &Carp::croak;
 }
 
-
 # Return the message the DBI raises when a handle's method fails, as
 # "DBD::SQLite::db prepare failed: ...".
 sub failed ($h, $method) {
     return "$h->{ImplementorClass} $method failed: @{[ $h->errstr // '' ]}";
 }
-
 
 # Run code as a method of a database handle, and return what it returns.
 # An error the DBI raises for a method the code calls, such as prepare or

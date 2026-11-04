@@ -29,7 +29,6 @@ sub prepare ($self, $statement, $attrs = undef, @args) {
         || croak failed($self, 'prepare');
 }
 
-
 # Prepare a statement, as prepare does, and return its handle, or
 # nothing, as the DBI's prepare does, if it can't be prepared.
 sub _prepare ($self, $statement, $attrs, @args) {
@@ -39,7 +38,6 @@ sub _prepare ($self, $statement, $attrs, @args) {
     $sth->{private_ekorn} = $state;
     return $sth;
 }
-
 
 # Prepare a statement, with placeholders in any style, using the DBI's
 # cache of statement handles, and return its handle.
@@ -61,7 +59,6 @@ sub prepare_cached ($self, $statement, $attrs = undef, @args) {
     $sth->{private_ekorn} = $state;
     return $sth;
 }
-
 
 # Run a statement, and return what the DBI's do returns. Unlike the DBI's,
 # the attributes may be left out. A statement DBIx::Squirrel doesn't
@@ -85,7 +82,6 @@ sub do ($self, $statement, @args) {
     return at_caller { $self->SUPER::do($normalised, $dbi_attrs, @args) };
 }
 
-
 # Return how many values a statement the DBI binds as written takes: one
 # for each "?", or the highest number of those DBD::Pg reads as "$1".
 sub _values_taken ($placeholders) {
@@ -96,7 +92,6 @@ sub _values_taken ($placeholders) {
     return $highest;
 }
 
-
 # Prepare a statement, and return an iterator over its results, executed
 # with the bind values given, and run through the stages given after
 # them. As with do, the attributes may be left out.
@@ -105,14 +100,12 @@ sub iterate ($self, $statement, @args) {
     return $self->prepare($statement, $attrs)->iterate(@args);
 }
 
-
 # Prepare a statement, and return a result set over its results, as
 # iterate does.
 sub results ($self, $statement, @args) {
     my $attrs = @args && is_coderef($args[0]) ? undef : _shift_attrs(\@args);
     return $self->prepare($statement, $attrs)->results(@args);
 }
-
 
 # The DBI's select methods, each preparing the statement and binding its
 # values as DBIx::Squirrel does. Drivers built on the DBI's own C code,
@@ -150,7 +143,6 @@ sub selectcol_arrayref ($self, $statement, $attrs = undef, @args) {
     return _select($self, 'selectcol_arrayref', $statement, [], $attrs, @args);
 }
 
-
 # Call one of the DBI's select methods with a statement handle, prepared,
 # unless it was given one, and with any values bound. Return what the
 # DBI's method returns.
@@ -180,7 +172,6 @@ sub _select ($self, $method, $statement, $before, $attrs, @args) {
         at_caller { $self->$super($sth, @$before, $attrs, @values) };
     };
 }
-
 
 # Return a statement with its placeholders rewritten as "?", for the DBI
 # to prepare, what its statement handle keeps about it, and the attributes
@@ -214,7 +205,6 @@ sub _study ($self, $statement, $attrs) {
     }, $dbi_attrs;
 }
 
-
 # Return a map of each number or name a statement's placeholders use to
 # the positions using it, from 1, or nothing if the statement goes to the
 # DBI as written: with "?" placeholders or none, or with placeholders left
@@ -235,7 +225,6 @@ sub _binds ($placeholders, $normalised, $original) {
     return \%binds;
 }
 
-
 # Return the text of a statement given as a string, as lines in an array
 # reference, as a code reference returning either, or as a statement
 # handle.
@@ -249,7 +238,6 @@ sub _statement_text ($statement) {
     croak 'Expected a statement' if is_ref($statement);
     return $statement;
 }
-
 
 # Take the attributes off the front of the arguments to do, if they're
 # there: a hash reference, or undef, as the DBI allows. An array reference

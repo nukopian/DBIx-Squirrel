@@ -258,6 +258,10 @@ logs, Term::ANSIColor, IO::Pager, Email::Stuffer).
 
 - **Data::Dump**'s `pp` is for looking at data while debugging, not for
   the shipped modules or for test expectations (see Tests).
+- **Two blank lines between subs, or one above a sub's comment.** A sub
+  without a comment above it has two blank lines before it, to make the
+  gap between subs plain; one with a comment has one, above the
+  comment, which marks the gap itself. Perl::Tidy keeps either.
 - **Every regex takes the `x` flag** and is written with its operator
   and parentheses: `m( \A \d+ \z )x`, `s( \s+ \z )()xr`, `qr( ... )x`;
   never `/.../`. The whitespace makes a regex easier to read, and the

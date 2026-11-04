@@ -36,14 +36,12 @@ sub new ($class, $sth, @args) {
     }, $class;
 }
 
-
 # Return the next result, or nothing when there are no more, executing the
 # statement first if it hasn't been.
 sub next ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     _executed($self);
     return _take($self);
 }
-
 
 # Return the results not yet fetched, or, in scalar context, how many
 # there were.
@@ -53,7 +51,6 @@ sub all ($self) {
     push @results, _take($self) while _peek($self);
     return @results;
 }
-
 
 # Execute the statement again, and return its one result, or nothing if
 # it has none, croaking if it has more than one.
@@ -65,7 +62,6 @@ sub single ($self) {
     croak 'Expected one result, not more' if $more;
     return $result;
 }
-
 
 # Execute the statement again, ready to iterate from its first row, and
 # return the iterator. Bind values given replace those given before;
@@ -105,7 +101,6 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     return $self;
 }
 
-
 # Return the number of results fetched so far.
 sub count ($self) {
     return $self->{count} // 0;
@@ -116,13 +111,11 @@ sub sth ($self) {
     return $self->{sth};
 }
 
-
 # Execute the statement, unless it's been executed.
 sub _executed ($self) {
     $self->reset unless $self->{executed};
     return;
 }
-
 
 # Take the next result, returning it as a list of one, or an empty list
 # when there are no more.
@@ -132,7 +125,6 @@ sub _take ($self) {
     $self->{count}++;
     return $result;
 }
-
 
 # Run the stages until the next result comes out of them, and keep it, so
 # a result can be looked for without being taken. Return true if there's
@@ -157,14 +149,12 @@ sub _peek ($self) {
     return 1;
 }
 
-
 # Stop iterating, and finish the statement.
 sub _finish ($self) {
     @$self{qw(done lookahead buffer)} = (1, undef, []);
     $self->{sth}->finish if $self->{sth}{Active};
     return;
 }
-
 
 # Return a source for the pipeline: a closure returning the statement's
 # next row, fetched a batch at a time, or nothing.
@@ -185,20 +175,17 @@ sub _source ($self) {
     };
 }
 
-
 # Return the slice rows are fetched as: the ekorn_slice attribute, or
 # arrays; a subclass can choose its own.
 sub _slice ($self) {
     return $self->{sth}{private_ekorn}{Options}{ekorn_slice} // [];
 }
 
-
 # Return a row as the stages are to see it: as it was fetched, here; a
 # subclass can make something else of it.
 sub _row ($self, $row) {
     return $row;
 }
-
 
 # Take the code references off the end of a list of arguments, and return
 # them.

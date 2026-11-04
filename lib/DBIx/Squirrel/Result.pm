@@ -29,7 +29,6 @@ sub get_column ($self, $column) {
     return $self->[$n];
 }
 
-
 # For DBIx::Squirrel::Results: return the row class, a subclass of the
 # invocant, for rows with the columns named, making it the first time,
 # with an accessor for each column.
@@ -53,7 +52,6 @@ sub class_for ($base, $names) {
     $position_of{$class} = \%position;
     return $class;
 }
-
 
 # Install a named subroutine.
 sub _install ($name, $code) {
