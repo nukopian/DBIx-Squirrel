@@ -258,6 +258,13 @@ logs, Term::ANSIColor, IO::Pager, Email::Stuffer).
 
 - **Data::Dump**'s `pp` is for looking at data while debugging, not for
   the shipped modules or for test expectations (see Tests).
+- **`croakf` raises our own errors.** A message DBIx::Squirrel writes is
+  raised with `croakf` from DBIx::Squirrel::Errors, a `sprintf` format
+  and its arguments, as in `croakf 'Expected a column of the row (%s)',
+  $column`, so each message is one plain string, matching its
+  DIAGNOSTICS entry. `croak` is for what we pass on: the DBI's own
+  messages, which can hold a `%`, and objects, such as a stop. A `%` in
+  a message of our own is written `%%`.
 - **Two blank lines between subs, or one above a sub's comment.** A sub
   without a comment above it has two blank lines before it, to make the
   gap between subs plain; one with a comment has one, above the

@@ -5,10 +5,10 @@ package DBIx::Squirrel::Iterator;
 use experimental qw(builtin);
 
 use builtin   qw(weaken);
-use Carp      qw(croak);
 use Ref::Util qw(is_coderef);
 
 use DBIx::Squirrel::Context  qw();
+use DBIx::Squirrel::Errors   qw(croakf);
 use DBIx::Squirrel::Pipeline qw();
 
 use namespace::clean;
@@ -26,7 +26,7 @@ my $BATCH_SIZE = 100;
 # Return a new iterator over the rows of a statement handle, executed with
 # the bind values given, and run through the stages given after them.
 sub new ($class, $sth, @args) {
-    croak 'Expected a statement handle'
+    croakf 'Expected a statement handle'
         unless $sth isa 'DBIx::Squirrel::st';
     my @stages = _split_stages(\@args);
     return bless {
@@ -59,7 +59,7 @@ sub single ($self) {
     my($result) = _take($self) or return;
     my $more = _peek($self);
     _finish($self);
-    croak 'Expected one result, not more' if $more;
+    croakf 'Expected one result, not more' if $more;
     return $result;
 }
 
@@ -71,7 +71,7 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     my $sth   = $self->{sth};
     my $state = $sth->{private_ekorn} //= {};
     my $other = $state->{Iterator};
-    croak "Expected the statement handle's other iterator to be finished"
+    croakf "Expected the statement handle's other iterator to be finished"
         if $other && $other != $self && $other->{executed} && !$other->{done};
 
     my @stages = _split_stages(\@args);

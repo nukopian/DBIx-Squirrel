@@ -7,6 +7,8 @@ use experimental qw(try);
 use Carp      qw(croak);
 use Ref::Util qw(is_coderef);
 
+use DBIx::Squirrel::Errors qw(croakf);
+
 use namespace::clean;
 
 use overload '&{}' => sub ($self, @) { $self->{call} }, fallback => 1;
@@ -17,7 +19,7 @@ our @CARP_NOT = qw(DBIx::Squirrel DBIx::Squirrel::Pipes);
 # stages.
 sub new ($class, @stages) {
     for my $n (1 .. @stages) {
-        croak "Stage #$n is not a code-reference"
+        croakf 'Stage #%d is not a code-reference', $n
             unless is_coderef($stages[$n - 1]);
     }
     return bless {
@@ -44,7 +46,7 @@ sub from_args ($class, @args) {
 # Return a closure handing out, one per call, the values from $source run
 # through the stages.
 sub iterator ($self, $source) {
-    croak "Expected a code-reference" unless is_coderef($source);
+    croakf 'Expected a code-reference' unless is_coderef($source);
     return _iterator($self->{stages}, $source);
 }
 

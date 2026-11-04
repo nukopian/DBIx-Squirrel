@@ -2,9 +2,10 @@ use v5.36;
 
 package DBIx::Squirrel::Result;
 
-use Carp        qw(croak);
 use Digest::SHA qw(sha1_hex);
 use Sub::Util   qw(set_subname);
+
+use DBIx::Squirrel::Errors qw(croakf);
 
 use namespace::clean;
 
@@ -24,7 +25,7 @@ sub get_column ($self, $column) {
         = $column =~ m( \A \d+ \z )x
         ? $column
         : $position_of{ref $self}{lc $column};
-    croak "Expected a column of the row ($column)"
+    croakf 'Expected a column of the row (%s)', $column
         if !defined $n || $n >= @$self;
     return $self->[$n];
 }

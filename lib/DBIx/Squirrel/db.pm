@@ -6,7 +6,7 @@ use Carp      qw(croak);
 use DBI       qw();
 use Ref::Util qw(is_arrayref is_coderef is_hashref is_ref);
 
-use DBIx::Squirrel::Errors       qw(at_caller failed in_method);
+use DBIx::Squirrel::Errors       qw(at_caller croakf failed in_method);
 use DBIx::Squirrel::Placeholders qw(study_sql);
 use DBIx::Squirrel::Pipes        qw();
 
@@ -190,11 +190,11 @@ sub _study ($self, $statement, $attrs) {
         %{ $attrs // {} },
     );
     my $slice = $options{ekorn_slice};
-    croak 'Expected ekorn_slice to be a reference to an ARRAY or HASH'
+    croakf 'Expected ekorn_slice to be a reference to an ARRAY or HASH'
         if defined $slice && !is_arrayref($slice) && !is_hashref($slice);
     my($placeholders, $normalised, $original)
         = study_sql(_statement_text($statement), \%options)
-        or croak 'Expected a statement';
+        or croakf 'Expected a statement';
     my $dbi_attrs = $attrs
         && {map { ($_ => $attrs->{$_}) } grep { !m( \A ekorn_ )x } keys %$attrs};
     return $normalised, {
@@ -216,7 +216,7 @@ sub _binds ($placeholders, $normalised, $original) {
         my $placeholder = $placeholders->{$position};
         my $key         = $placeholder =~ s( \A [?:\$] )()xr;
         if ($key =~ m( \A \d+ \z )x) {
-            croak "Expected placeholders numbered from 1 ($placeholder)"
+            croakf 'Expected placeholders numbered from 1 (%s)', $placeholder
                 if $key == 0;
             $key += 0;
         }
@@ -235,7 +235,7 @@ sub _statement_text ($statement) {
         my $state = $statement->{private_ekorn};
         return $state ? $state->{OriginalStatement} : $statement->{Statement};
     }
-    croak 'Expected a statement' if is_ref($statement);
+    croakf 'Expected a statement' if is_ref($statement);
     return $statement;
 }
 
@@ -246,7 +246,7 @@ sub _shift_attrs ($args) {
     return unless @$args;
     my $first = $args->[0];
     return shift @$args if !defined $first || is_hashref($first);
-    croak 'Expected a reference to a HASH or ARRAY'
+    croakf 'Expected a reference to a HASH or ARRAY'
         if is_ref($first) && !is_arrayref($first);
     return;
 }

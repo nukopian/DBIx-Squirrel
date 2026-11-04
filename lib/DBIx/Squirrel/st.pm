@@ -2,7 +2,6 @@ use v5.36;
 
 package DBIx::Squirrel::st;
 
-use Carp      qw(croak);
 use DBI       qw();
 use Ref::Util qw(is_arrayref is_hashref);
 
@@ -61,7 +60,7 @@ sub bind_param ($self, $param, $value, @attrs) {
         # A position, for a statement with named placeholders.
         return at_caller { $self->SUPER::bind_param($param, $value, @attrs) }
         if $param =~ m( \A \d+ \z )x && !_numbered($binds);
-        croak "Expected a placeholder of the statement ($param)";
+        croakf 'Expected a placeholder of the statement (%s)', $param;
     }
     my $rv;
     for my $position (@$positions) {
@@ -153,7 +152,7 @@ sub _values_for ($binds, @args) {
         %values = %{ $args[0] };
     }
     else {
-        croak 'Expected names and values in pairs'
+        croakf 'Expected names and values in pairs'
             if @args % 2;
         %values = @args;
     }
