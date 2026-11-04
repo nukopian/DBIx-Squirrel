@@ -263,6 +263,20 @@ subtest 'prepare takes ekorn_ attributes' => sub {
     is $sth->fetchrow_arrayref, [1], 'and prepares the statement';
 };
 
+subtest 'connect_cached returns the cached handle' => sub {
+    my sub cached (%ekorn) {
+        return DBIx::Squirrel->connect_cached(
+            @source[0 .. 2],
+            {%{ $source[3] }, %ekorn},
+        );
+    }
+    ref_is cached(), cached(), 'without ekorn_ attributes';
+    my $dbh = cached(ekorn_finish_active => 1);
+    ref_is cached(ekorn_finish_active => 1), $dbh, 'and with them';
+    is $dbh->{private_ekorn}{Options}{ekorn_finish_active}, 1, 'which it keeps';
+    ref_is_not cached(ekorn_finish_active => 0), $dbh, 'but not with others';
+};
+
 subtest 'connect takes ekorn_ attributes as defaults' => sub {
     my $dbh = DBIx::Squirrel->connect(
         @source[0 .. 2], {

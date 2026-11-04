@@ -1,5 +1,6 @@
 requires 'perl', '5.036';
 requires 'DBI';
+requires 'Data::Dumper';
 requires 'Digest::SHA';
 requires 'List::Util';
 requires 'Ref::Util';

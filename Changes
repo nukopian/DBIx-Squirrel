@@ -78,6 +78,10 @@ Unreleased
     - The ekorn_finish_active attribute, on connect or prepare,
       finishes a statement still active before executing it again.
       The DBI doesn't, and by default neither does DBIx::Squirrel.
+    - connect_cached returns the cached handle, where it connected
+      again every time: the ekorn_ attributes went to the DBI as a new
+      reference each time, and the DBI keys its cache on every
+      attribute's value.
     - connect croaks on failure, and clones an existing database
       handle passed in place of a data source.
     - connect takes ekorn_ attributes, such as ekorn_dialect, as the

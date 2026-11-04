@@ -3,6 +3,7 @@ use v5.36;
 package DBIx::Squirrel;
 
 use Carp                    qw(croak);
+use Data::Dumper            qw();
 use DBI                     qw();
 use DBI::Const::GetInfoType qw(%GetInfoType);
 use Ref::Util               qw(is_hashref);
@@ -23,12 +24,16 @@ sub connect ($class, $source, @args) {
     my $username = is_hashref($args[0]) ? undef       : shift @args;
     my $password = is_hashref($args[0]) ? undef       : shift @args;
     my $attrs    = is_hashref($args[0]) ? shift @args : {};
-    my $dbh      = $class->SUPER::connect(
-        $source, $username, $password,
-        _connect_attrs($class, $attrs),
-    );
+    my($dbi_attrs, $options) = _split_attrs($class, $attrs);
+
+    # The options go to the DBI as a string, so connect_cached, which keys
+    # its cache on every attribute's value, finds a handle made with the
+    # same ones. A handle it finds has them already.
+    $dbi_attrs->{private_ekorn_options} = _canonical($options) if %$options;
+    my $dbh = $class->SUPER::connect($source, $username, $password, $dbi_attrs);
     croak _connect_failed($class, $source, $attrs->{Username} // $username)
         unless $dbh;
+    $dbh->{private_ekorn} //= {Options => $options};
     return _discern_dialect($dbh);
 }
 
@@ -50,21 +55,31 @@ sub _connect_failed ($class, $source, $username) {
         . ($DBI::errstr // '(no error string)');
 }
 
-# Return the attributes to connect with. DBIx::Squirrel's own, those
-# starting "ekorn_", are taken out and kept in the private_ekorn
-# attribute, as the defaults for the statements the handle prepares, over
-# any a cloned handle already had.
-sub _connect_attrs ($class, $attrs, $state = undef) {
-    my %dbi_attrs = %$attrs;
+# Return the attributes to connect with, for the DBI, and DBIx::Squirrel's
+# own, those starting "ekorn_", the defaults for the statements the handle
+# prepares, over any a cloned handle already had.
+sub _split_attrs ($class, $attrs, $state = undef) {
+    my %dbi_attrs = (%$attrs, RootClass => ref($class) || $class);
     my %options   = (
         %{ $state && $state->{Options} // {} },
         map { ($_ => delete $dbi_attrs{$_}) } grep { m( \A ekorn_ )x } keys %$attrs,
     );
-    return {
-        %dbi_attrs,
-        (%options ? (private_ekorn => {Options => \%options}) : ()),
-        RootClass => ref($class) || $class,
-    };
+    return \%dbi_attrs, \%options;
+}
+
+
+# Return the attributes to clone a handle with, DBIx::Squirrel's own kept
+# in the private_ekorn attribute.
+sub _connect_attrs ($class, $attrs, $state = undef) {
+    my($dbi_attrs, $options) = _split_attrs($class, $attrs, $state);
+    $dbi_attrs->{private_ekorn} = {Options => $options} if %$options;
+    return $dbi_attrs;
+}
+
+
+# Return options as a string, the same for the same options.
+sub _canonical ($options) {
+    return Data::Dumper->new([$options])->Indent(0)->Sortkeys(1)->Terse(1)->Dump;
 }
 
 # Give a handle the dialect its statements are read by, unless it was
