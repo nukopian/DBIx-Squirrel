@@ -100,6 +100,43 @@ subtest 'defined with a handle' => sub {
     ref_is copy(), $copy, 'kept';
 };
 
+subtest 'the handle kept, and pinged only after a failure' => sub {
+    database(kept => 'dbi:SQLite:dbname=:memory:', '', '', {PrintError => 0});
+    my $pings = 0;
+    my $ping  = DBIx::Squirrel::db->can('ping');
+    my $mock  = mock 'DBIx::Squirrel::db' =>
+        (override => [ping => sub ($self) { $pings++; $self->$ping }]);
+    my $dbh = kept();
+    kept('SELECT 1') for 1 .. 3;
+    ref_is kept(), $dbh, 'the same handle each time';
+    is $pings, 0, 'without a ping';
+
+    like dies { kept('SELEC 1') }, qr( syntax\ error )x, 'a call that fails';
+    ref_is kept(), $dbh, 'kept after a failure, if it answers';
+    is $pings, 1, 'pinged';
+    like kept()->errstr, qr( syntax\ error )x, 'leaving the error to be read';
+    kept('SELECT 1');
+    my $after = $pings;
+    kept();
+    is $pings, $after, 'and not pinged once a call succeeds';
+
+    $dbh->disconnect;
+    my $new = kept();
+    ref_is_not $new, $dbh, 'connected again once disconnected';
+    ok $new->{Active}, 'with a new connection';
+};
+
+subtest 'connected again when the connection has gone' => sub {
+    database(gone => 'dbi:SQLite:dbname=:memory:', '', '', {PrintError => 0});
+    my $dbh = gone();
+    $dbh->set_err(1, 'the server has gone away');
+    my $mock
+        = mock 'DBIx::Squirrel::db' => (override => [ping => sub ($self) { 0 }]);
+    my $new = gone();
+    ref_is_not $new, $dbh, 'when its last call failed, and it does not answer';
+    ref_is gone(), $new, 'and kept';
+};
+
 subtest 'statements, defined on use' => sub {
     is [artist_names], [qw(Abba Blur Cream)], 'the results, through its stages';
     is scalar(artist_names), 3,               'or how many in scalar context';

@@ -12,10 +12,10 @@ use namespace::clean;
 # Croak at the line that called DBIx::Squirrel.
 our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
-# Each database defined, by name: the arguments to connect with, and, for
-# one defined with a handle, the handle cloned from it.
+# Each database defined, by name: the arguments to connect with, and the
+# handle, once it's connected.
 my %connect_args;
-my %clone;
+my %handle;
 
 # Give the calling package database or statement, and define the
 # databases or statements named in a hash reference after each, with
@@ -43,14 +43,29 @@ sub import ($class, @args) {
 # Return the handle of the database named, or, given the arguments to
 # connect with, define it, give the calling package a function of its
 # name, and return that.
+#
+# The handle is kept, and given again without asking the database, which
+# would cost a round trip each time, unless it's been disconnected, or its
+# last call failed, when it's pinged, and replaced if it doesn't answer.
+# Neither DBD::mysql nor DBD::Pg turns Active off when the server drops
+# the connection, but each leaves the failure in err.
 sub database ($name, @connect) {
     return _define(scalar caller, $name, @connect) if @connect;
     croakf 'Expected a database defined as %s', $name
         unless $connect_args{$name};
+    my $dbh = $handle{$name};
+    return $dbh
+        if $dbh && $dbh->{Active} && (!$dbh->err || _answers($dbh));
     my($source, @rest) = @{ $connect_args{$name} };
-    return $clone{$name} //= DBIx::Squirrel->connect($source, @rest)
-        if $source isa 'DBI::db';
-    return DBIx::Squirrel->connect_cached($source, @rest);
+    my $method = $source isa 'DBI::db' ? 'connect' : 'connect_cached';
+    return $handle{$name} = DBIx::Squirrel->$method($source, @rest);
+}
+
+# Return true if a database answers a ping. A ping that dies, as the DBI
+# allows, is no answer.
+sub _answers ($dbh) {
+    my $answered = eval { $dbh->ping };
+    return $answered;
 }
 
 # Define a statement on a database, with the attributes to prepare it
@@ -201,9 +216,15 @@ runs a statement on it. It gives a statement a function too, which runs
 it, with the bind values and any stages given.
 
 A database is connected to when it's first used, not when it's defined,
-with L<DBIx::Squirrel/connect_cached>, so each use has the same handle,
-and a connection that has dropped is made again. Two databases defined
-with the same arguments share a handle, as C<connect_cached> shares it.
+with L<DBIx::Squirrel/connect_cached>, so two databases defined with the
+same arguments share a handle, as C<connect_cached> shares it.
+
+The handle is kept, and each use has the same one, without a ping to the
+database each time. It's pinged only while its last call has failed,
+which leaves the error to be read, and made again if the connection has
+gone, or if the handle has been disconnected. So a connection that drops between uses is noticed by the
+call after it, which fails, as it would with plain DBI, and the call
+after that has a new connection.
 
 =head1 IMPORTING
 
