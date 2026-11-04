@@ -9,11 +9,8 @@ use DBIx::Squirrel::Errors qw(croakf);
 
 use namespace::clean;
 
-# Croak at the line that called DBIx::Squirrel, past its own code.
-our @CARP_NOT = qw(
-    DBIx::Squirrel::Results  DBIx::Squirrel::Iterator
-    DBIx::Squirrel::Pipeline DBIx::Squirrel::Context
-);
+# Croak at the line that called DBIx::Squirrel.
+our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
 # Each row class made, with the position of each of its columns' names.
 my %position_of;

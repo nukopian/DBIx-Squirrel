@@ -15,13 +15,8 @@ use namespace::clean;
 
 our @ISA = ('DBI::db', 'DBIx::Squirrel::Pipes');
 
-# Croak at the line that called DBIx::Squirrel, past the DBI's own code,
-# which calls prepare from its prepare_cached, and DBIx::Squirrel's.
-our @CARP_NOT = qw(
-    DBI            DBI::db            DBI::st
-    DBD::_::common DBD::_::db         DBD::_::st
-    DBIx::Squirrel DBIx::Squirrel::st DBIx::Squirrel::Errors
-);
+# Croak at the line that called DBIx::Squirrel.
+our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
 # Prepare a statement, with placeholders in any style, and return its
 # handle.
@@ -67,7 +62,6 @@ sub prepare_cached ($self, $statement, $attrs = undef, @args) {
     return $sth;
 }
 
-
 # Return options as a string, the same for the same options.
 sub _canonical ($options) {
     return Data::Dumper->new([$options])->Indent(0)->Sortkeys(1)->Terse(1)->Dump;
@@ -82,11 +76,12 @@ sub _canonical ($options) {
 sub do ($self, $statement, @args) {
     my $attrs = _shift_attrs(\@args);
     my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
-    return in_method $self, 'do', sub {
-        my $sth = _prepare($self, $statement, $attrs) or return;
-        $sth->execute(@args);
-        }
-        if $state->{Binds};
+    if ($state->{Binds}) {
+        return in_method $self, 'do', sub {
+            my $sth = _prepare($self, $statement, $attrs) or return;
+            return $sth->execute(@args);
+        };
+    }
     @args = @{ $args[0] }
         if @args == 1
         && is_arrayref($args[0])

@@ -14,13 +14,8 @@ use namespace::clean;
 
 our @ISA = ('DBI::st', 'DBIx::Squirrel::Pipes');
 
-# Croak at the line that called DBIx::Squirrel, past the DBI's own code,
-# which calls execute from its select methods, and DBIx::Squirrel's.
-our @CARP_NOT = qw(
-    DBI            DBI::db            DBI::st
-    DBD::_::common DBD::_::db         DBD::_::st
-    DBIx::Squirrel DBIx::Squirrel::db DBIx::Squirrel::Errors
-);
+# Croak at the line that called DBIx::Squirrel.
+our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
 # Bind values to the statement's placeholders, without executing it, and
 # return the handle, or nothing if the DBI couldn't bind one. Numbered

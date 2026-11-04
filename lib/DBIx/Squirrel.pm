@@ -67,7 +67,6 @@ sub _split_attrs ($class, $attrs, $state = undef) {
     return \%dbi_attrs, \%options;
 }
 
-
 # Return the attributes to clone a handle with, DBIx::Squirrel's own kept
 # in the private_ekorn attribute.
 sub _connect_attrs ($class, $attrs, $state = undef) {
@@ -75,7 +74,6 @@ sub _connect_attrs ($class, $attrs, $state = undef) {
     $dbi_attrs->{private_ekorn} = {Options => $options} if %$options;
     return $dbi_attrs;
 }
-
 
 # Return options as a string, the same for the same options.
 sub _canonical ($options) {
@@ -256,9 +254,10 @@ L<DBIx::Squirrel::Result> describes.
 =back
 
 C<ekorn_dialect> names the driver whose rules statements are read by,
-and C<connect> works it out when it isn't given: it's the driver's own name, such as C<mysql> or C<Pg>. A driver
-that passes the connection on to another database (DBD::ADO, DBD::Gofer,
-DBD::JDBC, DBD::ODBC or DBD::Proxy) is asked, through the DBI's
+and C<connect> works it out when it isn't given: it's the driver's own
+name, such as C<mysql> or C<Pg>. A driver that passes the connection on
+to another database (DBD::ADO, DBD::Gofer, DBD::JDBC, DBD::ODBC or
+DBD::Proxy) is asked, through the DBI's
 C<get_info>, what the database is, and MariaDB, MySQL, PostgreSQL and
 SQLite are recognised. Any other database, or one that doesn't say, is
 read by the standard rules. Name the dialect when C<connect> can't tell:
@@ -377,8 +376,9 @@ processed. C<Stop> is exported automatically by
 L<DBIx::Squirrel::Stop>; C<< DBIx::Squirrel::Stop->throw >> does the same
 without importing it.
 
-Stop works by throwing an exception, which the pipeline catches. So a stage that catches errors itself, with C<eval> or C<try>,
-should throw a stop on again:
+Stop works by throwing an exception, which the pipeline catches. So a
+stage that catches errors itself, with C<eval> or C<try>, should throw a
+stop on again:
 
     sub ($row) {
         try { ... }
@@ -412,7 +412,7 @@ string, is passed on as it was raised.
 A stage passed to L</pipe> or L</tap> died. The message it died with
 follows, indented.
 
-=item Stage #%d is not a code-reference
+=item Expected stage #%d to be a code reference
 
 Something passed to L</pipe> or L</tap> wasn't a code reference. No
 stage runs.

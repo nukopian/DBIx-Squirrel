@@ -12,13 +12,19 @@ use namespace::clean -except => 'import';
 
 our @EXPORT_OK = qw(at_caller croakf failed in_method);
 
-# Croak at the line that called DBIx::Squirrel, past the DBI's own code
-# and DBIx::Squirrel's.
-our @CARP_NOT = qw(
-    DBI            DBI::db            DBI::st
-    DBD::_::common DBD::_::db         DBD::_::st
-    DBIx::Squirrel DBIx::Squirrel::db DBIx::Squirrel::st
+# The packages Carp looks past, to croak at the line that called
+# DBIx::Squirrel: the DBI's own, which call DBIx::Squirrel's methods, such
+# as prepare from prepare_cached, and DBIx::Squirrel's. Each of them that
+# croaks takes this list as its @CARP_NOT.
+our @INTERNAL = qw(
+    DBI                      DBI::db                 DBI::st
+    DBD::_::common           DBD::_::db              DBD::_::st
+    DBIx::Squirrel           DBIx::Squirrel::db      DBIx::Squirrel::st
+    DBIx::Squirrel::Context  DBIx::Squirrel::Errors  DBIx::Squirrel::Iterator
+    DBIx::Squirrel::Pipeline DBIx::Squirrel::Pipes   DBIx::Squirrel::Placeholders
+    DBIx::Squirrel::Result   DBIx::Squirrel::Results DBIx::Squirrel::Sugar
 );
+our @CARP_NOT = @INTERNAL;
 
 # Run a block calling the DBI, and return what it returns. If the DBI
 # raises an error, as it does under RaiseError, at the line of the block,

@@ -30,7 +30,7 @@ subtest 'new checks its stages' => sub {
     my $p = $class->new(sub { $_ });
     isa_ok $p, [$class], 'a pipeline';
     ok ref($p) && $p->can('iterator'), 'with an iterator method';
-    my $msg = qr( Stage\ \#2\ is\ not\ a\ code-reference )x;
+    my $msg = qr( Expected\ stage\ \#2\ to\ be\ a\ code\ reference )x;
     my $at  = qr( at\ \Q${\ __FILE__ }\E\ line\ \d+ )x;
     like dies {
         $class->new(sub { $_ }, 'x')
@@ -142,7 +142,7 @@ subtest 'iterator stops calling the source after Stop' => sub {
 subtest 'iterator checks its source' => sub {
     my $line = __LINE__ + 1;
     is dies { $class->new->iterator('x') },
-        "Expected a code-reference at ${\ __FILE__ } line $line.\n";
+        "Expected a code reference at ${\ __FILE__ } line $line.\n";
 };
 
 subtest 'a stage that dies says which it was' => sub {

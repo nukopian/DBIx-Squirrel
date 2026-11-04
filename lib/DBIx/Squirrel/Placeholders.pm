@@ -14,7 +14,8 @@ our @EXPORT_OK = qw(
     trim_sql
 );
 
-our @CARP_NOT = qw(DBIx::Squirrel::db);
+# Croak at the line that called DBIx::Squirrel.
+our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
 # Remove the blank space from around a statement; return what's left, or
 # an empty string if it was all blank.

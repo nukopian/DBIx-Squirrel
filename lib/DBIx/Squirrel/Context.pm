@@ -4,11 +4,12 @@ package DBIx::Squirrel::Context;
 
 use Exporter qw(import);
 
+use DBIx::Squirrel::Errors qw();
+
 our @EXPORT_OK = qw(iterator result_number result_original);
 
-# Report a stage's errors at the line that called DBIx::Squirrel, past
-# the iterator running the stages.
-our @CARP_NOT = qw(DBIx::Squirrel::Iterator DBIx::Squirrel::Pipeline);
+# Croak at the line that called DBIx::Squirrel.
+our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
 # What a stage can ask about the result it's making, set by the iterator
 # running it.

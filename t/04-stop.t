@@ -25,12 +25,6 @@ subtest 'throw is blessed into the class it was called on' => sub {
     is $sub, ['My::Stop', 2], 'carrying its arguments';
 };
 
-subtest 'throw called on an unrelated class makes a plain Stop' => sub {
-    my $stop = dies { DBIx::Squirrel::Stop::throw('Unrelated', 3) };
-    is ref($stop), 'DBIx::Squirrel::Stop',      'blessed into Stop';
-    is $stop,      ['DBIx::Squirrel::Stop', 3], 'carrying its arguments';
-};
-
 subtest 'Stop is exported by default' => sub {
 
     package Importing {    ## no critic (Modules::ProhibitMultiplePackages)

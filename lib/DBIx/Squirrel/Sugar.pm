@@ -9,13 +9,8 @@ use DBIx::Squirrel::Errors qw(croakf);
 
 use namespace::clean;
 
-# Croak at the line that called DBIx::Squirrel, past its own code and the
-# DBI's.
-our @CARP_NOT = qw(
-    DBIx::Squirrel         DBIx::Squirrel::db       DBIx::Squirrel::st
-    DBIx::Squirrel::Errors DBIx::Squirrel::Iterator DBIx::Squirrel::Pipeline
-    DBIx::Squirrel::Context
-);
+# Croak at the line that called DBIx::Squirrel.
+our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
 # Each database defined, by name: the arguments to connect with, and, for
 # one defined with a handle, the handle cloned from it.

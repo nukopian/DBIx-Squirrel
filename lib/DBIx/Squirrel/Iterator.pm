@@ -13,12 +13,8 @@ use DBIx::Squirrel::Pipeline qw();
 
 use namespace::clean;
 
-# Croak at the line that called DBIx::Squirrel, past its own code and the
-# DBI's.
-our @CARP_NOT = qw(
-    DBIx::Squirrel         DBIx::Squirrel::db       DBIx::Squirrel::st
-    DBIx::Squirrel::Errors DBIx::Squirrel::Pipeline DBIx::Squirrel::Context
-);
+# Croak at the line that called DBIx::Squirrel.
+our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
 # How many rows are fetched at a time.
 my $BATCH_SIZE = 100;

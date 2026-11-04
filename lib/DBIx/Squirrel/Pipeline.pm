@@ -5,7 +5,7 @@ package DBIx::Squirrel::Pipeline;
 use experimental qw(try);
 
 use Carp      qw(croak);
-use Ref::Util qw(is_coderef);
+use Ref::Util qw(is_coderef is_ref);
 
 use DBIx::Squirrel::Errors qw(croakf);
 
@@ -13,28 +13,29 @@ use namespace::clean;
 
 use overload '&{}' => sub ($self, @) { $self->{call} }, fallback => 1;
 
-our @CARP_NOT = qw(DBIx::Squirrel DBIx::Squirrel::Pipes);
+# Croak at the line that called DBIx::Squirrel.
+our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
 # Return a pipeline, called with values to run each of them through the
 # stages.
 sub new ($class, @stages) {
     for my $n (1 .. @stages) {
-        croakf 'Stage #%d is not a code-reference', $n
+        croakf 'Expected stage #%d to be a code reference', $n
             unless is_coderef($stages[$n - 1]);
     }
     return bless {
         stages => \@stages,
-        call   => sub (@xs) {
-            return @xs unless @stages;
-            my $next = _iterator(\@stages, sub { @xs ? shift @xs : () });
-            my @ys;
-            while (my($y) = $next->()) { push @ys, $y }
-            return @ys;
+        call   => sub (@values) {
+            return @values unless @stages;
+            my $next = _iterator(\@stages, sub { @values ? shift @values : () });
+            my @results;
+            while (my($result) = $next->()) { push @results, $result }
+            return @results;
         },
     }, $class;
 }
 
-# Split the trailing code-references off a list; return a pipeline running
+# Split the trailing code references off a list; return a pipeline running
 # values through them, and the rest of the list.
 sub from_args ($class, @args) {
     my $n = @args;
@@ -46,43 +47,46 @@ sub from_args ($class, @args) {
 # Return a closure handing out, one per call, the values from $source run
 # through the stages.
 sub iterator ($self, $source) {
-    croakf 'Expected a code-reference' unless is_coderef($source);
+    croakf 'Expected a code reference' unless is_coderef($source);
     return _iterator($self->{stages}, $source);
 }
 
 # Return a closure handing out, one per call, the values from $source run
 # through the stages in @$stages.
 sub _iterator ($stages, $source) {
-    my @p = @$stages;
+    my @stages = @$stages;
+
+    # Each value waiting to go through a stage, as the stage's index and
+    # the value, the next on top.
     my(@todo, $done);
     return sub () {
         while (1) {
             unless (@todo) {
                 last if $done;
-                my @xs = $source->();
-                unless (@xs) {
+                my @values = $source->();
+                unless (@values) {
                     $done = 1;
                     last;
                 }
-                push @todo, map { [0, $_] } reverse @xs;
+                push @todo, map { [0, $_] } reverse @values;
             }
-            my($s, $x) = @{ pop @todo };
-            return $x if $s == @p;
+            my($n, $value) = @{ pop @todo };
+            return $value if $n == @stages;
             try {
-                local $_ = $x;
-                push @todo, map { [$s + 1, $_] } reverse $p[$s]->($x);
+                local $_ = $value;
+                push @todo, map { [$n + 1, $_] } reverse $stages[$n]->($value);
             }
             catch ($e) {
                 if ($e isa 'DBIx::Squirrel::Stop') {
                     my(undef, @values) = @$e;
                     $done = 1;
-                    @todo = map { [$s + 1, $_] } reverse @values;
+                    @todo = map { [$n + 1, $_] } reverse @values;
                     next;
                 }
-                croak $e if ref $e;
-                my $at = Carp::shortmess() =~ s( \.? \n \z )()xr;
-                my $err = $e =~ s( \n \z )()xr =~ s( ^ )(    )xmgr;
-                die "Pipeline stage #@{[ $s + 1 ]} failed$at:\n$err\n";
+                croak $e if is_ref($e);
+                my $at      = Carp::shortmess() =~ s( \.? \n \z )()xr;
+                my $message = $e =~ s( \n \z )()xr =~ s( ^ )(    )xmgr;
+                die "Pipeline stage #@{[ $n + 1 ]} failed$at:\n$message\n";
             }
         }
         return;
@@ -192,11 +196,11 @@ isn't mistaken as the end:
 
 =over
 
-=item Stage #%d is not a code-reference
+=item Expected stage #%d to be a code reference
 
 A stage given to L</new> wasn't a code reference.
 
-=item Expected a code-reference
+=item Expected a code reference
 
 The source given to L</iterator> wasn't a code reference.
 

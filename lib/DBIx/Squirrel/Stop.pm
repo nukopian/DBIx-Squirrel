@@ -18,8 +18,6 @@ sub Stop (@data) {
 
 # Throws an exception that stops a pipeline early.
 sub throw ($class, @data) {
-    $class = __PACKAGE__
-        unless $class->isa(__PACKAGE__);
     croak bless([$class, @data], $class);
 }
 
@@ -77,8 +75,7 @@ To keep it out of your namespace:
     My::Stop->throw(@values);
 
 Throws a stop carrying C<@values>, blessed into the class it was called
-on, so a subclass of DBIx::Squirrel::Stop throws one of its own. Called
-on a class that isn't a stop, it throws a plain DBIx::Squirrel::Stop.
+on, so a subclass of DBIx::Squirrel::Stop throws one of its own.
 
 =head1 THE STOP
 
