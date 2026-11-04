@@ -4,7 +4,7 @@ package DBIx::Squirrel::st;
 
 use DBI        qw();
 use List::Util qw(max);
-use Ref::Util  qw(is_hashref);
+use Ref::Util  qw(is_arrayref is_hashref);
 
 use DBIx::Squirrel::Errors   qw(at_caller croakf);
 use DBIx::Squirrel::Iterator qw();
@@ -25,24 +25,25 @@ our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 # on; named ones take a hash reference or a list of names and values. An
 # array reference stands for the values in it.
 sub bind ($self, @args) {
-    return _bind($self, _unwrap($self, @args));
+    return _bind($self, _binds($self), _unwrap($self, @args));
 }
 
-# Bind values, as bind does, given as a list.
-sub _bind ($self, @args) {
-    my $binds = _binds($self);
-    unless ($binds) {
-        for my $position (1 .. @args) {
-            at_caller { $self->SUPER::bind_param($position, $args[$position - 1]) }
-                or return;
+# Bind values, as bind does, given as a list, and the statement's map of
+# placeholders to positions, if it has one. Each value is bound to its
+# positions directly, with the DBI's bind_param.
+sub _bind ($self, $binds, @args) {
+    my %values
+        = $binds
+        ? _values_for($binds, @args)
+        : map { ($_ => $args[$_ - 1]) } 1 .. @args;
+    return at_caller {
+        for my $key (sort keys %values) {
+            for my $position ($binds ? @{ $binds->{$key} } : $key) {
+                $self->SUPER::bind_param($position, $values{$key}) or return;
+            }
         }
-        return $self;
-    }
-    my %values = _values_for($binds, @args);
-    for my $key (sort keys %values) {
-        $self->bind_param($key, $values{$key}) or return;
-    }
-    return $self;
+        $self;
+    };
 }
 
 # Bind a value to a placeholder, as the DBI's bind_param does, given its
@@ -73,11 +74,12 @@ sub bind_param ($self, $param, $value, @attrs) {
 sub execute ($self, @args) {
     my $state = $self->{private_ekorn};
     $self->finish
-        if $self->{Active} && $state && $state->{Options}{ekorn_finish_active};
+        if $state && $state->{Options}{ekorn_finish_active} && $self->{Active};
     @args = _unwrap($self, @args);
+    my $binds = $state && $state->{Binds};
     return at_caller { $self->SUPER::execute(@args) }
-    unless @args && _binds($self);
-    _bind($self, @args) or return;
+    unless @args && $binds;
+    _bind($self, $binds, @args) or return;
     return at_caller { $self->SUPER::execute };
 }
 
@@ -94,8 +96,12 @@ sub results ($self, @args) {
 }
 
 # Return the values given, or those in an array reference given alone,
-# as unwrap_values does.
+# as unwrap_values does. Values not given in an array reference alone,
+# as most aren't, are returned at once, without reading the driver's name
+# through the handles' attributes.
 sub _unwrap ($self, @args) {
+    return @args
+        unless @args == 1 && is_arrayref($args[0]);
     return unwrap_values(
         $self->{Database}{Driver}{Name},
         sub { _values_taken($self) }, @args,
@@ -149,8 +155,13 @@ sub _values_for ($binds, @args) {
             if @args % 2;
         %values = @args;
     }
-    my %given   = map       { (_key($_) => $values{$_}) } keys %values;
-    my @unknown = sort grep { !$binds->{_key($_)} } keys %values;
+    my(%given, @unknown);
+    for my $name (keys %values) {
+        my $key = _key($name);
+        $given{$key} = $values{$name};
+        push @unknown, $name unless $binds->{$key};
+    }
+    @unknown = sort @unknown;
     croakf 'Expected a placeholder of the statement (%s)', join ', ', @unknown
         if @unknown;
     my @missing = sort grep { !exists $given{$_} } keys %$binds;
