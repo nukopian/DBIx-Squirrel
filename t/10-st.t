@@ -93,6 +93,12 @@ subtest 'bind_param' => sub {
     like dies { $sth->bind_param(3, 1) },
         qr( \A Expected\ a\ placeholder\ of\ the\ statement\ \(3\) )x,
         'a number not used';
+
+    $sth = $dbh->prepare('SELECT ?, ?');
+    ok $sth->bind_param(2, 'b') && $sth->bind_param(1, 'a'),
+        'by position, for ?, as the DBI binds';
+    $sth->execute;
+    is $sth->fetchrow_arrayref, [qw(a b)], 'binding those positions';
 };
 
 subtest 'bind' => sub {

@@ -216,7 +216,36 @@ subtest 'what a stage can ask' => sub {
         'result_number, counting results, not rows';
     is [map { $_->{original}[1] } @$results], [qw(Abba Cream Dido)],
         'result_original';
-    is result_number, undef, 'and nothing outside a stage';
+    is [iterator, result_number, result_original], [undef, undef, undef],
+        'and nothing outside a stage';
+};
+
+subtest 'an iterator ended early finishes its statement' => sub {
+    $dbh->do('CREATE TABLE n (id INTEGER PRIMARY KEY)');
+    $dbh->do('INSERT INTO n VALUES (?)', $_) for 1 .. 150;
+    my $sql = 'SELECT id FROM n ORDER BY id';
+
+    # More rows than a batch, so the statement is still fetching.
+    my $it
+        = $dbh->iterate($sql, sub ($row) { Stop() if $row->[0] == 3; $row->[0] });
+    is [$it->all], [1, 2], 'by a stop';
+    ok !$it->sth->{Active}, 'which finishes it';
+    $it = $dbh->iterate($sql);
+    like dies { $it->single }, qr( \A Expected\ one\ result,\ not\ more )x,
+        'by single, finding more than one';
+    ok !$it->sth->{Active}, 'which finishes it too';
+};
+
+subtest 'a statement that cannot be executed, without RaiseError' => sub {
+    my $quiet = DBIx::Squirrel->connect(
+        'dbi:SQLite:dbname=:memory:', '', '',
+        {RaiseError => 0, PrintError => 0},
+    );
+    $quiet->do('CREATE TABLE u (x INTEGER UNIQUE)');
+    $quiet->do('INSERT INTO u VALUES (1)');
+    my $it = $quiet->iterate('INSERT INTO u VALUES (?)', 1);
+    is [$it->all],    [],  'has no results';
+    is $it->sth->err, T(), 'and the handle says why';
 };
 
 subtest 'what a stage can ask, with several results from a row' => sub {

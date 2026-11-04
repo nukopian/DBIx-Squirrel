@@ -103,6 +103,30 @@ subtest 'prepare croaks without RaiseError' => sub {
     );
     like dies { $dbh->prepare('SELEC 1') }, qr( syntax\ error )x,
         'a bad statement';
+    like dies { $dbh->prepare_cached('SELEC 1') },
+        qr( \A DBD::SQLite::db\ prepare_cached\ failed: .* syntax\ error )xs,
+        'and prepare_cached, naming itself';
+};
+
+subtest 'connect takes the attributes without a username or password' => sub {
+    my $dbh = DBIx::Squirrel->connect(
+        'dbi:SQLite:dbname=:memory:',
+        {RaiseError => 1, PrintError => 0, ekorn_slice => {}},
+    );
+    isa_ok $dbh, ['DBIx::Squirrel::db'], 'a handle';
+    is $dbh->{RaiseError}, T(), 'with the attributes for the DBI';
+    is $dbh->{private_ekorn}{Options}{ekorn_slice}, {}, 'and its own';
+};
+
+subtest 'connect clones a plain DBI handle' => sub {
+    my $plain = DBI->connect(@source);
+    my $dbh   = DBIx::Squirrel->connect($plain);
+    isa_ok $dbh, ['DBIx::Squirrel::db'], "DBIx::Squirrel's handle";
+    ref_is_not $dbh, $plain, 'a new one';
+    is $dbh->{private_ekorn}{Options}, {ekorn_dialect => 'SQLite'},
+        'with the dialect discerned';
+    is $dbh->selectrow_array('SELECT :x', undef, x => 1), 1,
+        'reading placeholders in any style';
 };
 
 subtest 'prepare_cached' => sub {

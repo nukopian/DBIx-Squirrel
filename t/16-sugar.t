@@ -41,6 +41,28 @@ subtest 'defined on use' => sub {
         'leaving the name of one imported';
 };
 
+subtest 'the functions alone, on use' => sub {
+
+    package Functions::Only {    ## no critic (Modules::ProhibitMultiplePackages)
+        use DBIx::Squirrel::Sugar qw(database statement);
+    }
+    ok Functions::Only->can('database') && Functions::Only->can('statement'),
+        'database and statement';
+};
+
+subtest 'a statement that cannot be executed, without RaiseError' => sub {
+    database(
+        quiet => 'dbi:SQLite:dbname=:memory:', '', '',
+        {RaiseError => 0, PrintError => 0},
+    );
+    quiet('CREATE TABLE u (x INTEGER UNIQUE)');
+    quiet('INSERT INTO u VALUES (1)');
+    is [quiet('INSERT INTO u VALUES (?)', 1)], [], 'gives nothing';
+    statement(insert_u => quiet => 'INSERT INTO u VALUES (?)');
+    is [insert_u(1)], [],  'as a statement of its own';
+    is quiet()->err,  T(), 'and the handle says why';
+};
+
 subtest 'a statement, executed' => sub {
     my $sth = music 'SELECT name FROM artist WHERE id = ?', 2;
     isa_ok $sth, ['DBIx::Squirrel::st'], 'the statement handle';
@@ -242,6 +264,9 @@ subtest 'mistakes' => sub {
         'a statement named as no function can be';
     like dies { statement(lonely => 'music') },
         qr( \A Too\ few\ arguments )x, 'a statement without its SQL';
+    like dies { statement(nowhere => undef, 'SELECT 1') },
+        qr( \A \QExpected a database and a statement for nowhere\E )x,
+        'a statement on no database';
     like dies { statement(odd => music => 'SELECT 1', 'x') },
         qr( \A \QExpected only stages after the statement for odd\E )x,
         'anything but stages after it';

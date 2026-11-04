@@ -101,6 +101,59 @@ Functions DBIx::Squirrel's modules share, exported on request. They're
 for DBIx::Squirrel itself, not for use elsewhere, and may change without
 notice.
 
+=head1 FUNCTIONS
+
+=over
+
+=item canonical
+
+    $string = canonical(\%options);
+
+Returns options as a string, the same for the same options, for the
+DBI's caches to key on.
+
+=item install_sub
+
+    install_sub($full_name, $code);
+
+Installs a subroutine by its full name, naming an anonymous one so.
+
+=item is_name
+
+    $bool = is_name($name);
+
+Returns true if a name can be a subroutine's.
+
+=item shift_attrs
+
+    $attrs = shift_attrs(\@args);
+
+Takes the attributes off the front of a list of arguments, if they're
+there: a hash reference, or C<undef>.
+
+=item split_attrs
+
+    ($dbi_attrs, $ekorn_attrs) = split_attrs(\%attrs);
+
+Splits attributes into the DBI's and DBIx::Squirrel's own, those
+starting C<ekorn_>.
+
+=item split_stages
+
+    @stages = split_stages(\@args);
+
+Takes the code references off the end of a list of arguments, and
+returns them.
+
+=item unwrap_values
+
+    @values = unwrap_values($driver, $taken, @values);
+
+Returns the bind values given, or those in an array reference given
+alone, unless DBD::Pg would bind it as a PostgreSQL array.
+
+=back
+
 =head1 DIAGNOSTICS
 
 =over

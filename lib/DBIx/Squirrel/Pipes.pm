@@ -41,6 +41,22 @@ L<DBIx::Squirrel/tap>. DBIx::Squirrel's database and statement handle
 classes, L<DBIx::Squirrel::db> and L<DBIx::Squirrel::st>, inherit from
 it as well as from the DBI's own.
 
+=head1 METHODS
+
+=head2 pipe
+
+    @results = $h->pipe(@stages);
+
+Runs the invocant through a pipeline of stages, and returns what comes
+out of the last one, as L<DBIx::Squirrel/pipe> describes.
+
+=head2 tap
+
+    $h = $h->tap(@stages);
+
+Runs the invocant through a pipeline of stages for their side effects,
+and returns the invocant, as L<DBIx::Squirrel/tap> describes.
+
 =head1 SEE ALSO
 
 L<DBIx::Squirrel>, L<DBIx::Squirrel::Pipeline>

@@ -454,9 +454,23 @@ objects with a method for each column.
                                         @bind_values);
     $ary_ref  = $dbh->selectcol_arrayref($statement, \%attr, @bind_values);
 
-C<selectrow_array>, C<selectrow_arrayref>, C<selectrow_hashref>,
-C<selectall_arrayref>, C<selectall_hashref> and C<selectcol_arrayref>
-work as the DBI's, preparing the statement as L</prepare> does, unless it's
+=over
+
+=item selectrow_array
+
+=item selectrow_arrayref
+
+=item selectrow_hashref
+
+=item selectall_arrayref
+
+=item selectall_hashref
+
+=item selectcol_arrayref
+
+=back
+
+Each works as the DBI's, preparing the statement as L</prepare> does, unless it's
 already a statement handle, and binding the values as
 L<DBIx::Squirrel::st/bind> binds them. The DBI's C<selectall_array>
 goes through C<selectall_arrayref>, so it does too. Unlike L</prepare>,
