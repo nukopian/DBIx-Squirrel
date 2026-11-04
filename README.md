@@ -38,6 +38,8 @@ more:
     # Or have each row as an object, with a method for each column
     say $dbh->results('SELECT * FROM artist WHERE id = $1', 1)->single->name;
 
+`docs/REFERENCE.md` describes every feature in detail, with examples.
+
 The repository is called DBIx-Squirrel-2 while it's in development. At
 release it takes the original name, DBIx-Squirrel.
 
