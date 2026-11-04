@@ -99,7 +99,8 @@ subtest 'prepare croaks without RaiseError' => sub {
         'dbi:SQLite:dbname=:memory:', '', '',
         {RaiseError => 0, PrintError => 0},
     );
-    like dies { $dbh->prepare('SELEC 1') }, qr/syntax error/, 'a bad statement';
+    like dies { $dbh->prepare('SELEC 1') }, qr( syntax\ error )x,
+        'a bad statement';
 };
 
 subtest 'prepare_cached' => sub {
@@ -129,8 +130,10 @@ subtest 'do gives the same result as the DBI' => sub {
 
 subtest 'do takes bind values without attributes' => sub {
     my $dbh = connect_both()->{squirrel};
-    is $dbh->do('UPDATE artist SET name = :name WHERE id = :id', name => 'z',
-        id => 2),
+    is $dbh->do(
+        'UPDATE artist SET name = :name WHERE id = :id', name => 'z',
+        id => 2,
+        ),
         1, 'rows affected';
     is $dbh->selectrow_array(
         'SELECT name FROM artist WHERE id = $1',

@@ -126,7 +126,7 @@ sub _study ($self, $statement, $attrs) {
         = study_sql(_statement_text($statement), \%options)
         or croak 'Expected a statement';
     my $dbi_attrs = $attrs
-        && {map { ($_ => $attrs->{$_}) } grep { !/^ekorn_/x } keys %$attrs};
+        && {map { ($_ => $attrs->{$_}) } grep { !m( \A ekorn_ )x } keys %$attrs};
     return $normalised, {
         Placeholders      => $placeholders,
         OriginalStatement => $original,

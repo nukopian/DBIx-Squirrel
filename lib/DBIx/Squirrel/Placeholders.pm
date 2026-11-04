@@ -18,7 +18,7 @@ our @CARP_NOT = qw(DBIx::Squirrel::db);
 # Remove the blank space from around a statement; return what's left, or
 # an empty string if it was all blank.
 sub trim_sql ($statement) {
-    return ($statement // '') =~ s/ \A \s+ | \s+ \z //gxr;
+    return ($statement // '') =~ s( \A \s+ | \s+ \z )()gxr;
 }
 
 # Study a statement, with the options given; return a map of its
@@ -96,9 +96,9 @@ sub study_sql ($statement, $options = {}) {
 # Return a placeholder's style, as an example of it: "?", "?1", ":1", "$1",
 # ":name" or "$name".
 sub _style ($placeholder) {
-    my($sigil, $rest) = $placeholder =~ m/ \A (.) (.*) \z /xs;
+    my($sigil, $rest) = $placeholder =~ m( \A (.) (.*) \z )xs;
     return $sigil      if $rest eq '';
-    return "${sigil}1" if $rest =~ m/ \A \d+ \z /x;
+    return "${sigil}1" if $rest =~ m( \A \d+ \z )x;
     return "${sigil}name";
 }
 

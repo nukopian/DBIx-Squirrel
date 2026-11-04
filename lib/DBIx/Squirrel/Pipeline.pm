@@ -78,8 +78,8 @@ sub _iterator ($stages, $source) {
                     next;
                 }
                 croak $e if ref $e;
-                my $at = Carp::shortmess() =~ s/\.?\n\z//xr;
-                my $err = $e =~ s/\n\z//xr =~ s/^/    /xmgr;
+                my $at = Carp::shortmess() =~ s( \.? \n \z )()xr;
+                my $err = $e =~ s( \n \z )()xr =~ s( ^ )(    )xmgr;
                 die "Pipeline stage #@{[ $s + 1 ]} failed$at:\n$err\n";
             }
         }

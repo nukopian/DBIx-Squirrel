@@ -30,11 +30,11 @@ subtest 'new checks its stages' => sub {
     my $p = $class->new(sub { $_ });
     isa_ok $p, [$class], 'a pipeline';
     ok ref($p) && $p->can('iterator'), 'with an iterator method';
-    my $msg = qr/Stage\ \#2\ is\ not\ a\ code-reference/x;
-    my $at  = qr/at\ \Q${\ __FILE__ }\E\ line\ \d+/x;
+    my $msg = qr( Stage\ \#2\ is\ not\ a\ code-reference )x;
+    my $at  = qr( at\ \Q${\ __FILE__ }\E\ line\ \d+ )x;
     like dies {
         $class->new(sub { $_ }, 'x')
-    }, qr/\A $msg \ $at \.\n\z/x,
+    }, qr( \A $msg \ $at \. \n \z )x,
         'croaks on a stage that is not a code reference, naming it';
 };
 
@@ -179,7 +179,7 @@ subtest 'iterator over a statement handle' => sub {
     my $next    = $class->new(
         sub { length $_->{tags} ? $_ : () },
         sub ($row) {
-            map { "$row->{n}$_" } split /,/x, $row->{tags};
+            map { "$row->{n}$_" } split m( , )x, $row->{tags};
         },
         sub { Stop() if $_ eq '4e'; $_ },
     )->iterator(sub { $fetches += 1; $sth->fetchrow_hashref // () });
