@@ -201,6 +201,73 @@ subtest 'prepare takes ekorn_ attributes' => sub {
     is $sth->fetchrow_arrayref, [1], 'and prepares the statement';
 };
 
+subtest 'connect takes ekorn_ attributes as defaults' => sub {
+    my $dbh = DBIx::Squirrel->connect(
+        @source[0 .. 2], {
+            %{ $source[3] }, ekorn_dialect => 'mysql',
+        },
+    );
+    is $dbh->{private_ekorn}, {Options => {ekorn_dialect => 'mysql'}},
+        'kept in the private_ekorn attribute';
+    is $dbh->{ekorn_dialect}, undef, 'not passed on to the DBI';
+
+    my($normalised) = DBIx::Squirrel::db::_study(
+        $dbh, q{SELECT 'it\'s :no', :x}, undef,
+    );
+    is $normalised, q{SELECT 'it\'s :no', ?}, 'statements are read by them';
+    is $dbh->prepare('SELECT :x')->{private_ekorn}{Options}{ekorn_dialect},
+        'mysql', 'and keep them';
+    is $dbh->prepare('SELECT :x', {ekorn_dialect => 'SQLite'})
+        ->{private_ekorn}{Options}{ekorn_dialect},
+        'SQLite', "prepare's attributes override them";
+
+    is DBIx::Squirrel->connect($dbh)->{private_ekorn},
+        {Options => {ekorn_dialect => 'mysql'}}, 'a clone keeps them';
+    is DBIx::Squirrel->connect($dbh, {ekorn_dialect => 'Pg'})->{private_ekorn},
+        {Options => {ekorn_dialect => 'Pg'}}, 'unless given others';
+    is $dbh->{private_ekorn}, {Options => {ekorn_dialect => 'mysql'}},
+        "and the first handle's are unchanged";
+
+    is DBIx::Squirrel->connect(@source)->{private_ekorn},
+        {Options => {ekorn_dialect => 'SQLite'}},
+        "a handle without them is given its driver's dialect";
+    is DBIx::Squirrel->connect(@source)->prepare('SELECT :x')
+        ->{private_ekorn}{Options}{ekorn_dialect},
+        'SQLite', "and statements are read by the driver's rules";
+};
+
+# A database handle, standing in for one whose driver passes the
+# connection on to another database, and says what it is, or doesn't.
+package Stand::In {
+    sub get_info ($self, $type) { $type == 17 ? $self->{dbms} : undef }
+}
+
+
+sub stand_in ($driver, $dbms = undef) {
+    return bless {Driver => {Name => $driver}, dbms => $dbms}, 'Stand::In';
+}
+
+subtest 'connect discerns the dialect' => sub {
+    my $dialect = \&DBIx::Squirrel::_dialect;
+    is $dialect->(stand_in('mysql', 'PostgreSQL')), 'mysql',
+        "a driver's own name, without asking the database";
+    is $dialect->(stand_in('ODBC',  'MySQL')),   'mysql',   'MySQL through ODBC';
+    is $dialect->(stand_in('ODBC',  'MariaDB')), 'MariaDB', 'MariaDB';
+    is $dialect->(stand_in('Proxy', 'PostgreSQL')), 'Pg',
+        'PostgreSQL through Proxy';
+    is $dialect->(stand_in('ODBC', 'Microsoft SQL Server')), 'ODBC',
+        "a database with no rules of its own";
+    is $dialect->(stand_in('ODBC')), 'ODBC', "a database that doesn't say";
+
+    my $gofer = DBIx::Squirrel->connect(
+        'dbi:Gofer:transport=null;dsn=dbi:SQLite:dbname=:memory:', '', '',
+        $source[3],
+    );
+    is $gofer->{private_ekorn}{Options}{ekorn_dialect}, 'SQLite',
+        'SQLite through Gofer, connected';
+    is $gofer->{RaiseError}, T(), 'leaving RaiseError as it was';
+};
+
 todo 'binding an array reference waits on DBIx::Squirrel::st' => sub {
     my $dbh = connect_both()->{squirrel};
     my $rv

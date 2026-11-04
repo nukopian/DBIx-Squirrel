@@ -47,14 +47,17 @@ sub do ($self, $statement, @args) {
 # Return a statement with its placeholders rewritten as "?", for the DBI
 # to prepare, what its statement handle keeps about it, and the attributes
 # to prepare it with, without DBIx::Squirrel's own. Study it with the
-# driver's name, DBD::Pg's placeholder options from the handle, and the
-# attributes given, each overriding the last.
+# driver's name, DBD::Pg's placeholder options from the handle, the
+# handle's own defaults, from connect, and the attributes given, each
+# overriding the last.
 sub _study ($self, $statement, $attrs) {
     my $driver  = $self->{Driver}{Name};
+    my $state   = $self->{private_ekorn};
     my @pg      = qw(pg_placeholder_dollaronly pg_placeholder_nocolons);
     my %options = (
         ekorn_dialect => $driver,
         ($driver eq 'Pg' ? map { ($_ => $self->{$_}) } @pg : ()),
+        %{ $state && $state->{Options} // {} },
         %{ $attrs // {} },
     );
     my($placeholders, $normalised, $original)
@@ -156,15 +159,18 @@ drivers, a backslash is an ordinary character in a string (C<'C:\'>),
 except in PostgreSQL's C<E'...'> strings. MySQL's
 C<NO_BACKSLASH_ESCAPES> mode isn't noticed.
 
-A driver used through another, such as DBD::ODBC or DBD::Proxy, is read
-by the standard rules, whatever the database behind it. To read it as
-another dialect, name that dialect's driver in the C<ekorn_dialect>
-attribute:
+A database reached through another driver, such as DBD::ODBC or
+DBD::Proxy, is read by its own rules if it says what it is, as
+L<DBIx::Squirrel/connect> describes, and by the standard rules if it
+doesn't. To read a statement as another dialect, name that dialect's
+driver in the C<ekorn_dialect> attribute:
 
     $dbh->prepare($statement, {ekorn_dialect => 'mysql'});
 
 Attributes starting C<ekorn_> are DBIx::Squirrel's own, and aren't
-passed on to the DBI.
+passed on to the DBI. Passed to L<DBIx::Squirrel/connect>, they're the
+defaults for every statement the handle prepares; passed to C<prepare>,
+they override those for one statement.
 
 To use a C<?>, C<:> or C<$> that isn't a placeholder, such as one of
 PostgreSQL's C<?>, C<?|> and C<?&> operators, put a backslash before it,

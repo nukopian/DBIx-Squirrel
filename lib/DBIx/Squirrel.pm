@@ -2,9 +2,10 @@ use v5.36;
 
 package DBIx::Squirrel;
 
-use Carp      qw(croak);
-use DBI       qw();
-use Ref::Util qw(is_hashref);
+use Carp                    qw(croak);
+use DBI                     qw();
+use DBI::Const::GetInfoType qw(%GetInfoType);
+use Ref::Util               qw(is_hashref);
 
 use DBIx::Squirrel::Stop qw();
 use DBIx::Squirrel::db   qw();
@@ -23,29 +24,77 @@ sub connect ($class, $source, @args) {
     my $password = is_hashref($args[0]) ? undef       : shift @args;
     my $attrs    = is_hashref($args[0]) ? shift @args : {};
     my $dbh      = $class->SUPER::connect(
-        $source,
-        $username,
-        $password, {
-            %$attrs,
-            RootClass => ref($class) || $class,
-        },
+        $source, $username, $password,
+        _connect_attrs($class, $attrs),
     );
     croak $DBI::errstr
         unless $dbh;
-    return $dbh;
+    return _discern_dialect($dbh);
 }
 
 # Return the handle of a new connection using the same parameters as
 # another connection.
 sub _connect_dbh ($class, $dbh, @args) {
     my $attrs = @args && is_hashref($args[0]) ? shift @args : {};
-    $dbh = $dbh->clone({
-        %$attrs,
-        RootClass => ref($class) || $class,
-    });
+    $dbh = $dbh->clone(_connect_attrs($class, $attrs, $dbh->{private_ekorn}));
     croak $DBI::errstr
         unless $dbh;
+    return _discern_dialect($dbh);
+}
+
+# Return the attributes to connect with. DBIx::Squirrel's own, those
+# starting "ekorn_", are taken out and kept in the private_ekorn
+# attribute, as the defaults for the statements the handle prepares, over
+# any a cloned handle already had.
+sub _connect_attrs ($class, $attrs, $state = undef) {
+    my %dbi_attrs = %$attrs;
+    my %options   = (
+        %{ $state && $state->{Options} // {} },
+        map { ($_ => delete $dbi_attrs{$_}) } grep { /^ekorn_/x } keys %$attrs,
+    );
+    return {
+        %dbi_attrs,
+        (%options ? (private_ekorn => {Options => \%options}) : ()),
+        RootClass => ref($class) || $class,
+    };
+}
+
+# Give a handle the dialect its statements are read by, unless it was
+# given one, and return it.
+sub _discern_dialect ($dbh) {
+    my $state   = $dbh->{private_ekorn} // {};
+    my $options = $state->{Options}     // {};
+    return $dbh
+        if defined $options->{ekorn_dialect};
+    $dbh->{private_ekorn} = {
+        %$state,
+        Options => {%$options, ekorn_dialect => _dialect($dbh)},
+    };
     return $dbh;
+}
+
+# Return the dialect a handle's statements are read by: its driver's name,
+# or, for a driver that passes the connection on to another, such as
+# DBD::ODBC or DBD::Proxy, the name of the driver for the database behind
+# it, if the database says what it is and it's one with rules of its own.
+sub _dialect ($dbh) {
+    state %PASSES_ON = map { ($_ => 1) } qw(ADO Gofer JDBC ODBC Proxy);
+    state @DIALECTS  = (
+        [qr/mariadb/xi  => 'MariaDB'],
+        [qr/mysql/xi    => 'mysql'],
+        [qr/postgres/xi => 'Pg'],
+        [qr/sqlite/xi   => 'SQLite'],
+    );
+    my $driver = $dbh->{Driver}{Name};
+    return $driver
+        unless $PASSES_ON{$driver};
+    local $dbh->{RaiseError} = 0;
+    local $dbh->{PrintError} = 0;
+    my $dbms = $dbh->get_info($GetInfoType{SQL_DBMS_NAME}) // '';
+    for my $dialect (@DIALECTS) {
+        return $dialect->[1] if $dbms =~ $dialect->[0];
+    }
+    return $driver;
 }
 
 1;
@@ -124,12 +173,34 @@ needs both, as the DBI requires, each a subclass of DBIx::Squirrel's:
 Without them, the DBI warns that the subclass isn't set up, and returns
 its own handles.
 
+Attributes starting C<ekorn_> are DBIx::Squirrel's own. They aren't
+passed on to the DBI, but kept in the database handle's C<private_ekorn>
+attribute, as the defaults for each statement it prepares. Attributes
+passed to L<DBIx::Squirrel::db/prepare> override them, for that
+statement.
+
+The one that matters most, C<ekorn_dialect>, names the driver whose
+rules statements are read by, and C<connect> works it out when it isn't
+given: it's the driver's own name, such as C<mysql> or C<Pg>. A driver
+that passes the connection on to another database (DBD::ADO, DBD::Gofer,
+DBD::JDBC, DBD::ODBC or DBD::Proxy) is asked, through the DBI's
+C<get_info>, what the database is, and MariaDB, MySQL, PostgreSQL and
+SQLite are recognised. Any other database, or one that doesn't say, is
+read by the standard rules. Name the dialect when C<connect> can't tell:
+
+    # MySQL, through a driver that doesn't say what's behind it
+    $dbh = DBIx::Squirrel->connect($data_source, $username, $password, {
+        ekorn_dialect => 'mysql',
+    });
+
 =head3 Connecting with an existing handle
 
 Given a database handle in place of a data source, C<connect> makes a
 new connection with the same parameters, using the DBI's C<clone>. Any
 attributes passed are applied to the new connection. The handle can
 come from the DBI itself, or from code that made its own connection.
+The new handle keeps the first one's C<ekorn_> defaults, with any passed
+in their place.
 
 The new handle is a separate connection, not a second name for the
 first: it doesn't share the first one's transaction, temporary tables

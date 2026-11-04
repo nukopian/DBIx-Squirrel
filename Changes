@@ -22,6 +22,14 @@ Unreleased
       what the DBI's do returns.
     - connect croaks on failure, and clones an existing database
       handle passed in place of a data source.
+    - connect takes ekorn_ attributes, such as ekorn_dialect, as the
+      defaults for every statement the handle prepares, which
+      prepare's attributes override. They're kept in the handle's
+      private_ekorn attribute, not passed on to the DBI, and a
+      cloned handle keeps them. Without ekorn_dialect, connect
+      takes the driver's name, or, for DBD::ADO, DBD::Gofer,
+      DBD::JDBC, DBD::ODBC and DBD::Proxy, asks get_info what the
+      database behind them is.
     - connect returns DBIx::Squirrel's own handles: database handles
       are DBIx::Squirrel::db, and statement handles
       DBIx::Squirrel::st, subclasses of the DBI's. The DBI no longer
