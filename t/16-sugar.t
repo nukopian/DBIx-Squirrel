@@ -13,6 +13,20 @@ use DBIx::Squirrel::Sugar database => {
     ],
 };
 
+# Statements on music, defined before music has its table.
+use DBIx::Squirrel::Sugar statement => {
+    artist_names => [
+        music => 'SELECT name FROM artist ORDER BY id',
+        sub ($row) { $row->[0] },
+    ],
+    artist        => [music => 'SELECT id, name FROM artist WHERE id = :id'],
+    rename_artist => [music => 'UPDATE artist SET name = :name WHERE id = :id'],
+    named         => [
+        music => 'SELECT id, name FROM artist ORDER BY id',
+        {ekorn_slice => {}}, sub ($row) { $row->{name} },
+    ],
+};
+
 music 'CREATE TABLE artist (id INTEGER PRIMARY KEY, name TEXT)';
 music 'INSERT INTO artist (name) VALUES (?)', $_ for qw(Abba Blur Cream);
 
@@ -86,6 +100,70 @@ subtest 'defined with a handle' => sub {
     ref_is copy(), $copy, 'kept';
 };
 
+subtest 'statements, defined on use' => sub {
+    is [artist_names], [qw(Abba Blur Cream)], 'the results, through its stages';
+    is scalar(artist_names), 3,               'or how many in scalar context';
+    is [artist_names sub ($name) { lc $name }], [qw(abba blur cream)],
+        'with stages added for a call';
+    is [artist_names], [qw(Abba Blur Cream)], 'and for that call only';
+    is [named],        [qw(Abba Blur Cream)], 'with attributes';
+    ok main->can('statement'), 'statement is imported';
+};
+
+subtest 'a statement without stages' => sub {
+    my $sth = artist id => 2;
+    isa_ok $sth, ['DBIx::Squirrel::st'], 'gives the statement handle';
+    is $sth->fetchrow_arrayref, [2, 'Blur'], 'executed with the bind values';
+    $sth->fetchall_arrayref;
+    ref_is artist(id => 3), $sth, 'prepared once';
+    is rename_artist(name => 'ABBA', id => 1)->rows, 1,
+        'and one that changes rows';
+    rename_artist(name => 'Abba', id => 1);
+
+    my $active = artist id => 1;
+    my $again  = artist id => 2;
+    ref_is_not $again, $active, 'prepared again while the first is active';
+    is $active->fetchrow_arrayref, [1, 'Abba'], 'which is left as it was';
+    is $again->fetchrow_arrayref,  [2, 'Blur'], 'for the call after';
+};
+
+subtest 'a stage calling its own statement' => sub {
+    music 'CREATE TABLE n (id INTEGER PRIMARY KEY)';
+    music 'INSERT INTO n VALUES (?)', $_ for 1 .. 150;
+    statement(
+        ns_upto => music => 'SELECT id FROM n WHERE id <= ? ORDER BY id',
+        sub ($row) { $row->[0] },
+    );
+
+    # A few rows are fetched at once, so the first call's handle is done
+    # while its iterator hands them out; more than a batch, and it's
+    # still fetching.
+    for my $n (3, 150) {
+        is [ns_upto($n, sub ($id) { [$id, scalar ns_upto($id)] })],
+            [map { [$_, $_] } 1 .. $n], "has a statement handle of its own ($n rows)";
+    }
+};
+
+subtest 'statements defined as the program runs' => sub {
+    my $function = statement(
+        count_of => later => 'SELECT COUNT(*) FROM t',
+        sub ($row) { $row->[0] },
+    );
+    ref_is $function, \&count_of,
+        'gives the package its function, and returns it';
+    my $expected = 'Expected a database defined as later';
+    my $line     = __LINE__ + 1;
+    like dies { count_of() },
+        qr( \A \Q$expected\E \ at\ \Q${\ __FILE__ }\E\ line\ $line\. )x,
+        'and its database is looked for when it runs';
+    database(
+        later => 'dbi:SQLite:dbname=:memory:',
+        '', '', {RaiseError => 1, PrintError => 0, LongReadLen => 1024},
+    );
+    later('CREATE TABLE t (x)');
+    is [count_of()], [0], 'so it can be defined after the statement';
+};
+
 # The error from using DBIx::Squirrel::Sugar with the arguments given.
 sub use_error ($args) {
     return eval "use DBIx::Squirrel::Sugar $args; 1" ? undef : $@;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -109,11 +187,26 @@ subtest 'mistakes' => sub {
     like dies { define('is') },
         qr( \A \QExpected no function of the name in main already (is)\E )x,
         'a function the package has';
-    like use_error(q{'other'}), qr( \A \QExpected database, not other\E )x,
+    like use_error(q{'other'}),
+        qr( \A \QExpected database or statement, not other\E )x,
         'on use, anything else';
     like use_error(q{database => {x => 'y'}}),
         qr( \A \QExpected the arguments to connect to x in an ARRAY\E )x,
         'or a definition not in an array';
+    like use_error(q{statement => {x => 'y'}}),
+        qr( \A \QExpected the statement x in an ARRAY\E )x, 'a statement too';
+
+    like dies { statement('no good' => music => 'SELECT 1') },
+        qr( \A \QExpected a name for a statement (no good)\E )x,
+        'a statement named as no function can be';
+    like dies { statement(lonely => 'music') },
+        qr( \A Too\ few\ arguments )x, 'a statement without its SQL';
+    like dies { statement(odd => music => 'SELECT 1', 'x') },
+        qr( \A \QExpected only stages after the statement for odd\E )x,
+        'anything but stages after it';
+    like dies { statement(music => music => 'SELECT 1') },
+        qr( \A \QExpected no function of the name in main already (music)\E )x,
+        'a name a database has';
 };
 
 done_testing;
