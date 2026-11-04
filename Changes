@@ -46,6 +46,18 @@ Unreleased
       count and sth, and none of the aliases. It never sets $_ outside a
       stage. single croaks on a second result, where version 1 warned.
       One statement handle has one iterator going at a time.
+    - results, on database and statement handles, returns a result set,
+      DBIx::Squirrel::Results, an iterator whose rows are arrays blessed
+      into a class with a method for each column, in lower case. It
+      replaces version 1's DBIx::Squirrel::rs and DBIx::Squirrel::rc,
+      now DBIx::Squirrel::Result, without the aliases. There's one row
+      class for each list of column names, made with its methods, and
+      kept, so a row can be kept after its result set has gone, where
+      version 1 made a class for each result set, removed with it, and
+      made methods with AUTOLOAD. A row no longer has results,
+      result_class or row_class; get_column takes a name, in any case,
+      or a position. The ekorn_result_class attribute, on connect or
+      prepare, sets the rows' base class.
     - The ekorn_slice attribute, on connect or prepare, sets the shape
       an iterator fetches rows in, in place of version 1's slice method
       and its class-wide DEFAULT_SLICE. Rows are fetched 100 at a time;

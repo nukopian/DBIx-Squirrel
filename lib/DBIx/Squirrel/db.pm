@@ -106,6 +106,14 @@ sub iterate ($self, $statement, @args) {
 }
 
 
+# Prepare a statement, and return a result set over its results, as
+# iterate does.
+sub results ($self, $statement, @args) {
+    my $attrs = @args && is_coderef($args[0]) ? undef : _shift_attrs(\@args);
+    return $self->prepare($statement, $attrs)->results(@args);
+}
+
+
 # The DBI's select methods, each preparing the statement and binding its
 # values as DBIx::Squirrel does. Drivers built on the DBI's own C code,
 # such as DBD::SQLite, DBD::mysql and DBD::Pg, bind and execute in C, not
@@ -396,6 +404,14 @@ Prepares a statement, as L</prepare> does, and returns a
 L<DBIx::Squirrel::Iterator>, an iterator over its results, as
 L<DBIx::Squirrel::st/iterate> does. As with L</do>, the attributes may
 be left out.
+
+=head2 results
+
+    $results = $dbh->results($statement, \%attr, @bind_values, @stages);
+    $results = $dbh->results($statement, @bind_values, @stages);
+
+As L</iterate>, returning a L<DBIx::Squirrel::Results>, whose rows are
+objects with a method for each column.
 
 =head2 selectrow_array, selectrow_arrayref, selectrow_hashref
 

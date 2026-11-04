@@ -6,6 +6,8 @@ use DBIx::Squirrel;
 use DBIx::Squirrel::Errors;
 use DBIx::Squirrel::Context;
 use DBIx::Squirrel::Iterator;
+use DBIx::Squirrel::Result;
+use DBIx::Squirrel::Results;
 use DBIx::Squirrel::Pipeline;
 use DBIx::Squirrel::Placeholders;
 use DBIx::Squirrel::Stop ();
@@ -25,6 +27,8 @@ my %imported = (
     'DBIx::Squirrel::st'           => [qw(at_caller croak is_arrayref is_hashref)],
     'DBIx::Squirrel::Errors'       => [qw(croak     is_ref)],
     'DBIx::Squirrel::Iterator'     => [qw(croak     is_coderef weaken)],
+    'DBIx::Squirrel::Result'       => [qw(croak     sha1_hex   set_subname)],
+    'DBIx::Squirrel::Results'      => [qw(croak)],
     'DBIx::Squirrel::Stop'         => [qw(croak)],
 );
 

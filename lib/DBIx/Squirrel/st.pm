@@ -8,6 +8,7 @@ use Ref::Util qw(is_arrayref is_hashref);
 
 use DBIx::Squirrel::Errors   qw(at_caller);
 use DBIx::Squirrel::Iterator qw();
+use DBIx::Squirrel::Results  qw();
 use DBIx::Squirrel::Pipes    qw();
 
 use namespace::clean;
@@ -92,6 +93,13 @@ sub execute ($self, @args) {
 # values given, and run through the stages given after them.
 sub iterate ($self, @args) {
     return DBIx::Squirrel::Iterator->new($self, @args);
+}
+
+
+# Return a result set over the statement's results: an iterator handing
+# out rows as objects.
+sub results ($self, @args) {
+    return DBIx::Squirrel::Results->new($self, @args);
 }
 
 
@@ -271,6 +279,13 @@ Returns a L<DBIx::Squirrel::Iterator>, an iterator over the statement's
 results, executed with C<@bind_values>, in any form L</execute> takes,
 and run through C<@stages>, the code references at the end of the
 arguments. The statement is executed when the first result is asked for.
+
+=head2 results
+
+    $results = $sth->results(@bind_values, @stages);
+
+Returns a L<DBIx::Squirrel::Results>, as L</iterate> does, whose rows
+are objects with a method for each column.
 
 =head1 DIAGNOSTICS
 

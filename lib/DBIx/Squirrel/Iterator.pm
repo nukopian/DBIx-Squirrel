@@ -94,7 +94,7 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
         count     => 0,
         produced  => 0,
         original  => undef,
-        slice     => $state->{Options}{ekorn_slice} // [],
+        slice     => $self->_slice,
     );
     $self->{done} = 1
         unless defined $sth->execute(@{ $self->{bind_values} });
@@ -177,10 +177,24 @@ sub _source ($self) {
             return unless $rows && @$rows;
             push @$buffer, @$rows;
         }
-        $self->{original} = shift @$buffer;
+        $self->{original} = $self->_row(shift @$buffer);
         DBIx::Squirrel::Context::set_original($self->{original});
         return $self->{original};
     };
+}
+
+
+# Return the slice rows are fetched as: the ekorn_slice attribute, or
+# arrays; a subclass can choose its own.
+sub _slice ($self) {
+    return $self->{sth}{private_ekorn}{Options}{ekorn_slice} // [];
+}
+
+
+# Return a row as the stages are to see it: as it was fetched, here; a
+# subclass can make something else of it.
+sub _row ($self, $row) {
+    return $row;
 }
 
 
