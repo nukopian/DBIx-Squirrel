@@ -60,9 +60,9 @@ subtest 'named placeholders' => sub {
     is $dbh->prepare($sql)->{private_ekorn}{Binds}, {a => [1, 2], b => [3]},
         'mapped to their positions';
 
-    my $sth = $dbh->prepare($sql);
-    like dies { $sth->execute(a => 1) },
-        qr( \A Expected\ a\ value\ for\ each\ placeholder\ \(none\ for\ b\) )x,
+    my $sth  = $dbh->prepare($sql);
+    my $each = qr( Expected\ a\ value\ for\ each\ placeholder )x;
+    like dies { $sth->execute(a => 1) }, qr( \A $each \ \(none\ for\ b\) )x,
         'a name left out';
     like dies { $sth->execute(a => 1, b => 2, c => 3) },
         qr( \A Expected\ a\ placeholder\ of\ the\ statement\ \(c\) )x,
@@ -149,6 +149,32 @@ subtest 'the select methods give the same results as the DBI' => sub {
     my $sth = $h{squirrel}->prepare($sq);
     is $h{squirrel}->selectcol_arrayref($sth, undef, min => 2), [2],
         'given a statement handle';
+};
+
+subtest 'an array reference, with DBD::Pg' => sub {
+
+    # No PostgreSQL server here, so a hash stands in for the statement
+    # handle: _unwrap reads only its driver, and what prepare kept.
+    my sub sth ($driver, $params, $binds = undef) {
+        return {
+            Database      => {Driver => {Name => $driver}},
+            NUM_OF_PARAMS => $params,
+            private_ekorn => {Binds => $binds},
+        };
+    }
+    my $unwrap = \&DBIx::Squirrel::st::_unwrap;    ## no critic (Variables::ProtectPrivateVars)
+    my $array  = [1, 2];
+    is [$unwrap->(sth('Pg', 1), $array)], [$array],
+        'is a value, to a statement taking one ?';
+    is [$unwrap->(sth('Pg', 1, {1 => [1, 2]}), $array)], [$array],
+        'or one number, used twice';
+    is [$unwrap->(sth('Pg', 2), $array)], [1, 2],
+        'stands for its values, to one taking two';
+    is [$unwrap->(sth('Pg', 2, {a => [1], b => [2]}), [a => 1, b => 2])],
+        [a => 1, b => 2], 'or named ones';
+    is [$unwrap->(sth('ODBC', 1), $array)], [1, 2],
+        'and through another driver, always';
+    is [$unwrap->(sth('Pg', 2), 1, 2)], [1, 2], 'values not in one are left';
 };
 
 subtest "DBD::Pg's \$1 placeholders, with pg_placeholder_dollaronly" => sub {

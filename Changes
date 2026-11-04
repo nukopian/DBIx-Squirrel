@@ -24,7 +24,9 @@ Unreleased
       placeholder takes one value wherever it appears, in order of
       number, and named ones take a value by name, as pairs or in a
       hash reference, with or without the sigil. An array reference
-      of values stands for the values in it. execute, bind_param, a
+      of values stands for the values in it, except with DBD::Pg,
+      where one given to a statement taking one value is a
+      PostgreSQL array, as with the DBI. execute, bind_param, a
       new bind, do and the DBI's select methods all bind this way,
       croaking at the caller if the values don't match the
       placeholders.

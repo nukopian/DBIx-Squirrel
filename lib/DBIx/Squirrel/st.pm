@@ -22,7 +22,7 @@ our @CARP_NOT = qw(DBI::st DBI::db DBIx::Squirrel::db);
 # on; named ones take a hash reference or a list of names and values. An
 # array reference stands for the values in it.
 sub bind ($self, @args) {
-    return _bind($self, _unwrap(@args));
+    return _bind($self, _unwrap($self, @args));
 }
 
 
@@ -72,7 +72,7 @@ sub execute ($self, @args) {
     my $state = $self->{private_ekorn};
     $self->finish
         if $self->{Active} && $state && $state->{Options}{ekorn_finish_active};
-    @args = _unwrap(@args);
+    @args = _unwrap($self, @args);
     return $self->SUPER::execute(@args)
         unless @args && _binds($self);
     _bind($self, @args) or return;
@@ -80,9 +80,28 @@ sub execute ($self, @args) {
 }
 
 
-# Return the values given, or those in an array reference given alone.
-sub _unwrap (@args) {
-    return @args == 1 && is_arrayref($args[0]) ? @{ $args[0] } : @args;
+# Return the values given, or those in an array reference given alone,
+# unless it's a value itself. DBD::Pg binds an array reference as a
+# PostgreSQL array, so, with DBD::Pg, one given to a statement taking one
+# value is that value, as it would be with the DBI.
+sub _unwrap ($self, @args) {
+    return @args
+        unless @args == 1 && is_arrayref($args[0]);
+    return @args
+        if $self->{Database}{Driver}{Name} eq 'Pg' && _values_taken($self) == 1;
+    return @{ $args[0] };
+}
+
+
+# Return how many values the statement takes in order: one for each
+# placeholder the DBI sees, or each number, or none if they're named.
+sub _values_taken ($self) {
+    my $binds = _binds($self)
+        or return $self->{NUM_OF_PARAMS};
+    return 0
+        unless _numbered($binds);
+    my($highest) = sort { $b <=> $a } keys %$binds;
+    return $highest;
 }
 
 
@@ -193,7 +212,12 @@ the sigil. There must be a value for each name, and no other:
 =back
 
 A single array reference stands for the values in it, so
-C<< $sth->bind([1, 2]) >> is C<< $sth->bind(1, 2) >>.
+C<< $sth->bind([1, 2]) >> is C<< $sth->bind(1, 2) >>. The exception is
+L<DBD::Pg>, which binds an array reference as a PostgreSQL array: with
+DBD::Pg, an array reference given to a statement taking one value, such
+as C<SELECT * FROM artist WHERE id = ANY(?)>, is that value, as it would
+be with the DBI. Through another driver, such as DBD::ODBC, it's
+unwrapped as usual, as the driver can't bind arrays.
 
 =head2 bind_param
 

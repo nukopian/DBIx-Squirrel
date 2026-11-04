@@ -215,7 +215,7 @@ subtest 'connect takes ekorn_ attributes as defaults' => sub {
         'kept in the private_ekorn attribute';
     is $dbh->{ekorn_dialect}, undef, 'not passed on to the DBI';
 
-    my($normalised) = DBIx::Squirrel::db::_study(
+    my($normalised) = DBIx::Squirrel::db::_study(    ## no critic (Subroutines::ProtectPrivateSubs)
         $dbh, q{SELECT 'it\'s :no', :x}, undef,
     );
     is $normalised, q{SELECT 'it\'s :no', ?}, 'statements are read by them';
@@ -243,7 +243,7 @@ subtest 'connect takes ekorn_ attributes as defaults' => sub {
 # A database handle, standing in for one whose driver passes the
 # connection on to another database, and says what it is, or doesn't.
 package Stand::In {
-    sub get_info ($self, $type) { $type == 17 ? $self->{dbms} : undef }
+    sub get_info ($self, $type) { return $type == 17 ? $self->{dbms} : undef }
 }
 
 
@@ -252,7 +252,7 @@ sub stand_in ($driver, $dbms = undef) {
 }
 
 subtest 'connect discerns the dialect' => sub {
-    my $dialect = \&DBIx::Squirrel::_dialect;
+    my $dialect = \&DBIx::Squirrel::_dialect;    ## no critic (Variables::ProtectPrivateVars)
     is $dialect->(stand_in('mysql', 'PostgreSQL')), 'mysql',
         "a driver's own name, without asking the database";
     is $dialect->(stand_in('ODBC',  'MySQL')),   'mysql',   'MySQL through ODBC';
