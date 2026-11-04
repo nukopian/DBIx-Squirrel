@@ -1,10 +1,10 @@
 # Working on DBIx-Squirrel
 
-These are the working rules for this repository. DBIx-Squirrel is written
-by Iain Campbell, by hand. Claude reviews it and helps with the work
-around the code. That's a different split from scalar and grammar, which
-Iain and Claude write together, and the rules below say where the line
-is. Each rule comes with the reason for it.
+These are the working rules for this repository. DBIx-Squirrel is Iain
+Campbell's: much of it starts from his code for version 1, which he and
+Claude bring over and improve together, and Claude reviews what he
+writes by hand. The rules below say who does what. Each rule comes with
+the reason for it.
 
 Decisions still to be made, and the plan for the rewrite, are in the
 Claude Doc
@@ -28,8 +28,11 @@ result: plain DBI is the baseline, as Perl is for scalar.
 
 ## Who does what
 
-- **Iain writes the code.** Claude reviews it, suggests, and explains,
-  and doesn't edit the code unless Iain asks.
+- **The code is a two-way process.** Iain writes some by hand, and
+  Claude reviews it, suggests, and explains. Where Iain asks, Claude
+  writes code too, often bringing his version 1 code over and improving
+  it, and Iain reviews that. Claude doesn't change code it wasn't asked
+  to.
 - **Claude helps with the Git Ops and the repository's setup:** branches,
   CI, releases, and the files around the code. Ask before changing
   anything on GitHub.
@@ -40,16 +43,17 @@ result: plain DBI is the baseline, as Perl is for scalar.
 - **Commit messages:** Claude drafts them when asked, for Iain's commits
   as well as its own.
 
-Why: Perl isn't a struggle for Iain, so writing it by hand suits him, and
-a hand-written, reviewed project shows a different side of working with
-AI from scalar's partnership.
+Why: DBIx-Squirrel is a tool Iain uses, so it matters most that it's
+right. His version 1 code has the design and many of the holes, and
+moving it over is a good place for AI to save labour and check the work,
+with Iain reviewing each change, as Claude reviews his.
 
 ## Credit
 
 - Iain's commits carry no `Co-Authored-By` trailer, even when Claude
   drafted the message.
-- Commits Claude wrote, such as CI, setup files, tests or docs written
-  at Iain's request, end with a trailer for the Claude model that wrote
+- Commits Claude wrote, such as code, CI, setup files, tests or docs
+  written at Iain's request, end with a trailer for the Claude model that wrote
   them, currently
   `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - The README's Acknowledgements say what Claude did. Keep them accurate.
@@ -234,6 +238,11 @@ logs, Term::ANSIColor, IO::Pager, Email::Stuffer).
 
 - **Data::Dump**'s `pp` is for looking at data while debugging, not for
   the shipped modules or for test expectations (see Tests).
+- **Every regex takes the `x` flag** and is written with its operator
+  and parentheses: `m( \A \d+ \z )x`, `s( \s+ \z )()xr`, `qr( ... )x`;
+  never `/.../`. The whitespace makes a regex easier to read, and the
+  operator and parentheses make it read like a function. Under `x`, a
+  literal space is `\ ` and a literal `#` is `\#`.
 
 All three are in the project's perlbrew library: Data::Dump 1.25,
 Perl::Critic 1.156 and Perl::Tidy 20260826, installed 2026-10-22, when

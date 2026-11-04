@@ -86,8 +86,23 @@ perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil build
 git status --short
 ```
 
+Minilla takes the branch in `README.md`'s CI badge from GitHub, with
+`git remote show origin`. If GitHub can't be reached, it writes
+`master` instead, and the badge breaks. Check that this prints
+`branch=main` before committing:
+
+```
+head -1 ~/Git/github.com/nukopian/DBIx-Squirrel-2/README.md | grep -o 'branch=[a-z]*'
+```
+
+If it prints `branch=master`, put `main` back:
+
+```
+sed -i '' '1s/branch=master/branch=main/' ~/Git/github.com/nukopian/DBIx-Squirrel-2/README.md
+```
+
 Commits are signed, and use conventional prefixes (`feat:`, `fix:`,
-`docs:`, `test:`, `ci:`, `refactor:`, `chore:`), saying why as well as
+`docs:`, `test:`, `ci:`, `refactor:`, `style:`, `chore:`), saying why as well as
 what. To check the signatures of the last ten (`G` is good, `N` is none):
 
 ```
