@@ -66,8 +66,16 @@ sub prepare_cached ($self, $statement, $attrs = undef, @args) {
             or croak failed($self, 'prepare_cached');
     };
 
-    # A cached handle keeps what it had, such as the iterator using it.
-    $sth->{private_ekorn} = {%{ $sth->{private_ekorn} // {} }, %$state};
+    # A cached handle keeps what it had, such as the iterator using it,
+    # updated in place: a copy would make the weak reference to the
+    # iterator strong, and the two would never be freed.
+    my $kept = $sth->{private_ekorn};
+    if ($kept) {
+        @$kept{keys %$state} = values %$state;
+    }
+    else {
+        $sth->{private_ekorn} = $state;
+    }
     return $sth;
 }
 

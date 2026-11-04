@@ -4,6 +4,8 @@ use Test2::Plugin::NoWarnings;
 
 use DBI;
 use DBIx::Squirrel;
+use experimental qw(builtin);
+use builtin      qw(weaken);
 
 my @source = (
     'dbi:SQLite:dbname=:memory:', '', '',
@@ -403,6 +405,9 @@ subtest "prepare_cached and DBIx::Squirrel's own attributes" => sub {
     ref_is $dbh->prepare_cached($sql), $sth, 'a handle, cached';
     ref_is DBIx::Squirrel::Iterator::_going($sth), $it,    ## no critic (Subroutines::ProtectPrivateSubs)
         'keeps the iterator using it';
+    weaken(my $gone = $it);
+    undef $it;
+    ok !$gone, 'without keeping it from being freed';
 };
 
 subtest 'prepare_cached keeps statements rewritten the same apart' => sub {
