@@ -1,6 +1,9 @@
 requires 'perl', '5.036';
 requires 'DBI';
+requires 'Digest::SHA';
+requires 'List::Util';
 requires 'Ref::Util';
+requires 'Sub::Util';
 requires 'namespace::clean';
 
 on test => sub {
