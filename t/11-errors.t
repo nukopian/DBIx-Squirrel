@@ -105,7 +105,7 @@ subtest "the DBI's messages, as plain DBI raises them" => sub {
 subtest 'and when DBIx::Squirrel raises them, without RaiseError' => sub {
     my $raise = dbh();
     my $quiet = dbh(RaiseError => 0);
-    for my $method (qw(prepare prepare_cached do selectrow_array)) {
+    for my $method (qw(prepare prepare_cached)) {
         my $want = message(dies { $raise->$method('SELEC 1') });
         is message(dies { $quiet->$method('SELEC 1') }), $want, $method;
     }

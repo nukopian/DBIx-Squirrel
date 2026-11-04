@@ -25,9 +25,17 @@ our @CARP_NOT = qw(
 # Prepare a statement, with placeholders in any style, and return its
 # handle.
 sub prepare ($self, $statement, $attrs = undef, @args) {
+    return _prepare($self, $statement, $attrs, @args)
+        || croak failed($self, 'prepare');
+}
+
+
+# Prepare a statement, as prepare does, and return its handle, or
+# nothing, as the DBI's prepare does, if it can't be prepared.
+sub _prepare ($self, $statement, $attrs, @args) {
     my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
     my $sth = at_caller { $self->SUPER::prepare($normalised, $dbi_attrs, @args) }
-        or croak failed($self, 'prepare');
+        or return;
     $sth->{private_ekorn} = $state;
     return $sth;
 }
@@ -55,13 +63,37 @@ sub prepare_cached ($self, $statement, $attrs = undef, @args) {
 }
 
 
-# Prepare and execute a statement, and return what execute returns, as the
-# DBI's do does. Unlike the DBI's, the attributes may be left out.
+# Run a statement, and return what the DBI's do returns. Unlike the DBI's,
+# the attributes may be left out. A statement DBIx::Squirrel doesn't
+# rewrite goes to the driver's own do, as with plain DBI, so the driver's
+# row counts and options, such as DBD::SQLite's multiple statements,
+# apply; any other is prepared and executed, returning undef, as the DBI
+# does, if it can't be prepared.
 sub do ($self, $statement, @args) {
     my $attrs = _shift_attrs(\@args);
+    my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
     return in_method $self, 'do', sub {
-        $self->prepare($statement, $attrs)->execute(@args);
-    };
+        my $sth = _prepare($self, $statement, $attrs) or return;
+        $sth->execute(@args);
+        }
+        if $state->{Binds};
+    @args = @{ $args[0] }
+        if @args == 1
+        && is_arrayref($args[0])
+        && !($self->{Driver}{Name} eq 'Pg'
+            && _values_taken($state->{Placeholders}) == 1);
+    return at_caller { $self->SUPER::do($normalised, $dbi_attrs, @args) };
+}
+
+
+# Return how many values a statement the DBI binds as written takes: one
+# for each "?", or the highest number of those DBD::Pg reads as "$1".
+sub _values_taken ($placeholders) {
+    my @placeholders = values %$placeholders;
+    return scalar @placeholders
+        unless @placeholders && $placeholders[0] =~ m( \A \$ )x;
+    my($highest) = sort { $b <=> $a } map { s( \A \$ )()xr } @placeholders;
+    return $highest;
 }
 
 
@@ -105,12 +137,21 @@ sub selectcol_arrayref ($self, $statement, $attrs = undef, @args) {
 # Call one of the DBI's select methods with a statement handle, prepared,
 # unless it was given one, and with any values bound. Return what the
 # DBI's method returns.
+#
+# A statement that can't be prepared returns what the DBI's method does,
+# without RaiseError: undef from those returning a reference to one row
+# or all of them, and nothing from the others.
 sub _select ($self, $method, $statement, $before, $attrs, @args) {
+    state %UNDEF = map { ($_ => 1) } qw(
+        selectrow_arrayref selectrow_hashref selectall_arrayref
+    );
     return in_method $self, $method, sub {
         my $sth
             = $statement isa 'DBI::st'
             ? $statement
-            : $self->prepare($statement, $attrs);
+            : _prepare($self, $statement, $attrs);
+        return $UNDEF{$method} ? undef : ()
+            unless $sth;
         # Values for ? placeholders go to the DBI, which checks them as
         # plain DBI does; those for numbered or named ones are bound.
         my @values = DBIx::Squirrel::st::_unwrap($sth, @args);    ## no critic (Subroutines::ProtectPrivateSubs)
@@ -313,13 +354,25 @@ name C<prepare_cached>, as the DBI's do.
     $rv = $dbh->do($statement, undef, @bind_values);
     $rv = $dbh->do($statement, @bind_values);
 
-Prepares a statement, as L</prepare> does, executes it, and returns the
-number of rows affected, as the DBI's C<do> does. Unlike the DBI's, the
-attributes may be left out: the first argument after the statement is
-taken as the attributes only if it's a hash reference or C<undef>. The
-values are bound as L<DBIx::Squirrel::st/bind> binds them. An error in
-preparing or executing the statement names C<do>, as the DBI's does:
-C<DBD::SQLite::db do failed: ...>.
+Runs a statement, and returns what the DBI's C<do> returns: the number
+of rows affected, C<0E0> for none, or C<undef> on an error without
+C<RaiseError>. Unlike the DBI's, the attributes may be left out: the
+first argument after the statement is taken as the attributes only if
+it's a hash reference or C<undef>. An error names C<do>, as the DBI's
+does: C<DBD::SQLite::db do failed: ...>.
+
+A statement with C<?> placeholders, or none, goes to the driver's own
+C<do>, as with plain DBI, so the driver's row counts and options apply,
+such as running several statements with DBD::SQLite's
+C<sqlite_allow_multiple_statements>. A statement with numbered or named
+placeholders is prepared, as L</prepare> does, and executed, with the
+values bound as L<DBIx::Squirrel::st/bind> binds them; some drivers,
+such as DBD::SQLite, then count the rows of an C<UPDATE ... RETURNING>
+only as they're fetched, giving C<0E0>.
+
+Like the DBI's, C<do> returns no rows, even from a C<SELECT> or a
+C<RETURNING> clause. Use L</prepare> and C<execute>, or the select
+methods, for those.
 
 =head2 selectrow_array, selectrow_arrayref, selectrow_hashref
 
@@ -331,7 +384,9 @@ C<DBD::SQLite::db do failed: ...>.
 As the DBI's, preparing the statement as L</prepare> does, unless it's
 already a statement handle, and binding the values as
 L<DBIx::Squirrel::st/bind> binds them. The DBI's C<selectall_array>
-goes through C<selectall_arrayref>, so it does too.
+goes through C<selectall_arrayref>, so it does too. Unlike L</prepare>,
+they don't croak if the statement can't be prepared: without
+C<RaiseError>, each returns what the DBI's returns, as C<do> does.
 
 =head1 DIAGNOSTICS
 

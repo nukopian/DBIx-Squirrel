@@ -128,6 +128,64 @@ subtest 'do gives the same result as the DBI' => sub {
     }
 };
 
+subtest "do runs a statement it doesn't rewrite as the driver's do does" =>
+    sub {
+        my $dbh = connect_both();
+        my %got;
+        for my $kind (sort keys %$dbh) {
+            my $h = $dbh->{$kind};
+            $got{$kind} = [
+                [$h->do('SELECT * FROM artist')],
+                [$h->do('UPDATE artist SET name = name RETURNING id')],
+                [$h->do('UPDATE artist SET name = :n RETURNING id', undef, n => 'z')],
+            ];
+            my $many = $h->clone({sqlite_allow_multiple_statements => 1});
+            $many->do('CREATE TABLE a (x); CREATE TABLE b (y)');
+            push @{ $got{$kind} }, $many->selectcol_arrayref(
+            q{SELECT name FROM sqlite_master WHERE name IN ('a', 'b') ORDER BY name},
+            );
+        }
+        is $got{squirrel}[0], $got{dbi}[0], 'a SELECT, counting its rows';
+        is $got{squirrel}[1], $got{dbi}[1], 'an UPDATE ... RETURNING';
+        is $got{squirrel}[3], ['a', 'b'],
+        'several statements, as DBD::SQLite allows';
+        is $got{squirrel}[2], ['0E0'],
+        "one rewritten, prepared and executed, counting rows as they're fetched";
+    };
+
+subtest 'do returns undef without RaiseError, as the DBI does' => sub {
+    my %h = map {
+        ($_ => $_->connect(@source[0 .. 2], {RaiseError => 0, PrintError => 0}))
+    } qw(DBI DBIx::Squirrel);
+    is $h{'DBIx::Squirrel'}->do('SELEC 1'), $h{DBI}->do('SELEC 1'),
+        "a statement it doesn't rewrite";
+    is $h{'DBIx::Squirrel'}->do('SELEC :x', undef, x => 1), undef,
+        'and one it does';
+    like $h{'DBIx::Squirrel'}->errstr, qr( syntax\ error )x, 'with the error';
+};
+
+subtest 'so do the select methods' => sub {
+    my %h = map {
+        ($_ => $_->connect(@source[0 .. 2], {RaiseError => 0, PrintError => 0}))
+    } qw(DBI DBIx::Squirrel);
+    for my $method (qw(
+        selectrow_array    selectrow_arrayref selectrow_hashref
+        selectall_arrayref selectcol_arrayref))
+    {
+        my $dbi = $h{DBI};
+        my $sq  = $h{'DBIx::Squirrel'};
+        is [$sq->$method('SELEC :x', undef, x => 1)],
+            [$dbi->$method('SELEC ?', undef, 1)],
+            "$method, in list context";
+        is scalar($sq->$method('SELEC :x', undef, x => 1)),
+            scalar($dbi->$method('SELEC ?', undef, 1)), 'and in scalar context';
+    }
+    is [$h{'DBIx::Squirrel'}->selectall_hashref('SELEC :x', 'id', undef, x => 1)
+        ],
+        [$h{DBI}->selectall_hashref('SELEC ?', 'id', undef, 1)],
+        'selectall_hashref';
+};
+
 subtest 'do takes bind values without attributes' => sub {
     my $dbh = connect_both()->{squirrel};
     is $dbh->do(

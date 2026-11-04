@@ -62,6 +62,19 @@ subtest 'an array reference' => sub {
         'or inside another, to a numbered placeholder';
 };
 
+subtest 'do' => sub {
+    is $dbh->do('SELECT 2 = ANY(?::int[])', undef, [1, 2]),
+        $dbi->do('SELECT 2 = ANY(?::int[])', undef, [1, 2]),
+        'an array reference is one PostgreSQL array, as with the DBI';
+    is $dbh->do('SELECT ?::int, ?::int', undef, [1, 2]), 1,
+        'or stands for the values, to a statement taking two';
+    my $dollar = {pg_placeholder_dollaronly => 1};
+    is $dbh->do('SELECT 3 = ANY($1::int[])', $dollar, [1, 2]), 1,
+        'and to one taking $1 alone, for DBD::Pg to read';
+    is $dbh->do('SELECT 1; SELECT 2'), $dbi->do('SELECT 1; SELECT 2'),
+        'several statements, as DBD::Pg allows';
+};
+
 subtest 'the same results as the DBI' => sub {
     my $sql = 'SELECT 2 = ANY(?::int[]), ?::int';
     is [$dbh->selectrow_array($sql, undef, [1, 2], 3)],

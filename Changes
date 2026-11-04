@@ -39,6 +39,13 @@ Unreleased
       is set to: connect, prepare and prepare_cached croaked with the
       DBI's errstr alone, and errors in do and the select methods named
       the prepare or execute inside them, not the method called.
+    - do runs a statement with ? placeholders, or none, through the
+      driver's own do, as plain DBI does, so its row counts and options
+      apply, such as DBD::SQLite's sqlite_allow_multiple_statements.
+      Version 1's do also returned the statement handle in list
+      context; this one returns only what the DBI's do returns.
+    - do and the select methods return what the DBI's do without
+      RaiseError, if a statement can't be prepared, where they croaked.
     - The select methods pass values for ? placeholders to the DBI, as
       plain DBI does, so it rejects too many, rather than binding them
       first through bind_param, which DBD::SQLite let pass.

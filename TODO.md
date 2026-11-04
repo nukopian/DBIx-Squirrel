@@ -26,13 +26,3 @@ with `DBIx::Squirrel::Pipeline->from_args`.
 
 **Files.** `lib/DBIx/Squirrel/db.pm`, `lib/DBIx/Squirrel/st.pm`, v1's
 `it.pm` and `rs.pm`.
-
-## 2. do replaces the driver's own do
-
-**What.** `DBIx::Squirrel::db::do` prepares and executes, so a
-driver's own `do` is never called. DBD::SQLite's runs several
-statements at once with `sqlite_allow_multiple_statements`, and that's
-lost.
-
-**Decide** whether to document it or to call `SUPER::do` when there are
-no placeholders to rewrite. Plain DBI is the baseline (CLAUDE.md).
