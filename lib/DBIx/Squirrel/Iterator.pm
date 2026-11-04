@@ -43,8 +43,11 @@ sub next ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 # there were.
 sub all ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     _executed($self);
-    my @results;
-    push @results, _take($self) while _peek($self);
+    my @results = _take($self);
+    return @results unless @results;
+    DBIx::Squirrel::Context::within($self, sub { _drain($self, \@results) });
+    $self->{count} += @results - 1;
+    _finish($self);
     return @results;
 }
 
@@ -136,14 +139,7 @@ sub _take ($self) {
 sub _peek ($self) {
     return 1 if $self->{lookahead};
     return 0 if $self->{done};
-    my @result = DBIx::Squirrel::Context::within(
-        {
-            iterator => $self,
-            number   => $self->{produced} + 1,
-            original => $self->{original},
-        },
-        $self->{next},
-    );
+    my @result = DBIx::Squirrel::Context::within($self, $self->{next});
     unless (@result) {
         _finish($self);
         return 0;
@@ -151,6 +147,18 @@ sub _peek ($self) {
     $self->{lookahead} = \@result;
     $self->{produced}++;
     return 1;
+}
+
+# Run the stages until no more results come out of them, adding each to
+# the results given, and counting it as it's made, for
+# DBIx::Squirrel::Context.
+sub _drain ($self, $results) {
+    my $next = $self->{next};
+    while (my($result) = $next->()) {
+        push @$results, $result;
+        $self->{produced}++;
+    }
+    return;
 }
 
 # Stop iterating, and finish the statement.
@@ -161,8 +169,12 @@ sub _finish ($self) {
 }
 
 # Return a source for the pipeline: a closure returning the statement's
-# next row, fetched a batch at a time, or nothing.
+# next row, fetched a batch at a time, or nothing. It keeps the row as
+# the original, for DBIx::Squirrel::Context. A row is passed through
+# _row only if a subclass has one of its own.
 sub _source ($self) {
+    my $row = $self->can('_row');
+    undef $row if $row == \&_row;
     weaken $self;
     return sub () {
         my $buffer = $self->{buffer};
@@ -171,11 +183,11 @@ sub _source ($self) {
             return unless $sth->{Active} && $sth->{NUM_OF_FIELDS};
             my $rows = $sth->fetchall_arrayref($self->{slice}, $BATCH_SIZE);
             return unless $rows && @$rows;
-            push @$buffer, @$rows;
+            $self->{buffer} = $buffer = $rows;
         }
-        $self->{original} = $self->_row(shift @$buffer);
-        DBIx::Squirrel::Context::set_original($self->{original});
-        return $self->{original};
+        my $original = shift @$buffer;
+        $original = $self->$row($original) if $row;
+        return $self->{original} = $original;
     };
 }
 

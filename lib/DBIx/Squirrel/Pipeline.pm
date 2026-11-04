@@ -48,24 +48,39 @@ sub _iterator ($stages, $source) {
     my @stages = @$stages;
 
     # Each value waiting to go through a stage, as the stage's index and
-    # the value, the next on top.
+    # the value, the next on top. A value a stage returns on its own, as
+    # most are, carries on through the stages without waiting here.
     my(@todo, $done);
     return sub () {
         while (1) {
-            unless (@todo) {
+            my($n, $value);
+            if (@todo) {
+                ($n, $value) = @{ pop @todo };
+            }
+            else {
                 last if $done;
                 my @values = $source->();
                 unless (@values) {
                     $done = 1;
                     last;
                 }
+                ($n, $value) = (0, shift @values);
                 push @todo, map { [0, $_] } reverse @values;
             }
-            my($n, $value) = @{ pop @todo };
             return $value if $n == @stages;
+            my $kept = 1;
             try {
-                local $_ = $value;
-                push @todo, map { [$n + 1, $_] } reverse $stages[$n]->($value);
+                while ($n < @stages) {
+                    local $_ = $value;
+                    my @values = $stages[$n]->($value);
+                    $n++;
+                    unless (@values) {
+                        $kept = 0;
+                        last;
+                    }
+                    $value = shift @values;
+                    push @todo, map { [$n, $_] } reverse @values;
+                }
             }
             catch ($e) {
                 if ($e isa 'DBIx::Squirrel::Stop') {
@@ -79,6 +94,7 @@ sub _iterator ($stages, $source) {
                 my $message = $e =~ s( \n \z )()xr =~ s( ^ )(    )xmgr;
                 die "Pipeline stage #@{[ $n + 1 ]} failed$at:\n$message\n";
             }
+            return $value if $kept;
         }
         return;
     };

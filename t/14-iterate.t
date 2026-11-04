@@ -105,6 +105,7 @@ subtest 'all and count' => sub {
 
     $it = $dbh->iterate($all);
     is scalar($it->all), 10, 'all, in scalar context, counts them';
+    is scalar($dbh->iterate("$all LIMIT 0")->all), 0, 'or that there are none';
 };
 
 subtest 'single' => sub {
@@ -216,6 +217,19 @@ subtest 'what a stage can ask' => sub {
     is [map { $_->{original}[1] } @$results], [qw(Abba Cream Dido)],
         'result_original';
     is result_number, undef, 'and nothing outside a stage';
+};
+
+subtest 'what a stage can ask, with several results from a row' => sub {
+    my @stages = (
+        sub ($row) { $row->[0] == 2 ? ($row, $row) : $row },
+        sub ($row) { [result_number, result_original->[1], $row->[1]] },
+    );
+    my $expected = [
+        [1, 'Abba', 'Abba'], [2, 'Blur',  'Blur'],
+        [3, 'Blur', 'Blur'], [4, 'Cream', 'Cream'],
+    ];
+    is [$dbh->iterate("$all LIMIT 3", @stages)->all], $expected, 'through all';
+    is drain($dbh->iterate("$all LIMIT 3", @stages)), $expected, 'and next';
 };
 
 subtest 'errors are reported at the caller' => sub {

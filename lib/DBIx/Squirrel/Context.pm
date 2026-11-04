@@ -11,8 +11,9 @@ our @EXPORT_OK = qw(iterator result_number result_original);
 # Croak at the line that called DBIx::Squirrel.
 our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
-# What a stage can ask about the result it's making, set by the iterator
-# running it.
+# The iterator running the stages, set by the iterator while they run.
+# What a stage can ask is read from the iterator when it asks, as the
+# iterator counts its results and keeps the row it fetched last.
 my %context;
 
 # The iterator running the stage.
@@ -22,26 +23,21 @@ sub iterator (@) {
 
 # The number of the result being made, from 1.
 sub result_number (@) {
-    return $context{number};
+    my $iterator = $context{iterator};
+    return $iterator && $iterator->{produced} + 1;
 }
 
 # The row the result is being made from, as it was fetched.
 sub result_original (@) {
-    return $context{original};
+    my $iterator = $context{iterator};
+    return $iterator && $iterator->{original};
 }
 
-# For DBIx::Squirrel's iterators: run code with the context given, and
-# return what it returns.
-sub within ($values, $code) {
-    local @context{keys %$values} = values %$values;
+# For DBIx::Squirrel's iterators: run code with the iterator given as the
+# one running, and return what it returns.
+sub within ($iterator, $code) {
+    local $context{iterator} = $iterator;
     return $code->();
-}
-
-# For DBIx::Squirrel's iterators: change the original row while code run
-# by within runs.
-sub set_original ($row) {
-    $context{original} = $row;
-    return;
 }
 
 1;
@@ -87,7 +83,7 @@ value a stage returns in place of one row is a result of its own.
 The row the result is being made from, as it was fetched, before any
 stage changed it.
 
-=head2 within, set_original
+=head2 within
 
 For DBIx::Squirrel's iterators, which set the context while their
 stages run; not for use elsewhere.
