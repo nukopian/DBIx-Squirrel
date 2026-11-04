@@ -2,9 +2,10 @@ use v5.36;
 
 package DBIx::Squirrel::db;
 
-use Carp      qw(croak);
-use DBI       qw();
-use Ref::Util qw(is_arrayref is_coderef is_hashref is_ref);
+use Carp         qw(croak);
+use Data::Dumper qw();
+use DBI          qw();
+use Ref::Util    qw(is_arrayref is_coderef is_hashref is_ref);
 
 use DBIx::Squirrel::Errors       qw(at_caller croakf failed in_method);
 use DBIx::Squirrel::Placeholders qw(study_sql);
@@ -45,19 +46,31 @@ sub _prepare ($self, $statement, $attrs, @args) {
 # The DBI caches a handle by its statement and attributes, and different
 # statements can be rewritten the same, as "SELECT :a, :b" and
 # "SELECT :b, :a" both are, so the original statement goes in a private
-# attribute, to keep their handles apart.
+# attribute, to keep their handles apart, with DBIx::Squirrel's own
+# attributes, which the DBI doesn't see, as a string.
 sub prepare_cached ($self, $statement, $attrs = undef, @args) {
     my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
+    my %ekorn = map { ($_ => $attrs->{$_}) }
+        grep { m( \A ekorn_ )x } keys %{ $attrs // {} };
     $dbi_attrs = {
         %{ $dbi_attrs // {} },
         private_ekorn_statement => $state->{OriginalStatement},
+        (%ekorn ? (private_ekorn_options => _canonical(\%ekorn)) : ()),
     };
     my $sth = in_method $self, 'prepare_cached', sub {
         at_caller { $self->SUPER::prepare_cached($normalised, $dbi_attrs, @args) }
             or croak failed($self, 'prepare_cached');
     };
-    $sth->{private_ekorn} = $state;
+
+    # A cached handle keeps what it had, such as the iterator using it.
+    $sth->{private_ekorn} = {%{ $sth->{private_ekorn} // {} }, %$state};
     return $sth;
+}
+
+
+# Return options as a string, the same for the same options.
+sub _canonical ($options) {
+    return Data::Dumper->new([$options])->Indent(0)->Sortkeys(1)->Terse(1)->Dump;
 }
 
 # Run a statement, and return what the DBI's do returns. Unlike the DBI's,

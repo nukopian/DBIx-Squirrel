@@ -83,6 +83,10 @@ Unreleased
     - The ekorn_finish_active attribute, on connect or prepare,
       finishes a statement still active before executing it again.
       The DBI doesn't, and by default neither does DBIx::Squirrel.
+    - prepare_cached keeps a cached handle's DBIx::Squirrel state, such
+      as the iterator using it, where it replaced it, and keeps
+      statements prepared with different ekorn_ attributes apart, where
+      they shared a handle.
     - connect_cached returns the cached handle, where it connected
       again every time: the ekorn_ attributes went to the DBI as a new
       reference each time, and the DBI keys its cache on every

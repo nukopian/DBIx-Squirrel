@@ -70,9 +70,9 @@ sub single ($self) {
 sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my $sth   = $self->{sth};
     my $state = $sth->{private_ekorn} //= {};
-    my $other = $state->{Iterator};
+    my $other = _going($sth);
     croakf "Expected the statement handle's other iterator to be finished"
-        if $other && $other != $self && $other->{executed} && !$other->{done};
+        if $other && $other != $self;
 
     my @stages = _split_stages(\@args);
     $self->{stages}        = [@{ $self->{stages_initial} }, @stages] if @stages;
@@ -109,6 +109,14 @@ sub count ($self) {
 
 sub sth ($self) {
     return $self->{sth};
+}
+
+# Return the iterator going through a statement handle's results, if one
+# has results left to hand out.
+sub _going ($sth) {
+    my $state    = $sth->{private_ekorn} or return;
+    my $iterator = $state->{Iterator}    or return;
+    return $iterator->{executed} && !$iterator->{done} ? $iterator : ();
 }
 
 # Execute the statement, unless it's been executed.
