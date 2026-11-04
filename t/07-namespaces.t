@@ -4,6 +4,8 @@ use Test2::Plugin::NoWarnings;
 
 use DBIx::Squirrel;
 use DBIx::Squirrel::Errors;
+use DBIx::Squirrel::Context;
+use DBIx::Squirrel::Iterator;
 use DBIx::Squirrel::Pipeline;
 use DBIx::Squirrel::Placeholders;
 use DBIx::Squirrel::Stop ();
@@ -22,6 +24,7 @@ my %imported = (
     'DBIx::Squirrel::Placeholders' => [qw(croak     uniq)],
     'DBIx::Squirrel::st'           => [qw(at_caller croak is_arrayref is_hashref)],
     'DBIx::Squirrel::Errors'       => [qw(croak     is_ref)],
+    'DBIx::Squirrel::Iterator'     => [qw(croak     is_coderef weaken)],
     'DBIx::Squirrel::Stop'         => [qw(croak)],
 );
 

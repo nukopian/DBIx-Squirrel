@@ -6,8 +6,9 @@ use Carp      qw(croak);
 use DBI       qw();
 use Ref::Util qw(is_arrayref is_hashref);
 
-use DBIx::Squirrel::Errors qw(at_caller);
-use DBIx::Squirrel::Pipes  qw();
+use DBIx::Squirrel::Errors   qw(at_caller);
+use DBIx::Squirrel::Iterator qw();
+use DBIx::Squirrel::Pipes    qw();
 
 use namespace::clean;
 
@@ -84,6 +85,13 @@ sub execute ($self, @args) {
     unless @args && _binds($self);
     _bind($self, @args) or return;
     return at_caller { $self->SUPER::execute };
+}
+
+
+# Return an iterator over the statement's results, executed with the bind
+# values given, and run through the stages given after them.
+sub iterate ($self, @args) {
+    return DBIx::Squirrel::Iterator->new($self, @args);
 }
 
 
@@ -254,6 +262,15 @@ C<execute> before executing it again, and nor does C<execute>, unless the
 C<ekorn_finish_active> attribute is true. It can be set for every
 statement of a database handle, passed to L<DBIx::Squirrel/connect>, or
 for one statement, passed to L<DBIx::Squirrel::db/prepare>.
+
+=head2 iterate
+
+    $it = $sth->iterate(@bind_values, @stages);
+
+Returns a L<DBIx::Squirrel::Iterator>, an iterator over the statement's
+results, executed with C<@bind_values>, in any form L</execute> takes,
+and run through C<@stages>, the code references at the end of the
+arguments. The statement is executed when the first result is asked for.
 
 =head1 DIAGNOSTICS
 

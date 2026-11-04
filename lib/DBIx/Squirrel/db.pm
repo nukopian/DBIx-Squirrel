@@ -97,6 +97,15 @@ sub _values_taken ($placeholders) {
 }
 
 
+# Prepare a statement, and return an iterator over its results, executed
+# with the bind values given, and run through the stages given after
+# them. As with do, the attributes may be left out.
+sub iterate ($self, $statement, @args) {
+    my $attrs = @args && is_coderef($args[0]) ? undef : _shift_attrs(\@args);
+    return $self->prepare($statement, $attrs)->iterate(@args);
+}
+
+
 # The DBI's select methods, each preparing the statement and binding its
 # values as DBIx::Squirrel does. Drivers built on the DBI's own C code,
 # such as DBD::SQLite, DBD::mysql and DBD::Pg, bind and execute in C, not
@@ -181,6 +190,10 @@ sub _study ($self, $statement, $attrs) {
         %{ $state && $state->{Options} // {} },
         %{ $attrs // {} },
     );
+    croak 'Expected ekorn_slice to be a reference to an ARRAY or HASH'
+        if exists $options{ekorn_slice}
+        && !(  is_arrayref($options{ekorn_slice})
+            || is_hashref($options{ekorn_slice}));
     my($placeholders, $normalised, $original)
         = study_sql(_statement_text($statement), \%options)
         or croak 'Expected a statement';
@@ -373,6 +386,16 @@ only as they're fetched, giving C<0E0>.
 Like the DBI's, C<do> returns no rows, even from a C<SELECT> or a
 C<RETURNING> clause. Use L</prepare> and C<execute>, or the select
 methods, for those.
+
+=head2 iterate
+
+    $it = $dbh->iterate($statement, \%attr, @bind_values, @stages);
+    $it = $dbh->iterate($statement, @bind_values, @stages);
+
+Prepares a statement, as L</prepare> does, and returns a
+L<DBIx::Squirrel::Iterator>, an iterator over its results, as
+L<DBIx::Squirrel::st/iterate> does. As with L</do>, the attributes may
+be left out.
 
 =head2 selectrow_array, selectrow_arrayref, selectrow_hashref
 

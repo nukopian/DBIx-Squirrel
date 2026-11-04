@@ -13,16 +13,23 @@ with the last one. It must be gone before `main` moves.
 The v1 code referred to is in
 `/Users/icampbell/Git/github.com/nukopian/DBIx-Squirrel-1`.
 
-## 1. iterate and results on the database handle
+## 1. results
 
-**What.** v1's `lib/DBIx/Squirrel/db.pm` has `iterate` (lines 156-191)
-and `results` (199-234), which prepare a statement and hand it to
-`$sth->iterate` or `$sth->results`. They wait on the statement handle
-having those methods. Bind values followed by stages should be split
-with `DBIx::Squirrel::Pipeline->from_args`.
+**What.** Bring over v1's result set: `lib/DBIx/Squirrel/rs.pm` (136
+lines), a subclass of the iterator that reblesses each row into a row
+class with accessors made on demand (`_rebless`, `result_class`,
+`row_class`, `_autoloaded_accessors_unload`), with `$sth->results`
+(v1 `st.pm` line 182) and `$dbh->results` (v1 `db.pm` lines 199-234).
 
-**Ask Iain** which of v1's aliases to keep: `iterator`, `itor` and
-`it` for `iterate`; `resultset`, `rset` and `rs` for `results`.
+Build it on `DBIx::Squirrel::Iterator`, as decided for the iterator on
+2026-11-04 (Claude Doc "DBIx-Squirrel: the iterator, critiqued"): name
+it `DBIx::Squirrel::Results`; no aliases (only `results`, a plural
+noun); no writes to `$_` outside a stage; the iterator's methods only,
+adding none it can do without; options as `ekorn_` attributes, not
+class-wide setters.
 
-**Files.** `lib/DBIx/Squirrel/db.pm`, `lib/DBIx/Squirrel/st.pm`, v1's
-`it.pm` and `rs.pm`.
+**Ask Iain** how row classes and their accessors should work, as v1's
+AUTOLOAD and per-statement classes are the messy part.
+
+**Files.** `lib/DBIx/Squirrel/db.pm`, `lib/DBIx/Squirrel/st.pm`, a new
+`lib/DBIx/Squirrel/Results.pm`, and tests beside `t/14-iterate.t`.
