@@ -2,9 +2,11 @@ use v5.36;
 
 package DBIx::Squirrel::Iterator;
 
-use Carp         qw(croak);
-use Ref::Util    qw(is_coderef);
-use Scalar::Util qw(weaken);
+use experimental qw(builtin);
+
+use builtin   qw(weaken);
+use Carp      qw(croak);
+use Ref::Util qw(is_coderef);
 
 use DBIx::Squirrel::Context  qw();
 use DBIx::Squirrel::Pipeline qw();

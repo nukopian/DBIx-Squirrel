@@ -75,9 +75,12 @@ what was Iain's.
   needs it adds `use experimental qw(try);`, which also allows
   `finally`. Once the floor reaches 5.40, `use v5.40` turns on
   `try`/`catch` by itself, and the line is needed only for `finally`.
-  `builtin::` is experimental too, and still needs the floor raised to
-  5.40, deliberately, not by accident. CI tests from the floor to the
-  newest Perl.
+  `builtin::` functions are experimental in 5.36 too, and are used the
+  same way, as decided on 2026-11-04, in place of Scalar::Util: a
+  module adds `use experimental qw(builtin);` and imports what it needs,
+  such as `use builtin qw(weaken);`. Only functions stable in 5.40 are
+  used, so that once the floor reaches 5.40, `use v5.40` imports them,
+  and both lines go. CI tests from the floor to the newest Perl.
 - **Minilla** builds and releases the distribution. It's opinionated,
   and that's why it was chosen over Dist::Zilla, whose configuration is
   a tax on an occasional release: the repository is the distribution,

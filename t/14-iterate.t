@@ -6,7 +6,8 @@ use DBI;
 use DBIx::Squirrel;
 use DBIx::Squirrel::Stop;
 use DBIx::Squirrel::Context qw(iterator result_number result_original);
-use Scalar::Util            qw(weaken);
+use experimental            qw(builtin);
+use builtin                 qw(weaken);
 
 my @source = (
     'dbi:SQLite:dbname=:memory:', '', '',
