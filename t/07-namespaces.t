@@ -22,14 +22,14 @@ my %imported = (
             is_hashref in_method is_ref study_sql
         ),
     ],
-    'DBIx::Squirrel::Pipeline'     => [qw(croak     is_coderef)],
-    'DBIx::Squirrel::Placeholders' => [qw(croak     uniq)],
-    'DBIx::Squirrel::st'           => [qw(at_caller croak is_arrayref is_hashref)],
-    'DBIx::Squirrel::Errors'       => [qw(croak     is_ref)],
-    'DBIx::Squirrel::Iterator'     => [qw(croak     is_coderef weaken)],
-    'DBIx::Squirrel::Result'       => [qw(croak     sha1_hex   set_subname)],
-    'DBIx::Squirrel::Results'      => [qw(croak)],
-    'DBIx::Squirrel::Stop'         => [qw(croak)],
+    'DBIx::Squirrel::Pipeline'     => [qw(croak  is_coderef)],
+    'DBIx::Squirrel::Placeholders' => [qw(croakf uniq)],
+    'DBIx::Squirrel::st'     => [qw(at_caller croak croakf is_arrayref is_hashref)],
+    'DBIx::Squirrel::Errors' => [qw(croak     is_ref)],
+    'DBIx::Squirrel::Iterator' => [qw(croak is_coderef weaken)],
+    'DBIx::Squirrel::Result'   => [qw(croak sha1_hex   set_subname)],
+    'DBIx::Squirrel::Results'  => [qw(croakf)],
+    'DBIx::Squirrel::Stop'     => [qw(croak)],
 );
 
 for my $pkg (sort keys %imported) {

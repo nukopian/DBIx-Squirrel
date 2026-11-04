@@ -2,9 +2,10 @@ use v5.36;
 
 package DBIx::Squirrel::Placeholders;
 
-use Carp       qw(croak);
 use Exporter   qw(import);
 use List::Util qw(uniq);
+
+use DBIx::Squirrel::Errors qw(croakf);
 
 use namespace::clean -except => 'import';
 
@@ -86,7 +87,7 @@ sub study_sql ($statement, $options = {}) {
 
     # One style of placeholder to a statement.
     my @styles = uniq map { _style($_) } @placeholders;
-    croak "Expected one placeholder style, not several (@{[ join ', ', @styles ]})"
+    croakf 'Expected one placeholder style, not several (%s)', join ', ', @styles
         if @styles > 1;
 
     my %positions = map { ($_ + 1 => $placeholders[$_]) } keys @placeholders;

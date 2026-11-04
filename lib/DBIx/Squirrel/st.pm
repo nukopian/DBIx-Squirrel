@@ -6,7 +6,7 @@ use Carp      qw(croak);
 use DBI       qw();
 use Ref::Util qw(is_arrayref is_hashref);
 
-use DBIx::Squirrel::Errors   qw(at_caller);
+use DBIx::Squirrel::Errors   qw(at_caller croakf);
 use DBIx::Squirrel::Iterator qw();
 use DBIx::Squirrel::Results  qw();
 use DBIx::Squirrel::Pipes    qw();
@@ -155,7 +155,7 @@ sub _numbered ($binds) {
 sub _values_for ($binds, @args) {
     if (_numbered($binds)) {
         my($needed) = sort { $b <=> $a } keys %$binds;
-        croak "Expected $needed bind values, not @{[ scalar @args ]}"
+        croakf 'Expected %d bind values, not %d', $needed, scalar @args
             unless @args == $needed;
         return map { ($_ => $args[$_ - 1]) } keys %$binds;
     }
@@ -170,11 +170,11 @@ sub _values_for ($binds, @args) {
     }
     my %given   = map       { (_key($_) => $values{$_}) } keys %values;
     my @unknown = sort grep { !$binds->{_key($_)} } keys %values;
-    croak "Expected a placeholder of the statement (@{[ join ', ', @unknown ]})"
+    croakf 'Expected a placeholder of the statement (%s)', join ', ', @unknown
         if @unknown;
     my @missing = sort grep { !exists $given{$_} } keys %$binds;
-    croak
-        "Expected a value for each placeholder (none for @{[ join ', ', @missing ]})"
+    croakf 'Expected a value for each placeholder (none for %s)',
+        join(', ', @missing)
         if @missing;
     return %given;
 }

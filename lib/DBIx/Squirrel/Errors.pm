@@ -10,7 +10,7 @@ use Ref::Util qw(is_ref);
 
 use namespace::clean -except => 'import';
 
-our @EXPORT_OK = qw(at_caller failed in_method);
+our @EXPORT_OK = qw(at_caller croakf failed in_method);
 
 # Croak at the line that called DBIx::Squirrel, past the DBI's own code
 # and DBIx::Squirrel's.
@@ -43,6 +43,16 @@ sub at_caller : prototype(&) ($code) {    ## no critic (Subroutines::RequireFina
             if $message eq $e;
         croak $message;
     }
+}
+
+
+# Croak with a message made by sprintf from a format and its arguments,
+# as croak itself would, at the same line: goto leaves no frame of its
+# own for Carp to see. It's a sub without a signature, as goto passes @_.
+sub croakf {    ## no critic (Subroutines::RequireArgUnpacking)
+    my $format = shift;
+    @_ = (sprintf $format, @_);
+    goto &Carp::croak;
 }
 
 
@@ -105,6 +115,13 @@ DBIx::Squirrel. The DBI's message itself, such as
 C<DBD::SQLite::db prepare failed: ...>, is kept as it was. Any other
 error, such as an object, or a string from a C<HandleError> callback, is
 raised again unchanged.
+
+=head2 croakf
+
+    croakf 'Expected a value for each placeholder (none for %s)', $names;
+
+Croaks with a message made by C<sprintf> from a format and its
+arguments, reporting it at the same line as L<Carp/croak> would.
 
 =head2 failed
 

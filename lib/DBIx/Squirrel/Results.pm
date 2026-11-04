@@ -2,7 +2,7 @@ use v5.36;
 
 package DBIx::Squirrel::Results;
 
-use Carp qw(croak);
+use DBIx::Squirrel::Errors qw(croakf);
 
 use DBIx::Squirrel::Iterator qw();
 use DBIx::Squirrel::Result   qw();
@@ -39,8 +39,8 @@ sub _row ($self, $row) {    ## no critic (Subroutines::ProhibitUnusedPrivateSubr
 sub _base_class ($self) {
     my $base = $self->sth->{private_ekorn}{Options}{ekorn_result_class}
         // 'DBIx::Squirrel::Result';
-    croak
-        "Expected ekorn_result_class to be a subclass of DBIx::Squirrel::Result ($base)"
+    croakf 'Expected ekorn_result_class to be a subclass of %s (%s)',
+        'DBIx::Squirrel::Result', $base
         unless $base->isa('DBIx::Squirrel::Result');
     return $base;
 }

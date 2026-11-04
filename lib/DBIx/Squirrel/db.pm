@@ -198,10 +198,9 @@ sub _study ($self, $statement, $attrs) {
         %{ $state && $state->{Options} // {} },
         %{ $attrs // {} },
     );
+    my $slice = $options{ekorn_slice};
     croak 'Expected ekorn_slice to be a reference to an ARRAY or HASH'
-        if exists $options{ekorn_slice}
-        && !(  is_arrayref($options{ekorn_slice})
-            || is_hashref($options{ekorn_slice}));
+        if defined $slice && !is_arrayref($slice) && !is_hashref($slice);
     my($placeholders, $normalised, $original)
         = study_sql(_statement_text($statement), \%options)
         or croak 'Expected a statement';

@@ -4,7 +4,7 @@ use Test2::Plugin::NoWarnings;
 
 use DBI;
 use DBIx::Squirrel;
-use DBIx::Squirrel::Errors qw(at_caller failed in_method);
+use DBIx::Squirrel::Errors qw(at_caller croakf failed in_method);
 
 # A database handle, with RaiseError on unless told otherwise, and a table
 # with a row, for a second to break its key.
@@ -121,6 +121,25 @@ subtest 'and when DBIx::Squirrel raises them, without RaiseError' => sub {
     like $want, qr( \A \Q$prefix\E \ failed: )x,
         'connect, whose message the DBI raises';
     is connect_error(0), $want, 'is raised by DBIx::Squirrel the same';
+};
+
+# Croaks with croakf, from a package of its own, as Carp reports past the
+# package that croaks.
+package Expects {
+    use DBIx::Squirrel::Errors qw(croakf);
+
+
+    sub two ($got) {
+        croakf 'Expected %d, not %s', 2, $got;
+        return;
+    }
+}
+
+subtest 'croakf' => sub {
+    my $line = __LINE__ + 1;
+    is dies { Expects::two('three') },
+        "Expected 2, not three at ${\ __FILE__ } line $line.\n",
+        "croaks with sprintf's message, at its caller's line, as croak does";
 };
 
 subtest 'failed' => sub {
