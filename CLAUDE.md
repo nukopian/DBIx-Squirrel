@@ -109,26 +109,29 @@ what was Iain's.
   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test
   ```
 
-  5.38.5, 5.40.5 and 5.42.3 are installed too, for testing across the
-  range CI covers.
+  Each Perl CI covers has a library of the same name, made on
+  2026-11-05 with the cpanfile's runtime, test and develop modules, so
+  the tests run across the whole range: `perl-5.38.5@dbix-squirrel-2`,
+  `perl-5.40.5@dbix-squirrel-2`, `perl-5.42.3@dbix-squirrel-2` and
+  `perl-5.44.0@dbix-squirrel-2`. The tools Iain uses day to day, and
+  the extras listed under Tests, are in the 5.36 library.
 
 ### Building a new Perl on Iain's Mac
 
-Since Xcode 27.1 (Apple clang 21, with the macOS 27.0 SDK), `perlbrew
-install` fails for every new Perl on his Mac, running macOS 26.7: the
-build stops at "Failed to build miniperl", with a segmentation fault,
-whatever the optimisation and with or without `--notest`. Building
-against the older SDK works:
+On macOS 27.2, with Apple clang 21 and the macOS 27.2 SDK, a plain
+`perlbrew install` works: Perl 5.44.0 built that way on 2026-11-05.
+
+Before that, on macOS 26.7 with Xcode 27.1, every new Perl failed to
+build: the build stopped at "Failed to build miniperl", with a
+segmentation fault, whatever the optimisation and with or without
+`--notest`. Building against the older SDK worked, and is what to try
+if that ever comes back:
 
 ```
 SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk MACOSX_DEPLOYMENT_TARGET=26.0 perlbrew install perl-5.42.3 --notest
 ```
 
-XS modules installed with `cpanm` need neither variable: DBI and
-DBD::SQLite built, passed their tests and worked on a Perl built this
-way, on 2026-10-22. If an XS module ever crashes the same way, try the
-same prefix on `cpanm`. Check whether this is still needed after the
-next Xcode update.
+XS modules installed with `cpanm` needed neither variable, even then.
 
 ### Net::SSLeay and OpenSSL 4
 

@@ -314,7 +314,7 @@ them with the command under [Branches](#branches), using the new name.
 
 ## Changing the CI matrix
 
-`main` requires each CI job by its name, as `perl 5.42 (macos-26)`, so a
+`main` requires each CI job by its name, as `perl 5.44 (macos-26)`, so a
 new Perl, or a new runner, means changing the required checks to match.
 Otherwise `main` waits for a check that never reports, and can't move.
 After the new jobs have passed once on `develop`, change the list here
@@ -332,7 +332,8 @@ gh api --method PATCH repos/nukopian/DBIx-Squirrel-2/branches/main/protection/re
     {"context": "perl 5.38 (ubuntu-24.04)", "app_id": 15368},
     {"context": "perl 5.40 (ubuntu-24.04)", "app_id": 15368},
     {"context": "perl 5.42 (ubuntu-24.04)", "app_id": 15368},
-    {"context": "perl 5.42 (macos-26)", "app_id": 15368},
+    {"context": "perl 5.44 (ubuntu-24.04)", "app_id": 15368},
+    {"context": "perl 5.44 (macos-26)", "app_id": 15368},
     {"context": "style", "app_id": 15368},
     {"context": "coverage", "app_id": 15368}
   ]
