@@ -36,6 +36,7 @@ rewritten for Perl 5.36 or later, and isn't released yet.
 - [Errors](#errors)
 - [Diagnostics](#diagnostics)
 - [Differences from plain DBI](#differences-from-plain-dbi)
+- [Upgrading from 1.x](#upgrading-from-1x)
 - [The modules](#the-modules)
 
 ## At a glance
@@ -1084,6 +1085,126 @@ result. These are the places they differ.
 | Statements | A string. | A string, lines in an array reference, a code reference returning either, or a statement handle. |
 | Executing an active statement | Left to the driver. | The same, or finished first with `ekorn_finish_active`. |
 | Iterators, result sets, pipelines | None. | `iterate`, `results`, `pipe`, `tap` and Sugar. |
+
+## Upgrading from 1.x
+
+DBIx::Squirrel 2.0 is a rewrite, not an update: code written for 1.x
+needs changes before it runs on 2.0. The ideas carry over, so most
+changes are a rename or a simpler call, but some methods keep their
+names and change what they do, marked **in bold** below.
+
+To stay on 1.x, which supports Perl 5.10.1 and later, install the last
+version by its number:
+
+```
+cpanm DBIx::Squirrel@1.6.5
+```
+
+### Requirements and loading
+
+| 1.x | 2.0 |
+|---|---|
+| Perl 5.10.1 or later. | Perl 5.36 or later. |
+| Hard dependencies on Compress::Bzip2, Crypt::CBC, Dotenv, JSON::Syck, YAML::Syck and others. | DBI, Ref::Util, namespace::clean, and a few core modules. |
+| Loading it read a `.env` file in the current directory, through Dotenv. | Nothing is read. Load your environment yourself. |
+
+### Importing and the entity helpers
+
+| 1.x | 2.0 |
+|---|---|
+| `use DBIx::Squirrel database_entities => [qw(db artists)];` | `use DBIx::Squirrel::Sugar database => {...}, statement => {...};` |
+| A helper was associated at run time: `db(DBIx::Squirrel->connect(...))`. | A database is defined by the arguments to connect with, and connected when first used: `database => {db => [$dsn, $user, $pass]}`. |
+| A helper could hold a database, a statement or an iterator. | A function holds a database, or a statement on a database by name, with stages of its own. |
+| A helper for a result set returned the iterator, so `artist('Aerosmith')->single->ArtistId`. | A statement's function returns the statement handle, or, with stages, the results themselves, as arrays: `artist('Aerosmith', sub ($row) { $row->[0] })`. |
+
+```perl
+# 1.x
+use DBIx::Squirrel database_entities => [qw(db artist)];
+db(DBIx::Squirrel->connect($dsn, $user, $pass));
+artist(db->results('SELECT * FROM artists WHERE Name = ? LIMIT 1'));
+say artist('Aerosmith')->single->ArtistId;
+
+# 2.0
+use DBIx::Squirrel::Sugar
+    database  => {db => [$ENV{DSN}, $ENV{USER}, $ENV{PASS}]},
+    statement => {artist_id => [db => 'SELECT ArtistId FROM artists WHERE Name = ?', sub ($row) { $row->[0] }]};
+my($id) = artist_id('Aerosmith');
+```
+
+See [A function for each database and statement: Sugar](#a-function-for-each-database-and-statement-sugar).
+
+### Placeholders and binding
+
+| 1.x | 2.0 |
+|---|---|
+| `?`, `?1`, `:1`, `$1` and `:name`. | The same, and `$name`. |
+| Placeholders were found anywhere in the statement: in quoted strings, and in casts, so `x::int` broke. | Not in quoted strings, comments, casts or PostgreSQL's dollar-quoted bodies, read by the database's rules. See [What isn't a placeholder](#what-isnt-a-placeholder). |
+| Styles could be mixed. | One style to a statement; a mix croaks. |
+| `--` comments were removed before the statement reached the database. | Comments are passed on to the database. |
+
+Binding by name, as pairs or in a hash reference, with or without the
+sigil, works as it did.
+
+### do
+
+| 1.x | 2.0 |
+|---|---|
+| **In list context, `do` returned the row count and the statement handle.** | `do` returns what the DBI's returns, in any context. Use `prepare` and `execute` for the handle. |
+
+### Iterators and result sets
+
+| 1.x | 2.0 |
+|---|---|
+| `it` and `iterator`, aliases of `iterate`. | `iterate` only. |
+| `rs` and `resultset`, aliases of `results`. | `results` only. |
+| `$dbh->iterate($sql, [@bind_values, @transforms])`: values and stages in one array reference. | Stages are the code references at the end of the arguments: `$dbh->iterate($sql, @bind_values, @stages)`. |
+| **`next` put the result in `$_`**, as in `while ($it->next) { say $_->Name }`. | Nothing is put in `$_`: `while (my($row) = $it->next) { say $row->name }`. |
+| **`all` in scalar context returned a reference to the results.** | `all` in scalar context returns how many there were: `my $results = [$it->all]`. |
+| **`count` fetched the rest of the results and returned how many there were in all.** | `count` returns how many have been handed out so far, as 1.x's `count_fetched` did. To count them all: `my $n = $it->all`. |
+| `count_fetched`. | `count`. |
+| **`single` and `one` returned the first result, with a warning if there were more.** | `single` executes the statement again and returns its one result, croaking if there's more than one. `one` is gone. |
+| `first`, `last` and `last_fetched`. | Gone: `single`, `next`, or a stage. |
+| `remaining`. | `all`, which returns the results not yet handed out. |
+| `start` and `iterate` on an iterator, to execute it with new bind values. | `reset(@bind_values, @stages)`. |
+| `reset($slice, $cache_size)`, to change the slice or the cache size. | `reset` takes bind values and stages. The slice is the `ekorn_slice` attribute; rows are fetched 100 at a time. |
+| `slice`, `cache_size` and their package-wide defaults, `$DBIx::Squirrel::it::DEFAULT_SLICE` among them. | The `ekorn_slice` attribute, on `connect` or `prepare`. |
+| `is_active`, `not_active` and `rows`. | Gone: `$it->sth->{Active}` and `$it->sth->rows`. |
+
+### Rows as objects
+
+| 1.x | 2.0 |
+|---|---|
+| **A column's method matched its name in any case:** `$row->ArtistId` or `$row->artistid`. | Methods are named in lower case only: `$row->artistid`. |
+| Methods were made the first time each was called. | A class with a method for each column is made for each list of columns. See [Row objects](#row-objects). |
+| A column whose name can't be a method's, such as `COUNT(*)`, was reached by its position. | By its position still, as rows are arrays, or with `get_column`, or given a name with `AS`. |
+
+### Transformations, now stages
+
+The stages work as transformations did: each gets a value as its
+argument and in `$_`, and returns nothing to drop it, one value, or
+several. These have changed:
+
+| 1.x | 2.0 |
+|---|---|
+| `use DBIx::Squirrel::it qw(...)`, for what a stage can ask. | `use DBIx::Squirrel::Context qw(...)`. |
+| `iterator`, `result_number` and `result_original`. | The same, from DBIx::Squirrel::Context. |
+| `database` and `statement`. | `iterator->sth->{Database}` and `iterator->sth`. |
+| `result` and `result_current`. | The stage's argument. |
+| `result_first`, `result_prev`, `result_previous` and `result_offset`. | Gone. A stage that needs them keeps them itself. |
+| No way to end a transformation early. | `Stop`, from DBIx::Squirrel::Stop. See [Stopping a pipeline](#stopping-a-pipeline). |
+
+### Gone, out of scope
+
+These have no place in 2.0. Any that come back will come back as
+distributions of their own.
+
+| 1.x | Instead |
+|---|---|
+| `DBIx::Squirrel::Crypt::Fernet`, and `decrypt` from DBIx::Squirrel::util. | A Fernet module from CPAN. |
+| `DBIx::Squirrel::Transform::*` (Data::Dumper, IO, JSON::Syck, YAML::Syck). | A stage of your own calling the module. |
+| `get_file_contents`, `slurp`, `uncompress`, `unmarshal` and `utf8decode`, from DBIx::Squirrel::util. | Path::Tiny, IO::Uncompress::Bunzip2, a JSON module, and Encode. |
+| `load_tuples`, on a database handle. | `prepare` and `execute`, in a loop. |
+| `statement_digest`, `statement_normalise`, `statement_study` and `statement_trim`, on a statement handle. | `study_sql` and `trim_sql`, from DBIx::Squirrel::Placeholders. |
 
 ## The modules
 

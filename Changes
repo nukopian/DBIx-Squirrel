@@ -2,6 +2,10 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    - A rewrite for Perl 5.36 or later, and not compatible with 1.x:
+      code written for 1.x needs changes to run. "Upgrading from 1.x"
+      in docs/REFERENCE.md lists them. To stay on 1.x, install the
+      last version: cpanm DBIx::Squirrel@1.6.5.
     - prepare and prepare_cached take placeholders in the styles ?,
       ?1, :1, $1 and :name, one style to a statement, croaking if
       they're mixed, and rewrite each as ? for the DBI, leaving
