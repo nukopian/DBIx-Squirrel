@@ -230,6 +230,11 @@ installed, as DBD::Pg links to its `libpq` by full path.
 - Users installing from CPAN run the tests with whatever harness their
   installer uses, so they must pass under `prove` too. yath is the
   maintainers' choice, not a requirement.
+- **`xt/` holds the maintainers' tests,** which yath runs with those in
+  `t/`, as `.yath.rc` says, and `prove` doesn't. `xt/howto.t` runs the
+  examples in `docs/HOWTO.md`, so they can't drift from the code; an
+  example needing a server the tests don't have is marked
+  `<!-- not run -->` above it.
 
 On Iain's Mac, each server has a test account of its own, set up on
 2026-11-04, which can reach only its own database, `dbix_squirrel_test`:

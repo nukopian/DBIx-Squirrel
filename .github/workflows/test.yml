@@ -48,7 +48,7 @@ jobs:
       - name: perltidy
         run: |
           status=0
-          for f in $(git ls-files 'lib/*.pm' 't/*.t'); do
+          for f in $(git ls-files 'lib/*.pm' 't/*.t' 'xt/*.t'); do
             perltidy "$f" | diff -u "$f" - || status=1
           done
           exit $status
