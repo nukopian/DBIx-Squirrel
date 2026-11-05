@@ -115,15 +115,13 @@ sub _define_statement ($package, $name, @definition) {
 # Run a statement's function: execute the statement with the bind values
 # given, and return its handle, or, with stages, its own or those given
 # after the bind values, return the results. The statement is prepared
-# once for each handle, unless the one prepared is in use, when it's
-# prepared again for this call.
+# once for each handle, with prepare_cached, which makes a new one,
+# cached in its place, when the one prepared is in use.
 sub _run_statement ($definition, @args) {
     my $dbh       = database($definition->{database});
     my @statement = @$definition{qw(statement attrs)};
     my $sth       = $dbh->prepare_cached(@statement, 3);
-    $sth = $dbh->prepare(@statement)
-        if DBIx::Squirrel::Iterator::_going($sth);    ## no critic (Subroutines::ProtectPrivateSubs)
-    my @stages = (@{ $definition->{stages} }, split_stages(\@args));
+    my @stages    = (@{ $definition->{stages} }, split_stages(\@args));
     return _execute($sth, @args, @stages);
 }
 

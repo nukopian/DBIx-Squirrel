@@ -330,8 +330,13 @@ its own, as the statement as written is part of the cache's key. So are
 DBIx::Squirrel's own attributes, so a statement prepared with
 `{ekorn_slice => {}}` and one prepared without have different handles.
 
-A handle from the cache keeps what it had, such as the iterator using
-it.
+A cached handle that an iterator is part way through isn't handed out,
+or finished, as the DBI would finish an active one, which would cut the
+iterator's results short. A new handle is made instead, and cached in its
+place, unless `$if_active` is 2, which asks for the cached handle as it
+is. Otherwise, `$if_active` means what it does to the DBI: a cached
+handle that's active, with no iterator, is finished, after a warning,
+unless `$if_active` says otherwise.
 
 ## Binding and executing
 

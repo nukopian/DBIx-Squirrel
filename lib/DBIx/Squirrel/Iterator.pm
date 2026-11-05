@@ -9,7 +9,7 @@ use builtin qw(weaken);
 use DBIx::Squirrel::Context  qw();
 use DBIx::Squirrel::Errors   qw(croakf);
 use DBIx::Squirrel::Pipeline qw();
-use DBIx::Squirrel::Util     qw(split_stages);
+use DBIx::Squirrel::Util     qw(iterator_going split_stages);
 
 use namespace::clean;
 
@@ -69,7 +69,7 @@ sub single ($self) {
 sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my $sth   = $self->{sth};
     my $state = $sth->{private_ekorn};
-    my $other = _going($sth);
+    my $other = iterator_going($sth);
     croakf "Expected the statement handle's other iterator to be finished"
         if $other && $other != $self;
 
@@ -107,13 +107,6 @@ sub count ($self) {
 
 sub sth ($self) {
     return $self->{sth};
-}
-
-# Return the iterator going through a statement handle's results, if one
-# has results left to hand out.
-sub _going ($sth) {
-    my $iterator = $sth->{private_ekorn}{Iterator} or return;
-    return $iterator->{done} ? () : $iterator;
 }
 
 # Execute the statement, unless it's been executed.

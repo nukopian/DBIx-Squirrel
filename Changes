@@ -31,7 +31,9 @@ Unreleased
       croaking at the caller if the values don't match the
       placeholders.
     - prepare_cached gives statements rewritten the same, such as
-      SELECT :a, :b and SELECT :b, :a, a handle each.
+      SELECT :a, :b and SELECT :b, :a, a handle each. A cached handle
+      an iterator is part way through is left to it: prepare_cached
+      makes a new one, cached in its place, unless $if_active is 2.
     - Errors are reported at the caller's line, including the DBI's
       own under RaiseError, which named a line inside DBIx::Squirrel,
       and errors from prepare_cached, which named one inside DBI.pm.

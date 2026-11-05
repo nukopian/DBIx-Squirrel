@@ -15,6 +15,7 @@ our @EXPORT_OK = qw(
     canonical
     install_sub
     is_name
+    iterator_going
     shift_attrs
     split_attrs
     split_stages
@@ -42,6 +43,13 @@ sub install_sub ($name, $code) {
 # Return true if a name can be a subroutine's.
 sub is_name ($name) {
     return $name =~ m( \A [^\W\d] \w* \z )x;
+}
+
+# Return the iterator going through a statement handle's results, if one
+# has results left to hand out.
+sub iterator_going ($sth) {
+    my $iterator = $sth->{private_ekorn}{Iterator} or return;
+    return $iterator->{done} ? () : $iterator;
 }
 
 # Take the attributes off the front of a list of arguments, if they're
@@ -123,6 +131,13 @@ Installs a subroutine by its full name, naming an anonymous one so.
     $bool = is_name($name);
 
 Returns true if a name can be a subroutine's.
+
+=item iterator_going
+
+    $iterator = iterator_going($sth);
+
+Returns the iterator going through a statement handle's results, if one
+has results left to hand out, or nothing.
 
 =item shift_attrs
 

@@ -7,6 +7,8 @@ use DBIx::Squirrel;
 use experimental qw(builtin);
 use builtin      qw(weaken);
 
+use DBIx::Squirrel::Util qw(iterator_going);
+
 my @source = (
     'dbi:SQLite:dbname=:memory:', '', '',
     {RaiseError => 1, PrintError => 0},
@@ -426,12 +428,38 @@ subtest "prepare_cached and DBIx::Squirrel's own attributes" => sub {
     my $sth = $dbh->prepare_cached($sql);
     my $it  = $sth->iterate;
     $it->next;
-    ref_is $dbh->prepare_cached($sql), $sth, 'a handle, cached';
-    ref_is DBIx::Squirrel::Iterator::_going($sth), $it,    ## no critic (Subroutines::ProtectPrivateSubs)
-        'keeps the iterator using it';
+    ref_is $dbh->prepare_cached($sql, undef, 2), $sth,
+        'a handle, cached, as it is';
+    ref_is iterator_going($sth), $it, 'keeps the iterator using it';
     weaken(my $gone = $it);
     undef $it;
     ok !$gone, 'without keeping it from being freed';
+};
+
+subtest 'prepare_cached and a handle an iterator is using' => sub {
+    my $dbh = connect_both()->{squirrel};
+    my $sql = 'SELECT id, name FROM artist ORDER BY id';
+    my $sth = $dbh->prepare_cached($sql);
+    my $it  = $sth->iterate(sub ($row) {
+        $row->[1];
+    });
+    is $it->next, 'AC/DC', 'an iterator, part way';
+    my $new = $dbh->prepare_cached($sql);
+    ref_is_not $new, $sth, 'gives a new handle';
+    ref_is $dbh->prepare_cached($sql), $new, 'cached in its place';
+    is [$it->all], ['Accept'], 'leaving the iterator its results';
+
+    my $other = $new->iterate;
+    $other->next;
+    ref_is_not $dbh->prepare_cached($sql, undef, 3), $new,
+        'whatever $if_active says, but 2';
+
+    my $plain = $dbh->prepare_cached($sql);
+    $plain->execute;
+    $plain->fetchrow_arrayref;
+    like warning { $dbh->prepare_cached($sql) }, qr( still\ Active )x,
+        'a handle active without an iterator warns, as with the DBI';
+    ok !$plain->{Active}, 'and is finished';
 };
 
 subtest 'prepare_cached keeps statements rewritten the same apart' => sub {

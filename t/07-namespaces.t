@@ -20,14 +20,16 @@ my %imported = (
     'DBIx::Squirrel'     => [qw(canonical croak is_hashref split_attrs)],
     'DBIx::Squirrel::db' => [
         qw(
-            at_caller   canonical  croak     croakf failed is_arrayref
-            is_coderef  is_hashref in_method is_ref max    shift_attrs
-            split_attrs study_sql  unwrap_values
+            at_caller      canonical  croak       croakf      failed
+            is_arrayref    is_coderef is_hashref  in_method   is_ref
+            iterator_going max        shift_attrs split_attrs study_sql
+            unwrap_values
         ),
     ],
-    'DBIx::Squirrel::Errors'       => [qw(croak  is_ref)],
-    'DBIx::Squirrel::Iterator'     => [qw(croakf is_coderef split_stages weaken)],
-    'DBIx::Squirrel::Pipeline'     => [qw(croak  croakf     is_coderef   is_ref)],
+    'DBIx::Squirrel::Errors'   => [qw(croak is_ref)],
+    'DBIx::Squirrel::Iterator' =>
+        [qw(croakf is_coderef iterator_going split_stages weaken)],
+    'DBIx::Squirrel::Pipeline'     => [qw(croak  croakf is_coderef is_ref)],
     'DBIx::Squirrel::Placeholders' => [qw(croakf uniq)],
     'DBIx::Squirrel::Result'       =>
         [qw(croakf install_sub is_name sha1_hex set_subname)],

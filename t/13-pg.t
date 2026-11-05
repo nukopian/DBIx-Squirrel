@@ -128,8 +128,8 @@ subtest 'prepare_cached and iterators' => sub {
     my $it  = $sth->iterate(last => 250, sub ($row) { $row->[0] });
     is $it->next, 1, 'an iterator, part way through more than a batch';
 
-    # Still active, so, as the DBI does, prepare_cached would warn and
-    # finish it, unless told to leave it as it is.
+    # An iterator is part way through it, so prepare_cached would make a
+    # new handle, unless told to give this one as it is.
     ref_is $dbh->prepare_cached($sql, undef, 2), $sth,
         'the handle, from the cache';
     weaken(my $gone = $it);

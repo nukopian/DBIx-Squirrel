@@ -11,7 +11,7 @@ use DBIx::Squirrel::Errors       qw(at_caller croakf failed in_method);
 use DBIx::Squirrel::Placeholders qw(study_sql);
 use DBIx::Squirrel::Pipes        qw();
 use DBIx::Squirrel::Util         qw(
-    canonical shift_attrs split_attrs unwrap_values
+    canonical iterator_going shift_attrs split_attrs unwrap_values
 );
 
 use namespace::clean;
@@ -54,17 +54,38 @@ sub _prepare_studied ($self, $normalised, $state, $dbi_attrs, @args) {
 # "SELECT :b, :a" both are, so the original statement goes in a private
 # attribute, to keep their handles apart, with DBIx::Squirrel's own
 # attributes, which the DBI doesn't see, as a string.
-sub prepare_cached ($self, $statement, $attrs = undef, @args) {
+#
+# A cached handle an iterator is part way through is never handed out, or
+# finished, as the DBI would finish an active one: that would cut the
+# iterator's results short. A new handle is made, and cached in its place,
+# unless $if_active is 2, which asks for the handle as it is. Otherwise,
+# $if_active means what it does to the DBI.
+sub prepare_cached ($self, $statement, $attrs = undef, $if_active = undef) {
     my($normalised, $state, $dbi_attrs, $ekorn) = _study($self, $statement, $attrs);
     $dbi_attrs = {
         %{ $dbi_attrs // {} },
         private_ekorn_statement => $state->{OriginalStatement},
         (%$ekorn ? (private_ekorn_options => canonical($ekorn)) : ()),
     };
-    my $sth = in_method $self, 'prepare_cached', sub {
-        at_caller { $self->SUPER::prepare_cached($normalised, $dbi_attrs, @args) }
-            or croak failed($self, 'prepare_cached');
+    my $cached = sub (@if_active) {
+        in_method $self, 'prepare_cached', sub {
+            at_caller {
+                $self->SUPER::prepare_cached($normalised, $dbi_attrs, @if_active)
+            } or croak failed($self, 'prepare_cached');
+        };
     };
+
+    # Look at the cached handle, without finishing it.
+    my $sth   = $cached->(2);
+    my $as_is = defined $if_active && $if_active == 2;
+    if (!$as_is && iterator_going($sth)) {
+        _uncache($self, $sth);
+        $sth = $cached->();
+    }
+
+    # One that's active, with no iterator, is the DBI's to deal with.
+    $sth = $cached->(defined $if_active ? $if_active : ())
+        if !$as_is && $sth->{Active};
 
     # A cached handle keeps what it had, such as the iterator using it,
     # updated in place: a copy would make the weak reference to the
@@ -77,6 +98,14 @@ sub prepare_cached ($self, $statement, $attrs = undef, @args) {
         $sth->{private_ekorn} = $state;
     }
     return $sth;
+}
+
+# Take a statement handle out of the DBI's cache, so the next
+# prepare_cached of its statement makes a new one.
+sub _uncache ($self, $sth) {
+    my $cache = $self->{CachedKids} or return;
+    delete @$cache{grep { $cache->{$_} == $sth } keys %$cache};
+    return;
 }
 
 # Run a statement, and return what the DBI's do returns. Unlike the DBI's,
@@ -398,6 +427,12 @@ C<DBD::SQLite::db prepare failed: near "SELEC": syntax error>.
 
 As L</prepare>, using the DBI's cache of statement handles. Its errors
 name C<prepare_cached>, as the DBI's do.
+
+A cached handle that an iterator is part way through isn't handed out,
+or finished, as the DBI would finish an active one, which would cut the
+iterator's results short. A new handle is made instead, and cached in its
+place, unless C<$if_active> is 2, which asks for the cached handle as it
+is. Otherwise, C<$if_active> means what it does to the DBI.
 
 =head2 do
 
