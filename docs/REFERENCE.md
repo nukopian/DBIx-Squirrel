@@ -517,13 +517,14 @@ returns an iterator over that statement's results.
 The bind values are in any form `execute` takes. The **stages** are the
 code references at the end of the arguments: each row is run through
 them, and what comes out is the result. With no stages, the result is
-the row.
+the row. A stage can name the row with a signature, or leave it out and
+use `$_`, as here; see [Stages](#stages).
 
 ```perl
 my $it = $dbh->iterate(
     'SELECT id, name FROM artist WHERE name LIKE :pattern',
     pattern => 'A%',
-    sub ($row) { $row->[1] },
+    sub { $_->[1] },
 );
 while (my($name) = $it->next) {
     say $name;
@@ -683,8 +684,17 @@ their own, with `DBIx::Squirrel::Pipeline`, or on a handle, with
 
 ### Stages
 
-A stage is called with one value, as its argument and in `$_`, and
-returns a list:
+A stage is called with one value, as its argument and in `$_`, so write
+it whichever way reads best: name the value with a signature, or leave
+the signature out and use `$_`.
+
+```perl
+sub ($row) { $row->[1] }    # the value, named
+sub { $_->[1] }             # the same, in $_
+```
+
+`$_` is localised for each call, so your own `$_` is left as it was. A
+stage returns a list:
 
 | A stage returns | It's a | The value |
 |---|---|---|

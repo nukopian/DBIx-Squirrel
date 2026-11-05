@@ -200,6 +200,9 @@ DBIx::Squirrel::Iterator - an iterator over a statement's results
         say $name;
     }
 
+    # A stage can leave its signature out, and use $_
+    my @names = $dbh->iterate('SELECT id, name FROM artist', sub { $_->[1] })->all;
+
     my $sth = $dbh->prepare(
         'SELECT * FROM artist WHERE id = $1',
         {ekorn_slice => {}},

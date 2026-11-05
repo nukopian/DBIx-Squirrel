@@ -129,8 +129,10 @@ DBIx::Squirrel::Pipeline - run values through a list of stages
 =head1 DESCRIPTION
 
 A pipeline is a list of stages, each a code reference. A stage is
-called with one value, as its argument and in C<$_>, and returns a
-list:
+called with one value, as its argument and in C<$_>, so it can name the
+value with a signature, C<sub ($row) { $row-E<gt>[1] }>, or leave the
+signature out and use C<$_>, C<sub { $_-E<gt>[1] }>. C<$_> is localised for
+each call, so the caller's is left as it was. A stage returns a list:
 
 =over
 

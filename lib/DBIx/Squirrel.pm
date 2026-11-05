@@ -313,7 +313,14 @@ Runs the database handle through a pipeline of stages, and returns what
 comes out of the last one.
 
 Each stage is a code reference, called with one value, as its argument
-and in C<$_>. The first is called with the database handle. A stage
+and in C<$_>, so it can name the value with a signature, or leave the
+signature out and use C<$_>:
+
+    sub ($row) { $row->[1] }    # the value, named
+    sub { $_->[1] }             # the same, in $_
+
+C<$_> is localised for each call, so the caller's is left as it was.
+The first stage is called with the database handle. A stage
 returns nothing to drop the value, one value to pass it on, or several,
 each of which goes through the rest of the stages on its own:
 
