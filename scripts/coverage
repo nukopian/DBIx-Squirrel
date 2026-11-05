@@ -18,10 +18,10 @@ use FindBin    qw($Bin);
 use JSON::PP   qw(decode_json);
 
 my %FLOOR = (
-    statement  => 98,
-    branch     => 94,
-    condition  => 84,
-    subroutine => 98,
+    statement  => 99,
+    branch     => 95,
+    condition  => 85,
+    subroutine => 99,
     pod        => 100,
 );
 

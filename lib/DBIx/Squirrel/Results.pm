@@ -20,10 +20,21 @@ sub _slice ($self) {    ## no critic (Subroutines::ProhibitUnusedPrivateSubrouti
     return [];
 }
 
+# Execute the statement again, as the iterator's reset does, and find the
+# class for its rows, from its columns' names. That's done before a row
+# is fetched: once the last row is, a driver such as DBD::mysql has let
+# the names go.
+sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
+    $self->SUPER::reset(@args);
+    my $sth = $self->sth;
+    $self->{row_class} = _base_class($self)->class_for($sth->{NAME_lc})
+        if !$self->{done} && $sth->{NUM_OF_FIELDS};
+    return $self;
+}
+
 # Bless a row into the class for the statement's columns. The iterator
 # calls it for each row it fetches.
 sub _row ($self, $row) {    ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
-    $self->{row_class} //= _base_class($self)->class_for($self->sth->{NAME_lc});
     return bless $row, $self->{row_class};
 }
 

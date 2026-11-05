@@ -125,4 +125,17 @@ subtest 'ekorn_result_class' => sub {
     }, qr( \A \Q$expected\E )x, 'croaks on another class';
 };
 
+subtest 'a statement without rows' => sub {
+    my $update = 'UPDATE artist SET Name = Name WHERE ArtistId = ?';
+    is drain($dbh->results($update, 1)), [], 'has no results';
+    my $quiet = DBIx::Squirrel->connect(
+        'dbi:SQLite:dbname=:memory:', '', '',
+        {RaiseError => 0, PrintError => 0},
+    );
+    $quiet->do('CREATE TABLE u (x INTEGER UNIQUE)');
+    $quiet->do('INSERT INTO u VALUES (1)');
+    is drain($quiet->results('INSERT INTO u VALUES (?)', 1)), [],
+        "nor has one that couldn't be executed, without RaiseError";
+};
+
 done_testing;
