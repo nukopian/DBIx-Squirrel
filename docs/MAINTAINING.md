@@ -131,6 +131,54 @@ git log --format='%h %G? %s' -10
 Add what changed for users to `Changes` under Unreleased, in the same
 commit.
 
+## A trial release
+
+A trial puts a version on CPAN for CPAN Testers to test, on platforms
+CI doesn't cover, such as Windows and the BSDs, without CPAN indexing
+it: `cpanm DBIx::Squirrel` still installs the last release. PAUSE takes
+a tarball whose name ends `-TRIAL` as a trial, which is all Minilla's
+own `minil release --trial` does. There's no tag and no GitHub release,
+and `main` doesn't move. v2.0.0 had one, uploaded on 2026-11-05.
+
+1. **Check `develop`,** as in step 1 of
+   [Making a release](#making-a-release), with the working tree clean,
+   so the tarball is built from a commit CI has passed.
+
+2. **Build the tarball, and check its tests passed.** The version is
+   the one in the main module. Set it on the first line:
+
+   ```
+   v=v2.0.0
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist > "$TMPDIR/dist-$v.log" 2>&1
+   grep '^Result:' "$TMPDIR/dist-$v.log"
+   ```
+
+   It must print `Result: PASS`: `minil dist` exits 0 even when the
+   tests fail.
+
+3. **Rename it, and upload it:**
+
+   ```
+   v=v2.0.0
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   mv "DBIx-Squirrel-$v.tar.gz" "DBIx-Squirrel-$v-TRIAL.tar.gz"
+   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpan-upload "DBIx-Squirrel-$v-TRIAL.tar.gz"
+   rm "DBIx-Squirrel-$v-TRIAL.tar.gz"
+   ```
+
+4. **Read the reports,** as they come in over the next few days. The
+   first command counts each version's reports by grade; the second
+   lists those that didn't pass, with a link to each:
+
+   ```
+   curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r 'group_by(.version)[] | group_by(.grade)[] | "\(.[0].version) \(.[0].grade): \(length)"'
+   curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r '.[] | select((.version | startswith("v2") or startswith("2")) and .grade != "pass") | "\(.version) \(.grade) \(.osname) perl \(.perl) https://www.cpantesters.org/cpan/report/\(.guid)"'
+   ```
+
+   A failure is fixed on `develop`, and a new trial uploaded, before the
+   release.
+
 ## Making a release
 
 A release is a version on CPAN, and a signed, annotated tag on `main`
@@ -245,7 +293,18 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
    v=v2.0.0
    cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
    git switch --detach "$v"
-   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist --skip-prepare
+   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist --skip-prepare > "$TMPDIR/dist-$v.log" 2>&1
+   grep '^Result:' "$TMPDIR/dist-$v.log"
+   ```
+
+   It must print `Result: PASS`. `minil dist` exits 0, and writes the
+   tarball, even when the tests fail, so read this line, not its exit
+   status. On a failure, the log says which test failed; remove the
+   tarball, fix it on `develop`, and start again. Then upload:
+
+   ```
+   v=v2.0.0
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpan-upload "DBIx-Squirrel-$v.tar.gz"
    git switch develop
    rm "DBIx-Squirrel-$v.tar.gz"
