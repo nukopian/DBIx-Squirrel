@@ -2,7 +2,7 @@ use v5.36;
 use Test2::V0;
 use Test2::Plugin::NoWarnings;
 
-use DBI;
+use DBI qw(SQL_INTEGER);
 use DBIx::Squirrel;
 
 my @source = (
@@ -110,6 +110,24 @@ subtest 'bind' => sub {
     $sth->bind([1, 2])->execute;
     is $sth->fetchrow_arrayref, [1, 2],
         'and ? placeholders from an array reference';
+};
+
+subtest 'values given to execute stay bound, as with the DBI' => sub {
+    my $sth = $dbh->prepare('SELECT typeof($1), $1, $2');
+    $sth->execute(7, 'x');
+    $sth->execute;
+    is $sth->fetchrow_arrayref, ['text', 7, 'x'],
+        'for an execute without values';
+
+    ok $sth->bind_param(1, 8, SQL_INTEGER), 'a type bound to a number';
+    $sth->execute(9, 'y');
+    is $sth->fetchrow_arrayref, ['integer', 9, 'y'],
+        'is kept when values are given to execute';
+
+    $sth = $dbh->prepare('SELECT typeof(:n), :n, :s');
+    $sth->bind_param(':n', 1, SQL_INTEGER);
+    $sth->execute(n => 2, s => 'z');
+    is $sth->fetchrow_arrayref, ['integer', 2, 'z'], 'and to a name';
 };
 
 subtest 'through the database handle' => sub {

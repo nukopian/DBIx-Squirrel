@@ -68,19 +68,20 @@ sub bind_param ($self, $param, $value, @attrs) {
     return $rv;
 }
 
-# Execute the statement, as the DBI's execute does, binding any values
-# given as bind does first. With the ekorn_finish_active attribute, a
-# statement still active from an earlier execute is finished first.
+# Execute the statement, as the DBI's execute does, with any values given
+# bound as bind binds them. Values for numbered or named placeholders go
+# to the DBI's execute in the order of their positions, which binds them
+# as bind_param would, in one call. With the ekorn_finish_active
+# attribute, a statement still active from an earlier execute is finished
+# first.
 sub execute ($self, @args) {
     my $state = $self->{private_ekorn};
     $self->finish
         if $state && $state->{Options}{ekorn_finish_active} && $self->{Active};
     @args = _unwrap($self, @args);
     my $binds = $state && $state->{Binds};
-    return at_caller { $self->SUPER::execute(@args) }
-    unless @args && $binds;
-    _bind($self, $binds, @args) or return;
-    return at_caller { $self->SUPER::execute };
+    @args = _in_order($binds, @args) if @args && $binds;
+    return at_caller { $self->SUPER::execute(@args) };
 }
 
 # Return an iterator over the statement's results, executed with the bind
@@ -123,6 +124,18 @@ sub _values_taken ($self) {
 sub _binds ($self) {
     my $state = $self->{private_ekorn};
     return $state && $state->{Binds};
+}
+
+# Return the values for a statement's placeholders, as _values_for finds
+# them, in the order of their positions, each as often as it's used.
+sub _in_order ($binds, @args) {
+    my %values = _values_for($binds, @args);
+    my @in_order;
+    for my $key (keys %values) {
+        my $positions = $binds->{$key};
+        @in_order[map { $_ - 1 } @$positions] = ($values{$key}) x @$positions;
+    }
+    return @in_order;
 }
 
 # Return a placeholder's number or name, as the statement's map keys it.
