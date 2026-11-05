@@ -165,48 +165,47 @@ sub _prepare_to_iterate ($self, $statement, $args) {
 # such as DBD::SQLite, DBD::mysql and DBD::Pg, bind and execute in C, not
 # through DBIx::Squirrel's methods, so each is given a statement handle
 # with its values already bound.
-sub selectrow_array ($self, $statement, $attrs = undef, @args) {
-    return _select($self, 'selectrow_array', $statement, [], $attrs, @args);
+sub selectrow_array ($self, $statement, @args) {
+    return _select($self, 'selectrow_array', $statement, [], @args);
 }
 
 
-sub selectrow_arrayref ($self, $statement, $attrs = undef, @args) {
-    return _select($self, 'selectrow_arrayref', $statement, [], $attrs, @args);
+sub selectrow_arrayref ($self, $statement, @args) {
+    return _select($self, 'selectrow_arrayref', $statement, [], @args);
 }
 
 
-sub selectrow_hashref ($self, $statement, $attrs = undef, @args) {
-    return _select($self, 'selectrow_hashref', $statement, [], $attrs, @args);
+sub selectrow_hashref ($self, $statement, @args) {
+    return _select($self, 'selectrow_hashref', $statement, [], @args);
 }
 
 
-sub selectall_arrayref ($self, $statement, $attrs = undef, @args) {
-    return _select($self, 'selectall_arrayref', $statement, [], $attrs, @args);
+sub selectall_arrayref ($self, $statement, @args) {
+    return _select($self, 'selectall_arrayref', $statement, [], @args);
 }
 
 
-sub selectall_hashref ($self, $statement, $key_field, $attrs = undef, @args) {
-    return _select(
-        $self, 'selectall_hashref', $statement, [$key_field], $attrs, @args,
-    );
+sub selectall_hashref ($self, $statement, $key_field, @args) {
+    return _select($self, 'selectall_hashref', $statement, [$key_field], @args);
 }
 
 
-sub selectcol_arrayref ($self, $statement, $attrs = undef, @args) {
-    return _select($self, 'selectcol_arrayref', $statement, [], $attrs, @args);
+sub selectcol_arrayref ($self, $statement, @args) {
+    return _select($self, 'selectcol_arrayref', $statement, [], @args);
 }
 
 # Call one of the DBI's select methods with a statement handle, prepared,
 # unless it was given one, and with any values bound. Return what the
-# DBI's method returns.
+# DBI's method returns. The attributes may be left out, as with do.
 #
 # A statement that can't be prepared returns what the DBI's method does,
 # without RaiseError: undef from those returning a reference to one row
 # or all of them, and nothing from the others.
-sub _select ($self, $method, $statement, $before, $attrs, @args) {
+sub _select ($self, $method, $statement, $before, @args) {
     state %UNDEF = map { ($_ => 1) } qw(
         selectrow_arrayref selectrow_hashref selectall_arrayref
     );
+    my $attrs = shift_attrs(\@args);
     return in_method $self, $method, sub {
         my $sth
             = $statement isa 'DBI::st'
@@ -482,6 +481,7 @@ objects with a method for each column.
 =head2 The select methods
 
     @row_ary  = $dbh->selectrow_array($statement, \%attr, @bind_values);
+    @row_ary  = $dbh->selectrow_array($statement, @bind_values);
     $ary_ref  = $dbh->selectrow_arrayref($statement, \%attr, @bind_values);
     $hash_ref = $dbh->selectrow_hashref($statement, \%attr, @bind_values);
     $ary_ref  = $dbh->selectall_arrayref($statement, \%attr, @bind_values);
@@ -508,7 +508,10 @@ objects with a method for each column.
 Each works as the DBI's, preparing the statement as L</prepare> does, unless it's
 already a statement handle, and binding the values as
 L<DBIx::Squirrel::st/bind> binds them. The DBI's C<selectall_array>
-goes through C<selectall_arrayref>, so it does too. Unlike L</prepare>,
+goes through C<selectall_arrayref>, so it does too. As with L</do>, the
+attributes may be left out: the first argument after the statement, or
+after C<selectall_hashref>'s key field, is taken as the attributes only
+if it's a hash reference or C<undef>. Unlike L</prepare>,
 they don't croak if the statement can't be prepared: without
 C<RaiseError>, each returns what the DBI's returns, as C<do> does.
 
@@ -533,8 +536,9 @@ takes.
 
 =item Expected a reference to a HASH or ARRAY
 
-The first argument after the statement in L</do> was a reference, but
-not to a hash or an array.
+The first argument after the statement in L</do>, L</iterate>,
+L</results> or a select method was a reference, but not to a hash or an
+array.
 
 =back
 

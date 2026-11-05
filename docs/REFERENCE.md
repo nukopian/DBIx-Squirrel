@@ -474,6 +474,7 @@ Like the DBI's, `do` returns no rows, even from a `SELECT` or a
 
 ```perl
 @row_ary  = $dbh->selectrow_array($statement, \%attr, @bind_values);
+@row_ary  = $dbh->selectrow_array($statement, @bind_values);
 $ary_ref  = $dbh->selectrow_arrayref($statement, \%attr, @bind_values);
 $hash_ref = $dbh->selectrow_hashref($statement, \%attr, @bind_values);
 $ary_ref  = $dbh->selectall_arrayref($statement, \%attr, @bind_values);
@@ -484,12 +485,16 @@ $ary_ref  = $dbh->selectcol_arrayref($statement, \%attr, @bind_values);
 Each works as the DBI's, preparing the statement as `prepare` does,
 unless it's already a statement handle, and binding the values as
 [`bind`](#bind) binds them. The DBI's `selectall_array` goes through
-`selectall_arrayref`, so it does too. As with the DBI, the attributes
-come before the bind values, and can be `undef`.
+`selectall_arrayref`, so it does too. As with [`do`](#do), the
+attributes may be left out: the first argument after the statement, or
+after `selectall_hashref`'s key field, is taken as the attributes only
+if it's a hash reference or `undef`. So named values given in a hash
+reference, or a first value that's `undef`, need the attributes, or
+`undef`, in front.
 
 ```perl
 my $names = $dbh->selectcol_arrayref(
-    'SELECT name FROM artist WHERE id IN ($1, $2)', undef, 1, 2,
+    'SELECT name FROM artist WHERE id IN ($1, $2)', 1, 2,
 );
 ```
 
@@ -1052,7 +1057,7 @@ starting "Expected" say what was expected.
 | `Expected one placeholder style, not several (%s)` | The statement mixed styles, such as `?` and `:name`; each is listed as an example. |
 | `Expected placeholders numbered from 1 (%s)` | A numbered placeholder such as `$0`. |
 | `Expected ekorn_slice to be a reference to an ARRAY or HASH` | `ekorn_slice` was something else. |
-| `Expected a reference to a HASH or ARRAY` | The first argument after the statement in `do`, `iterate` or `results` was a reference, but not to a hash or an array. |
+| `Expected a reference to a HASH or ARRAY` | The first argument after the statement in `do`, `iterate`, `results` or a select method was a reference, but not to a hash or an array. |
 | `Expected %d bind values, not %d` | A statement with numbered placeholders was given more or fewer values than its highest number. |
 | `Expected names and values in pairs` | A statement with named placeholders was given an odd number of values. |
 | `Expected a placeholder of the statement (%s)` | A value was given for a placeholder the statement doesn't have. |
@@ -1103,7 +1108,7 @@ result. These are the places they differ.
 | Numbered and named placeholders | Bound by position. | Bound once, by number or name, wherever they appear. |
 | `connect` failing | Returns `undef`, unless `RaiseError`. | Always croaks, with the DBI's `RaiseError` message. |
 | `prepare` failing | Returns `undef`, unless `RaiseError`. | Always croaks, with the DBI's `RaiseError` message. |
-| Attributes in `do` | Required, or `undef`, before the bind values. | May be left out. |
+| Attributes in `do` and the select methods | Required, or `undef`, before the bind values. | May be left out. |
 | A lone array reference of bind values | A value. | The values in it, except with DBD::Pg for a statement taking one value. |
 | Where errors and warnings are reported | The line inside the module that called the DBI. | The line of your code that called DBIx::Squirrel. |
 | Statements | A string. | A string, lines in an array reference, a code reference returning either, or a statement handle. |

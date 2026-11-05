@@ -22,8 +22,8 @@ Unreleased
       statement as a string, lines in an array reference, a code
       reference returning either, or a statement handle. Both croak
       if the statement can't be prepared, whatever RaiseError says.
-    - do takes bind values with the attributes left out, and returns
-      what the DBI's do returns.
+    - do and the select methods take bind values with the attributes
+      left out. do returns what the DBI's do returns.
     - Statement handles bind values by placeholder: a numbered
       placeholder takes one value wherever it appears, in order of
       number, and named ones take a value by name, as pairs or in a

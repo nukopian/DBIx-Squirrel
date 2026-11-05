@@ -225,7 +225,7 @@ is a PostgreSQL array, as with the DBI:
 
 <!-- not run -->
 ```perl
-my $titles = $pg->selectcol_arrayref('SELECT title FROM album WHERE id = ANY(?)', undef, [1, 2]);
+my $titles = $pg->selectcol_arrayref('SELECT title FROM album WHERE id = ANY(?)', [1, 2]);
 ```
 
 ### Bind first, execute later
@@ -262,23 +262,129 @@ my $rows = $dbh->do('UPDATE track SET plays = plays + 1 WHERE album_id = :album'
 say $rows;    # 2: Arrival's two tracks, one play more each from here on
 ```
 
-### Fetch one row, one column, or everything
+### Fetch one row
 
 The DBI's select methods work as they do with the DBI, with
-placeholders in any style:
+placeholders in any style, and, as with `do`, the attributes left out
+when there are none. `selectrow_array` returns the first row's columns,
+or, in scalar context, its first column:
 
 ```perl
-my $artist = $dbh->selectrow_hashref('SELECT * FROM artist WHERE id = :id', undef, id => 2);
+my($title, $year) = $dbh->selectrow_array('SELECT title, year FROM album WHERE id = ?', 2);
+say "$title ($year)";    # Parklife (1994)
+
+my $tracks = $dbh->selectrow_array('SELECT COUNT(*) FROM track');
+say $tracks;    # 6
+```
+
+`selectrow_arrayref` and `selectrow_hashref` return the row as an array
+or a hash, or `undef` if there's none:
+
+```perl
+my $top = $dbh->selectrow_arrayref(
+    'SELECT name, plays FROM track WHERE album_id = $1 AND plays > $2 ORDER BY plays DESC',
+    1, 5000,
+);
+say "@$top";    # Dancing Queen 9101
+
+my $artist = $dbh->selectrow_hashref('SELECT * FROM artist WHERE id = :id', id => 2);
 say $artist->{name};    # Blur
 
-my $titles = $dbh->selectcol_arrayref('SELECT title FROM album WHERE artist_id = $1', undef, 2);
-say "@$titles";    # Parklife The Great Escape
+my $nobody = $dbh->selectrow_hashref('SELECT * FROM artist WHERE name = :name', name => 'Queen');
+say defined $nobody ? 'found' : 'no such artist';    # no such artist
+```
 
-my $by_id = $dbh->selectall_hashref('SELECT id, name FROM artist', 'id');
-say $by_id->{3}{name};    # Cream
+### Fetch one column
+
+`selectcol_arrayref` returns the first column of every row:
+
+```perl
+my $titles = $dbh->selectcol_arrayref('SELECT title FROM album WHERE artist_id = $1', 2);
+say "@$titles";    # Parklife The Great Escape
+```
+
+With the DBI's `Columns` attribute, it returns those columns of each
+row, one after the other, which makes a hash of two:
+
+```perl
+my %name = @{ $dbh->selectcol_arrayref('SELECT id, name FROM artist', {Columns => [1, 2]}) };
+say $name{3};    # Cream
+```
+
+Named values in a hash reference need the attributes, or `undef`, in
+front, as a hash reference there is taken as the attributes:
+
+```perl
+my $between = $dbh->selectcol_arrayref(
+    'SELECT title FROM album WHERE year BETWEEN :from AND :to ORDER BY year',
+    undef, {from => 1970, to => 1995},
+);
+say join ', ', @$between;    # Arrival, Parklife, The Great Escape
+```
+
+### Fetch every row
+
+`selectall_arrayref` returns every row, each as an array, or, with the
+DBI's `Slice` attribute, as a hash; `MaxRows` stops after that many:
+
+```perl
+my $rows = $dbh->selectall_arrayref(
+    'SELECT name, plays FROM track WHERE plays >= ?1 ORDER BY plays DESC',
+    7000,
+);
+say join ', ', map {"$_->[0] ($_->[1])"} @$rows;    # Dancing Queen (9101), Sunshine of Your Love (7700)
 
 my $albums = $dbh->selectall_arrayref('SELECT title, year FROM album ORDER BY year', {Slice => {}});
 say $albums->[0]{title};    # Disraeli Gears
+
+my $first_two = $dbh->selectall_arrayref('SELECT name FROM artist ORDER BY name', {MaxRows => 2});
+say scalar @$first_two;    # 2
+```
+
+`selectall_array` returns the rows as a list:
+
+```perl
+my $sql = 'SELECT title FROM album WHERE artist_id = :artist ORDER BY year';
+for my $row ($dbh->selectall_array($sql, artist => 2)) {
+    say $row->[0];    # Parklife, then The Great Escape
+}
+```
+
+`selectall_hashref` returns the rows keyed by a column, or by several,
+nested in order:
+
+```perl
+my $by_id = $dbh->selectall_hashref('SELECT id, name FROM artist', 'id');
+say $by_id->{3}{name};    # Cream
+
+my $by_artist = $dbh->selectall_hashref(
+    'SELECT artist.name AS artist, title, year FROM album JOIN artist ON artist.id = album.artist_id',
+    ['artist', 'title'],
+);
+say $by_artist->{Blur}{Parklife}{year};    # 1994
+
+my $since = $dbh->selectall_hashref('SELECT id, title FROM album WHERE year >= $1', 'title', 1990);
+say join ', ', sort keys %$since;    # Parklife, The Great Escape
+```
+
+### Select with a statement handle, lines or an array of values
+
+Each select method also takes a statement handle, prepared once, a
+statement over several lines, or its values in an array reference:
+
+```perl
+my $sth = $dbh->prepare('SELECT name FROM track WHERE album_id = :album ORDER BY name');
+say join ', ', @{ $dbh->selectcol_arrayref($sth, album => 2) };    # Girls & Boys, Parklife
+say join ', ', @{ $dbh->selectcol_arrayref($sth, album => 1) };    # Dancing Queen, Knowing Me, Knowing You
+
+my $popular = $dbh->selectrow_array(
+    ['SELECT COUNT(*)', 'FROM track', 'WHERE plays > $1'],
+    5000,
+);
+say $popular;    # 4
+
+my($escape) = $dbh->selectrow_array('SELECT title FROM album WHERE artist_id = ? AND year = ?', [2, 1995]);
+say $escape;    # The Great Escape
 ```
 
 ### Finish an active statement before running it again

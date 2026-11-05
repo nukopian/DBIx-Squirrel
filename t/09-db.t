@@ -228,6 +228,33 @@ subtest 'do takes bind values without attributes' => sub {
         'z', 'and the row changed';
 };
 
+subtest 'the select methods take bind values without attributes' => sub {
+    my $dbh = connect_both()->{squirrel};
+    my $sql = 'SELECT id, name FROM artist WHERE id = :id';
+    for my $method (
+        qw(selectrow_array    selectrow_arrayref selectrow_hashref),
+        qw(selectall_arrayref selectcol_arrayref selectall_array),
+    ) {
+        is [$dbh->$method($sql, id => 2)], [$dbh->$method($sql, undef, id => 2)],
+            "$method, with named values";
+    }
+    is $dbh->selectall_hashref($sql, 'id', id => 2),
+        {2 => {id => 2, name => 'Accept'}},
+        'selectall_hashref, after its key field';
+    is [$dbh->selectrow_array('SELECT name FROM artist WHERE id = $1', 1)],
+        ['AC/DC'], 'with numbered values';
+    is [$dbh->selectrow_array('SELECT name FROM artist WHERE id = $1', [1])],
+        ['AC/DC'], 'from an array reference';
+    is $dbh->selectall_arrayref($sql, {Slice => {}}, id => 1),
+        [{id => 1, name => 'AC/DC'}], 'and with attributes, as before';
+    is [$dbh->selectrow_array('SELECT ?', undef, undef)], [undef],
+        'an undef value first, after undef attributes';
+    is [$dbh->selectrow_array($sql, undef, {id => 1})], [1, 'AC/DC'],
+        'and values in a hash reference, after undef attributes';
+    is [$dbh->selectrow_array($sql, {id => 1})], [],
+        'which are otherwise the attributes, leaving :id unbound';
+};
+
 subtest 'do croaks on a reference other than a HASH or ARRAY' => sub {
     my $dbh  = connect_both()->{squirrel};
     my $code = sub { 1 };
