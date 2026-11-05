@@ -43,10 +43,10 @@ sub next ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 # there were.
 sub all ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     _executed($self);
-    my @results = _take($self);
-    return @results unless @results;
-    DBIx::Squirrel::Context::within($self, sub { _drain($self, \@results) });
-    $self->{count} += @results - 1;
+    my @results;
+    DBIx::Squirrel::Context::within($self, sub { _drain($self, \@results) })
+        unless $self->{done};
+    $self->{count} += @results;
     _finish($self);
     return @results;
 }
@@ -56,9 +56,9 @@ sub all ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 sub single ($self) {
     $self->reset;
     my($result) = _take($self) or return;
-    my $more = _peek($self);
+    my @more = _take($self);
     _finish($self);
-    croakf 'Expected one result, not more' if $more;
+    croakf 'Expected one result, not more' if @more;
     return $result;
 }
 
@@ -68,7 +68,7 @@ sub single ($self) {
 # others are given.
 sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my $sth   = $self->{sth};
-    my $state = $sth->{private_ekorn} //= {};
+    my $state = $sth->{private_ekorn};
     my $other = _going($sth);
     croakf "Expected the statement handle's other iterator to be finished"
         if $other && $other != $self;
@@ -83,14 +83,13 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     $state->{Iterator} = $self;
     weaken $state->{Iterator};
     my %fresh = (
-        executed  => 1,
-        done      => 0,
-        buffer    => [],
-        lookahead => undef,
-        count     => 0,
-        produced  => 0,
-        original  => undef,
-        slice     => $self->_slice,
+        executed => 1,
+        done     => 0,
+        buffer   => [],
+        count    => 0,
+        produced => 0,
+        original => undef,
+        slice    => $self->_slice,
     );
     @$self{keys %fresh} = values %fresh;
     $self->{done} = 1
@@ -113,9 +112,8 @@ sub sth ($self) {
 # Return the iterator going through a statement handle's results, if one
 # has results left to hand out.
 sub _going ($sth) {
-    my $state    = $sth->{private_ekorn} or return;
-    my $iterator = $state->{Iterator}    or return;
-    return $iterator->{executed} && !$iterator->{done} ? $iterator : ();
+    my $iterator = $sth->{private_ekorn}{Iterator} or return;
+    return $iterator->{done} ? () : $iterator;
 }
 
 # Execute the statement, unless it's been executed.
@@ -124,29 +122,18 @@ sub _executed ($self) {
     return;
 }
 
-# Take the next result, returning it as a list of one, or an empty list
-# when there are no more.
+# Run the stages until the next result comes out of them, and return it
+# as a list of one, or an empty list when there are no more.
 sub _take ($self) {
-    _peek($self) or return;
-    my($result) = @{ delete $self->{lookahead} };
-    $self->{count}++;
-    return $result;
-}
-
-# Run the stages until the next result comes out of them, and keep it, so
-# a result can be looked for without being taken. Return true if there's
-# one.
-sub _peek ($self) {
-    return 1 if $self->{lookahead};
-    return 0 if $self->{done};
+    return if $self->{done};
     my @result = DBIx::Squirrel::Context::within($self, $self->{next});
     unless (@result) {
         _finish($self);
-        return 0;
+        return;
     }
-    $self->{lookahead} = \@result;
     $self->{produced}++;
-    return 1;
+    $self->{count}++;
+    return $result[0];
 }
 
 # Run the stages until no more results come out of them, adding each to
@@ -163,18 +150,18 @@ sub _drain ($self, $results) {
 
 # Stop iterating, and finish the statement.
 sub _finish ($self) {
-    @$self{qw(done lookahead buffer)} = (1, undef, []);
+    @$self{qw(done buffer)} = (1, []);
     $self->{sth}->finish if $self->{sth}{Active};
     return;
 }
 
 # Return a source for the pipeline: a closure returning the statement's
 # next row, fetched a batch at a time, or nothing. It keeps the row as
-# the original, for DBIx::Squirrel::Context. A row is passed through
-# _row only if a subclass has one of its own.
+# the original, for DBIx::Squirrel::Context. A subclass can make
+# something else of each row, before the stages see it, with a _row
+# method of its own, as DBIx::Squirrel::Results does.
 sub _source ($self) {
     my $row = $self->can('_row');
-    undef $row if $row == \&_row;
     weaken $self;
     return sub () {
         my $buffer = $self->{buffer};
@@ -195,12 +182,6 @@ sub _source ($self) {
 # arrays; a subclass can choose its own.
 sub _slice ($self) {
     return $self->{sth}{private_ekorn}{Options}{ekorn_slice} // [];
-}
-
-# Return a row as the stages are to see it: as it was fetched, here; a
-# subclass can make something else of it.
-sub _row ($self, $row) {
-    return $row;
 }
 
 1;
