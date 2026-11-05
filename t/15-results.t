@@ -138,4 +138,16 @@ subtest 'a statement without rows' => sub {
         "nor has one that couldn't be executed, without RaiseError";
 };
 
+subtest 'errors are reported at the caller' => sub {
+
+    # The second row overflows, so the fetch fails after execute succeeds.
+    my $failed = 'DBD::SQLite::st fetchall_arrayref failed: integer overflow';
+    my $overflow
+        = 'SELECT abs(column1) FROM (VALUES (1), (-9223372036854775807 - 1))';
+    my $line = __LINE__ + 1;
+    like dies { $dbh->results($overflow)->all },
+        qr( \A \Q$failed\E \ at\ \Q${\ __FILE__ }\E\ line\ $line\. )x,
+        'from a fetch';
+};
+
 done_testing;

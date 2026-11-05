@@ -7,7 +7,7 @@ use experimental qw(builtin);
 use builtin qw(weaken);
 
 use DBIx::Squirrel::Context  qw();
-use DBIx::Squirrel::Errors   qw(croakf);
+use DBIx::Squirrel::Errors   qw(at_caller croakf);
 use DBIx::Squirrel::Pipeline qw();
 use DBIx::Squirrel::Util     qw(iterator_going split_stages);
 
@@ -159,9 +159,12 @@ sub _source ($self) {
     return sub () {
         my $buffer = $self->{buffer};
         unless (@$buffer) {
-            my $sth = $self->{sth};
-            return unless $sth->{Active} && $sth->{NUM_OF_FIELDS};
-            my $rows = $sth->fetchall_arrayref($self->{slice}, $BATCH_SIZE);
+            my $sth  = $self->{sth};
+            my $rows = at_caller {
+                $sth->{Active} && $sth->{NUM_OF_FIELDS}
+                    ? $sth->fetchall_arrayref($self->{slice}, $BATCH_SIZE)
+                    : undef;
+            };
             return unless $rows && @$rows;
             $self->{buffer} = $buffer = $rows;
         }

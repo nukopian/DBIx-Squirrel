@@ -276,6 +276,15 @@ subtest 'errors are reported at the caller' => sub {
         'from binding';
     like dies { DBIx::Squirrel::Iterator->new('x') },
         qr( \A Expected\ a\ statement\ handle )x, 'from new';
+
+    # The second row overflows, so the fetch fails after execute succeeds.
+    my $failed = 'DBD::SQLite::st fetchall_arrayref failed: integer overflow';
+    my $overflow
+        = 'SELECT abs(column1) FROM (VALUES (1), (-9223372036854775807 - 1))';
+    $line = __LINE__ + 1;
+    like dies { $dbh->iterate($overflow)->all },
+        qr( \A \Q$failed\E \ at\ \Q${\ __FILE__ }\E\ line\ $line\. )x,
+        "from a fetch, with the DBI's message";
 };
 
 subtest 'a statement without rows' => sub {

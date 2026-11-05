@@ -28,12 +28,12 @@ my %imported = (
     ],
     'DBIx::Squirrel::Errors'   => [qw(croak is_ref)],
     'DBIx::Squirrel::Iterator' =>
-        [qw(croakf is_coderef iterator_going split_stages weaken)],
+        [qw(at_caller croakf is_coderef iterator_going split_stages weaken)],
     'DBIx::Squirrel::Pipeline'     => [qw(croak  croakf is_coderef is_ref)],
     'DBIx::Squirrel::Placeholders' => [qw(croakf uniq)],
     'DBIx::Squirrel::Result'       =>
         [qw(croakf install_sub is_name sha1_hex set_subname)],
-    'DBIx::Squirrel::Results' => [qw(croakf)],
+    'DBIx::Squirrel::Results' => [qw(at_caller croakf)],
     'DBIx::Squirrel::Stop'    => [qw(croak)],
     'DBIx::Squirrel::Sugar'   => [
         qw(

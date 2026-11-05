@@ -2,7 +2,7 @@ use v5.36;
 
 package DBIx::Squirrel::Results;
 
-use DBIx::Squirrel::Errors qw(croakf);
+use DBIx::Squirrel::Errors qw(at_caller croakf);
 
 use DBIx::Squirrel::Iterator qw();
 use DBIx::Squirrel::Result   qw();
@@ -26,9 +26,10 @@ sub _slice ($self) {    ## no critic (Subroutines::ProhibitUnusedPrivateSubrouti
 # the names go.
 sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->SUPER::reset(@args);
-    my $sth = $self->sth;
-    $self->{row_class} = _base_class($self)->class_for($sth->{NAME_lc})
-        if !$self->{done} && $sth->{NUM_OF_FIELDS};
+    return $self if $self->{done};
+    my $sth   = $self->sth;
+    my $names = at_caller { $sth->{NUM_OF_FIELDS} ? $sth->{NAME_lc} : undef };
+    $self->{row_class} = _base_class($self)->class_for($names) if $names;
     return $self;
 }
 
