@@ -15,6 +15,9 @@
 # Modules installed locally, as by cpanm -L local
 /local/
 
+# The link yath -L makes to its last log
+/lastlog.jsonl
+
 # Coverage (Devel::Cover) and profiling (Devel::NYTProf)
 /cover_db/
 /.last_cover_stats

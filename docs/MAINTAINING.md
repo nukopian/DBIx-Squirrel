@@ -70,7 +70,7 @@ check: it prints a diff for each file perltidy would change.
 
 ```
 cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
-perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test -L
 perlbrew exec --with perl-5.36.3@dbix-squirrel-2 perlcritic lib
 for f in $(git ls-files 'lib/*.pm' 't/*.t'); do perlbrew exec --quiet --with perl-5.36.3@dbix-squirrel-2 perltidy "$f" | diff -u "$f" -; done
 ```

@@ -194,12 +194,18 @@ installed, as DBD::Pg links to its `libpq` by full path.
 - **Test2::Plugin::NoWarnings** in each test file, so a warning fails
   the test that caused it.
 - **yath, not prove,** runs them. It adds `lib`, `blib/lib` and
-  `blib/arch` itself, runs files in parallel, and keeps a log of each
-  run:
+  `blib/arch` itself, and runs files in parallel. With `-L`, it keeps a
+  log of the run, in the system's temporary directory, linked from
+  `./lastlog.jsonl` (git-ignored), so a failure can be read after it,
+  even one that doesn't happen again:
 
   ```
-  perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test
+  perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test -L
+  perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath failed lastlog.jsonl
   ```
+
+  The second shows the tests that failed in the last run;
+  `yath replay lastlog.jsonl` shows all of it.
 
 - **Coverage has floors, which it mustn't fall below.**
   `scripts/coverage` runs the tests under Devel::Cover, from an empty
@@ -235,7 +241,7 @@ trusts local connections. To run every test against both:
 ```
 export DBIX_SQUIRREL_TEST_MYSQL="dbi:mysql:mysql_read_default_file=${HOME}/.config/dbix-squirrel/my.cnf;mysql_read_default_group=dbix_squirrel"
 export DBIX_SQUIRREL_TEST_PG='dbi:Pg:dbname=dbix_squirrel_test;host=localhost;user=dbix_squirrel'
-perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test -L
 ```
 
 Iain's own `mysql --login-path=root` is root on MySQL, for setting up

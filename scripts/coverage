@@ -27,8 +27,9 @@ my %FLOOR = (
 
 chdir "$Bin/.." or die "Can't change to the repository: $!\n";
 remove_tree('cover_db');
-system('yath', 'test', '--cover') == 0
-    or die "The tests failed, so coverage wasn't checked\n";
+system('yath', 'test', '-L', '--cover') == 0
+    or die "The tests failed, so coverage wasn't checked; to see which:\n"
+    . "  yath failed lastlog.jsonl\n";
 system('cover', '-silent', '-report', 'json', '-select_re', '^lib/') == 0
     or die "cover couldn't report the coverage\n";
 
