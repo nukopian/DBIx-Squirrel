@@ -128,6 +128,8 @@ __END__
 
 =encoding utf8
 
+=for stopwords MariaDB PostgreSQL
+
 =head1 NAME
 
 DBIx::Squirrel - DBI, minus the boilerplate, plus a pipeline

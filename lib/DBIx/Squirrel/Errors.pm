@@ -154,6 +154,8 @@ __END__
 
 =encoding utf8
 
+=for stopwords croakf
+
 =head1 NAME
 
 DBIx::Squirrel::Errors - report the DBI's errors at the caller's line

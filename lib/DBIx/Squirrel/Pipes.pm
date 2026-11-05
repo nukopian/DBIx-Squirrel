@@ -24,6 +24,8 @@ __END__
 
 =encoding utf8
 
+=for stopwords invocant
+
 =head1 NAME
 
 DBIx::Squirrel::Pipes - the pipe and tap methods of DBIx::Squirrel's handles

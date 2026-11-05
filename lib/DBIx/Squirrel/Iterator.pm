@@ -189,6 +189,8 @@ __END__
 
 =encoding utf8
 
+=for stopwords sth
+
 =head1 NAME
 
 DBIx::Squirrel::Iterator - an iterator over a statement's results

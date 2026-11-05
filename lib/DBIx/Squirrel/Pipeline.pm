@@ -105,6 +105,8 @@ __END__
 
 =encoding utf8
 
+=for stopwords flatMap
+
 =head1 NAME
 
 DBIx::Squirrel::Pipeline - run values through a list of stages

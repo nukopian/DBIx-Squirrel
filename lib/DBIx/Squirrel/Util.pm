@@ -99,6 +99,8 @@ __END__
 
 =encoding utf8
 
+=for stopwords PostgreSQL
+
 =head1 NAME
 
 DBIx::Squirrel::Util - helpers shared by DBIx::Squirrel's modules

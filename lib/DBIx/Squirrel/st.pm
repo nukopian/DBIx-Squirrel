@@ -217,6 +217,8 @@ __END__
 
 =encoding utf8
 
+=for stopwords PostgreSQL
+
 =head1 NAME
 
 DBIx::Squirrel::st - DBIx::Squirrel's statement handle class
