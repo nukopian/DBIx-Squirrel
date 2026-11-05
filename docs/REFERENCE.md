@@ -14,8 +14,9 @@ shows how to do common tasks with them, one recipe at a time. Each
 module's own POD says the same things more briefly, and is the
 authority where the two differ.
 
-**In development.** This is the successor to DBIx-Squirrel 1.x, being
-rewritten for Perl 5.36 or later, and isn't released yet.
+This is version 2, a rewrite of DBIx::Squirrel 1.x for Perl 5.36 or
+later. [Upgrading from 1.x](#upgrading-from-1x) lists what changes for
+code written for 1.x.
 
 ## Contents
 
@@ -1127,6 +1128,7 @@ result. These are the places they differ.
 | Where errors and warnings are reported | The line inside the module that called the DBI. | The line of your code that called DBIx::Squirrel. |
 | Statements | A string. | A string, lines in an array reference, a code reference returning either, or a statement handle. |
 | Executing an active statement | Left to the driver. | The same, or finished first with `ekorn_finish_active`. |
+| Executing with placeholders unbound | Left to the driver, which most read as `NULL`. | Croaks, for numbered and named placeholders: `Expected a value for each placeholder (none for id)`. |
 | Iterators, result sets, pipelines | None. | `iterate`, `results`, `pipe`, `tap` and Sugar. |
 
 ## Upgrading from 1.x

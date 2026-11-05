@@ -2,147 +2,72 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    - A rewrite for Perl 5.36 or later, and not compatible with 1.x:
-      code written for 1.x needs changes to run. "Upgrading from 1.x"
-      in docs/REFERENCE.md lists them. To stay on 1.x, install the
-      last version: cpanm DBIx::Squirrel@1.6.5.
-    - prepare and prepare_cached take placeholders in the styles ?,
-      ?1, :1, $1 and :name, one style to a statement, croaking if
-      they're mixed, and rewrite each as ? for the DBI, leaving
-      alone quoted strings and identifiers, comments,
-      PostgreSQL's dollar-quoted bodies and casts, and a ?, : or $
-      with a backslash before it, as DBD::Pg allows for its ?
-      operators. Strings are read by the driver's rules, so MySQL's
-      and MariaDB's backslash escapes are understood; the
-      ekorn_dialect attribute names another, for a database reached
-      through DBD::ODBC or DBD::Proxy. DBD::Pg's
-      pg_placeholder_dollaronly and pg_placeholder_nocolons options
-      are followed, from the handle or prepare. Attributes starting
-      ekorn_ aren't passed on to the DBI. They take a
-      statement as a string, lines in an array reference, a code
-      reference returning either, or a statement handle. Both croak
-      if the statement can't be prepared, whatever RaiseError says.
-    - do and the select methods take bind values with the attributes
-      left out. do returns what the DBI's do returns.
-    - Statement handles bind values by placeholder: a numbered
-      placeholder takes one value wherever it appears, in order of
-      number, and named ones take a value by name, as pairs or in a
-      hash reference, with or without the sigil. An array reference
-      of values stands for the values in it, except with DBD::Pg,
-      where one given to a statement taking one value is a
-      PostgreSQL array, as with the DBI. execute, bind_param, a
-      new bind, do and the DBI's select methods all bind this way,
-      croaking at the caller if the values don't match the
-      placeholders.
-    - Executing a statement with numbered or named placeholders
-      without values croaks unless each has a value bound already, by
-      bind, bind_param or an earlier execute, where the DBI would
-      leave it unbound, which most drivers read as NULL: in execute,
-      do, iterators and the select methods.
-    - prepare_cached gives statements rewritten the same, such as
-      SELECT :a, :b and SELECT :b, :a, a handle each. A cached handle
-      an iterator is part way through is left to it: prepare_cached
-      makes a new one, cached in its place, unless $if_active is 2.
-    - Errors are reported at the caller's line, including the DBI's
-      own under RaiseError, which named a line inside DBIx::Squirrel,
-      errors from prepare_cached, which named one inside DBI.pm, and
-      errors from an iterator's fetches.
-    - Errors read as plain DBI's under RaiseError, whatever RaiseError
-      is set to: connect, prepare and prepare_cached croaked with the
-      DBI's errstr alone, and errors in do and the select methods named
-      the prepare or execute inside them, not the method called.
-    - The DBI's warnings, under PrintError, its default, are reported
-      as plain DBI reports them: at the caller's line, where they named
-      a line inside DBIx::Squirrel, and naming the method called, as
-      errors do. A __WARN__ handler sees them so.
-    - iterate, on database and statement handles, returns an iterator,
-      DBIx::Squirrel::Iterator, over a statement's results, each run
-      through a pipeline of stages. It replaces version 1's
-      DBIx::Squirrel::it, with fewer methods: next, all, single, reset,
-      count and sth, and none of the aliases. It never sets $_ outside a
-      stage. single croaks on a second result, where version 1 warned.
-      One statement handle has one iterator going at a time.
-    - results, on database and statement handles, returns a result set,
-      DBIx::Squirrel::Results, an iterator whose rows are arrays blessed
-      into a class with a method for each column, in lower case. It
-      replaces version 1's DBIx::Squirrel::rs and DBIx::Squirrel::rc,
-      now DBIx::Squirrel::Result, without the aliases. There's one row
-      class for each list of column names, made with its methods, and
-      kept, so a row can be kept after its result set has gone, where
-      version 1 made a class for each result set, removed with it, and
-      made methods with AUTOLOAD. A row no longer has results,
-      result_class or row_class; get_column takes a name, in any case,
-      or a position. The ekorn_result_class attribute, on connect or
-      prepare, sets the rows' base class.
-    - DBIx::Squirrel::Sugar gives each database a name, and a function
-      of that name, which returns its handle, or runs a statement on it
-      and returns the statement handle, or the results of its stages.
-      Defined on use, the function is there as the package compiles.
-      It replaces version 1's database_entities. A statement can have a
-      function too, on a database by name, with stages of its own, run
-      with the bind values and any stages given. A database's handle is
-      kept, and pinged only after a call on it fails, not on each use.
-    - The ekorn_slice attribute, on connect or prepare, sets the shape
-      an iterator fetches rows in, in place of version 1's slice method
-      and its class-wide DEFAULT_SLICE. Rows are fetched 100 at a time;
-      version 1's cache_size and its defaults are gone.
-    - DBIx::Squirrel::Context gives a stage iterator, result_number and
-      result_original. Version 1's database, statement, result_first,
-      result_offset and result_prev are gone.
-    - do runs a statement with ? placeholders, or none, through the
-      driver's own do, as plain DBI does, so its row counts and options
-      apply, such as DBD::SQLite's sqlite_allow_multiple_statements.
-      Version 1's do also returned the statement handle in list
-      context; this one returns only what the DBI's do returns.
-    - do and the select methods return what the DBI's do without
-      RaiseError, if a statement can't be prepared, where they croaked.
-    - The select methods pass values for ? placeholders to the DBI, as
-      plain DBI does, so it rejects too many, rather than binding them
-      first through bind_param, which DBD::SQLite let pass.
-    - The ekorn_finish_active attribute, on connect or prepare,
-      finishes a statement still active before executing it again.
-      The DBI doesn't, and by default neither does DBIx::Squirrel.
-    - prepare_cached keeps a cached handle's DBIx::Squirrel state, such
-      as the iterator using it, where it replaced it, and keeps
-      statements prepared with different ekorn_ attributes apart, where
-      they shared a handle.
-    - connect_cached returns the cached handle, where it connected
-      again every time: the ekorn_ attributes went to the DBI as a new
-      reference each time, and the DBI keys its cache on every
-      attribute's value.
-    - connect croaks on failure, and clones an existing database
-      handle passed in place of a data source.
+    The successor to 1.6.5: a rewrite in modern Perl.
+
+    Code written for 1.x needs changes to run. "Upgrading from 1.x", in
+    the reference, lists them:
+    https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md
+    To stay on 1.x, which supports older Perls, install its last
+    version: cpanm DBIx::Squirrel@1.6.5. Its code is archived at
+    https://github.com/nukopian/DBIx-Squirrel-1.
+
+    - Requires Perl 5.36 or later. Compress::Bzip2, Crypt::CBC, Dotenv,
+      JSON::Syck and YAML::Syck are no longer dependencies, and loading
+      the module no longer reads a .env file.
+    - Placeholders in the styles ?, ?1, :1, $1, :name and $name, one
+      style to a statement, each rewritten as ? for the DBI. Quoted
+      strings and identifiers, comments, casts and PostgreSQL's
+      dollar-quoted bodies are left alone, read by the database's rules;
+      the ekorn_dialect attribute names the database behind DBD::ODBC
+      or DBD::Proxy. DBD::Pg's placeholder options are followed.
+      Comments are passed on to the database, where 1.x removed them.
+    - A numbered or named placeholder takes one value wherever it
+      appears. Named values come as pairs or in a hash reference, with
+      or without the sigil, and an array reference stands for the
+      values in it. Values that don't match the placeholders croak, and
+      so does executing a statement with some left unbound.
+    - A statement can be a string, lines in an array reference, a code
+      reference returning either, or a statement handle.
+    - do and the select methods take bind values without the
+      attributes in front. do returns what the DBI's do returns, in any
+      context: 1.x also returned the statement handle in list context.
+    - connect and prepare croak if they fail, whatever RaiseError says.
+      connect clones a database handle given in place of a data source.
+    - Errors, and the DBI's warnings, are reported at the line that
+      called DBIx::Squirrel, naming the method called, as plain DBI
+      reports them.
+    - iterate returns a DBIx::Squirrel::Iterator, replacing
+      DBIx::Squirrel::it, with next, all, single, reset, count and sth,
+      and no aliases. next no longer sets $_, and single croaks on a
+      second result, where 1.x warned. Rows are fetched 100 at a time,
+      in the shape the ekorn_slice attribute gives, replacing slice,
+      cache_size and their defaults.
+    - Stages, 1.x's transformations, follow the bind values. Each takes
+      a value as its argument and in $_, and returns nothing to drop it,
+      one value, or several. Stop, from DBIx::Squirrel::Stop, ends a
+      pipeline early, and DBIx::Squirrel::Context gives a stage its
+      iterator, result_number and result_original.
+    - DBIx::Squirrel::Pipeline runs any values through stages, and pipe
+      and tap run a database or statement handle through them.
+    - results returns a DBIx::Squirrel::Results, replacing
+      DBIx::Squirrel::rs, whose rows are DBIx::Squirrel::Result objects,
+      replacing DBIx::Squirrel::rc: one class for each list of column
+      names, with a method for each column, in lower case. get_column
+      takes a name or a position, and the ekorn_result_class attribute
+      sets the rows' base class.
+    - DBIx::Squirrel::Sugar replaces database_entities: a function for
+      each database, connected when it's first used, and for each
+      statement, with stages of its own.
+    - prepare_cached keeps apart statements rewritten the same, such as
+      SELECT :a, :b and SELECT :b, :a, and never hands out a handle an
+      iterator is part way through.
+    - The ekorn_finish_active attribute finishes a statement still
+      active before executing it again.
+    - Attributes starting ekorn_ aren't passed on to the DBI. Given to
+      connect, they're the defaults for every statement the handle
+      prepares.
     - use DBIx::Squirrel takes the names the DBI exports, such as
       :sql_types, as use DBI does.
-    - connect takes ekorn_ attributes, such as ekorn_dialect, as the
-      defaults for every statement the handle prepares, which
-      prepare's attributes override. They're kept in the handle's
-      private_ekorn attribute, not passed on to the DBI, and a
-      cloned handle keeps them. Without ekorn_dialect, connect
-      takes the driver's name, or, for DBD::ADO, DBD::Gofer,
-      DBD::JDBC, DBD::ODBC and DBD::Proxy, asks get_info what the
-      database behind them is.
-    - connect returns DBIx::Squirrel's own handles: database handles
-      are DBIx::Squirrel::db, and statement handles
-      DBIx::Squirrel::st, subclasses of the DBI's. The DBI no longer
-      warns that DBIx::Squirrel's handle classes aren't set up.
-    - DBIx::Squirrel::Pipeline runs values through a list of stages,
-      each taking one value and returning any number. A pipeline is
-      called with values, or makes an iterator pulling them from a
-      source one at a time.
-    - pipe runs a database or statement handle through a pipeline of
-      stages, and returns what comes out: all of it in list context,
-      the first value in scalar context.
-    - tap runs a database or statement handle through a pipeline of
-      stages for their side effects, and returns the handle.
-    - Functions DBIx::Squirrel's modules import, such as croak, are
-      cleaned out of their packages with namespace::clean, a new
-      dependency, so they can't be called as methods.
-    - Stop comes from DBIx::Squirrel::Stop, exported automatically. A
-      stage calls Stop(@values) or DBIx::Squirrel::Stop->throw(@values):
-      the values already out are kept, @values go on through the rest
-      of the stages, and nothing else is processed. A subclass of
-      DBIx::Squirrel::Stop stops a pipeline too.
-    - The successor to 1.6.5 begins, in a fresh repository: a rewrite in
-      modern Perl, requiring Perl 5.36 or later. 1.x is archived in
-      https://github.com/nukopian/DBIx-Squirrel-1.
+    - Gone, as out of scope: DBIx::Squirrel::Crypt::Fernet, the
+      DBIx::Squirrel::Transform modules, load_tuples, and the file and
+      encoding helpers in DBIx::Squirrel::util.

@@ -5,8 +5,9 @@ time. Each shows the shortest way to do the job; [the
 reference](REFERENCE.md) says what every method and attribute does, in
 full.
 
-**In development.** This is the successor to DBIx-Squirrel 1.x, being
-rewritten for Perl 5.36 or later, and isn't released yet.
+This is version 2, a rewrite of DBIx::Squirrel 1.x for Perl 5.36 or
+later. The reference's [Upgrading from 1.x](REFERENCE.md#upgrading-from-1x)
+lists what changes for code written for 1.x.
 
 ## Contents
 

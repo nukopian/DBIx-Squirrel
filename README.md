@@ -3,43 +3,118 @@
 
 DBI, minus the boilerplate, plus a pipeline.
 
-**In development.** This is the successor to DBIx-Squirrel 1.x, being
-rewritten in modern Perl (5.36 or later). Nothing here is released yet.
-The version on CPAN, 1.6.5, lives in the archived
-[DBIx-Squirrel-1](https://github.com/nukopian/DBIx-Squirrel-1) repository.
+DBIx::Squirrel keeps you writing SQL, as the DBI does, and takes away
+the friction around it: placeholders in whatever style you like,
+iterators over results, and a pipeline of transformations declared
+beside the query. It never hides the SQL, and it isn't an ORM.
 
-DBIx-Squirrel keeps you writing SQL, as the DBI does, and takes away the
-friction around it: placeholders in whatever style you like, iterators
-over results, and a pipeline of transformations declared beside the
-query.
+    my @names = $dbh->iterate(
+        'SELECT name FROM track WHERE plays > :plays ORDER BY plays DESC',
+        plays => 6000,
+        sub { $_->[0] },    # each row's name
+        sub { uc },         # in capitals
+    )->all;
 
-## Synopsis
+It subclasses the DBI, so everything the DBI does still works, and
+where the two do the same thing, they give the same result.
 
-A taste of what works so far; [DBIx::Squirrel](https://metacpan.org/pod/DBIx%3A%3ASquirrel)'s own documentation has
-more:
+## One step at a time
+
+You can take it up a step at a time, and stop at any step: each works
+on its own, and code written for the DBI keeps working at every one.
+
+### 1. Connect with it.
 
     use DBIx::Squirrel;
 
-    my $dbh = DBIx::Squirrel->connect($data_source, $username, $password);
+    my $dbh = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', '', '');
 
-    # Placeholders in the style you like: ?, ?1, :1, $1 or :name
-    my $sth = $dbh->prepare('SELECT * FROM artist WHERE id = :id');
-    $sth->execute(id => 1);
+Your DBI code runs as it did. `connect` and `prepare` croak if they
+fail, so there's no `or die` to write.
 
-    # Iterate over the results, each run through a pipeline of stages
-    my $names = $dbh->iterate(
-        'SELECT name FROM artist WHERE name LIKE ?', 'A%',
-        sub ($row) { $row->[0] },
-    );
-    while (my($name) = $names->next) {
-        say $name;
+### 2. Write placeholders in the style you like.
+
+    my $sth = $dbh->prepare('SELECT title FROM album WHERE artist_id = :artist AND year > :year');
+    $sth->execute(artist => 2, year => 1994);
+
+    my $album = $dbh->selectrow_hashref('SELECT * FROM album WHERE id = $1', 2);
+
+`?`, `?1`, `:1`, `$1`, `:name` and `$name` are each rewritten
+as `?` for the DBI, and a numbered or named placeholder takes one value wherever it
+appears. `do` and the select methods need no `undef` in front of the
+values.
+
+### 3. Iterate over the results.
+
+    my $albums = $dbh->iterate('SELECT title, year FROM album ORDER BY year');
+    while (my($row) = $albums->next) {
+        say "$row->[0] ($row->[1])";
     }
 
-    # Or have each row as an object, with a method for each column
-    say $dbh->results('SELECT * FROM artist WHERE id = $1', 1)->single->name;
+Rows are fetched in batches, and the statement is finished when they run
+out. `all` takes the rest at once, and `single` the only one.
 
-`docs/REFERENCE.md` describes every feature in detail, with examples,
-and `docs/HOWTO.md` shows how to do common tasks with them.
+### 4. Add stages.
+
+    my @hits = $dbh->iterate(
+        'SELECT name, plays FROM track ORDER BY plays DESC',
+        sub { $_->[1] >= 5000 ? $_ : () },    # leave out the rest
+        sub { "$_->[0] ($_->[1])" },          # make each a string
+    )->all;
+
+Each row goes through the stages, given as `$_`. A stage returns
+nothing to drop the row, one value in its place, or several, and can
+stop the iteration early. `pipe` runs anything else through stages
+the same way.
+
+### 5. Have rows as objects.
+
+    my $album = $dbh->results('SELECT * FROM album WHERE id = :id', id => 2)->single;
+    say $album->title, ' (', $album->year, ')';
+
+Each row has a method for each column, and stages can work on the
+objects.
+
+### 6. Give your databases and statements names.
+
+    use DBIx::Squirrel::Sugar
+        database  => {music => ['dbi:SQLite:dbname=music.db', '', '']},
+        statement => {
+            titles_by => [music => 'SELECT title FROM album WHERE artist_id = ?', sub { $_->[0] }],
+        };
+
+    my @titles = titles_by 2;
+
+[DBIx::Squirrel::Sugar](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3ASugar) makes each a function of its own name, with
+its stages declared beside its SQL.
+
+## Documentation
+
+[The reference](https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md)
+describes every feature in detail, with examples, and
+[the how-to](https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/HOWTO.md)
+shows how to do common tasks with them, one recipe at a time. Each
+module's POD, starting with [DBIx::Squirrel](https://metacpan.org/pod/DBIx%3A%3ASquirrel), says the same more
+briefly.
+
+## Installing
+
+    cpanm DBIx::Squirrel
+
+It needs Perl 5.36 or later.
+
+## Upgrading from 1.x
+
+Version 2 is a rewrite, and code written for 1.x needs changes to run.
+[Upgrading from 1.x](https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md#upgrading-from-1x),
+in the reference, lists them. To stay on 1.x, which also runs on older
+Perls, install its last version:
+
+    cpanm DBIx::Squirrel@1.6.5
+
+Its code is in the archived
+[DBIx-Squirrel-1](https://github.com/nukopian/DBIx-Squirrel-1)
+repository.
 
 The repository is called DBIx-Squirrel-2 while it's in development. At
 release it takes the original name, DBIx-Squirrel.

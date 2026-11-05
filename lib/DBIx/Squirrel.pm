@@ -188,8 +188,10 @@ It subclasses the DBI, so everything the DBI does still works, and
 where the two do the same thing they give the same result. This page
 notes where they differ.
 
-B<In development.> This is the successor to DBIx-Squirrel 1.x, being
-rewritten for Perl 5.36 or later, and isn't released yet.
+This is version 2, a rewrite of DBIx::Squirrel 1.x for Perl 5.36 or
+later, and code written for 1.x needs changes to run: the reference's
+"Upgrading from 1.x" lists them. To stay on 1.x, install its last
+version, C<cpanm DBIx::Squirrel@1.6.5>.
 
 The database handle's own methods are in L<DBIx::Squirrel::db>, and the
 statement handle's in L<DBIx::Squirrel::st>. L<DBIx::Squirrel::Iterator>
@@ -451,6 +453,11 @@ L<DBIx::Squirrel::Result>, L<DBIx::Squirrel::Context>,
 L<DBIx::Squirrel::Sugar>,
 L<DBIx::Squirrel::Pipes>, L<DBIx::Squirrel::Pipeline>,
 L<DBIx::Squirrel::Stop>
+
+L<The reference|https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md>
+describes every feature in detail, with examples, and
+L<the how-to|https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/HOWTO.md>
+shows how to do common tasks with them.
 
 =head1 AUTHOR
 
