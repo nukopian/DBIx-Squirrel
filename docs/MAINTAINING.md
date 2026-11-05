@@ -318,9 +318,9 @@ them with the command under [Branches](#branches), using the new name.
 new Perl, or a new runner, means changing the required checks to match.
 Otherwise `main` waits for a check that never reports, and can't move.
 After the new jobs have passed once on `develop`, change the list here
-to the jobs' names, and run it; it replaces the whole list, so `secrets`
-and `style` stay in it. It's a GitHub setting, so Iain runs it, or says
-Claude may:
+to the jobs' names, and run it; it replaces the whole list, so `secrets`,
+`style` and `coverage` stay in it. It's a GitHub setting, so Iain runs
+it, or says Claude may:
 
 ```
 gh api --method PATCH repos/nukopian/DBIx-Squirrel-2/branches/main/protection/required_status_checks --silent --input - <<'EOF'
@@ -333,7 +333,8 @@ gh api --method PATCH repos/nukopian/DBIx-Squirrel-2/branches/main/protection/re
     {"context": "perl 5.40 (ubuntu-24.04)", "app_id": 15368},
     {"context": "perl 5.42 (ubuntu-24.04)", "app_id": 15368},
     {"context": "perl 5.42 (macos-26)", "app_id": 15368},
-    {"context": "style", "app_id": 15368}
+    {"context": "style", "app_id": 15368},
+    {"context": "coverage", "app_id": 15368}
   ]
 }
 EOF
