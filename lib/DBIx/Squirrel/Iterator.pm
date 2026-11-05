@@ -94,8 +94,12 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     @$self{keys %fresh} = values %fresh;
     $self->{done} = 1
         unless defined $sth->execute(@{ $self->{bind_values} });
-    my $pipeline = DBIx::Squirrel::Pipeline->new(@{ $self->{stages} });
-    $self->{next} = $pipeline->iterator(_source($self));
+    # Without stages, the rows are the results, straight from the source.
+    my $source = _source($self);
+    $self->{next}
+        = @{ $self->{stages} }
+        ? DBIx::Squirrel::Pipeline->new(@{ $self->{stages} })->iterator($source)
+        : $source;
     return $self;
 }
 
