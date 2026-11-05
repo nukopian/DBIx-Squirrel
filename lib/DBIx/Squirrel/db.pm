@@ -214,10 +214,12 @@ sub _select ($self, $method, $statement, $before, @args) {
         return $UNDEF{$method} ? undef : ()
             unless $sth;
         # Values for ? placeholders go to the DBI, which checks them as
-        # plain DBI does; those for numbered or named ones are bound.
+        # plain DBI does; those for numbered or named ones are bound, or,
+        # without any, must have been.
         my @values = DBIx::Squirrel::st::_unwrap($sth, @args);    ## no critic (Subroutines::ProtectPrivateSubs)
-        if (@values && $sth->{private_ekorn}{Binds}) {
-            $sth->bind(@values) or return;
+        if ($sth->{private_ekorn}{Binds}) {
+            DBIx::Squirrel::st::_check_bound($sth) unless @values;    ## no critic (Subroutines::ProtectPrivateSubs)
+            $sth->bind(@values) or return          if @values;
             @values = ();
         }
         my $super = "SUPER::$method";

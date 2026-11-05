@@ -251,8 +251,10 @@ subtest 'the select methods take bind values without attributes' => sub {
         'an undef value first, after undef attributes';
     is [$dbh->selectrow_array($sql, undef, {id => 1})], [1, 'AC/DC'],
         'and values in a hash reference, after undef attributes';
-    is [$dbh->selectrow_array($sql, {id => 1})], [],
-        'which are otherwise the attributes, leaving :id unbound';
+    my $line = __LINE__ + 1;
+    is dies { $dbh->selectrow_array($sql, {id => 1}) },
+        "Expected a value for each placeholder (none for id) at ${\ __FILE__ } line $line.\n",
+        'which are otherwise the attributes, leaving :id with no value';
 };
 
 subtest 'do croaks on a reference other than a HASH or ARRAY' => sub {

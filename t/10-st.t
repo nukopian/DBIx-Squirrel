@@ -130,6 +130,54 @@ subtest 'values given to execute stay bound, as with the DBI' => sub {
     is $sth->fetchrow_arrayref, ['integer', 2, 'z'], 'and to a name';
 };
 
+subtest 'executing without a value for each placeholder croaks' => sub {
+    my $none
+        = qr( \A Expected\ a\ value\ for\ each\ placeholder\ \(none\ for\ (.+?)\) )x;
+    my $sth  = $dbh->prepare('SELECT :a + :a, :b');
+    my $line = __LINE__ + 1;
+    my $err  = dies { $sth->execute };
+    like $err, $none, 'with no values given or bound';
+    like $err, qr( at\ \Q${\ __FILE__ }\E\ line\ $line\. )x, 'at the caller';
+    is [$err =~ $none], ['a, b'], 'naming each placeholder';
+
+    $sth->bind_param(':a', 1);
+    is [dies { $sth->execute } =~ $none], ['b'], 'or those bind_param left';
+    $sth->bind_param(3, 2);
+    ok lives { $sth->execute }, 'binding the last by position';
+    is $sth->fetchrow_arrayref, [2, 2], 'with the values bound';
+
+    $sth = $dbh->prepare('SELECT :a, :b, :a');
+    $sth->bind_param(1, 1);
+    is [dies { $sth->execute } =~ $none], ['a, b'],
+        'a name bound at one of its positions only is still missing';
+
+    $sth = $dbh->prepare('SELECT $1, $2');
+    $sth->execute(1, 2);
+    ok lives { $sth->execute }, 'values given to execute stay bound';
+    $sth = $dbh->prepare('SELECT $1, $2');
+    $sth->bind(1, 2);
+    ok lives { $sth->execute }, 'as do those given to bind';
+
+    $sth = $dbh->prepare('SELECT ?, ?');
+    ok lives { $sth->execute },
+        '? placeholders are left to the driver, as with the DBI';
+
+    like dies { $dbh->do('SELECT :a') },           $none, 'do';
+    like dies { $dbh->iterate('SELECT :a')->all }, $none, 'an iterator';
+    like dies { $dbh->selectrow_array('SELECT $1') }, $none,
+        'the select methods';
+    $sth = $dbh->prepare('SELECT :a');
+    $sth->bind(a => 1);
+    is [$dbh->selectrow_array($sth)], [1],
+        'but not with a statement handle whose values are bound';
+
+    $sth = $dbh->prepare_cached('SELECT :cached');
+    $sth->execute(cached => 1);
+    $sth->finish;
+    ok lives { $dbh->prepare_cached('SELECT :cached')->execute },
+        'a cached handle keeps its values, as with the DBI';
+};
+
 subtest 'through the database handle' => sub {
     is $dbh->do('SELECT $1 + $1', undef, 2), '0E0', 'do';
     is [$dbh->selectrow_array('SELECT $1 + $1', undef, 2)], [4],

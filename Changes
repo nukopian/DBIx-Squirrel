@@ -34,6 +34,11 @@ Unreleased
       new bind, do and the DBI's select methods all bind this way,
       croaking at the caller if the values don't match the
       placeholders.
+    - Executing a statement with numbered or named placeholders
+      without values croaks unless each has a value bound already, by
+      bind, bind_param or an earlier execute, where the DBI would
+      leave it unbound, which most drivers read as NULL: in execute,
+      do, iterators and the select methods.
     - prepare_cached gives statements rewritten the same, such as
       SELECT :a, :b and SELECT :b, :a, a handle each. A cached handle
       an iterator is part way through is left to it: prepare_cached

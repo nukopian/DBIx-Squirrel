@@ -365,6 +365,20 @@ Executes the statement, as the DBI's `execute` does, and returns what
 it returns. Values given are bound first, as [`bind`](#bind) binds
 them.
 
+A statement with numbered or named placeholders, executed without
+values, croaks unless each placeholder has a value bound already, by
+[`bind`](#bind), [`bind_param`](#bind_param) or an earlier `execute`, as
+the DBI keeps them. The DBI would leave it unbound, which most drivers
+read as `NULL`. `do`, iterators and the select methods check the same
+way:
+
+```perl
+$sth = $dbh->prepare('SELECT * FROM artist WHERE id = :id');
+$sth->execute;              # croaks: Expected a value for each placeholder (none for id)
+$sth->bind_param(id => 1);
+$sth->execute;              # runs with id 1
+```
+
 The DBI doesn't finish a statement still active from an earlier
 `execute` before executing it again, and nor does `execute`, unless the
 `ekorn_finish_active` attribute is true, on the database handle or the
@@ -1061,7 +1075,7 @@ starting "Expected" say what was expected.
 | `Expected %d bind values, not %d` | A statement with numbered placeholders was given more or fewer values than its highest number. |
 | `Expected names and values in pairs` | A statement with named placeholders was given an odd number of values. |
 | `Expected a placeholder of the statement (%s)` | A value was given for a placeholder the statement doesn't have. |
-| `Expected a value for each placeholder (none for %s)` | A statement with named placeholders wasn't given a value for each name. |
+| `Expected a value for each placeholder (none for %s)` | A statement with named placeholders wasn't given a value for each name, or a statement with numbered or named placeholders was executed without values when some had none bound. |
 
 ### Iterators and result sets
 

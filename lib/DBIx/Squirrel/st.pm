@@ -42,6 +42,7 @@ sub _bind ($self, $binds, @args) {
                 $self->SUPER::bind_param($position, $values{$key}) or return;
             }
         }
+        $self->{private_ekorn}{AllBound} = 1 if $binds;
         $self;
     };
 }
@@ -56,8 +57,11 @@ sub bind_param ($self, $param, $value, @attrs) {
     unless ($positions) {
 
         # A position, for a statement with named placeholders.
-        return at_caller { $self->SUPER::bind_param($param, $value, @attrs) }
-        if $param =~ m( \A \d+ \z )x && !_numbered($binds);
+        if ($param =~ m( \A \d+ \z )x && !_numbered($binds)) {
+            my $rv = at_caller { $self->SUPER::bind_param($param, $value, @attrs) };
+            $self->{private_ekorn}{Bound}{$param} = 1 if $rv;
+            return $rv;
+        }
         croakf 'Expected a placeholder of the statement (%s)', $param;
     }
     my $rv;
@@ -65,6 +69,7 @@ sub bind_param ($self, $param, $value, @attrs) {
         $rv = at_caller { $self->SUPER::bind_param($position, $value, @attrs) }
             or return $rv;
     }
+    @{ $self->{private_ekorn}{Bound} }{@$positions} = (1) x @$positions;
     return $rv;
 }
 
@@ -80,7 +85,11 @@ sub execute ($self, @args) {
         if $state && $state->{Options}{ekorn_finish_active} && $self->{Active};
     @args = _unwrap($self, @args);
     my $binds = $state && $state->{Binds};
-    @args = _in_order($binds, @args) if @args && $binds;
+    if ($binds) {
+        _check_bound($self) unless @args;
+        @args = _in_order($binds, @args) if @args;
+        $state->{AllBound} = 1;
+    }
     return at_caller { $self->SUPER::execute(@args) };
 }
 
@@ -124,6 +133,25 @@ sub _values_taken ($self) {
 sub _binds ($self) {
     my $state = $self->{private_ekorn};
     return $state && $state->{Binds};
+}
+
+# Croak unless a value has been bound to every use of each of the
+# placeholders of a statement with numbered or named ones: given to
+# execute or bind, which bind them all, or to bind_param. Unbound, the
+# driver would read them as NULL, or fail.
+sub _check_bound ($self) {
+    my $state = $self->{private_ekorn};
+    return if $state->{AllBound};
+    my $binds   = $state->{Binds};
+    my $bound   = $state->{Bound} // {};
+    my @missing = sort grep {
+        grep { !$bound->{$_} }
+            @{ $binds->{$_} }
+    } keys %$binds;
+    croakf 'Expected a value for each placeholder (none for %s)',
+        join(', ', @missing)
+        if @missing;
+    return;
 }
 
 # Return the values for a statement's placeholders, as _values_for finds
@@ -270,6 +298,12 @@ named placeholders can also be bound by position, as with the DBI.
 Executes the statement, as the DBI's C<execute> does, and returns what
 it returns. Values given are bound first, as L</bind> binds them.
 
+A statement with numbered or named placeholders, executed without
+values, croaks unless each placeholder has a value bound already, by
+L</bind>, L</bind_param> or an earlier C<execute>, as the DBI keeps
+them. The DBI would leave it unbound, which most drivers read as
+C<NULL>.
+
 The DBI doesn't finish a statement still active from an earlier
 C<execute> before executing it again, and nor does C<execute>, unless the
 C<ekorn_finish_active> attribute is true. It can be set for every
@@ -311,7 +345,9 @@ A value was given for a placeholder the statement doesn't have.
 
 =item Expected a value for each placeholder (none for %s)
 
-A statement with named placeholders wasn't given a value for each name.
+A statement with named placeholders wasn't given a value for each name,
+or a statement with numbered or named placeholders was executed without
+values when some had none bound.
 
 =back
 

@@ -859,3 +859,19 @@ placeholders:
 eval { $dbh->prepare('SELECT :id, :name')->execute(id => 1) };
 print $@;    # Expected a value for each placeholder (none for name) at ... line ...
 ```
+
+Executing without any values croaks too, unless each placeholder has a
+value bound already, where the DBI would quietly read it as `NULL`:
+
+```perl
+my $sth = $dbh->prepare('SELECT name FROM artist WHERE id = :id');
+eval { $sth->execute };
+print $@;    # Expected a value for each placeholder (none for id) at ... line ...
+
+$sth->bind_param(id => 3);
+$sth->execute;
+say $sth->fetchrow_arrayref->[0];    # Cream
+
+eval { $dbh->selectrow_array('SELECT name FROM artist WHERE id = $1') };
+print $@;    # Expected a value for each placeholder (none for 1) at ... line ...
+```
