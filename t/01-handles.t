@@ -48,4 +48,32 @@ subtest 'pipe and tap come from DBIx::Squirrel::Pipes' => sub {
     }
 };
 
+subtest "the DBI's exports" => sub {
+
+    package Importing::SQL {    ## no critic (Modules::ProhibitMultiplePackages)
+        use DBIx::Squirrel qw(:sql_types neat);
+    }
+    is Importing::SQL::SQL_INTEGER(), DBI::SQL_INTEGER(),
+        ':sql_types, as the DBI exports it';
+    is Importing::SQL::neat('x'), DBI::neat('x'), 'and a function by name';
+
+    # The warning and the error from using a module with a tag it doesn't
+    # export, both as at this file's line 100.
+    my sub mistake ($module) {
+        my $code = qq{#line 100 "${\ __FILE__ }"\nuse $module qw(:nonesuch); 1};
+        my $error;
+        my $warning = warning { $error = eval($code) ? undef : $@ };    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+        return [$warning, $error];
+    }
+    is mistake('DBIx::Squirrel'), mistake('DBI'),
+        'a tag the DBI has not, reported as the DBI reports it';
+    like mistake('DBIx::Squirrel')->[1], qr( \ at\ \S+\ line\ 100\. )x,
+        'at the line using it';
+
+    package Importing::Subclass {    ## no critic (Modules::ProhibitMultiplePackages)
+        My::Squirrel->import(':sql_types');
+    }
+    ok defined &Importing::Subclass::SQL_INTEGER, 'through a subclass too';
+};
+
 done_testing;

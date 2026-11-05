@@ -17,6 +17,17 @@ use namespace::clean;
 our @ISA     = 'DBI';
 our $VERSION = 'v2.0.0';
 
+# Export what the DBI exports, such as :sql_types, to the package using
+# DBIx::Squirrel. The names are the DBI's, so the DBI's import exports
+# them: goto leaves no frame of this sub's, so it exports them to the
+# package that used DBIx::Squirrel, and reports a mistake at its line.
+# It's a sub without a signature, as goto passes @_.
+sub import {    ## no critic (Subroutines::RequireArgUnpacking)
+    return if @_ < 2;
+    @_ = ('DBI', @_[1 .. $#_]);
+    goto &{ DBI->can('import') };
+}
+
 # Return the handle of the connection to the requested data source.
 sub connect ($class, $source, @args) {
     return _connect_dbh($class, $source, @args)
@@ -185,6 +196,13 @@ statement handle's in L<DBIx::Squirrel::st>. L<DBIx::Squirrel::Iterator>
 and L<DBIx::Squirrel::Results> describe what C<iterate> and C<results>
 return. L<DBIx::Squirrel::Sugar> gives each database a function of its
 own name.
+
+=head2 Importing
+
+C<use DBIx::Squirrel> takes the names the DBI exports, as C<use DBI>
+does, and the DBI exports them:
+
+    use DBIx::Squirrel qw(:sql_types neat);
 
 =head1 METHODS
 

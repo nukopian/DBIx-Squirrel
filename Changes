@@ -103,6 +103,8 @@ Unreleased
       attribute's value.
     - connect croaks on failure, and clones an existing database
       handle passed in place of a data source.
+    - use DBIx::Squirrel takes the names the DBI exports, such as
+      :sql_types, as use DBI does.
     - connect takes ekorn_ attributes, such as ekorn_dialect, as the
       defaults for every statement the handle prepares, which
       prepare's attributes override. They're kept in the handle's

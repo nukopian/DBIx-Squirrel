@@ -80,6 +80,15 @@ my @names = artist_names;
 
 ## Connecting
 
+### Importing
+
+`use DBIx::Squirrel` takes the names the DBI exports, as `use DBI` does,
+and the DBI exports them:
+
+```perl
+use DBIx::Squirrel qw(:sql_types neat);
+```
+
 ### connect
 
 ```perl
