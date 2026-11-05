@@ -9,9 +9,10 @@ declared beside the query. It subclasses the DBI, so everything the DBI
 does still works, and where the two do the same thing, they give the
 same result.
 
-This reference describes every feature, with examples. Each module's own
-POD says the same things more briefly, and is the authority where the
-two differ.
+This reference describes every feature, with examples; [the how-to](HOWTO.md)
+shows how to do common tasks with them, one recipe at a time. Each
+module's own POD says the same things more briefly, and is the
+authority where the two differ.
 
 **In development.** This is the successor to DBIx-Squirrel 1.x, being
 rewritten for Perl 5.36 or later, and isn't released yet.
