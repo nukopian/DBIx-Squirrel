@@ -46,6 +46,10 @@ Unreleased
       is set to: connect, prepare and prepare_cached croaked with the
       DBI's errstr alone, and errors in do and the select methods named
       the prepare or execute inside them, not the method called.
+    - The DBI's warnings, under PrintError, its default, are reported
+      as plain DBI reports them: at the caller's line, where they named
+      a line inside DBIx::Squirrel, and naming the method called, as
+      errors do. A __WARN__ handler sees them so.
     - iterate, on database and statement handles, returns an iterator,
       DBIx::Squirrel::Iterator, over a statement's results, each run
       through a pipeline of stages. It replaces version 1's

@@ -421,7 +421,9 @@ DBI raises under C<RaiseError>, so an error reads the same whatever
 C<RaiseError> is set to. Each names the method you called, as plain DBI
 does: C<do> and the select methods, not the C<prepare> or C<execute>
 they call. An error from a C<HandleError> callback, or one that isn't a
-string, is passed on as it was raised.
+string, is passed on as it was raised. The DBI's warnings, under
+C<PrintError>, are reported the same way, as plain DBI reports them:
+at your line, naming the method you called.
 
 =over
 

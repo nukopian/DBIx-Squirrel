@@ -135,6 +135,60 @@ package Expects {
     }
 }
 
+# The warnings code gives, each as a handler of warnings sees it.
+sub warnings_of ($code) {
+    my @warnings;
+    local $SIG{__WARN__} = sub ($warning) { push @warnings, $warning };
+    eval { $code->(); 1 };
+    return \@warnings;
+}
+
+subtest "the DBI's warnings, as plain DBI gives them" => sub {
+    my %dbh = map {
+        my $dbh = dbh(class => $_);
+        @$dbh{qw(RaiseError PrintError)} = (0, 1);
+        ($_ => $dbh);
+    } qw(DBI DBIx::Squirrel);
+
+    # Each call, made with each handle at the same line, gives the same
+    # warnings: the same message, at this file's line. prepare_cached
+    # isn't one: the DBI's prepares inside it, where it gives no warning,
+    # and DBIx::Squirrel's croaks.
+    for my $call (
+        [prepare            => 'SELEC 1'],
+        [do                 => 'SELEC 1'],
+        [do                 => 'INSERT INTO u VALUES (1)'],
+        [do                 => 'INSERT INTO u VALUES (?)', undef, 1],
+        [selectrow_array    => 'SELEC 1'],
+        [selectrow_array    => 'INSERT INTO u VALUES (?)', undef, 1],
+        [selectall_arrayref => 'SELEC 1'],
+        [selectcol_arrayref => 'SELEC 1'],
+    ) {
+        my($method, @args) = @$call;
+        my %warnings = map {
+            my $h = $dbh{$_};
+            ($_ => warnings_of(sub { $h->$method(@args) }))
+            }
+            keys %dbh;
+        is $warnings{'DBIx::Squirrel'}, $warnings{DBI},
+            "$method: $warnings{DBI}[0]";
+    }
+
+    my $want = warnings_of(
+        sub { $dbh{DBI}->prepare('INSERT INTO u VALUES (?)')->execute(1) });
+    my $sth  = $dbh{'DBIx::Squirrel'}->prepare('INSERT INTO u VALUES (:id)');
+    my $line = __LINE__ + 1;
+    my $got  = warnings_of(sub { $sth->execute(id => 1) });
+    is $got, [message($want->[0]) . " at ${\ __FILE__ } line $line.\n"],
+        'execute, binding by name';
+
+    my $it = $dbh{'DBIx::Squirrel'}->iterate('INSERT INTO u VALUES (1)');
+    $line = __LINE__ + 1;
+    $got  = warnings_of(sub { $it->all });
+    is $got, [message($want->[0]) . " at ${\ __FILE__ } line $line.\n"],
+        'an iterator executing its statement';
+};
+
 subtest 'croakf' => sub {
     my $line = __LINE__ + 1;
     is dies { Expects::two('three') },
@@ -166,6 +220,15 @@ subtest 'in_method' => sub {
         'and leaves other errors alone';
     my $object = bless {}, 'My::Error';
     ref_is raised($object), $object, 'objects too';
+
+    my $warnings = warnings_of(sub {
+        in_method $dbh, 'do', sub {
+            in_method $dbh, 'prepare',
+                sub { warn "DBD::SQLite::st execute failed: x\n" };
+        };
+    });
+    is $warnings, ["DBD::SQLite::db do failed: x\n"],
+        "renames the DBI's method in a warning, once, naming the outer method";
 };
 
 subtest 'other errors are raised as they were' => sub {
@@ -186,6 +249,23 @@ subtest 'at_caller' => sub {
         at_caller { die "elsewhere\n" }    ## no critic (ErrorHandling::RequireCarping)
     };
     is $err, "elsewhere\n", 'leaves an error not located in the file';
+
+    my $warnings = warnings_of(sub {
+        at_caller {
+            at_caller { warn "elsewhere\n" }
+        }
+    });
+    is $warnings, ["elsewhere\n"],
+        'passes on a warning not located in the file, once, from inside itself';
+
+    open my $stderr, '>', \my $printed or die "Can't print to a string: $!";
+    {
+        local *STDERR = $stderr;
+        local $SIG{__WARN__};
+        at_caller { warn "printed\n" };
+    }
+    is $printed, "printed\n",
+        'and warns, with no handler of warnings to pass it to';
 };
 
 done_testing;

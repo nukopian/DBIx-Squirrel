@@ -718,6 +718,16 @@ eval { $dbh->prepare('SELEC name FROM artist') };
 print $@;    # DBD::SQLite::db prepare failed: near "SELEC": syntax error at ... line ...
 ```
 
+So is each warning the DBI gives under `PrintError`, its default, naming
+the method you called, as plain DBI does:
+
+```perl
+my $chatty = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', {RaiseError => 0, PrintError => 1});
+local $SIG{__WARN__} = sub ($warning) { print "warned: $warning" };
+$chatty->selectrow_array('SELECT * FROM nowhere');
+# warned: DBD::SQLite::db selectrow_array failed: no such table: nowhere at ... line ...
+```
+
 ### Rely on connect and prepare croaking
 
 `connect` and `prepare` croak whatever `RaiseError` says, so they need

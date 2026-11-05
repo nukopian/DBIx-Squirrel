@@ -1035,6 +1035,10 @@ select methods, not the `prepare` or `execute` they call.
 An error from a `HandleError` callback, or one that isn't a string, is
 passed on as it was raised.
 
+The DBI's warnings, which it gives under `PrintError`, its default, are
+reported the same way, as plain DBI reports them: at your line, naming
+the method you called.
+
 ## Diagnostics
 
 DBIx::Squirrel's own messages, each reported at the caller's line. Those
@@ -1101,7 +1105,7 @@ result. These are the places they differ.
 | `prepare` failing | Returns `undef`, unless `RaiseError`. | Always croaks, with the DBI's `RaiseError` message. |
 | Attributes in `do` | Required, or `undef`, before the bind values. | May be left out. |
 | A lone array reference of bind values | A value. | The values in it, except with DBD::Pg for a statement taking one value. |
-| Where errors are reported | The line inside the module that called the DBI. | The line of your code that called DBIx::Squirrel. |
+| Where errors and warnings are reported | The line inside the module that called the DBI. | The line of your code that called DBIx::Squirrel. |
 | Statements | A string. | A string, lines in an array reference, a code reference returning either, or a statement handle. |
 | Executing an active statement | Left to the driver. | The same, or finished first with `ekorn_finish_active`. |
 | Iterators, result sets, pipelines | None. | `iterate`, `results`, `pipe`, `tap` and Sugar. |

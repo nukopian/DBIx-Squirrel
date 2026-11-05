@@ -6,7 +6,7 @@ use experimental qw(try);
 
 use Carp      qw(croak);
 use Exporter  qw(import);
-use Ref::Util qw(is_ref);
+use Ref::Util qw(is_coderef is_ref);
 
 use namespace::clean -except => 'import';
 
@@ -27,29 +27,69 @@ our @INTERNAL = qw(
 );
 our @CARP_NOT = @INTERNAL;
 
+# The files at_caller has been called from. A warning located at a line
+# of one of them is one the DBI gave there.
+my %CALLERS;
+
 # Run a block calling the DBI, and return what it returns. If the DBI
 # raises an error, as it does under RaiseError, at the line of the block,
 # raise it again at the line that called DBIx::Squirrel. Any other error,
 # such as an object, or a string from a HandleError callback, is raised
-# again as it was.
+# again as it was. A warning the DBI gives, as it does under PrintError,
+# is given at the line that called DBIx::Squirrel too, as plain DBI gives
+# it.
+#
+# The handler of warnings is one sub, not a closure made for each call,
+# as this runs for each statement executed; what it needs is in package
+# variables, local to the call. When at_caller runs inside itself, as it
+# does when the DBI calls a method of DBIx::Squirrel's, the inner call
+# keeps the handler the outer one passes warnings on to.
 #
 # Each branch of the try returns or dies, which Perl::Critic can't see.
 sub at_caller : prototype(&) ($code) {    ## no critic (Subroutines::RequireFinalReturn)
     my $file = (caller)[1];
+    $CALLERS{$file} = 1;
+    my $handler = $SIG{__WARN__};
+    local our $OUTER
+        = is_coderef($handler) && $handler == \&_moved ? $OUTER : $handler;
+    local $SIG{__WARN__} = \&_moved;
     try {
         return $code->();
     }
     catch ($e) {
+        my($message, $at) = is_ref($e) ? () : _location($e);
         die $e    ## no critic (ErrorHandling::RequireCarping)
-            if is_ref($e);
-        # Where Perl says a die happened, and the input it was reading.
-        state $INPUT = qr( , \ <[^>]*> \ (?: line | chunk ) \ \d+ )x;
-        my $at      = qr( \ at \ \Q$file\E \ line \ \d+ )x;
-        my $message = $e =~ s( $at $INPUT? \. \n \z )()xr;
-        die $e    ## no critic (ErrorHandling::RequireCarping)
-            if $message eq $e;
+            unless defined $at && $at eq $file;
         croak $message;
     }
+}
+
+# Handle a warning given inside at_caller: give one located at a line of a
+# file at_caller was called from at the line that called DBIx::Squirrel
+# instead, and pass it on.
+sub _moved ($warning) {
+    my($message, $at) = _location($warning);
+    $warning = Carp::shortmess($message)
+        if defined $at && $CALLERS{$at};
+    _warn(our $OUTER, $warning);
+    return;
+}
+
+# Return a message Perl located, without its location, and the file it
+# was located at, or nothing if it has no location.
+sub _location ($message) {
+    # Where Perl says a die or warn happened, and the input it was reading.
+    state $INPUT = qr( , \ <[^>]*> \ (?: line | chunk ) \ \d+ )x;
+    state $AT    = qr( \A (.*) \ at \ (.+?) \ line \ \d+ $INPUT? \. \n \z )xs;
+    return $message =~ $AT;
+}
+
+# Give a warning to the __WARN__ handler given, or, without one, warn it.
+# A warn inside a handler, as this is, isn't handled again.
+sub _warn ($handler, $warning) {
+    return $handler->($warning) if is_coderef($handler);
+    warn $warning;    ## no critic (ErrorHandling::RequireCarping)
+    return;
 }
 
 # Croak with a message made by sprintf from a format and its arguments,
@@ -70,17 +110,43 @@ sub failed ($h, $method) {
 # Run code as a method of a database handle, and return what it returns.
 # An error the DBI raises for a method the code calls, such as prepare or
 # execute, is raised again as the DBI raises one for the handle's method,
-# as "DBD::SQLite::db do failed: ...", as plain DBI does.
+# as "DBD::SQLite::db do failed: ...", as plain DBI does, and so is a
+# warning the DBI gives for one, as it does under PrintError.
+#
+# Its handler of warnings is one sub, as at_caller's is. Inside itself,
+# the outer call's method is the one named, as plain DBI names the method
+# called.
 sub in_method ($dbh, $method, $code) {    ## no critic (Subroutines::RequireFinalReturn)
+    my $handler = $SIG{__WARN__};
+    local our @METHOD
+        = is_coderef($handler) && $handler == \&_renaming
+        ? @METHOD
+        : ($dbh, $method, $handler);
+    local $SIG{__WARN__} = \&_renaming;
     try {
         return $code->();
     }
     catch ($e) {
         die $e    ## no critic (ErrorHandling::RequireCarping)
             if is_ref($e);
-        state $DBI_FAILED = qr( \A DBD:: [\w:]+ :: (?: db | st ) \ \w+ \ failed: )x;
-        die $e =~ s( $DBI_FAILED )("$dbh->{ImplementorClass} $method failed:")xer;    ## no critic (ErrorHandling::RequireCarping)
+        die _renamed($e, $dbh, $method);    ## no critic (ErrorHandling::RequireCarping)
     }
+}
+
+# Handle a warning given inside in_method: name the method in_method
+# was given, and pass it on.
+sub _renaming ($warning) {
+    my($dbh, $method, $outer) = our @METHOD;
+    _warn($outer, _renamed($warning, $dbh, $method));
+    return;
+}
+
+# Return a message the DBI gave for a method that failed, naming the
+# handle's method given in its place.
+sub _renamed ($message, $dbh, $method) {
+    state $DBI_FAILED = qr( \A DBD:: [\w:]+ :: (?: db | st ) \ \w+ \ failed: )x;
+    return $message
+        =~ s( $DBI_FAILED )("$dbh->{ImplementorClass} $method failed:")xer;
 }
 
 1;
@@ -102,7 +168,8 @@ DBIx::Squirrel::Errors - report the DBI's errors at the caller's line
 
 Under C<RaiseError>, the DBI reports an error at the line that called
 it. Inside DBIx::Squirrel, that's a line of DBIx::Squirrel's own, which
-is no help to its user. This module moves the error to the user's line.
+is no help to its user. This module moves the error to the user's line,
+and does the same for the DBI's warnings, under C<PrintError>.
 Nothing is exported by default.
 
 =head1 FUNCTIONS
@@ -119,6 +186,11 @@ DBIx::Squirrel. The DBI's message itself, such as
 C<DBD::SQLite::db prepare failed: ...>, is kept as it was. Any other
 error, such as an object, or a string from a C<HandleError> callback, is
 raised again unchanged.
+
+A warning given while the block runs, as the DBI gives one under
+C<PrintError>, is moved the same way, if it's located at a line of a
+file C<at_caller> has been called from, and passed on to the
+C<__WARN__> handler there was before, or warned without one.
 
 =head2 croakf
 
@@ -143,7 +215,11 @@ Runs the code as one method of a database handle, and returns what it
 returns. An error the DBI raises for a method the code calls, such as
 C<DBD::SQLite::st execute failed: ...>, is raised again as the DBI
 raises one for the handle's method, C<DBD::SQLite::db do failed: ...>,
-as plain DBI does. Any other error is raised again unchanged.
+as plain DBI does. Any other error is raised again unchanged. A warning
+the DBI gives for a method the code calls, as it does under
+C<PrintError>, names the handle's method too, and is passed on to the
+C<__WARN__> handler there was before, or warned without one. Run inside
+itself, the outer call's method is the one named.
 
 =head1 SEE ALSO
 
