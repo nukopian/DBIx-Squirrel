@@ -48,7 +48,9 @@ DBIx::Squirrel::Stop - end a DBIx::Squirrel pipeline early
 A stop is the exception that ends a DBIx::Squirrel pipeline early and
 quietly. The rest of the stage that throws it doesn't run. The values
 already out of the pipeline are kept, the values the stop carries go
-on through the stages after it, and nothing else is processed.
+on through the stages after it, and nothing else is processed. Stages
+after the one that stopped, made with L<DBIx::Squirrel::Gather>, still
+have their end functions called.
 
 =head1 FUNCTIONS
 

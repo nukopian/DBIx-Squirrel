@@ -761,8 +761,9 @@ come out of the stages. `$source` is a code reference returning the
 next value or values on each call, and an empty list when there are no
 more; it's called only when the values from its last call have all been
 handed out. The closure returns an empty list when the values run out,
-and on every call after that. Read it in list context, so an `undef`
-value isn't mistaken for the end.
+and any [end functions](#gathering-stages-with-state-and-an-end) have
+given theirs, and on every call after that. Read it in list context, so
+an `undef` value isn't mistaken for the end.
 
 ### When a stage dies
 
