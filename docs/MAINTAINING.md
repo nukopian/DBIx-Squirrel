@@ -140,15 +140,38 @@ a tarball whose name ends `-TRIAL` as a trial, which is all Minilla's
 own `minil release --trial` does. There's no tag and no GitHub release,
 and `main` doesn't move. v2.0.0 had one, uploaded on 2026-11-05.
 
+PAUSE never takes the same file name twice, so each trial has a version
+of its own, and the release takes the version of its last trial. A
+second trial moves the version on: gather changed the pipeline after
+v2.0.0's trial, so the next trial, and the release, are v2.0.1. Don't
+use an underscore version, such as `v2.0.0_1`, for a trial of v2.0.0:
+`version.pm` reads it as v2.0.1, so it would rank above the release it
+was a trial of.
+
 1. **Check `develop`,** as in step 1 of
    [Making a release](#making-a-release), with the working tree clean,
    so the tarball is built from a commit CI has passed.
 
-2. **Build the tarball, and check its tests passed.** The version is
-   the one in the main module. Set it on the first line:
+2. **Set the version, if it has had a trial.** The version is the one
+   in the main module. If PAUSE already has a trial of it, set the next
+   on the first line, then commit and push, and wait for CI to pass on
+   the commit before going on:
 
    ```
-   v=v2.0.0
+   v=v2.0.1
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil prepare "$v" </dev/null
+   git status --short
+   ```
+
+   Commit what changed as `chore: version v2.0.1, for a trial`, with
+   the version.
+
+3. **Build the tarball, and check its tests passed.** Set the version
+   on the first line:
+
+   ```
+   v=v2.0.1
    cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist > "$TMPDIR/dist-$v.log" 2>&1
    grep '^Result:' "$TMPDIR/dist-$v.log"
@@ -157,17 +180,17 @@ and `main` doesn't move. v2.0.0 had one, uploaded on 2026-11-05.
    It must print `Result: PASS`: `minil dist` exits 0 even when the
    tests fail.
 
-3. **Rename it, and upload it:**
+4. **Rename it, and upload it:**
 
    ```
-   v=v2.0.0
+   v=v2.0.1
    cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
    mv "DBIx-Squirrel-$v.tar.gz" "DBIx-Squirrel-$v-TRIAL.tar.gz"
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpan-upload "DBIx-Squirrel-$v-TRIAL.tar.gz"
    rm "DBIx-Squirrel-$v-TRIAL.tar.gz"
    ```
 
-4. **Read the reports,** as they come in over the next few days. The
+5. **Read the reports,** as they come in over the next few days. The
    first command counts each version's reports by grade; the second
    lists those that didn't pass, with a link to each:
 
@@ -176,8 +199,8 @@ and `main` doesn't move. v2.0.0 had one, uploaded on 2026-11-05.
    curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r '.[] | select((.version | startswith("v2") or startswith("2")) and .grade != "pass") | "\(.version) \(.grade) \(.osname) perl \(.perl) https://www.cpantesters.org/cpan/report/\(.guid)"'
    ```
 
-   A failure is fixed on `develop`, and a new trial uploaded, before the
-   release.
+   A failure is fixed on `develop`, and a new trial uploaded, with a
+   version of its own, before the release.
 
 ## Making a release
 
@@ -213,14 +236,14 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
    version on the first line:
 
    ```
-   v=v2.0.0
+   v=v2.0.1
    cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil prepare "$v" </dev/null
    git status --short
    ```
 
 3. **Turn Unreleased into the release** in [Changes](../Changes): rename
-   the heading to the version and date, as `v2.0.0 2026-10-22`, start the
+   the heading to the version and date, as `v2.0.1 2026-10-22`, start the
    entry with a sentence that sums it up (it becomes the tag's title),
    and add an empty Unreleased above it. The entry's lines stay indented
    by four spaces:
@@ -228,14 +251,14 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
    ```
    Unreleased
 
-   v2.0.0 2026-10-22
+   v2.0.1 2026-10-22
 
        The successor to 1.6.5: a rewrite in modern Perl.
 
        - Requires Perl 5.36 or later.
    ```
 
-   Commit it with the version (`chore: release v2.0.0`), push, and wait
+   Commit it with the version (`chore: release v2.0.1`), push, and wait
    for CI.
 
 4. **Write the tag message from the entry,** and read it. The entry,
@@ -245,7 +268,7 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
    line:
 
    ```
-   v=v2.0.0
+   v=v2.0.1
    cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
    v=$v perl -0777 -ne 'print "$1\n" =~ s/^    //mgr if /^\Q$ENV{v}\E [^\n]*\n\n(.*?)\n*(?=^\S|\z)/ms' Changes > "$TMPDIR/notes-$v.txt"
    sed "1s/^/$v: /" "$TMPDIR/notes-$v.txt" > "$TMPDIR/tag-$v.txt"
@@ -270,7 +293,7 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
    first line:
 
    ```
-   v=v2.0.0
+   v=v2.0.1
    git switch main
    git pull --ff-only
    git merge --ff-only develop
@@ -290,7 +313,7 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
    on the first line:
 
    ```
-   v=v2.0.0
+   v=v2.0.1
    cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
    git switch --detach "$v"
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist --skip-prepare > "$TMPDIR/dist-$v.log" 2>&1
@@ -303,7 +326,7 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
    tarball, fix it on `develop`, and start again. Then upload:
 
    ```
-   v=v2.0.0
+   v=v2.0.1
    cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpan-upload "DBIx-Squirrel-$v.tar.gz"
    git switch develop
@@ -452,7 +475,7 @@ can satisfy a check. When the floor moves up, from Perl 5.36 to 5.40 for
   step 6. Set the version on the first line:
 
   ```
-  v=v2.0.0
+  v=v2.0.1
   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
   git switch main
   git merge --ff-only "$v"
