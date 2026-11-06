@@ -19,6 +19,46 @@ beside the query. It never hides the SQL, and it isn't an ORM.
 It subclasses the DBI, so everything the DBI does still works, and
 where the two do the same thing, they give the same result.
 
+=head2 Why use it
+
+The DBI is the right foundation, and it is deliberately low-level. Most
+of the code written around it is the same few chores, done by hand each
+time. DBIx::Squirrel does them for you.
+
+=over
+
+=item * B<Placeholders you can read.>
+
+With C<?>, values go in the order the marks appear, a value used twice
+is passed twice, and changing the SQL can mean changing the code that
+calls it. Named placeholders bind by name, each value once, on any
+driver, whatever placeholders it supports itself. SQL written with
+PostgreSQL's C<$1> runs on SQLite as it is. Values that don't match
+the placeholders croak, rather than being bound in the wrong place.
+
+=item * B<Rows that come out ready to use.>
+
+There's no fetch loop to write, and no array to push onto. The stages
+that map, filter and expand the rows sit beside the query, so you can
+read what a result holds next to the SQL that makes it. Rows are
+fetched in batches, so you can work through a large result a row at
+a time without holding all of it in memory.
+
+=item * B<Queries with names.>
+
+A statement and its stages can become a function of its own name, so
+the SQL is written in one place and the code that uses it reads as
+plainly as C<titles_by 2>.
+
+=item * B<Nothing to unlearn, and nothing to undo.>
+
+Your handles, attributes, drivers and existing code all still work,
+because it's still the DBI. Take up as much as helps, and stop there.
+It isn't an ORM: you write the SQL, so everything your database can do
+is still there, and it never runs a query you didn't write.
+
+=back
+
 =head2 One step at a time
 
 You can take it up a step at a time, and stop at any step: each works
