@@ -438,6 +438,16 @@ say "@names";    # Abba Blur Cream
 say $count;      # 3
 ```
 
+Without stages, `all` fetches the rest of the rows at once, nearly as
+quickly as the DBI's own `selectall_arrayref`. Stages cost a little for
+each row, so for a large result, when every row is wanted and only
+needs changing, `map` over `all` is quicker:
+
+```perl
+my @fast = map { $_->[0] } $dbh->iterate('SELECT name FROM artist')->all;
+say "@fast";    # Abba Blur Cream
+```
+
 ### Get exactly one result
 
 `single` returns the one result, or nothing, and croaks if there's more

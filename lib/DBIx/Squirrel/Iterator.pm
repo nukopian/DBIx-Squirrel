@@ -274,8 +274,9 @@ L<DBIx::Squirrel::st/iterate>. It executes the statement when its first
 result is asked for, and finishes the statement when the results run
 out.
 
-Rows are fetched 100 at a time, with L<DBI/fetchall_arrayref>, each as
-an array, or, with the C<ekorn_slice> attribute, in the shape it gives:
+Rows are fetched 100 at a time, with L<DBI/fetchall_arrayref>, or, by
+L</all> without stages, all at once; each as an array, or, with the
+C<ekorn_slice> attribute, in the shape it gives:
 
     $dbh = DBIx::Squirrel->connect($dsn, $user, $pass, {ekorn_slice => {}});
     $sth = $dbh->prepare($statement, {ekorn_slice => {}});
@@ -315,6 +316,20 @@ as above, rather than testing whether what it returns is defined.
 Returns the results not yet fetched, or, in scalar context, how many
 there were. Either way, they're fetched, and C<next> returns nothing
 after.
+
+Without stages, the rows are the results, so C<all> takes what's left
+of the batch fetched last, and fetches the rest with one
+C<fetchall_arrayref>, nearly as quickly as the DBI's own
+C<selectall_arrayref>. With stages, each row goes through them in turn,
+which costs a little for each row. So to change every row of a large
+result, when nothing needs to stop early, C<map> over C<all> is
+quicker than a stage:
+
+    my @names = map { $_->[0] } $dbh->iterate('SELECT name FROM artist')->all;
+
+Stages are for when the rows should come one at a time, from C<next>,
+or may stop early, or should go with the statement, as in a Sugar
+statement.
 
 =head2 single
 

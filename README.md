@@ -90,7 +90,8 @@ values.
     }
 
 Rows are fetched in batches, and the statement is finished when they run
-out. `all` takes the rest at once, and `single` the only one.
+out. `all` takes the rest at once, nearly as quickly as plain DBI, and
+`single` the only one.
 
 ### 4. Add stages.
 

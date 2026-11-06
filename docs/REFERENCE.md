@@ -560,13 +560,26 @@ it's finished when the results run out, or when the iterator is ended
 early, by a [stop](#stopping-a-pipeline) or by `single`.
 
 Rows are fetched 100 at a time, with the DBI's `fetchall_arrayref`.
+Without stages, `all` takes what's left of the batch and fetches the
+rest at once, nearly as quickly as the DBI's own `selectall_arrayref`.
+With stages, each row goes through them in turn, which costs a little
+for each row, so to change every row of a large result, when nothing
+needs to stop early, `map` over `all` is quicker than a stage:
+
+```perl
+my @names = map { $_->[0] } $dbh->iterate('SELECT name FROM artist')->all;
+```
+
+Stages are for when the rows should come one at a time, from `next`,
+or may stop early, or should go with the statement, as in
+[Sugar](#a-function-for-each-database-and-statement-sugar).
 
 ### Iterator methods
 
 | Method | What it does |
 |---|---|
 | `next` | Returns the next result, or an empty list when there are no more. |
-| `all` | Returns the results not yet handed out, or, in scalar context, how many there were. |
+| `all` | Returns the results not yet handed out, or, in scalar context, how many there were. Without stages, it fetches the rest at once. |
 | `single` | Executes the statement again, and returns its one result, or nothing if it has none. It croaks if there's more than one: `Expected one result, not more`. |
 | `reset` | Executes the statement again, ready to iterate from its first row, finishing it first if it's still active, and returns the iterator. |
 | `count` | Returns the number of results handed out so far. |
