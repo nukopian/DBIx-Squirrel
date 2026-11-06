@@ -705,7 +705,9 @@ A class that isn't a subclass of `DBIx::Squirrel::Result` croaks:
 A pipeline is a list of stages, each a code reference. Pipelines are how
 iterators and result sets run their stages, and they can be used on
 their own, with `DBIx::Squirrel::Pipeline`, or on a handle, with
-[`pipe` and `tap`](#pipe-and-tap-on-handles).
+[`pipe` and `tap`](#pipe-and-tap-on-handles). Loading a pipeline doesn't
+load the DBI, so a function of your own can take stages from its
+caller, as `iterate` does, and run what it returns through them.
 
 ### Stages
 

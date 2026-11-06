@@ -206,6 +206,21 @@ of the pipeline, and can have a function called once the values run
 out, whose values go through the rest of the stages. Each push of
 values, and each iterator, is a run.
 
+A pipeline isn't only for rows. Loading it doesn't load the DBI, so a
+function of your own can take stages from its caller, as C<iterate>
+does, and run what it returns through them:
+
+    sub bands (@stages) {
+        return DBIx::Squirrel::Pipeline->new(@stages)->(load_bands());
+    }
+
+    my @names = bands(pluck('name'), take(5));
+
+The canned stages work there too, except those needing a statement's
+column names, which need an iterator, as L<DBIx::Squirrel::Stages::Rows>
+says. Outside an iterator, L<DBIx::Squirrel::Context>'s functions
+return C<undef>.
+
 =head1 METHODS
 
 =head2 new

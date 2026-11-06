@@ -851,6 +851,40 @@ my $evens_squared = DBIx::Squirrel::Pipeline->new(
 say join ' ', $evens_squared->(1 .. 6);    # 4 16 36
 ```
 
+### Let callers of your own functions add stages
+
+A function can take stages from its caller, as `iterate` does, and run
+what it returns through them, so the caller gets it ready to use.
+Loading the pipeline, `gather`, `Stop` and the canned stages doesn't
+load the DBI, so this works in code that has nothing to do with a
+database:
+
+```perl
+use DBIx::Squirrel::Pipeline;
+use DBIx::Squirrel::Stages::Rows;
+
+# The bands, as hashes, through whatever stages the caller gives
+sub bands (@stages) {
+    my @bands = (
+        {name => 'Abba',  formed => 1972},
+        {name => 'Blur',  formed => 1988},
+        {name => 'Cream', formed => 1966},
+    );
+    return DBIx::Squirrel::Pipeline->new(@stages)->(@bands);
+}
+
+my @older = bands(sub { $_->{formed} < 1980 ? $_ : () }, pluck('name'));
+say "@older";    # Abba Cream
+
+my @all = bands();    # without stages, as they are
+say scalar @all;      # 3
+```
+
+The stages that need a statement's column names need an iterator:
+`as_hash`, and `pluck` with a name for an array or a position for a
+hash. `pluck` with a name for a hash, as here, doesn't. Outside an
+iterator, DBIx::Squirrel::Context's functions return `undef`.
+
 ### Pull values from anything, one at a time
 
 A pipeline's `iterator` pulls values from a source of your own, such as
