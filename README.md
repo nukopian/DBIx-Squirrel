@@ -100,8 +100,9 @@ out. `all` takes the rest at once, and `single` the only one.
 
 Each row goes through the stages, given as `$_`. A stage returns
 nothing to drop the row, one value in its place, or several, and can
-stop the iteration early. `pipe` runs anything else through stages
-the same way.
+stop the iteration early. A stage made with `gather` can hold rows,
+and give them in batches, or as one value, when they run out. `pipe`
+runs anything else through stages the same way.
 
 ### 5. Have rows as objects.
 

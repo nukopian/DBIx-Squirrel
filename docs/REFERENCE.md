@@ -32,6 +32,7 @@ code written for 1.x.
 - [Result sets and row objects](#result-sets-and-row-objects)
 - [Pipelines](#pipelines)
 - [Stopping a pipeline](#stopping-a-pipeline)
+- [Gathering: stages with state, and an end](#gathering-stages-with-state-and-an-end)
 - [What a stage can ask: Context](#what-a-stage-can-ask-context)
 - [pipe and tap on handles](#pipe-and-tap-on-handles)
 - [A function for each database and statement: Sugar](#a-function-for-each-database-and-statement-sugar)
@@ -782,7 +783,9 @@ A stage can end a pipeline early and quietly by calling `Stop`. The rest
 of that stage doesn't run, the values already out of the pipeline are
 kept, any values the stop carries go on through the stages after it,
 and nothing else is processed. An iterator that's stopped finishes its
-statement.
+statement. Stages after the one that stopped, made with
+[`gather`](#gathering-stages-with-state-and-an-end), still have their
+end functions called.
 
 ```perl
 use DBIx::Squirrel::Stop;
@@ -832,6 +835,70 @@ sub ($row) {
 }
 ```
 
+## Gathering: stages with state, and an end
+
+A stage can't tell when the last value has gone by, and whatever a
+closure keeps stays there from one run of the pipeline to the next.
+`gather` makes a stage that has both: state of its own on each run,
+and a function called once the values run out.
+
+```perl
+use DBIx::Squirrel::Gather;
+
+# Rows in batches of $size, the last, shorter one at the end
+sub batches_of ($size) {
+    return gather {
+        my @batch;    # this run's
+        my $stage = sub ($row) {
+            push @batch, $row;
+            return @batch == $size ? [splice @batch] : ();
+        };
+        my $end = sub () { @batch ? [@batch] : () };
+        return ($stage, $end);
+    };
+}
+
+my $batches = $dbh->iterate('SELECT id, name FROM track', batches_of(500));
+while (my($batch) = $batches->next) { ... }
+```
+
+The block given to `gather` is called at the start of each run, so
+whatever it declares is fresh each time: each execution of an iterator
+or result set, including after `reset`, each call of a Sugar statement,
+and each call of a pipeline. It returns the stage, which is called with
+each value as any stage is, and optionally an end function. A stage
+that keeps state of any kind, even a count, should be made with
+`gather`, so that it starts afresh.
+
+The end function is called with no arguments, and `$_` undefined. What
+it returns goes through the rest of the stages, as what a stage returns
+does: nothing, one value, or several. It's called even when there were
+no values, so an end can give an empty result. The ends are called in
+order, first stage first, and what one returns goes through the stages
+after it before the next end is called, so an end later in the pipeline
+gets everything sent to it.
+
+After a [stop](#stopping-a-pipeline), the ends of the stages after the
+one that stopped are called, so they get the values before the stop and
+any it carries. The ends of the stage that stopped and the stages before
+it aren't, as nothing else is processed. An end can stop the pipeline
+too: the values its stop carries go on, and the ends after it are still
+called.
+
+A stage made with `gather` is a code reference, blessed into
+`DBIx::Squirrel::Gather`, so it can be given wherever a stage can.
+`gather` is exported by default; to keep it out of your namespace:
+
+```perl
+use DBIx::Squirrel::Gather ();
+```
+
+The block must return a stage, or a stage and an end function, or the
+pipeline croaks when it starts to run:
+`Expected stage #2, made with gather, to return one or two code references`.
+An end that dies is reported as its stage would be:
+`Pipeline stage #2 failed at ...`.
+
 ## What a stage can ask: Context
 
 Inside a stage run by an iterator or result set, these functions say
@@ -851,8 +918,8 @@ my $it = $dbh->iterate(
 | Function | Returns |
 |---|---|
 | `iterator` | The iterator running the stage. Its `sth` is the statement handle, and the statement handle's `Database`, the database handle. |
-| `result_number` | The number of the result being made, from 1. It counts results, not rows: while a stage drops rows, the number stays the same, and each value a stage returns in place of one row is a result of its own. |
-| `result_original` | The row the result is being made from, as it was fetched, before any stage changed it. For a result set, it's the row object. |
+| `result_number` | The number of the result being made, from 1. It counts results, not rows: while a stage drops rows, the number stays the same, and each value a stage returns in place of one row is a result of its own. In an end function, it's the number of the first value the end returns. |
+| `result_original` | The row the result is being made from, as it was fetched, before any stage changed it. For a result set, it's the row object. In an [end function](#gathering-stages-with-state-and-an-end), and the stages after it, it's `undef`, as what an end gives comes from every row. |
 
 ## pipe and tap on handles
 
@@ -1093,8 +1160,9 @@ starting "Expected" say what was expected.
 | Message | Cause |
 |---|---|
 | `Expected stage #%d to be a code reference` | Something passed as a stage wasn't a code reference. No stage runs. |
-| `Expected a code reference` | The source given to a pipeline's `iterator` wasn't a code reference. |
-| `Pipeline stage #%d failed at %s line %d:` | A stage died. The message it died with follows, indented. |
+| `Expected a code reference` | The source given to a pipeline's `iterator`, or the block given to `gather`, wasn't a code reference. |
+| `Expected stage #%d, made with gather, to return one or two code references` | The block given to `gather` for that stage returned something other than a stage, or a stage and an end function. |
+| `Pipeline stage #%d failed at %s line %d:` | A stage, or its end function, died. The message it died with follows, indented. |
 | `Stop used outside a pipeline` | `Stop` was called where no pipeline was running to catch it. |
 
 ### Sugar
@@ -1264,6 +1332,7 @@ distributions of their own.
 | `DBIx::Squirrel::Pipeline` | Runs values through a list of stages. |
 | `DBIx::Squirrel::Pipes` | The `pipe` and `tap` methods of both handle classes. |
 | `DBIx::Squirrel::Stop` | Ends a pipeline early. |
+| `DBIx::Squirrel::Gather` | Makes a stage afresh for each run, with a function called at the end. |
 | `DBIx::Squirrel::Context` | What a stage can ask about the result it's making. |
 | `DBIx::Squirrel::Sugar` | A function for each database and statement. |
 | `DBIx::Squirrel::Placeholders` | Finds the placeholders in a statement. |

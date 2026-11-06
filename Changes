@@ -47,6 +47,12 @@ Unreleased
       one value, or several. Stop, from DBIx::Squirrel::Stop, ends a
       pipeline early, and DBIx::Squirrel::Context gives a stage its
       iterator, result_number and result_original.
+    - gather, from DBIx::Squirrel::Gather, makes a stage afresh for each
+      run of its pipeline, from a block returning the stage and,
+      optionally, a function called once the values run out, whose
+      values go through the rest of the stages. A stage can batch rows,
+      make one value from all of them, or keep a count that starts
+      again on each execution.
     - DBIx::Squirrel::Pipeline runs any values through stages, and pipe
       and tap run a database or statement handle through them.
     - results returns a DBIx::Squirrel::Results, replacing

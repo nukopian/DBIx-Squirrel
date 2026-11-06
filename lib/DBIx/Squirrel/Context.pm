@@ -4,7 +4,8 @@ package DBIx::Squirrel::Context;
 
 use Exporter qw(import);
 
-use DBIx::Squirrel::Errors qw();
+use DBIx::Squirrel::Errors   qw();
+use DBIx::Squirrel::Pipeline qw();
 
 our @EXPORT_OK = qw(iterator result_number result_original);
 
@@ -27,10 +28,13 @@ sub result_number (@) {
     return $iterator && $iterator->{produced} + 1;
 }
 
-# The row the result is being made from, as it was fetched.
+# The row the result is being made from, as it was fetched; undef for a
+# result an end function is making, which comes from every row.
 sub result_original (@) {
     my $iterator = $context{iterator};
-    return $iterator && $iterator->{original};
+    return $iterator && !DBIx::Squirrel::Pipeline::ending()
+        ? $iterator->{original}
+        : undef;
 }
 
 # For DBIx::Squirrel's iterators: run code with the iterator given as the
@@ -76,12 +80,16 @@ and the statement handle's C<Database>, the database handle.
 
 The number of the result being made, from 1. It counts results, not
 rows: while a stage drops rows, the number stays the same, and each
-value a stage returns in place of one row is a result of its own.
+value a stage returns in place of one row is a result of its own. In an
+end function of a stage made with L<DBIx::Squirrel::Gather>, it's the
+number of the first value the end returns.
 
 =head2 result_original
 
 The row the result is being made from, as it was fetched, before any
-stage changed it.
+stage changed it. In an end function of a stage made with
+L<DBIx::Squirrel::Gather>, and the stages after it, it's C<undef>, as
+what an end gives comes from every row.
 
 =head2 within
 

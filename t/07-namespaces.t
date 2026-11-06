@@ -5,6 +5,7 @@ use Test2::Plugin::NoWarnings;
 use DBIx::Squirrel;
 use DBIx::Squirrel::Errors;
 use DBIx::Squirrel::Context;
+use DBIx::Squirrel::Gather ();
 use DBIx::Squirrel::Iterator;
 use DBIx::Squirrel::Result;
 use DBIx::Squirrel::Results;
@@ -26,7 +27,8 @@ my %imported = (
             unwrap_values
         ),
     ],
-    'DBIx::Squirrel::Errors'   => [qw(croak is_ref)],
+    'DBIx::Squirrel::Errors'   => [qw(croak  is_ref)],
+    'DBIx::Squirrel::Gather'   => [qw(croakf is_coderef)],
     'DBIx::Squirrel::Iterator' =>
         [qw(at_caller croakf is_coderef iterator_going split_stages weaken)],
     'DBIx::Squirrel::Pipeline'     => [qw(croak  croakf is_coderef is_ref)],
@@ -54,6 +56,8 @@ for my $pkg (sort keys %imported) {
 }
 
 subtest 'what the packages need is kept' => sub {
+    ok +DBIx::Squirrel::Gather->can('import'),       'Gather can export';
+    ok +DBIx::Squirrel::Gather->can('gather'),       'and keeps gather';
     ok +DBIx::Squirrel::Placeholders->can('import'), 'Placeholders can export';
     ok +DBIx::Squirrel::Stop->can('import'),         'Stop can export';
     ok +DBIx::Squirrel::Sugar->can('import'),        'Sugar can export';

@@ -567,6 +567,64 @@ my @chart = $dbh->iterate(
 say $chart[0];    # 1. Dancing Queen (9101 plays)
 ```
 
+### Hand out rows in batches
+
+A stage made with `gather` is made afresh each time the statement runs,
+and can have a function called when the rows run out. Its block returns
+the stage, then that function:
+
+```perl
+use DBIx::Squirrel::Gather;
+
+# Rows in batches of $size, the last, shorter one when the rows run out
+sub batches_of ($size) {
+    return gather {
+        my @batch;    # fresh on each run
+        my $stage = sub ($row) {
+            push @batch, $row;
+            return @batch == $size ? [splice @batch] : ();
+        };
+        my $end = sub () { @batch ? [@batch] : () };
+        return ($stage, $end);
+    };
+}
+
+my $batches = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    sub { $_->[0] },
+    batches_of(4),
+);
+while (my($batch) = $batches->next) {
+    say scalar(@$batch), ': ', join ', ', @$batch;
+}
+# 4: Dancing Queen, Knowing Me, Knowing You, Girls & Boys, Parklife
+# 2: Country House, Sunshine of Your Love
+```
+
+### Make one value from every row
+
+Hold the rows, and return what you make of them at the end:
+
+```perl
+use DBIx::Squirrel::Gather;
+
+my $names = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY name',
+    sub { $_->[0] },
+    gather {
+        my @names;
+        return (
+            sub ($name) { push @names, $name; () },    # hold each, passing nothing on
+            sub ()      { join ', ', @names },
+        );
+    },
+)->single;
+say $names;    # Abba, Blur, Cream
+```
+
+The end function is called even when there are no rows, so an empty
+result still gives a value: here, an empty string.
+
 ### Catch errors in a stage
 
 A stage that catches errors itself should throw a stop on again, so the

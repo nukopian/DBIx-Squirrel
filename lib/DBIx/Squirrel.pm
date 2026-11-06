@@ -413,6 +413,26 @@ stop on again:
 Called outside a stage, it dies with "Stop used outside a pipeline".
 L<DBIx::Squirrel::Stop> says more, including what a stop carries.
 
+=head2 gather
+
+    use DBIx::Squirrel::Gather;
+
+    my $joined = gather {
+        my @names;    # fresh on each run
+        return (
+            sub ($name) { push @names, $name; () },
+            sub ()      { join ', ', @names },    # once the values run out
+        );
+    };
+
+Returns a stage that a pipeline makes afresh for each run, by calling
+the block. The block returns the stage, and optionally a function
+called once the values run out, whose values go through the rest of
+the stages. A stage that gathers values, to give them in batches or as
+one, or that keeps state of any kind, is made this way. C<gather> is
+exported automatically by L<DBIx::Squirrel::Gather>, which says more,
+including what happens after a stop.
+
 =head1 DIAGNOSTICS
 
 Errors are reported at the line of your code that called DBIx::Squirrel,
@@ -433,13 +453,18 @@ at your line, naming the method you called.
 
 =item Pipeline stage #%d failed at %s line %d:
 
-A stage passed to L</pipe> or L</tap> died. The message it died with
-follows, indented.
+A stage passed to L</pipe> or L</tap>, or its end function, died. The
+message it died with follows, indented.
 
 =item Expected stage #%d to be a code reference
 
 Something passed to L</pipe> or L</tap> wasn't a code reference. No
 stage runs.
+
+=item Expected stage #%d, made with gather, to return one or two code references
+
+The block given to L</gather> for that stage returned something other
+than a stage, or a stage and an end function.
 
 =item Stop used outside a pipeline
 
@@ -454,7 +479,7 @@ L<DBIx::Squirrel::Iterator>, L<DBIx::Squirrel::Results>,
 L<DBIx::Squirrel::Result>, L<DBIx::Squirrel::Context>,
 L<DBIx::Squirrel::Sugar>,
 L<DBIx::Squirrel::Pipes>, L<DBIx::Squirrel::Pipeline>,
-L<DBIx::Squirrel::Stop>
+L<DBIx::Squirrel::Stop>, L<DBIx::Squirrel::Gather>
 
 L<The reference|https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md>
 describes every feature in detail, with examples, and

@@ -42,35 +42,78 @@ sub iterator ($self, $source) {
     return _iterator($self->{stages}, $source);
 }
 
+# What a pipeline is doing while its stages run: ending is true while the
+# values going through them come from an end function, rather than from
+# the source.
+my %running;
+
+
+# For DBIx::Squirrel::Context: true while the values going through the
+# stages come from an end function.
+sub ending () {
+    return $running{ending};
+}
+
 # Return a closure handing out, one per call, the values from $source run
 # through the stages in @$stages.
 sub _iterator ($stages, $source) {
-    my @stages = @$stages;
+    my(@stages, @ends);
+    for my $n (0 .. $#$stages) {
+        my $stage = $stages->[$n];
+        unless ($stage isa 'DBIx::Squirrel::Gather') {
+            $stages[$n] = $stage;
+            next;
+        }
+        my @made = $stage->();
+        croakf
+            'Expected stage #%d, made with gather, to return one or two code references',
+            $n + 1
+            unless (@made == 1 || @made == 2) && @made == grep { is_coderef($_) } @made;
+        ($stages[$n], $ends[$n]) = @made;
+    }
 
-    # Each value waiting to go through a stage, as the stage's index and
-    # the value, the next on top. A value a stage returns on its own, as
-    # most are, carries on through the stages without waiting here.
+    # Each value waiting to go through a stage, as the stage's index, the
+    # value, and whether it came from an end, the next on top. A value a
+    # stage returns on its own, as most are, carries on through the stages
+    # without waiting here. Once the values run out, the ends are called in
+    # order, from the first not called or passed over by a stop.
     my(@todo, $done);
+    my $next_end = 0;
     return sub () {
         while (1) {
-            my($n, $value);
+            my($n, $value, $from_end, $end);
             if (@todo) {
-                ($n, $value) = @{ pop @todo };
+                ($n, $value, $from_end) = @{ pop @todo };
             }
-            else {
-                last if $done;
+            elsif (!$done) {
                 my @values = $source->();
                 unless (@values) {
                     $done = 1;
-                    last;
+                    next;
                 }
                 ($n, $value) = (0, shift @values);
                 push @todo, map { [0, $_] } reverse @values;
             }
+            else {
+                ($n) = grep { $ends[$_] } $next_end .. $#stages;
+                last unless defined $n;
+                ($next_end, $end, $from_end) = ($n + 1, $ends[$n], 1);
+            }
             return $value if $n == @stages;
+            # Set only when it changes, as most values come from the source.
+            local $running{ending} = $from_end
+                if $from_end || $running{ending};
             my $kept = 1;
             try {
-                while ($n < @stages) {
+                if ($end) {
+                    local $_ = undef;
+                    my @values = $end->();
+                    $n++;
+                    $kept  = @values;
+                    $value = shift @values;
+                    push @todo, map { [$n, $_, 1] } reverse @values;
+                }
+                while ($kept && $n < @stages) {
                     local $_ = $value;
                     my @values = $stages[$n]->($value);
                     $n++;
@@ -79,14 +122,15 @@ sub _iterator ($stages, $source) {
                         last;
                     }
                     $value = shift @values;
-                    push @todo, map { [$n, $_] } reverse @values;
+                    push @todo, map { [$n, $_, $from_end] } reverse @values;
                 }
             }
             catch ($e) {
                 if ($e isa 'DBIx::Squirrel::Stop') {
                     my(undef, @values) = @$e;
-                    $done = 1;
-                    @todo = map { [$n + 1, $_] } reverse @values;
+                    $done     = 1;
+                    $next_end = $n + 1 if $next_end < $n + 1;
+                    @todo     = map { [$n + 1, $_, $from_end] } reverse @values;
                     next;
                 }
                 croak $e if is_ref($e);
@@ -157,6 +201,11 @@ the rest of the stages, and nothing else is processed:
 
     sub ($row) { $row->{id} == $wanted ? Stop($row) : () }
 
+A stage made with L<DBIx::Squirrel::Gather> is made afresh for each run
+of the pipeline, and can have a function called once the values run
+out, whose values go through the rest of the stages. Each push of
+values, and each iterator, is a run.
+
 =head1 METHODS
 
 =head2 new
@@ -190,6 +239,18 @@ isn't mistaken as the end:
 
     while (my($x) = $next->()) { ... }
 
+The end functions of stages made with L<DBIx::Squirrel::Gather> are
+called once the source runs out, or after a stop, before the closure
+returns an empty list.
+
+=head1 FUNCTIONS
+
+=head2 ending
+
+For L<DBIx::Squirrel::Context>, which reads it; not for use elsewhere.
+True while the values going through the stages come from an end
+function, rather than from the source.
+
 =head1 DIAGNOSTICS
 
 =over
@@ -202,16 +263,21 @@ A stage given to L</new> wasn't a code reference.
 
 The source given to L</iterator> wasn't a code reference.
 
+=item Expected stage #%d, made with gather, to return one or two code references
+
+The block given to L<DBIx::Squirrel::Gather/gather> for that stage
+returned something other than a stage, or a stage and an end function.
+
 =item Pipeline stage #%d failed at %s line %d:
 
-A stage died. The message it died with follows, indented. An exception
-object is passed on as it is.
+A stage, or its end function, died. The message it died with follows,
+indented. An exception object is passed on as it is.
 
 =back
 
 =head1 SEE ALSO
 
-L<DBIx::Squirrel>, L<DBIx::Squirrel::Stop>
+L<DBIx::Squirrel>, L<DBIx::Squirrel::Gather>, L<DBIx::Squirrel::Stop>
 
 =head1 AUTHOR
 
