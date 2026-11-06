@@ -615,31 +615,14 @@ say $chart[0];    # 1. Dancing Queen (9101 plays)
 
 ### Hand out rows in batches
 
-A stage made with `gather` is made afresh each time the statement runs,
-and can have a function called when the rows run out. Its block returns
-the stage, then that function:
+`batch`, from DBIx::Squirrel::Stages::Batch, passes rows on in batches,
+each an array, the last, shorter one when the rows run out:
 
 ```perl
-use DBIx::Squirrel::Gather;
+use DBIx::Squirrel::Stages::Batch;
+use DBIx::Squirrel::Stages::Rows;
 
-# Rows in batches of $size, the last, shorter one when the rows run out
-sub batches_of ($size) {
-    return gather {
-        my @batch;    # fresh on each run
-        my $stage = sub ($row) {
-            push @batch, $row;
-            return @batch == $size ? [splice @batch] : ();
-        };
-        my $end = sub () { @batch ? [@batch] : () };
-        return ($stage, $end);
-    };
-}
-
-my $batches = $dbh->iterate(
-    'SELECT name FROM track ORDER BY id',
-    sub { $_->[0] },
-    batches_of(4),
-);
+my $batches = $dbh->iterate('SELECT name FROM track ORDER BY id', pluck(0), batch(4));
 while (my($batch) = $batches->next) {
     say scalar(@$batch), ': ', join ', ', @$batch;
 }
@@ -649,27 +632,50 @@ while (my($batch) = $batches->next) {
 
 ### Make one value from every row
 
-Hold the rows, and return what you make of them at the end:
+`collect` holds the rows, and once they run out, passes on what its
+block makes of them, given as its arguments, or, without a block, an
+array of them:
 
 ```perl
-use DBIx::Squirrel::Gather;
+use DBIx::Squirrel::Stages::Batch;
 
 my $names = $dbh->iterate(
     'SELECT name FROM artist ORDER BY name',
     sub { $_->[0] },
-    gather {
-        my @names;
-        return (
-            sub ($name) { push @names, $name; () },    # hold each, passing nothing on
-            sub ()      { join ', ', @names },
-        );
-    },
+    collect { join ', ', @_ },
 )->single;
 say $names;    # Abba, Blur, Cream
+
+my $rows = $dbh->iterate('SELECT name FROM artist', collect)->single;
+say scalar @$rows;    # 3
 ```
 
-The end function is called even when there are no rows, so an empty
-result still gives a value: here, an empty string.
+The block is called even when there are no rows, so an empty result
+still gives a value: here, an empty string, or an empty array.
+
+### Write a stage that keeps count, or acts at the end
+
+`batch` and `collect` are made with `gather`, from
+DBIx::Squirrel::Gather. Its block is called each time the statement
+runs, so what it declares starts afresh, and it returns the stage, and
+optionally a function called when the rows run out:
+
+```perl
+use DBIx::Squirrel::Gather;
+
+# Each value, then, once they run out, how many there were
+sub and_count () {
+    return gather {
+        my $count = 0;    # fresh on each run
+        my $stage = sub ($value) { $count++; return $value };
+        my $end   = sub () { "($count)" };
+        return ($stage, $end);
+    };
+}
+
+my @lines = $dbh->iterate('SELECT name FROM artist ORDER BY name', sub { $_->[0] }, and_count)->all;
+say "@lines";    # Abba Blur Cream (3)
+```
 
 ### Catch errors in a stage
 
