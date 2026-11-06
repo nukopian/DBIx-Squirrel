@@ -580,6 +580,23 @@ my @hits = $dbh->iterate(
 say join ', ', @hits;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
 ```
 
+### Take one column, or make rows hashes
+
+`pluck` and `as_hash`, from DBIx::Squirrel::Stages::Rows, work whatever
+shape the rows were fetched in. `pluck` takes a column by name, in any
+case, or by position, from 0; `as_hash` gives each row as
+`fetchrow_hashref` would:
+
+```perl
+use DBIx::Squirrel::Stages::Rows;
+
+my @titles = $dbh->iterate('SELECT title, year FROM album ORDER BY year', pluck('title'))->all;
+say "@titles";    # Disraeli Gears Arrival Parklife The Great Escape
+
+my $album = $dbh->iterate('SELECT title, year FROM album WHERE id = 2', as_hash)->single;
+say "$album->{title} ($album->{year})";    # Parklife (1994)
+```
+
 ### Number the results, or see the row as fetched
 
 DBIx::Squirrel::Context tells a stage which result it's making, and the

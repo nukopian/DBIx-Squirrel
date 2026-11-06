@@ -55,7 +55,8 @@ Unreleased
       again on each execution.
     - Canned stages, each module exporting its usual ones:
       DBIx::Squirrel::Stages::Flow's take and drop, with take_while and
-      drop_while on request.
+      drop_while on request; DBIx::Squirrel::Stages::Rows's pluck and
+      as_hash, for rows of any shape.
     - An iterator's column_names gives the statement's column names,
       read when it's executed, as DBD::mysql gives none once the last
       row is fetched.

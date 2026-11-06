@@ -41,6 +41,11 @@ subtest 'column names, after the last row is fetched' => sub {
     my $it = $dbh->iterate('SELECT 1 AS a, 2 AS b');
     is [$it->all],          [[1, 2]],  'every row fetched';
     is [$it->column_names], [qw(a b)], 'the names, which MySQL no longer gives';
+
+    require DBIx::Squirrel::Stages::Rows;
+    my $as_hash = DBIx::Squirrel::Stages::Rows::as_hash();
+    is [$dbh->iterate('SELECT 1 AS a, 2 AS b', $as_hash)->all],
+        [{a => 1, b => 2}], 'so as_hash has them';
 };
 
 subtest 'placeholders' => sub {

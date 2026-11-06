@@ -12,6 +12,7 @@ use DBIx::Squirrel::Results;
 use DBIx::Squirrel::Pipeline;
 use DBIx::Squirrel::Placeholders;
 use DBIx::Squirrel::Stages::Flow ();
+use DBIx::Squirrel::Stages::Rows ();
 use DBIx::Squirrel::Stop         ();
 use DBIx::Squirrel::Sugar        ();
 use DBIx::Squirrel::Util;
@@ -39,7 +40,9 @@ my %imported = (
     'DBIx::Squirrel::Results'      => [qw(at_caller croakf)],
     'DBIx::Squirrel::Stop'         => [qw(croak)],
     'DBIx::Squirrel::Stages::Flow' => [qw(croakf gather is_coderef)],
-    'DBIx::Squirrel::Sugar'        => [
+    'DBIx::Squirrel::Stages::Rows' =>
+        [qw(croakf gather is_plain_arrayref is_plain_hashref)],
+    'DBIx::Squirrel::Sugar' => [
         qw(
             croakf     install_sub is_arrayref is_coderef
             is_hashref is_name     shift_attrs split_stages
@@ -63,6 +66,7 @@ subtest 'what the packages need is kept' => sub {
     ok +DBIx::Squirrel::Placeholders->can('import'), 'Placeholders can export';
     ok +DBIx::Squirrel::Stop->can('import'),         'Stop can export';
     ok +DBIx::Squirrel::Stages::Flow->can('import'), 'Stages::Flow can export';
+    ok +DBIx::Squirrel::Stages::Rows->can('import'), 'Stages::Rows can export';
     ok +DBIx::Squirrel::Sugar->can('import'),        'Sugar can export';
     ok +DBIx::Squirrel::Sugar->can('database'),      'and keeps database';
     ok +DBIx::Squirrel::Util->can('import'),         'Util can export';
