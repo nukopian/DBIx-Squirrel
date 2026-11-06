@@ -57,15 +57,16 @@ subtest 'dump_to' => sub {
     is $out, "{\n  'a' => [\n    1\n  ],\n  'b' => 2\n}\n'x'\n",
         'having written each, keys in order';
 
-    open local *STDERR, '>', \my $err or die "Can't open a string: $!";
+    open local *STDERR, '>', \my $err    ## no critic (InputOutput::ProhibitBarewordFileHandles)
+        or die "Can't open a string: $!";
     $class->new(dump_to)->(1);
     is $err, "1\n", 'to STDERR by default';
 };
 
 subtest 'mistakes' => sub {
-    my $line = __LINE__ + 1;
+    my $peek_line = __LINE__ + 1;
     is dies { &DBIx::Squirrel::Stages::Taps::peek('x') },    # past the prototype
-        "Expected a code reference at ${\ __FILE__ } line $line.\n",
+        "Expected a code reference at ${\ __FILE__ } line $peek_line.\n",
         'peek, given something else';
     for my $bad (undef, 'x', [], \my @array) {
         my $line = __LINE__ + 1;

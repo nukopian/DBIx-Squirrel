@@ -43,14 +43,14 @@ my %imported = (
     'DBIx::Squirrel::Placeholders' => [qw(croakf uniq)],
     'DBIx::Squirrel::Result'       =>
         [qw(croakf install_sub is_name sha1_hex set_subname)],
-    'DBIx::Squirrel::Results'      => [qw(at_caller croakf)],
-    'DBIx::Squirrel::Stages::Taps' =>
-        [qw(croakf gather is_coderef is_plain_scalarref openhandle)],
-    'DBIx::Squirrel::Stop'          => [qw(croak)],
-    'DBIx::Squirrel::Stages::Batch' => [qw(croakf gather is_coderef)],
-    'DBIx::Squirrel::Stages::Flow'  => [qw(croakf gather is_coderef)],
+    'DBIx::Squirrel::Results'       => [qw(at_caller croakf)],
+    'DBIx::Squirrel::Stages::Batch' => [qw(croakf    gather is_coderef)],
+    'DBIx::Squirrel::Stages::Flow'  => [qw(croakf    gather is_coderef)],
     'DBIx::Squirrel::Stages::Rows'  =>
         [qw(croakf gather is_plain_arrayref is_plain_hashref)],
+    'DBIx::Squirrel::Stages::Taps' =>
+        [qw(croakf gather is_coderef is_plain_scalarref openhandle)],
+    'DBIx::Squirrel::Stop'  => [qw(croak)],
     'DBIx::Squirrel::Sugar' => [
         qw(
             croakf     install_sub is_arrayref is_coderef
@@ -73,15 +73,12 @@ subtest 'what the packages need is kept' => sub {
     ok +DBIx::Squirrel::Gather->can('import'),       'Gather can export';
     ok +DBIx::Squirrel::Gather->can('gather'),       'and keeps gather';
     ok +DBIx::Squirrel::Placeholders->can('import'), 'Placeholders can export';
-    ok +DBIx::Squirrel::Stages::Taps->can('import'), 'Stages::Taps can export';
-    ok +DBIx::Squirrel::Stop->can('import'),         'Stop can export';
-    ok +DBIx::Squirrel::Stages::Batch->can('import'),
-        'Stages::Batch can export';
-    ok +DBIx::Squirrel::Stages::Flow->can('import'), 'Stages::Flow can export';
-    ok +DBIx::Squirrel::Stages::Rows->can('import'), 'Stages::Rows can export';
-    ok +DBIx::Squirrel::Sugar->can('import'),        'Sugar can export';
-    ok +DBIx::Squirrel::Sugar->can('database'),      'and keeps database';
-    ok +DBIx::Squirrel::Util->can('import'),         'Util can export';
+    my @stages = map { "DBIx::Squirrel::Stages::$_" } qw(Batch Flow Rows Taps);
+    ok $_->can('import'),                       "$_ can export" for @stages;
+    ok +DBIx::Squirrel::Stop->can('import'),    'Stop can export';
+    ok +DBIx::Squirrel::Sugar->can('import'),   'Sugar can export';
+    ok +DBIx::Squirrel::Sugar->can('database'), 'and keeps database';
+    ok +DBIx::Squirrel::Util->can('import'),    'Util can export';
 
     my $p = DBIx::Squirrel::Pipeline->new(sub { $_ * 2 });
     is [$p->(1, 2)], [2, 4], 'a pipeline can be called';
