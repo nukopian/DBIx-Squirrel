@@ -53,6 +53,9 @@ Unreleased
       values go through the rest of the stages. A stage can batch rows,
       make one value from all of them, or keep a count that starts
       again on each execution.
+    - Canned stages, each module exporting its usual ones:
+      DBIx::Squirrel::Stages::Flow's take and drop, with take_while and
+      drop_while on request.
     - DBIx::Squirrel::Pipeline runs any values through stages, and pipe
       and tap run a database or statement handle through them.
     - results returns a DBIx::Squirrel::Results, replacing

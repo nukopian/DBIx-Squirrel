@@ -551,6 +551,35 @@ my @upto = $dbh->iterate(
 say "@upto";    # Disraeli Gears Arrival Parklife
 ```
 
+### Take the first few, or skip some, after a stage
+
+`take`, `drop`, `take_while` and `drop_while`, from
+DBIx::Squirrel::Stages::Flow, decide which values go on, by their place
+or by a test. In plain SQL, `LIMIT` and `OFFSET` do the first two in
+the database; these are for when a stage in Perl decides which rows go
+on, or for `pipe`. `take` stops the iteration once it has its values,
+so no more rows are fetched:
+
+```perl
+use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while);
+
+my @page = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    sub { $_->[0] },
+    sub { m( \s )x ? $_ : () },    # names of more than one word
+    drop(1), take(2),              # the second and third of them
+)->all;
+say for @page;    # Knowing Me, Knowing You
+                  # Girls & Boys
+
+my @hits = $dbh->iterate(
+    'SELECT name, plays FROM track ORDER BY plays DESC',
+    take_while { $_->[1] > 6000 },
+    sub { $_->[0] },
+)->all;
+say join ', ', @hits;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
+```
+
 ### Number the results, or see the row as fetched
 
 DBIx::Squirrel::Context tells a stage which result it's making, and the
