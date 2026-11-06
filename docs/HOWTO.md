@@ -561,7 +561,7 @@ my @upto = $dbh->iterate(
 say "@upto";    # Disraeli Gears Arrival Parklife
 ```
 
-### Take the first few, or skip some, after a stage
+### Take the first few, or drop some, after a stage
 
 `take`, `drop`, `take_while` and `drop_while`, from
 DBIx::Squirrel::Stages::Flow, decide which values go on, by their place

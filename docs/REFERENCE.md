@@ -70,6 +70,11 @@ while (my($name) = $names->next) {
     say $name;
 }
 
+# Ready-made stages, for the jobs that come up again and again
+use DBIx::Squirrel::Stages::Flow;    # take, drop
+use DBIx::Squirrel::Stages::Rows;    # pluck, as_hash
+my @first_ten = $dbh->iterate('SELECT name FROM artist ORDER BY name', pluck('name'), take(10))->all;
+
 # Each row as an object, with a method for each column
 my $artist = $dbh->results('SELECT * FROM artist WHERE id = :id', id => 1)->single;
 say $artist->name;
@@ -1505,7 +1510,8 @@ several. These have changed:
 | `iterator`, `result_number` and `result_original`. | The same, from DBIx::Squirrel::Context. |
 | `database` and `statement`. | `iterator->sth->{Database}` and `iterator->sth`. |
 | `result` and `result_current`. | The stage's argument. |
-| `result_first`, `result_prev`, `result_previous` and `result_offset`. | Gone. A stage that needs them keeps them itself. |
+| `result_first`, `result_prev`, `result_previous` and `result_offset`. | Gone. A stage that needs them keeps them itself, in a [`gather`](#gathering-stages-with-state-and-an-end) block. |
+| `DBIx::Squirrel::Transform::Data::Dumper`'s `as_perl`, and `DBIx::Squirrel::Transform::IO`'s `stdout` and `stderr`. | `dump_to` and `peek`, from DBIx::Squirrel::Stages::Taps. See [Canned stages](#canned-stages). |
 | No way to end a transformation early. | `Stop`, from DBIx::Squirrel::Stop. See [Stopping a pipeline](#stopping-a-pipeline). |
 
 ### Gone, out of scope
@@ -1516,7 +1522,7 @@ distributions of their own.
 | 1.x | Instead |
 |---|---|
 | `DBIx::Squirrel::Crypt::Fernet`, and `decrypt` from DBIx::Squirrel::util. | A Fernet module from CPAN. |
-| `DBIx::Squirrel::Transform::*` (Data::Dumper, IO, JSON::Syck, YAML::Syck). | A stage of your own calling the module. |
+| `DBIx::Squirrel::Transform::JSON::Syck` and `DBIx::Squirrel::Transform::YAML::Syck`. | A stage of your own calling a JSON or YAML module. See [Writing stages](#writing-stages). |
 | `get_file_contents`, `slurp`, `uncompress`, `unmarshal` and `utf8decode`, from DBIx::Squirrel::util. | Path::Tiny, IO::Uncompress::Bunzip2, a JSON module, and Encode. |
 | `load_tuples`, on a database handle. | `prepare` and `execute`, in a loop. |
 | `statement_digest`, `statement_normalise`, `statement_study` and `statement_trim`, on a statement handle. | `study_sql` and `trim_sql`, from DBIx::Squirrel::Placeholders. |

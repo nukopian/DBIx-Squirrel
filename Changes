@@ -37,17 +37,21 @@ Unreleased
       called DBIx::Squirrel, naming the method called, as plain DBI
       reports them.
     - iterate returns a DBIx::Squirrel::Iterator, replacing
-      DBIx::Squirrel::it, with next, all, single, reset, count and sth,
-      and no aliases. next no longer sets $_, and single croaks on a
+      DBIx::Squirrel::it, with next, all, single, reset, count, column_names and
+      sth, and no aliases. next no longer sets $_, and single croaks on a
       second result, where 1.x warned. Rows are fetched 100 at a time,
       in the shape the ekorn_slice attribute gives, replacing slice,
       cache_size and their defaults; all, without stages, fetches the
-      rest at once, close to the DBI's own speed.
+      rest at once, close to the DBI's own speed. column_names gives the
+      statement's column names, read when it's executed, as DBD::mysql
+      gives none once the last row is fetched.
     - Stages, 1.x's transformations, follow the bind values. Each takes
       a value as its argument and in $_, and returns nothing to drop it,
       one value, or several. Stop, from DBIx::Squirrel::Stop, ends a
       pipeline early, and DBIx::Squirrel::Context gives a stage its
       iterator, result_number and result_original.
+    - DBIx::Squirrel::Pipeline runs any values through stages, and pipe
+      and tap run a database or statement handle through them.
     - gather, from DBIx::Squirrel::Gather, makes a stage afresh for each
       run of its pipeline, from a block returning the stage and,
       optionally, a function called once the values run out, whose
@@ -61,11 +65,6 @@ Unreleased
       batch and collect, passing values on in batches, or all at once;
       and DBIx::Squirrel::Stages::Taps's peek and count_into, with
       dump_to on request, looking at values as they go by.
-    - An iterator's column_names gives the statement's column names,
-      read when it's executed, as DBD::mysql gives none once the last
-      row is fetched.
-    - DBIx::Squirrel::Pipeline runs any values through stages, and pipe
-      and tap run a database or statement handle through them.
     - results returns a DBIx::Squirrel::Results, replacing
       DBIx::Squirrel::rs, whose rows are DBIx::Squirrel::Result objects,
       replacing DBIx::Squirrel::rc: one class for each list of column
@@ -86,5 +85,6 @@ Unreleased
     - use DBIx::Squirrel takes the names the DBI exports, such as
       :sql_types, as use DBI does.
     - Gone, as out of scope: DBIx::Squirrel::Crypt::Fernet, the
-      DBIx::Squirrel::Transform modules, load_tuples, and the file and
-      encoding helpers in DBIx::Squirrel::util.
+      DBIx::Squirrel::Transform modules for JSON and YAML, load_tuples,
+      and the file and encoding helpers in DBIx::Squirrel::util. Those
+      for Data::Dumper and IO give way to dump_to and peek.

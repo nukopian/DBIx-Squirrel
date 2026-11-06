@@ -129,7 +129,9 @@ stage and an end function. Reported when its pipeline starts to run.
 =head1 SEE ALSO
 
 L<DBIx::Squirrel>, L<DBIx::Squirrel::Pipeline>, L<DBIx::Squirrel::Stop>,
-L<DBIx::Squirrel::Context>
+L<DBIx::Squirrel::Context>, and the canned stages, many made with it:
+L<DBIx::Squirrel::Stages::Flow>, L<DBIx::Squirrel::Stages::Rows>,
+L<DBIx::Squirrel::Stages::Batch> and L<DBIx::Squirrel::Stages::Taps>
 
 =head1 AUTHOR
 

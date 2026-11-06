@@ -11,8 +11,10 @@ failing report.
 `cb9556c9493fb7f7729d33c7cefeb3ce060e61fc`. By 2026-11-06 it had drawn
 35 reports, all passes, on 13 platforms, including Windows and four
 BSDs, and Perls from 5.36.3 to 5.44.0. Then gather, which changes how a
-pipeline runs, and a fix to Context's prototypes, went onto `develop`,
-so that trial no longer tests what 2.0.0 would be. Upload a trial of
+pipeline runs, a fix to Context's prototypes, the canned stages in
+DBIx::Squirrel::Stages::*, an iterator's column_names, and faster
+fetching by all and by every iterator went onto `develop`, so that
+trial no longer tests what the release would be. Upload a trial of
 v2.0.1, built from `develop`, read its reports, and decide with Iain
 whether v2.0.1 is ready to release. CPAN doesn't index a trial, so
 `cpanm DBIx::Squirrel` still installs 1.6.5.
