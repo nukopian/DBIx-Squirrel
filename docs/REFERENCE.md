@@ -568,6 +568,7 @@ Rows are fetched 100 at a time, with the DBI's `fetchall_arrayref`.
 | `single` | Executes the statement again, and returns its one result, or nothing if it has none. It croaks if there's more than one: `Expected one result, not more`. |
 | `reset` | Executes the statement again, ready to iterate from its first row, finishing it first if it's still active, and returns the iterator. |
 | `count` | Returns the number of results handed out so far. |
+| `column_names` | Returns the names of the statement's columns, as `fetchrow_hashref` would key them, following `FetchHashKeyName`. They're read when the statement is executed, as DBD::mysql gives none once the last row is fetched. |
 | `sth` | Returns the statement handle. |
 
 A stage can return `undef` as a result, so read `next` in list context,

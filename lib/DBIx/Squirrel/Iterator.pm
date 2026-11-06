@@ -83,17 +83,25 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     $state->{Iterator} = $self;
     weaken $state->{Iterator};
     my %fresh = (
-        executed => 1,
-        done     => 0,
-        buffer   => [],
-        count    => 0,
-        produced => 0,
-        original => undef,
-        slice    => $self->_slice,
+        executed     => 1,
+        done         => 0,
+        buffer       => [],
+        count        => 0,
+        produced     => 0,
+        original     => undef,
+        column_names => [],
+        slice        => $self->_slice,
     );
     @$self{keys %fresh} = values %fresh;
     $self->{done} = 1
         unless defined $sth->execute(@{ $self->{bind_values} });
+    # The names are read now, before a row is fetched: once the last row
+    # is, DBD::mysql gives none, unless they were read before.
+    unless ($self->{done}) {
+        my $key = $sth->{FetchHashKeyName} || 'NAME';
+        $self->{column_names}
+            = at_caller { $sth->{NUM_OF_FIELDS} ? [@{ $sth->{$key} }] : [] };
+    }
     # Without stages, the rows are the results, straight from the source.
     my $source = _source($self);
     $self->{next}
@@ -106,6 +114,13 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
 # Return the number of results fetched so far.
 sub count ($self) {
     return $self->{count} // 0;
+}
+
+# Return the names of the statement's columns, as fetchrow_hashref keys
+# them, executing the statement first if it hasn't been.
+sub column_names ($self) {
+    _executed($self);
+    return @{ $self->{column_names} // [] };
 }
 
 
@@ -294,6 +309,18 @@ given to L</new>. Both are kept until others are given.
     $n = $it->count;
 
 Returns the number of results fetched so far.
+
+=head2 column_names
+
+    @names = $it->column_names;
+
+Returns the names of the statement's columns, as C<fetchrow_hashref>
+would key them, following the C<FetchHashKeyName> attribute, executing
+the statement first if it hasn't been. They're read when it's executed,
+as some drivers, such as DBD::mysql, give none once the last row is
+fetched. A statement without columns has none, as does one that
+couldn't be executed. A stage can ask for them through
+L<DBIx::Squirrel::Context/iterator>.
 
 =head2 sth
 

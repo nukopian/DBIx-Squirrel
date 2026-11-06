@@ -239,6 +239,19 @@ subtest 'what a stage can ask is a term, taking no arguments' => sub {
     is result_number // 'none', 'none',          'outside a stage too';
 };
 
+subtest 'column_names' => sub {
+    my $it = $dbh->iterate('SELECT id, name AS Who FROM artist ORDER BY id');
+    is [$it->column_names], [qw(id Who)], 'executing the statement first';
+    $it->all;
+    is [$it->column_names], [qw(id Who)], 'and still there after the last row';
+
+    local $dbh->{FetchHashKeyName} = 'NAME_lc';
+    is [$dbh->iterate('SELECT name AS Who FROM artist')->column_names],
+        ['who'], 'as FetchHashKeyName says, as fetchrow_hashref keys them';
+    is [$dbh->iterate('UPDATE artist SET name = name WHERE 0')->column_names],
+        [], 'none for a statement without columns';
+};
+
 subtest 'an iterator ended early finishes its statement' => sub {
     $dbh->do('CREATE TABLE n (id INTEGER PRIMARY KEY)');
     $dbh->do('INSERT INTO n VALUES (?)', $_) for 1 .. 150;

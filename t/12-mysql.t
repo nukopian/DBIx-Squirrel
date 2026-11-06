@@ -37,6 +37,12 @@ subtest "a statement is read by MySQL's rules" => sub {
     is row("SELECT :x # :no\n", x => 'y'), ['y'], '# starts a comment';
 };
 
+subtest 'column names, after the last row is fetched' => sub {
+    my $it = $dbh->iterate('SELECT 1 AS a, 2 AS b');
+    is [$it->all],          [[1, 2]],  'every row fetched';
+    is [$it->column_names], [qw(a b)], 'the names, which MySQL no longer gives';
+};
+
 subtest 'placeholders' => sub {
     is row('SELECT $1 + $1, $2', 2, 3), [4, 3], 'numbered, used twice';
     is row('SELECT :a, :b', b => 2, a => 1), [1, 2], 'named';
