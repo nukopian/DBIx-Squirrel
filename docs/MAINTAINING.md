@@ -138,7 +138,8 @@ CI doesn't cover, such as Windows and the BSDs, without CPAN indexing
 it: `cpanm DBIx::Squirrel` still installs the last release. PAUSE takes
 a tarball whose name ends `-TRIAL` as a trial, which is all Minilla's
 own `minil release --trial` does. There's no tag and no GitHub release,
-and `main` doesn't move. v2.0.0 had one, uploaded on 2026-11-05.
+and `main` doesn't move. v2.0.0 had one, uploaded on 2026-11-05, and
+v2.0.1 another, on 2026-11-06.
 
 PAUSE never takes the same file name twice, so each trial has a version
 of its own, and the release takes the version of its last trial. A

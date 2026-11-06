@@ -1,10 +1,14 @@
 # Planned work
 
-## A trial of v2.0.1, its review, then the release
+## Review the v2.0.1 trial, then release v2.0.1
 
-**When:** now that gather is on `develop`, once CI has passed on it.
-Then read the reports from a few days after the upload, or sooner at a
-failing report.
+**When:** from 2026-11-09, or sooner at a failing report, a new release
+of DBI or DBD::SQLite, or a new session before then.
+
+**Uploaded:** v2.0.1 went to CPAN as a trial on 2026-11-06,
+`DBIx-Squirrel-v2.0.1-TRIAL.tar.gz`, built from
+`24709c87b7daf64d79a81f5262a90e3fcd9f022c`, which passed every CI job.
+Its own tests passed in the build (`Result: PASS`).
 
 **What:** v2.0.0 went to CPAN as a trial on 2026-11-05,
 `DBIx-Squirrel-v2.0.0-TRIAL.tar.gz`, built from
@@ -14,9 +18,9 @@ BSDs, and Perls from 5.36.3 to 5.44.0. Then gather, which changes how a
 pipeline runs, a fix to Context's prototypes, the canned stages in
 DBIx::Squirrel::Stages::*, an iterator's column_names, and faster
 fetching by all and by every iterator went onto `develop`, so that
-trial no longer tests what the release would be. Upload a trial of
-v2.0.1, built from `develop`, read its reports, and decide with Iain
-whether v2.0.1 is ready to release. CPAN doesn't index a trial, so
+trial no longer tests what the release would be. Read the v2.0.1
+trial's reports, and decide with Iain whether v2.0.1 is ready to
+release. CPAN doesn't index a trial, so
 `cpanm DBIx::Squirrel` still installs 1.6.5.
 
 The version moves on, as Iain decided on 2026-11-06, because PAUSE
@@ -30,10 +34,8 @@ other versions of DBI and DBD::SQLite, before v2.0.1 replaces 1.6.5 for
 everyone. 1.6.5 drew 266 reports: 262 passes, 1 failure on OpenBSD,
 and 3 for Perls it didn't support.
 
-**How:** upload the trial as "A trial release" in docs/MAINTAINING.md
-says, setting the version to v2.0.1 in its step 2. Then the reports'
-counts by version and grade, and each report that didn't pass, with a
-link to it:
+**How:** the reports' counts by version and grade, then each report
+that didn't pass, with a link to it:
 
 ```
 curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r 'group_by(.version)[] | group_by(.grade)[] | "\(.[0].version) \(.[0].grade): \(length)"'
