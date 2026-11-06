@@ -39,7 +39,9 @@ time. DBIx::Squirrel does them for you.
     that map, filter and expand the rows sit beside the query, so you can
     read what a result holds next to the SQL that makes it. Rows are
     fetched in batches, so you can work through a large result a row at
-    a time without holding all of it in memory.
+    a time without holding all of it in memory. Ready-made stages do the
+    common jobs, such as taking the first few rows, picking out a column,
+    or handing rows out in batches.
 
 - **Queries with names.**
 
@@ -103,6 +105,25 @@ nothing to drop the row, one value in its place, or several, and can
 stop the iteration early. A stage made with `gather` can hold rows,
 and give them in batches, or as one value, when they run out. `pipe`
 runs anything else through stages the same way.
+
+Ready-made stages come with it, in four modules, for the jobs that come
+up again and again: `take` and `drop` from
+[DBIx::Squirrel::Stages::Flow](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AStages%3A%3AFlow), `pluck` and `as_hash` from
+[DBIx::Squirrel::Stages::Rows](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AStages%3A%3ARows), `batch` and `collect` from
+[DBIx::Squirrel::Stages::Batch](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AStages%3A%3ABatch), and `peek` and `count_into` from
+[DBIx::Squirrel::Stages::Taps](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AStages%3A%3ATaps):
+
+    use DBIx::Squirrel::Stages::Flow;
+    use DBIx::Squirrel::Stages::Rows;
+
+    my @top_ten = $dbh->iterate(
+        'SELECT name, plays FROM track ORDER BY plays DESC',
+        sub { $_->[1] >= 5000 ? $_ : () },    # leave out the rest
+        pluck('name'), take(10),
+    )->all;
+
+The reference says how to write stages of your own, to work alongside
+them.
 
 ### 5. Have rows as objects.
 

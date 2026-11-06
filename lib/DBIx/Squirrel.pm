@@ -433,6 +433,34 @@ one, or that keeps state of any kind, is made this way. C<gather> is
 exported automatically by L<DBIx::Squirrel::Gather>, which says more,
 including what happens after a stop.
 
+=head1 CANNED STAGES
+
+Four modules of ready-made stages ship with DBIx::Squirrel, each
+exporting the stages it's usually used for:
+
+=over
+
+=item * L<DBIx::Squirrel::Stages::Flow>: C<take> and C<drop>, with
+C<take_while> and C<drop_while> on request;
+
+=item * L<DBIx::Squirrel::Stages::Rows>: C<pluck> and C<as_hash>, for
+rows of any shape;
+
+=item * L<DBIx::Squirrel::Stages::Batch>: C<batch> and C<collect>;
+
+=item * L<DBIx::Squirrel::Stages::Taps>: C<peek> and C<count_into>,
+with C<dump_to> on request.
+
+=back
+
+    use DBIx::Squirrel::Stages::Flow;
+    use DBIx::Squirrel::Stages::Rows;
+
+    my @names = $dbh->iterate('SELECT name FROM artist', pluck('name'), take(10))->all;
+
+The reference's "Writing stages" says how to write stages of your own
+that work alongside them.
+
 =head1 DIAGNOSTICS
 
 Errors are reported at the line of your code that called DBIx::Squirrel,
@@ -479,7 +507,9 @@ L<DBIx::Squirrel::Iterator>, L<DBIx::Squirrel::Results>,
 L<DBIx::Squirrel::Result>, L<DBIx::Squirrel::Context>,
 L<DBIx::Squirrel::Sugar>,
 L<DBIx::Squirrel::Pipes>, L<DBIx::Squirrel::Pipeline>,
-L<DBIx::Squirrel::Stop>, L<DBIx::Squirrel::Gather>
+L<DBIx::Squirrel::Stop>, L<DBIx::Squirrel::Gather>,
+L<DBIx::Squirrel::Stages::Flow>, L<DBIx::Squirrel::Stages::Rows>,
+L<DBIx::Squirrel::Stages::Batch>, L<DBIx::Squirrel::Stages::Taps>
 
 L<The reference|https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md>
 describes every feature in detail, with examples, and

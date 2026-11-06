@@ -42,7 +42,9 @@ There's no fetch loop to write, and no array to push onto. The stages
 that map, filter and expand the rows sit beside the query, so you can
 read what a result holds next to the SQL that makes it. Rows are
 fetched in batches, so you can work through a large result a row at
-a time without holding all of it in memory.
+a time without holding all of it in memory. Ready-made stages do the
+common jobs, such as taking the first few rows, picking out a column,
+or handing rows out in batches.
 
 =item * B<Queries with names.>
 
@@ -108,6 +110,25 @@ nothing to drop the row, one value in its place, or several, and can
 stop the iteration early. A stage made with C<gather> can hold rows,
 and give them in batches, or as one value, when they run out. C<pipe>
 runs anything else through stages the same way.
+
+Ready-made stages come with it, in four modules, for the jobs that come
+up again and again: C<take> and C<drop> from
+L<DBIx::Squirrel::Stages::Flow>, C<pluck> and C<as_hash> from
+L<DBIx::Squirrel::Stages::Rows>, C<batch> and C<collect> from
+L<DBIx::Squirrel::Stages::Batch>, and C<peek> and C<count_into> from
+L<DBIx::Squirrel::Stages::Taps>:
+
+    use DBIx::Squirrel::Stages::Flow;
+    use DBIx::Squirrel::Stages::Rows;
+
+    my @top_ten = $dbh->iterate(
+        'SELECT name, plays FROM track ORDER BY plays DESC',
+        sub { $_->[1] >= 5000 ? $_ : () },    # leave out the rest
+        pluck('name'), take(10),
+    )->all;
+
+The reference says how to write stages of your own, to work alongside
+them.
 
 =head3 5. Have rows as objects.
 

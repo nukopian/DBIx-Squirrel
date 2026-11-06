@@ -35,6 +35,8 @@ code written for 1.x.
 - [Gathering: stages with state, and an end](#gathering-stages-with-state-and-an-end)
 - [What a stage can ask: Context](#what-a-stage-can-ask-context)
 - [pipe and tap on handles](#pipe-and-tap-on-handles)
+- [Canned stages](#canned-stages)
+- [Writing stages](#writing-stages)
 - [A function for each database and statement: Sugar](#a-function-for-each-database-and-statement-sugar)
 - [Errors](#errors)
 - [Diagnostics](#diagnostics)
@@ -864,6 +866,9 @@ my $batches = $dbh->iterate('SELECT id, name FROM track', batches_of(500));
 while (my($batch) = $batches->next) { ... }
 ```
 
+`batch`, one of the [canned stages](#canned-stages), does this already;
+it's written out here to show how.
+
 The block given to `gather` is called at the start of each run, so
 whatever it declares is fresh each time: each execution of an iterator
 or result set, including after `reset`, each call of a Sugar statement,
@@ -972,6 +977,172 @@ $dbh->tap(
     sub ($count) { log_count($count) },
 )->do('DELETE FROM artist WHERE id = ?', undef, $id);
 ```
+
+## Canned stages
+
+Four modules of ready-made stages ship with DBIx::Squirrel, each for
+one kind of job. Each exports the stages it's usually used for, and the
+rest on request; `:all` gives them all, and `()` none. Naming a stage in
+the import list replaces the defaults, so to have the defaults and one
+more, name `:DEFAULT` too:
+
+```perl
+use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while);
+```
+
+| Module | Exported by default | On request |
+|---|---|---|
+| `DBIx::Squirrel::Stages::Flow` | `take($n)`, `drop($n)` | `take_while { ... }`, `drop_while { ... }` |
+| `DBIx::Squirrel::Stages::Rows` | `pluck($column)`, `as_hash` | |
+| `DBIx::Squirrel::Stages::Batch` | `batch($n)`, `collect`, `collect { ... }` | |
+| `DBIx::Squirrel::Stages::Taps` | `peek { ... }`, `count_into(\$n)` | `dump_to($fh)` |
+
+What each stage does:
+
+| Stage | What it does |
+|---|---|
+| `take($n)` | Passes on the first `$n` values, then stops the pipeline, so no more rows are fetched. |
+| `drop($n)` | Drops the first `$n` values, and passes on the rest. |
+| `take_while { ... }` | Passes on values while the block is true of them, then stops the pipeline at the first it's false of, which isn't passed on. |
+| `drop_while { ... }` | Drops values while the block is true of them, then passes on the rest, from the first it's false of. |
+| `pluck($column)` | Gives one column of each row, by its name, in any case, or its position, from 0, whether the row is an array, a hash or a row object. |
+| `as_hash` | Gives each row as a hash, as `fetchrow_hashref` would, keyed as `FetchHashKeyName` says. A hash row is passed on as it is. |
+| `batch($n)` | Passes values on in batches of `$n`, each an array, the last, shorter batch when the values run out. |
+| `collect` | Holds every value, and when they run out, passes on an array of them. |
+| `collect { ... }` | Holds every value, and when they run out, passes on what the block makes of them, given as its arguments. |
+| `peek { ... }` | Calls the block with each value, and passes the value on. |
+| `count_into(\$n)` | Counts the values into `$n`, from 0 on each run, and passes them on. |
+| `dump_to($fh)` | Writes each value, with Data::Dumper, to `$fh` or STDERR, and passes it on. |
+
+Each is a function that makes a stage, checking what it's given when
+it's called, not on each value. Those that keep a count or hold values
+are made with [`gather`](#gathering-stages-with-state-and-an-end), so
+they start afresh on each run. `pluck` and `as_hash` find the column
+names through the iterator running them, so a name for an array row,
+or `as_hash`, needs the stages to be run by an iterator or result set.
+
+```perl
+use DBIx::Squirrel::Stages::Flow;     # take, drop
+use DBIx::Squirrel::Stages::Rows;     # pluck, as_hash
+use DBIx::Squirrel::Stages::Batch;    # batch, collect
+use DBIx::Squirrel::Stages::Taps;     # peek, count_into
+
+# The second page of ten, as hashes, counting the rows read
+my $read = 0;
+my @page = $dbh->iterate(
+    'SELECT id, name FROM artist ORDER BY name',
+    count_into(\$read),
+    drop(10), take(10),
+    as_hash,
+)->all;
+
+# Names, 500 at a time, saying how many in each batch
+my $batches = $dbh->iterate(
+    'SELECT name FROM track',
+    pluck('name'), batch(500),
+    peek { warn scalar(@$_), " names\n" },
+);
+
+# The first three names, from a handle
+my @three = $dbh->pipe(
+    sub ($dbh) { @{ $dbh->selectcol_arrayref('SELECT name FROM artist ORDER BY name') } },
+    take(3),
+);
+```
+
+In SQL, `LIMIT` and `OFFSET` page results in the database. `take` and
+`drop` are for when a stage in Perl decides which rows go on, or for
+values from `pipe`.
+
+## Writing stages
+
+A stage of your own is a code reference, as any stage is. Here's how
+the canned stages are written, so that yours work alongside them.
+
+**A stage, or a function that makes one.** A plain `sub` is a stage.
+For a stage others will use, write a function that returns one, as
+`take(10)` does. It can take options, and check them once, when it's
+called, not on each value. Called with no arguments, an imported
+function needs no parentheses, as with `as_hash`; with options, it
+does, or Perl passes the stages after it to it as options too.
+
+```perl
+use Carp qw(croak);
+
+sub prefixed ($prefix) {
+    croak 'Expected a prefix' unless defined $prefix;
+    return sub ($value) { "$prefix$value" };
+}
+```
+
+**State.** Anything a stage keeps, even a count, goes in a
+[`gather`](#gathering-stages-with-state-and-an-end) block, so it starts
+afresh on each run: after `reset`, on each call of a Sugar statement,
+and each time the same stage is given to another statement. A variable
+outside the block would carry over from one run to the next.
+
+```perl
+use DBIx::Squirrel::Gather;
+
+sub numbered () {
+    return gather {
+        my $n = 0;    # this run's
+        return sub ($value) { [++$n, $value] };
+    };
+}
+```
+
+**Ends.** A stage that holds values, as `batch` and `collect` do, or
+says something once they've all gone by, has an end function, the
+second code reference its `gather` block returns. It's called once the
+values run out, even when there were none, and what it returns goes on
+through the stages after it.
+
+**Stopping.** A stage that knows no more values are wanted ends the
+pipeline with [`Stop`](#stopping-a-pipeline), as `take` does, so an
+iterator fetches no more rows. `Stop($value)` passes a last value on.
+A stage that catches errors itself throws a stop on.
+
+**Taps.** A stage passes on what it returns, so one run for its side
+effects returns the value it was given, as `peek` and `count_into` do.
+
+**The shapes of a row.** A row can be an array, a hash (with the
+`ekorn_slice` attribute), or a row object (from `results`), and a stage
+for others should say which it takes, or take all three, as `pluck`
+does. [Context](#what-a-stage-can-ask-context) gives the iterator
+running the stage, whose `column_names` are the statement's columns,
+and `result_original`, the row as fetched.
+
+**Errors.** A function that makes a stage croaks with Carp's `croak`
+when it's given the wrong things, so the message names the line that
+called it. A stage that dies is reported with its number, and the
+line that asked for the result.
+
+**Names and exports.** A name says what the stage does to a value:
+`as_*` converts a row, and a tap's name says it passes values on, as
+`peek`, `count_into` and `dump_to` do. Choose names that don't clash
+with what common modules export: Flow has `drop`, not `skip`, which
+Test2::V0 and Test::More both export. Export the stages a module is
+usually used for by default, in `@EXPORT`, and the rest in
+`@EXPORT_OK`, with an `:all` tag.
+
+**Testing.** A pipeline called with values tests a stage without a
+database. Run it twice, to show it starts afresh, then run it on rows
+from an in-memory SQLite database, in each shape it takes:
+
+```perl
+use Test2::V0;
+use DBIx::Squirrel::Pipeline;
+
+my $p = DBIx::Squirrel::Pipeline->new(numbered);
+is [$p->(qw(a b))], [[1, 'a'], [2, 'b']], 'numbered';
+is [$p->(qw(c))],   [[1, 'c']],           'from 1 on each run';
+```
+
+**Publishing.** Name a module of stages for its job, as
+`DBIx::Squirrel::Stages::JSON`, in a distribution named
+`DBIx-Squirrel-Stages-JSON`, and have it require DBIx::Squirrel v2.0.1
+or later.
 
 ## A function for each database and statement: Sugar
 
@@ -1167,6 +1338,20 @@ starting "Expected" say what was expected.
 | `Pipeline stage #%d failed at %s line %d:` | A stage, or its end function, died. The message it died with follows, indented. |
 | `Stop used outside a pipeline` | `Stop` was called where no pipeline was running to catch it. |
 
+### Canned stages
+
+| Message | Cause |
+|---|---|
+| `Expected a count of 0 or more` | `take` or `drop` was given something other than a whole number. |
+| `Expected a batch size of 1 or more` | `batch` was given something other than a whole number above 0. |
+| `Expected a code reference` | `take_while`, `drop_while`, `collect` or `peek` was given something other than a block or code reference. |
+| `Expected a column, by name or position` | `pluck` was given no column, or an empty name. |
+| `Expected a column of the row (%s)` | A row hasn't got the column `pluck` was given. |
+| `Expected an iterator, for the column names` | `as_hash`, or `pluck` with a name for an array row or a position for a hash row, ran where no iterator was running it. |
+| `Expected a row: an array, a hash or a row object` | `pluck` or `as_hash` was given a value that isn't a row. |
+| `Expected a reference to a scalar` | `count_into` was given something else. |
+| `Expected an open filehandle` | `dump_to` was given something else. |
+
 ### Sugar
 
 | Message | Cause |
@@ -1335,6 +1520,10 @@ distributions of their own.
 | `DBIx::Squirrel::Pipes` | The `pipe` and `tap` methods of both handle classes. |
 | `DBIx::Squirrel::Stop` | Ends a pipeline early. |
 | `DBIx::Squirrel::Gather` | Makes a stage afresh for each run, with a function called at the end. |
+| `DBIx::Squirrel::Stages::Flow` | Canned stages taking or dropping values: `take`, `drop`, `take_while`, `drop_while`. |
+| `DBIx::Squirrel::Stages::Rows` | Canned stages reshaping rows: `pluck`, `as_hash`. |
+| `DBIx::Squirrel::Stages::Batch` | Canned stages gathering values: `batch`, `collect`. |
+| `DBIx::Squirrel::Stages::Taps` | Canned stages run for their side effects: `peek`, `count_into`, `dump_to`. |
 | `DBIx::Squirrel::Context` | What a stage can ask about the result it's making. |
 | `DBIx::Squirrel::Sugar` | A function for each database and statement. |
 | `DBIx::Squirrel::Placeholders` | Finds the placeholders in a statement. |
