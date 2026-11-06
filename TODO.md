@@ -18,8 +18,9 @@ iterator's column_names and faster fetching, and drew 31 passes the
 same day. Then list placeholders (`...:ids`, written as a `?` for each
 value), from `2ae3e6318b3f702307308219205b41d44104d5b0`, went onto
 `develop`, so that trial no longer tests what the release would be.
-Iain reviews that commit, which Claude wrote, reads the v2.0.2 trial's
-reports, and decides whether v2.0.2 is ready to release. CPAN doesn't
+Iain reviewed that commit, which Claude wrote, on 2026-11-06, and was
+happy with it. What's left is to read the v2.0.2 trial's reports, and
+for Iain to decide whether v2.0.2 is ready to release. CPAN doesn't
 index a trial, so `cpanm DBIx::Squirrel` still installs 1.6.5.
 
 The version moves on with each trial, as Iain decided on 2026-11-06,
