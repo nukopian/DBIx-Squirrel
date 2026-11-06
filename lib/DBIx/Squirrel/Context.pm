@@ -18,19 +18,19 @@ our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 my %context;
 
 # The iterator running the stage.
-sub iterator (@) {
+sub iterator : prototype() () {
     return $context{iterator};
 }
 
 # The number of the result being made, from 1.
-sub result_number (@) {
+sub result_number : prototype() () {
     my $iterator = $context{iterator};
     return $iterator && $iterator->{produced} + 1;
 }
 
 # The row the result is being made from, as it was fetched; undef for a
 # result an end function is making, which comes from every row.
-sub result_original (@) {
+sub result_original : prototype() () {
     my $iterator = $context{iterator};
     return $iterator && !DBIx::Squirrel::Pipeline::ending()
         ? $iterator->{original}

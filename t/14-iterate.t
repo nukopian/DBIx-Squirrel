@@ -220,6 +220,25 @@ subtest 'what a stage can ask' => sub {
         'and nothing outside a stage';
 };
 
+subtest 'what a stage can ask is a term, taking no arguments' => sub {
+    my($result) = $dbh->iterate(
+        $all,
+        sub ($row) {
+            return [
+                result_number + 1,
+                result_original->[1],
+                result_original // 'none',
+                ref iterator // 'none',
+            ];
+        },
+    )->next;
+    is $result->[0], 2,                          'result_number + 1 adds one';
+    is $result->[1], 'Abba',                     'result_original->[1]';
+    is $result->[2], [1, 'Abba'],                'result_original // ...';
+    is $result->[3], 'DBIx::Squirrel::Iterator', 'iterator // ...';
+    is result_number // 'none', 'none',          'outside a stage too';
+};
+
 subtest 'an iterator ended early finishes its statement' => sub {
     $dbh->do('CREATE TABLE n (id INTEGER PRIMARY KEY)');
     $dbh->do('INSERT INTO n VALUES (?)', $_) for 1 .. 150;
