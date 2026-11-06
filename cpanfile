@@ -6,6 +6,7 @@ requires 'Digest::SHA';
 requires 'Exporter';
 requires 'List::Util';
 requires 'Ref::Util';
+requires 'Scalar::Util';
 requires 'Sub::Util';
 requires 'experimental';
 requires 'namespace::clean';

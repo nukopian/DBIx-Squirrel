@@ -25,7 +25,7 @@ our @INTERNAL = qw(
     DBIx::Squirrel::Placeholders  DBIx::Squirrel::Result   DBIx::Squirrel::Results
     DBIx::Squirrel::Sugar         DBIx::Squirrel::Util
     DBIx::Squirrel::Stages::Batch DBIx::Squirrel::Stages::Flow
-    DBIx::Squirrel::Stages::Rows
+    DBIx::Squirrel::Stages::Rows  DBIx::Squirrel::Stages::Taps
 );
 our @CARP_NOT = @INTERNAL;
 

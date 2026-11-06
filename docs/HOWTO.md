@@ -677,6 +677,33 @@ my @lines = $dbh->iterate('SELECT name FROM artist ORDER BY name', sub { $_->[0]
 say "@lines";    # Abba Blur Cream (3)
 ```
 
+### Watch rows go by, or count them
+
+`peek` and `count_into`, from DBIx::Squirrel::Stages::Taps, look at each
+value as it goes by, and pass it on as it is. `dump_to`, on request,
+writes each with Data::Dumper, to STDERR or a filehandle you give:
+
+```perl
+use DBIx::Squirrel::Stages::Flow;
+use DBIx::Squirrel::Stages::Taps;
+
+my $read  = 0;
+my @first = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY name',
+    count_into(\$read),
+    peek { say "read $_->[0]" },
+    sub { $_->[0] },
+    take(2),
+)->all;
+say "@first, from $read rows";
+# read Abba
+# read Blur
+# Abba Blur, from 2 rows
+```
+
+`take` stops the iteration once it has two, so the third row is never
+read.
+
 ### Catch errors in a stage
 
 A stage that catches errors itself should throw a stop on again, so the
@@ -791,6 +818,22 @@ say "@names";    # ABBA BLUR CREAM
 
 $dbh->tap(sub ($dbh) { say 'albums: ', $dbh->selectrow_array('SELECT COUNT(*) FROM album') })
     ->do('UPDATE album SET year = year WHERE id = 1');
+```
+
+The canned stages work here too, as the handle is just the first value:
+
+```perl
+use DBIx::Squirrel::Stages::Flow;
+use DBIx::Squirrel::Stages::Taps;
+
+my @two = $dbh->pipe(
+    sub ($dbh) { @{ $dbh->selectcol_arrayref('SELECT name FROM artist ORDER BY name') } },
+    take(2),
+);
+say "@two";    # Abba Blur
+
+$dbh->tap(peek { say "on $_->{Driver}{Name}" })->do('UPDATE album SET year = year WHERE id = 1');
+# on SQLite
 ```
 
 ### Run any values through stages

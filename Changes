@@ -57,7 +57,9 @@ Unreleased
       DBIx::Squirrel::Stages::Flow's take and drop, with take_while and
       drop_while on request; DBIx::Squirrel::Stages::Rows's pluck and
       as_hash, for rows of any shape; DBIx::Squirrel::Stages::Batch's
-      batch and collect, passing values on in batches, or all at once.
+      batch and collect, passing values on in batches, or all at once;
+      and DBIx::Squirrel::Stages::Taps's peek and count_into, with
+      dump_to on request, looking at values as they go by.
     - An iterator's column_names gives the statement's column names,
       read when it's executed, as DBD::mysql gives none once the last
       row is fetched.
