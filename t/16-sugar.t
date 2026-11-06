@@ -207,6 +207,35 @@ subtest 'a stage calling its own statement' => sub {
     }
 };
 
+subtest 'a list placeholder' => sub {
+    my $sql = 'SELECT name FROM artist WHERE id IN (...:ids) ORDER BY id';
+    is music($sql, ids => [1, 3])->fetchall_arrayref, [['Abba'], ['Cream']],
+        'through the database, executed';
+    is [music $sql, ids => [2, 3], sub ($row) { $row->[0] }], [qw(Blur Cream)],
+        'or through stages';
+    statement(
+        artists_by_id => music => $sql,
+        sub ($row) { $row->[0] },
+    );
+    is [artists_by_id(ids => [3])], ['Cream'], 'as a statement';
+    is [artists_by_id(ids => [1, 2, 3])], [qw(Abba Blur Cream)],
+        'prepared for each list';
+
+    database(
+        hushed => 'dbi:SQLite:dbname=:memory:',
+        '', '', {RaiseError => 0, PrintError => 0},
+    );
+    statement(broken => hushed => 'SELEC 1 WHERE 1 IN (...?)');
+    my $line = __LINE__ + 1;
+    like dies { broken([1]) },
+        qr( \A DBD::SQLite::db\ prepare_cached\ failed: .* \ at\ \Q${\ __FILE__ }\E\ line\ $line\. $ )xs,
+        "croaking when it can't be prepared, as a statement";
+    $line = __LINE__ + 1;
+    like dies { hushed('SELEC 1 WHERE 1 IN (...?)', [1]) },
+        qr( \A DBD::SQLite::db\ prepare\ failed: .* \ at\ \Q${\ __FILE__ }\E\ line\ $line\. $ )xs,
+        'or through the database';
+};
+
 subtest 'statements defined as the program runs' => sub {
     my $function = statement(
         count_of => later => 'SELECT COUNT(*) FROM t',

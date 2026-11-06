@@ -3,7 +3,9 @@ use utf8;
 use Test2::V0;
 use Test2::Plugin::NoWarnings;
 
-use DBIx::Squirrel::Placeholders qw(study_sql trim_sql);
+use DBIx::Squirrel::Placeholders qw(
+    expand_lists key_of place_values study_sql trim_sql values_for values_taken
+);
 
 subtest 'trim_sql' => sub {
     is trim_sql("  SELECT 1  "), 'SELECT 1', 'blank space around';
@@ -178,6 +180,105 @@ subtest "study_sql with DBD::Pg's placeholder options" => sub {
 subtest 'study_sql of a blank statement' => sub {
     is [study_sql('  ')],  [], 'returns nothing';
     is [study_sql(undef)], [], 'nor for undef';
+};
+
+subtest 'study_sql finds list placeholders' => sub {
+    for my $p (qw(? ?1 :1 $1 :ids $ids)) {
+        is [study_sql("SELECT * FROM t WHERE id IN (...$p)")], [
+            {1 => $p},
+            'SELECT * FROM t WHERE id IN (?)',
+            "SELECT * FROM t WHERE id IN (...$p)",
+            {1 => 1},
+            ['SELECT * FROM t WHERE id IN (', ')'],
+            ],
+            "...$p: the placeholder, a list, and the pieces around it";
+    }
+    my(undef, $normalised, undef, $lists, $pieces)
+        = study_sql('SELECT :a, x IN (...:b), :a');
+    is $normalised,      'SELECT ?, x IN (?), ?', 'among others';
+    is $lists, {2 => 1}, 'only the one with "..." taking a list';
+    is $pieces, ['SELECT ', ', x IN (', '), ', ''], 'pieces, empty at an end';
+
+    is [study_sql(q{SELECT '...:a', "...:b", $$ ...:c $$ -- ...:d})],
+        [
+            {}, q{SELECT '...:a', "...:b", $$ ...:c $$ -- ...:d},
+            q{SELECT '...:a', "...:b", $$ ...:c $$ -- ...:d},
+        ],
+        'none outside SQL, and only three values returned without lists';
+    like dies { study_sql('SELECT ...?, :x') },
+        qr( \A \QExpected one placeholder style, not several (?, :name)\E )x,
+        'one style to a statement, "..." or not';
+};
+
+subtest "study_sql's list placeholders with DBD::Pg's options" => sub {
+    my $message
+        = 'Expected no list placeholder with pg_placeholder_dollaronly (...$1)';
+    like dies {
+        study_sql(
+            'SELECT $2 WHERE 1 IN (...$1)',
+            {ekorn_dialect => 'Pg', pg_placeholder_dollaronly => 1},
+        )
+    },
+        qr( \A \Q$message\E )x, 'none with pg_placeholder_dollaronly';
+    my(undef, $normalised, undef, $lists) = study_sql(
+        'SELECT d[:2] WHERE 1 IN (...$1)',
+        {ekorn_dialect => 'Pg', pg_placeholder_nocolons => 1},
+    );
+    is $normalised, 'SELECT d[:2] WHERE 1 IN (?)',
+        'but with pg_placeholder_nocolons';
+    is $lists, {1 => 1}, 'taking a list';
+};
+
+subtest 'key_of' => sub {
+    is key_of(':id'),  'id',  'a name, without its sigil';
+    is key_of('$id'),  'id',  'either sigil';
+    is key_of('$02'),  2,     'a number, as a number';
+    is key_of('?1'),   1,     'a ? and its number';
+    is key_of('?', 3), 3,     'a bare ?, by its position';
+    is key_of('ids'),  'ids', 'a name given without a sigil';
+};
+
+subtest 'values_for and values_taken' => sub {
+    my $numbered = {1 => [1, 3], 2 => [2]};
+    my $named    = {a => [1], b => [2, 3]};
+    is { values_for($numbered, 'x', 'y') }, {1 => 'x', 2 => 'y'}, 'numbered';
+    is { values_for($named,    b => 2, ':a' => 1) }, {a => 1, b => 2}, 'named';
+    is { values_for($named,    {a => 1, b => 2}) },  {a => 1, b => 2},
+        'named, in a hash reference';
+    is values_taken($numbered), 2, 'taking the highest number';
+    is values_taken($named),    0, 'or none in order';
+    like dies { values_for($numbered, 'x') },
+        qr( \A \QExpected 2 bind values, not 1\E )x, 'too few';
+    like dies { values_for($named, a => 1) },
+        qr( \A \QExpected a value for each placeholder (none for b)\E )x,
+        'a name missing';
+};
+
+subtest 'expand_lists and place_values' => sub {
+    my($placeholders, undef, undef, undef, $pieces)
+        = study_sql('SELECT :a WHERE x IN (...:ids) OR y IN (...:ids)');
+    my %state = (
+        Placeholders => $placeholders,
+        Pieces       => $pieces,
+        Lists        => {ids => '...:ids'},
+    );
+    my($statement, $binds, $lengths)
+        = expand_lists(\%state, {a => 1, ids => [1, 2, 3]});
+    is $statement, 'SELECT ? WHERE x IN (?, ?, ?) OR y IN (?, ?, ?)',
+        'a "?" for each value, at each use';
+    is $binds,   {a   => [1], ids => [2 .. 7]}, 'the positions of each';
+    is $lengths, {ids => 3},                    'the length of each list';
+
+    my %expanded = (%state, Binds => $binds, Lengths => $lengths);
+    is { place_values(\%expanded, a => 'x', ids => [7, 8, 9]) },
+        {1 => 'x', 2 => 7, 3 => 8, 4 => 9, 5 => 7, 6 => 8, 7 => 9},
+        'each value at a position of its own';
+    like dies { place_values(\%expanded, ids => [7, 8]) },
+        qr( \A \QExpected 3 values in a list, as prepared, not 2 (...:ids)\E )x,
+        'as many as prepared';
+    like dies { expand_lists(\%state, {a => 1, ids => []}) },
+        qr( \A \QExpected at least one value in a list (...:ids)\E )x,
+        'at least one';
 };
 
 done_testing;

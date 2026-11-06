@@ -25,10 +25,11 @@ my %imported = (
     'DBIx::Squirrel'     => [qw(canonical croak is_hashref split_attrs)],
     'DBIx::Squirrel::db' => [
         qw(
-            at_caller      canonical  croak       croakf      failed
-            is_arrayref    is_coderef is_hashref  in_method   is_ref
-            iterator_going max        shift_attrs split_attrs study_sql
-            unwrap_values
+            all          at_caller     canonical      croak       croakf
+            expand_lists failed        in_method      is_arrayref is_coderef
+            is_hashref   is_ref        iterator_going key_of
+            max          shift_attrs   split_attrs    split_stages
+            study_sql    unwrap_values values_for     values_taken
         ),
     ],
     'DBIx::Squirrel::Errors'   => [qw(croak  is_ref)],
@@ -39,9 +40,10 @@ my %imported = (
             iterator_going split_stages weaken
         ),
     ],
-    'DBIx::Squirrel::Pipeline'     => [qw(croak  croakf is_coderef is_ref)],
-    'DBIx::Squirrel::Placeholders' => [qw(croakf uniq)],
-    'DBIx::Squirrel::Result'       =>
+    'DBIx::Squirrel::Pipeline'     => [qw(croak croakf is_coderef is_ref)],
+    'DBIx::Squirrel::Placeholders' =>
+        [qw(any croakf is_arrayref is_hashref is_plain_ref max uniq)],
+    'DBIx::Squirrel::Result' =>
         [qw(croakf install_sub is_name sha1_hex set_subname)],
     'DBIx::Squirrel::Results'       => [qw(at_caller croakf)],
     'DBIx::Squirrel::Stages::Batch' => [qw(croakf    gather is_coderef)],
@@ -57,7 +59,12 @@ my %imported = (
             is_hashref is_name     shift_attrs split_stages
         ),
     ],
-    'DBIx::Squirrel::st'   => [qw(at_caller croakf is_hashref max unwrap_values)],
+    'DBIx::Squirrel::st' => [
+        qw(
+            at_caller croakf       is_arrayref   is_numbered key_of
+            pairs     place_values unwrap_values values_for  values_taken
+        ),
+    ],
     'DBIx::Squirrel::Util' => [
         qw(croakf is_arrayref is_coderef is_hashref is_ref set_subname subname),
     ],

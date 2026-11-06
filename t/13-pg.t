@@ -67,6 +67,32 @@ subtest 'an array reference' => sub {
         'or inside another, to a numbered placeholder';
 };
 
+subtest 'a list placeholder' => sub {
+    my $sql
+        = 'SELECT g FROM generate_series(1, 5) g WHERE g IN (...:ids) ORDER BY g';
+    is $dbh->selectcol_arrayref($sql, ids => [2, 4]), [2, 4], 'a list';
+    is $dbh->selectcol_arrayref(
+        'SELECT g FROM generate_series(1, 5) g WHERE g IN (...?) ORDER BY g',
+        [1, 5],
+        ),
+        [1, 5], 'a single array reference, a list, not a PostgreSQL array';
+    is $dbh->selectcol_arrayref(
+              'SELECT g FROM generate_series(1, 5) g'
+            . ' WHERE g IN (...:a) OR g = ANY(:b::int[]) ORDER BY g',
+        a => [1], b => [3, 5],
+        ),
+        [1, 3, 5], 'beside a PostgreSQL array, bound as one';
+    my $message
+        = 'Expected no list placeholder with pg_placeholder_dollaronly (...$1)';
+    like dies {
+        $dbh->selectcol_arrayref(
+            'SELECT 1 WHERE 1 IN (...$1)',
+            {pg_placeholder_dollaronly => 1}, [1],
+        )
+    },
+        qr( \A \Q$message\E )x, 'none with pg_placeholder_dollaronly';
+};
+
 subtest 'do' => sub {
     is $dbh->do('SELECT 2 = ANY(?::int[])', undef, [1, 2]),
         $dbi->do('SELECT 2 = ANY(?::int[])', undef, [1, 2]),

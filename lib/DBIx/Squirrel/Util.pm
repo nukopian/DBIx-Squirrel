@@ -82,15 +82,17 @@ sub split_stages ($args) {
 }
 
 # Return the bind values given, or those in an array reference given
-# alone, unless it's a value itself. DBD::Pg binds an array reference as a
-# PostgreSQL array, so, with DBD::Pg, one given to a statement taking one
-# value is that value, as it would be with the DBI. The driver's name is
-# given, and code returning how many values the statement takes.
-sub unwrap_values ($driver, $taken, @args) {
+# alone, unless it's a value itself: given to a statement taking one
+# value, it's that value if the statement takes a list, as a list
+# placeholder does, or if the driver is DBD::Pg, which binds an array
+# reference as a PostgreSQL array, as it would with the DBI. The driver's
+# name is given, code returning how many values the statement takes, and
+# the statement's map of its list placeholders, if it has any.
+sub unwrap_values ($driver, $taken, $lists, @args) {
     return @args
         unless @args == 1 && is_arrayref($args[0]);
     return @args
-        if $driver eq 'Pg' && $taken->() == 1;
+        if ($lists || $driver eq 'Pg') && $taken->() == 1;
     return @{ $args[0] };
 }
 
@@ -164,10 +166,11 @@ returns them.
 
 =item unwrap_values
 
-    @values = unwrap_values($driver, $taken, @values);
+    @values = unwrap_values($driver, $taken, $lists, @values);
 
 Returns the bind values given, or those in an array reference given
-alone, unless DBD::Pg would bind it as a PostgreSQL array.
+alone, unless it's the one value of a statement taking one: a list, for
+a list placeholder, or, with DBD::Pg, a PostgreSQL array.
 
 =back
 

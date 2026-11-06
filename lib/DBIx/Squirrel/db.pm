@@ -4,14 +4,16 @@ package DBIx::Squirrel::db;
 
 use Carp       qw(croak);
 use DBI        qw();
-use List::Util qw(max);
+use List::Util qw(all max);
 use Ref::Util  qw(is_arrayref is_coderef is_hashref is_ref);
 
 use DBIx::Squirrel::Errors       qw(at_caller croakf failed in_method);
-use DBIx::Squirrel::Placeholders qw(study_sql);
-use DBIx::Squirrel::Pipes        qw();
-use DBIx::Squirrel::Util         qw(
-    canonical iterator_going shift_attrs split_attrs unwrap_values
+use DBIx::Squirrel::Placeholders qw(
+    expand_lists key_of study_sql values_for values_taken
+);
+use DBIx::Squirrel::Pipes qw();
+use DBIx::Squirrel::Util  qw(
+    canonical iterator_going shift_attrs split_attrs split_stages unwrap_values
 );
 
 use namespace::clean;
@@ -32,10 +34,76 @@ sub prepare ($self, $statement, $attrs = undef, @args) {
 }
 
 # Prepare a statement, as prepare does, and return its handle, or
-# nothing, as the DBI's prepare does, if it can't be prepared.
+# nothing, as the DBI's prepare does, if it can't be prepared. A
+# statement with list placeholders can't be prepared without its values.
 sub _prepare ($self, $statement, $attrs, @args) {
     my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
+    _no_lists($state);
     return _prepare_studied($self, $normalised, $state, $dbi_attrs, @args);
+}
+
+# Prepare a statement, as _prepare does, given the bind values it's to be
+# executed with, so that a statement with list placeholders is prepared
+# with a "?" for each value in each list.
+sub _prepare_for ($self, $statement, $attrs, @values) {
+    my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
+    return _prepare_studied(
+        $self, _for_values($self, $normalised, $state, $dbi_attrs, @values),
+        $dbi_attrs,
+    );
+}
+
+# Return a statement handle for a statement with list placeholders, to be
+# executed with the bind values given: the handle given, if each list has
+# as many values as it was prepared for, or a new one, prepared for them,
+# croaking if it can't be prepared. Without values, the handle executes
+# with those bound already. An iterator calls it from its reset.
+sub _prepare_again ($self, $sth, @values) {    ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
+    my $state = $sth->{private_ekorn};
+    return $sth
+        unless @values;
+    my($normalised, $expanded)
+        = _for_values($self, undef, $state, $state->{DBIAttrs}, @values);
+    my($was, $now) = ($state->{Lengths}, $expanded->{Lengths});
+    return $sth
+        if all { $was->{$_} == $now->{$_} } keys %$now;
+    return _prepare_studied($self, $normalised, $expanded, $state->{DBIAttrs})
+        || croak failed($self, 'prepare');
+}
+
+# Return a statement studied already, and what its handle is to keep
+# about it, as they are, unless it has list placeholders: then, given the
+# bind values it's to be executed with, return it with a "?" for each
+# value in each list, as expand_lists does, and what its handle is to keep
+# about that, starting afresh from what was studied.
+sub _for_values ($self, $normalised, $state, $dbi_attrs, @values) {
+    return $normalised, $state
+        unless $state->{Lists};
+    @values = unwrap_values(
+        $self->{Driver}{Name},
+        sub { values_taken($state->{Binds}) },
+        $state->{Lists}, @values,
+    );
+    my($expanded, $binds, $lengths)
+        = expand_lists($state, {values_for($state->{Binds}, @values)});
+    my %kept = map { ($_ => $state->{$_}) }
+        qw(Placeholders OriginalStatement Options Lists Pieces);
+    return $expanded, {
+        %kept,
+        Binds    => $binds,
+        Lengths  => $lengths,
+        DBIAttrs => $dbi_attrs,
+    };
+}
+
+# Croak if a statement has list placeholders, which take their values
+# before it's prepared.
+sub _no_lists ($state) {
+    my $lists = $state->{Lists};
+    croakf 'Expected bind values with a statement taking a list (%s)',
+        join ', ', sort values %$lists
+        if $lists;
+    return;
 }
 
 # Prepare a statement studied already, as _prepare does.
@@ -62,6 +130,7 @@ sub _prepare_studied ($self, $normalised, $state, $dbi_attrs, @args) {
 # $if_active means what it does to the DBI.
 sub prepare_cached ($self, $statement, $attrs = undef, $if_active = undef) {
     my($normalised, $state, $dbi_attrs, $ekorn) = _study($self, $statement, $attrs);
+    _no_lists($state);
     $dbi_attrs = {
         %{ $dbi_attrs // {} },
         private_ekorn_statement => $state->{OriginalStatement},
@@ -100,6 +169,20 @@ sub prepare_cached ($self, $statement, $attrs = undef, $if_active = undef) {
     return $sth;
 }
 
+# Prepare a statement by calling the method named, prepare or
+# prepare_cached, which a subclass may have of its own, with $if_active
+# for prepare_cached; or, if the statement takes a list, for the bind
+# values given, as _prepare_for does, and not cached, croaking as the
+# method does if it can't be prepared. iterate, results and
+# DBIx::Squirrel::Sugar's functions prepare their statements with it.
+sub _prepare_as ($self, $method, $statement, $attrs, $if_active, @values) {
+    my(undef, $state) = _study($self, $statement, $attrs);
+    return $self->$method($statement, $attrs, defined $if_active ? $if_active : ())
+        unless $state->{Lists};
+    return _prepare_for($self, $statement, $attrs, @values)
+        || croak failed($self, $method);
+}
+
 # Take a statement handle out of the DBI's cache, so the next
 # prepare_cached of its statement makes a new one.
 sub _uncache ($self, $sth) {
@@ -119,14 +202,17 @@ sub do ($self, $statement, @args) {
     my($normalised, $state, $dbi_attrs) = _study($self, $statement, $attrs);
     if ($state->{Binds}) {
         return in_method $self, 'do', sub {
-            my $sth = _prepare_studied($self, $normalised, $state, $dbi_attrs)
-                or return;
+            my $sth = _prepare_studied(
+                $self, _for_values($self, $normalised, $state, $dbi_attrs, @args),
+                $dbi_attrs,
+            ) or return;
             return $sth->execute(@args);
         };
     }
     @args = unwrap_values(
         $self->{Driver}{Name},
-        sub { _values_taken($state->{Placeholders}) }, @args,
+        sub { _values_taken($state->{Placeholders}) },
+        undef, @args,
     );
     return at_caller { $self->SUPER::do($normalised, $dbi_attrs, @args) };
 }
@@ -153,11 +239,14 @@ sub results ($self, $statement, @args) {
     return _prepare_to_iterate($self, $statement, \@args)->results(@args);
 }
 
-# Prepare a statement for iterate or results, taking the attributes off
-# the front of their arguments, unless a stage is there.
+# Prepare a statement for iterate or results, as _prepare_as does with
+# prepare, for the bind values in their arguments, taking the attributes
+# off the front of them, unless a stage is there.
 sub _prepare_to_iterate ($self, $statement, $args) {
-    my $attrs = @$args && is_coderef($args->[0]) ? undef : shift_attrs($args);
-    return $self->prepare($statement, $attrs);
+    my $attrs  = @$args && is_coderef($args->[0]) ? undef : shift_attrs($args);
+    my @values = @$args;
+    split_stages(\@values);
+    return _prepare_as($self, 'prepare', $statement, $attrs, undef, @values);
 }
 
 # The DBI's select methods, each preparing the statement and binding its
@@ -210,7 +299,7 @@ sub _select ($self, $method, $statement, $before, @args) {
         my $sth
             = $statement isa 'DBI::st'
             ? $statement
-            : _prepare($self, $statement, $attrs);
+            : _prepare_for($self, $statement, $attrs, @args);
         return $UNDEF{$method} ? undef : ()
             unless $sth;
         # Values for ? placeholders go to the DBI, which checks them as
@@ -279,7 +368,7 @@ sub _study_afresh ($self, $statement, $attrs) {
     my $slice = $options{ekorn_slice};
     croakf 'Expected ekorn_slice to be a reference to an ARRAY or HASH'
         if defined $slice && !is_arrayref($slice) && !is_hashref($slice);
-    my($placeholders, $normalised, $original)
+    my($placeholders, $normalised, $original, $lists, $pieces)
         = study_sql(_statement_text($statement), \%options)
         or croakf 'Expected a statement';
     my %state = (
@@ -288,27 +377,51 @@ sub _study_afresh ($self, $statement, $attrs) {
         Options           => \%options,
         Binds             => scalar _binds($placeholders, $normalised, $original),
     );
+    @state{qw(Lists Pieces)} = (_lists($placeholders, $lists), $pieces)
+        if $lists;
     return $normalised, \%state, split_attrs($attrs);
 }
 
 # Return a map of each number or name a statement's placeholders use to
 # the positions using it, from 1, or nothing if the statement goes to the
 # DBI as written: with "?" placeholders or none, or with placeholders left
-# for DBD::Pg to read.
+# for DBD::Pg to read. With list placeholders, "?" placeholders are
+# numbered by their positions.
 sub _binds ($placeholders, $normalised, $original) {
     return if $normalised eq $original;
     my %binds;
     for my $position (sort { $a <=> $b } keys %$placeholders) {
         my $placeholder = $placeholders->{$position};
-        my $key         = $placeholder =~ s( \A [?:\$] )()xr;
-        if ($key =~ m( \A \d+ \z )x) {
-            croakf 'Expected placeholders numbered from 1 (%s)', $placeholder
-                if $key == 0;
-            $key += 0;
-        }
+        my $key         = key_of($placeholder, $position);
+        croakf 'Expected placeholders numbered from 1 (%s)', $placeholder
+            if $key =~ m( \A \d+ \z )x && $key == 0;
         push @{ $binds{$key} }, $position;
     }
     return \%binds;
+}
+
+# Return a map of the number or name of each list placeholder to the
+# placeholder as written, with "...", for its messages, and a "?" with
+# its position too, as "...? at 2", given the statement's map of its
+# placeholders and of the positions taking a list. Croak if a placeholder
+# takes a list in one place and not another.
+sub _lists ($placeholders, $lists) {
+    my(%listed, %plain);
+    for my $position (keys %$placeholders) {
+        my $placeholder = $placeholders->{$position};
+        my $key         = key_of($placeholder, $position);
+        if ($lists->{$position}) {
+            $listed{$key} = $placeholder eq '?' ? "...? at $key" : "...$placeholder";
+        }
+        else {
+            $plain{$key} = $placeholder;
+        }
+    }
+    my @both = sort map { $plain{$_} } grep { exists $plain{$_} } keys %listed;
+    croakf 'Expected a placeholder to take a list everywhere or nowhere (%s)',
+        join ', ', @both
+        if @both;
+    return \%listed;
 }
 
 # Return the text of a statement given as a string, as lines in an array
@@ -371,6 +484,20 @@ A numbered placeholder is bound once, wherever it appears, and a named
 one by name, as L<DBIx::Squirrel::st/bind> describes. Numbers start
 from 1.
 
+A placeholder with C<...> before it takes a list, which is written as a
+C<?> for each of its values, separated by commas:
+
+    SELECT * FROM artist WHERE id IN (...?)
+    SELECT * FROM artist WHERE id IN (...$1)
+    SELECT * FROM artist WHERE id IN (...:ids)
+
+Its value is a reference to an array of at least one plain value. As
+the number of values decides the statement the DBI prepares, a statement
+taking a list is prepared with its values, by L</do>, L</iterate>,
+L</results> or a select method, never by C<prepare> or C<prepare_cached>
+alone, which croak. A placeholder takes a list everywhere it's used, or
+nowhere. L<DBIx::Squirrel::st/Lists> says more.
+
 Placeholders are looked for only in the SQL itself. Anything that looks
 like one inside a quoted string or identifier (C<'10:30'>, C<"a:b">,
 C<`c?`>), a comment (C<-- :x>, C</* $1 */>) or a PostgreSQL
@@ -408,9 +535,9 @@ passed on as they are, and DBD::Pg removes the backslash:
 DBD::Pg's own placeholder options are followed too, whether set on the
 database handle or passed to C<prepare>. With C<pg_placeholder_dollaronly>,
 only C<$1>-style placeholders are recognised, and the statement is passed
-on as written, for DBD::Pg to read. With C<pg_placeholder_nocolons>, the
-C<:1> and C<:name> styles aren't placeholders, so array slices such as
-C<data[:2]> are left alone.
+on as written, for DBD::Pg to read, so none can take a list. With
+C<pg_placeholder_nocolons>, the C<:1> and C<:name> styles aren't
+placeholders, so array slices such as C<data[:2]> are left alone.
 
 The statement can be a string, an array reference of lines, which are
 joined with spaces, a code reference returning either, or a statement
@@ -429,7 +556,8 @@ C<DBD::SQLite::db prepare failed: near "SELEC": syntax error>.
     $sth = $dbh->prepare_cached($statement, \%attr, $if_active);
 
 As L</prepare>, using the DBI's cache of statement handles. Its errors
-name C<prepare_cached>, as the DBI's do.
+name C<prepare_cached>, as the DBI's do. Like C<prepare>, it croaks
+given a statement taking a list.
 
 A cached handle that an iterator is part way through isn't handed out,
 or finished, as the DBI would finish an active one, which would cut the
@@ -458,7 +586,8 @@ C<sqlite_allow_multiple_statements>. A statement with numbered or named
 placeholders is prepared, as L</prepare> does, and executed, with the
 values bound as L<DBIx::Squirrel::st/bind> binds them; some drivers,
 such as DBD::SQLite, then count the rows of an C<UPDATE ... RETURNING>
-only as they're fetched, giving C<0E0>.
+only as they're fetched, giving C<0E0>. So is a statement taking a list,
+prepared for the values given.
 
 Like the DBI's, C<do> returns no rows, even from a C<SELECT> or a
 C<RETURNING> clause. Use L</prepare> and C<execute>, or the select
@@ -472,7 +601,8 @@ methods, for those.
 Prepares a statement, as L</prepare> does, and returns a
 L<DBIx::Squirrel::Iterator>, an iterator over its results, as
 L<DBIx::Squirrel::st/iterate> does. As with L</do>, the attributes may
-be left out.
+be left out. A statement taking a list is prepared for the values
+given.
 
 =head2 results
 
@@ -511,7 +641,8 @@ objects with a method for each column.
 
 Each works as the DBI's, preparing the statement as L</prepare> does, unless it's
 already a statement handle, and binding the values as
-L<DBIx::Squirrel::st/bind> binds them. The DBI's C<selectall_array>
+L<DBIx::Squirrel::st/bind> binds them. A statement taking a list is
+prepared for the values given. The DBI's C<selectall_array>
 goes through C<selectall_arrayref>, so it does too. As with L</do>, the
 attributes may be left out: the first argument after the statement, or
 after C<selectall_hashref>'s key field, is taken as the attributes only
@@ -537,6 +668,23 @@ The statement had a numbered placeholder such as C<$0>.
 
 The statement was blank, or was a reference other than those L</prepare>
 takes.
+
+=item Expected bind values with a statement taking a list (%s)
+
+A statement with a list placeholder, such as C<...:ids>, was given to
+L</prepare> or L</prepare_cached>, which have no values to prepare it
+for. Each list placeholder is named, a C<?> with its position, as in
+C<...? at 2>.
+
+=item Expected a placeholder to take a list everywhere or nowhere (%s)
+
+A placeholder was used with C<...> in one place and without it in
+another, as in C<SELECT :a WHERE x IN (...:a)>.
+
+=item Expected no list placeholder with pg_placeholder_dollaronly (%s)
+
+With DBD::Pg's C<pg_placeholder_dollaronly>, the statement goes to
+DBD::Pg as written, so a C<$1> placeholder can't take a list.
 
 =item Expected a reference to a HASH or ARRAY
 

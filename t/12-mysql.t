@@ -54,6 +54,14 @@ subtest 'placeholders' => sub {
     is row('SELECT ?, ?',   [1, 2]),         [1, 2], 'an array reference of values';
 };
 
+subtest 'a list placeholder' => sub {
+    is $dbh->selectcol_arrayref(
+        q{SELECT 'it\'s ...:x' FROM DUAL WHERE 2 IN (...:ids) # ...:y},
+        ids => [1, 2, 3],
+        ),
+        [q{it's ...:x}], 'read by MySQL rules';
+};
+
 subtest 'the same results as the DBI' => sub {
     my $sql = q{SELECT 'it\'s', ?, ? + 1};
     is [$dbh->selectrow_array($sql, undef, 1, 2)],

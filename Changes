@@ -26,6 +26,15 @@ Unreleased
       or without the sigil, and an array reference stands for the
       values in it. Values that don't match the placeholders croak, and
       so does executing a statement with some left unbound.
+    - A placeholder with "..." before it, such as ...:ids or ...?, takes
+      a list, written as a ? for each of its values, for IN and anywhere
+      else SQL takes a list. The statement is prepared with its values,
+      by do, the select methods, iterate, results and Sugar's functions;
+      prepare and prepare_cached croak given one, and so do an empty
+      list and a list holding a reference. To a statement whose one
+      value is a list, a single array reference is the list. An
+      iterator's reset prepares the statement again for a list of
+      another length.
     - A statement can be a string, lines in an array reference, a code
       reference returning either, or a statement handle.
     - do and the select methods take bind values without the

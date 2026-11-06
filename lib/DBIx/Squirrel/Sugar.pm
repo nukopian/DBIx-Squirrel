@@ -116,12 +116,16 @@ sub _define_statement ($package, $name, @definition) {
 # given, and return its handle, or, with stages, its own or those given
 # after the bind values, return the results. The statement is prepared
 # once for each handle, with prepare_cached, which makes a new one,
-# cached in its place, when the one prepared is in use.
+# cached in its place, when the one prepared is in use; one taking a list
+# is prepared for the values given, and not cached.
 sub _run_statement ($definition, @args) {
     my $dbh       = database($definition->{database});
     my @statement = @$definition{qw(statement attrs)};
-    my $sth       = $dbh->prepare_cached(@statement, 3);
     my @stages    = (@{ $definition->{stages} }, split_stages(\@args));
+
+    my $sth = DBIx::Squirrel::db::_prepare_as(    ## no critic (Subroutines::ProtectPrivateSubs)
+        $dbh, prepare_cached => @statement, 3, @args,
+    );
     return _execute($sth, @args, @stages);
 }
 
@@ -135,7 +139,11 @@ sub _run ($name, @args) {
     return _execute($statement, @args)           if $statement isa 'DBI::st';
     return $dbh->iterate($statement, @args)->all if _ends_in_stages(\@args);
     my $attrs = shift_attrs(\@args);
-    return _execute($dbh->prepare($statement, $attrs), @args);
+
+    my $sth = DBIx::Squirrel::db::_prepare_as(    ## no critic (Subroutines::ProtectPrivateSubs)
+        $dbh, prepare => $statement, $attrs, undef, @args,
+    );
+    return _execute($sth, @args);
 }
 
 # Execute a statement handle with the bind values given, and return it,
@@ -308,7 +316,9 @@ there were in scalar context. Stages given are for that call only.
 The statement is prepared once for each database handle, with
 L<DBIx::Squirrel::db/prepare_cached>. While its handle is in use, by a
 statement handle not read to the end, or by a stage calling the same
-function, a call prepares one of its own.
+function, a call prepares one of its own. A statement taking a list, as
+L<DBIx::Squirrel::st/Lists> describes, is prepared for each call's
+values instead, and isn't cached.
 
 =head1 DIAGNOSTICS
 

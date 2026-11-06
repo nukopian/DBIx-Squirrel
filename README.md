@@ -82,6 +82,12 @@ as `?` for the DBI, and a numbered or named placeholder takes one value wherever
 appears. `do` and the select methods need no `undef` in front of the
 values.
 
+    my $of_years = $dbh->selectall_arrayref('SELECT * FROM album WHERE year IN (...:years)',
+        years => [1967, 1994]);
+
+A placeholder with `...` before it takes a list, and is written as a
+`?` for each value in the array reference given.
+
 ### 3. Iterate over the results.
 
     my $albums = $dbh->iterate('SELECT title, year FROM album ORDER BY year');

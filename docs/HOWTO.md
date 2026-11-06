@@ -158,6 +158,27 @@ say "@$near";    # Parklife The Great Escape
 
 So does a named one, wherever its name appears.
 
+### Match any of a list of values
+
+Put `...` before a placeholder, and give it an array reference: it's
+written as a `?` for each value.
+
+```perl
+my $titles = $dbh->selectcol_arrayref(
+    'SELECT title FROM album WHERE year IN (...:years) ORDER BY year',
+    years => [1967, 1994],
+);
+say "@$titles";    # Disraeli Gears Parklife
+
+# Alone, the array reference is the list
+my $names = $dbh->selectcol_arrayref('SELECT name FROM artist WHERE id IN (...?)', [1, 3]);
+say "@$names";    # Abba Cream
+```
+
+The statement is prepared for its values, so give them with it, to
+`do`, a select method, `iterate` or `results`; `prepare` alone croaks.
+An empty list croaks too, as `IN ()` isn't SQL, so check for one first.
+
 ### Write a long statement over several lines
 
 Give the lines in an array reference; they're joined with spaces:

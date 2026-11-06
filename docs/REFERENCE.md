@@ -61,6 +61,11 @@ my $row = $dbh->selectrow_hashref(
     'SELECT * FROM artist WHERE id = $1 OR parent_id = $1', undef, 2,
 );
 
+# A placeholder with "..." takes a list: a "?" for each of its values
+my $rows = $dbh->selectall_arrayref(
+    'SELECT * FROM artist WHERE id IN (...:ids)', ids => [1, 2, 3],
+);
+
 # An iterator over the results, each run through a pipeline of stages
 my $names = $dbh->iterate(
     'SELECT name FROM artist WHERE name LIKE ?', 'A%',
@@ -253,6 +258,62 @@ $sth = $dbh->prepare('SELECT * FROM artist WHERE id = $1 OR parent_id = $1');
 $sth->execute(2);
 ```
 
+### Lists
+
+A placeholder with `...` before it takes a list, and is written as a
+`?` for each of its values, separated by commas. It's for `IN`, and
+anywhere else SQL takes a list of values:
+
+```perl
+my $rows = $dbh->selectall_arrayref(
+    'SELECT * FROM artist WHERE id IN (...:ids)', ids => [1, 2, 3],
+);
+# SELECT * FROM artist WHERE id IN (?, ?, ?), with 1, 2 and 3
+```
+
+Any style can take a list: `...?`, `...?1`, `...:1`, `...$1`,
+`...:name` or `...$name`. The list is a reference to an array of at
+least one plain value, given as any other value is: by name, or in
+order. To a statement taking one value, a list, a single array reference
+is the list, not the values in it:
+
+```perl
+$dbh->selectall_arrayref('SELECT * FROM artist WHERE id IN (...?)', [1, 2, 3]);
+$dbh->selectall_arrayref(
+    'SELECT * FROM artist WHERE name = ? OR id IN (...?)',
+    'Abba', [1, 2, 3],
+);
+```
+
+- **It's prepared with its values.** How many values a list has decides
+  the statement the DBI prepares, so a statement taking a list is
+  prepared by a method given its values: `do`, the select methods,
+  `iterate`, `results`, and Sugar's functions. `prepare` and
+  `prepare_cached` croak:
+  `Expected bind values with a statement taking a list (...:ids)`.
+- **A list has at least one plain value.** An empty list croaks, as
+  `IN ()` isn't SQL, leaving the empty case to you:
+  `Expected at least one value in a list (...:ids)`. So does a plain
+  value or `undef` in place of a list, and a list holding a reference,
+  such as `[[1, 2, 3]]` to a statement whose one value is a list.
+- **A placeholder takes a list everywhere it's used, or nowhere.** Used
+  twice, it takes its list in both places.
+- **Its handle is for lists of the lengths it was prepared for.** The
+  statement handle of a statement taking a list, such as an iterator's
+  `sth`, can be executed again with lists of the same lengths, and
+  croaks given another. An iterator's [`reset`](#iterator-methods)
+  prepares the statement again, on a new handle, when a list has a
+  different number of values. A Sugar statement taking a list isn't
+  cached, as each length makes a different statement.
+- **Databases limit the values in a statement,** so a very long list can
+  fail to prepare, as the same statement would with plain DBI.
+
+With DBD::Pg, `= ANY(?)` given an array reference, as a PostgreSQL
+array, is one statement whatever the array's length. The two don't mix
+up: a list placeholder's array is its list, and any other placeholder's
+is a PostgreSQL array. Under `pg_placeholder_dollaronly`, which leaves
+the statement to DBD::Pg, no placeholder can take a list.
+
 ### What isn't a placeholder
 
 Placeholders are looked for only in the SQL itself. These are left as
@@ -333,6 +394,9 @@ for placeholders once for each database handle, which keeps what it
 found. The handle keeps up to 1000 statements, and starts again when it
 has that many.
 
+A statement taking a [list](#lists) can't be prepared without its
+values, so `prepare` croaks given one.
+
 ### prepare_cached
 
 ```perl
@@ -342,7 +406,8 @@ $sth = $dbh->prepare_cached($statement, \%attr, $if_active);
 ```
 
 As `prepare`, using the DBI's cache of statement handles. Its errors
-name `prepare_cached`, as the DBI's do.
+name `prepare_cached`, as the DBI's do. Like `prepare`, it croaks given
+a statement taking a [list](#lists).
 
 Two statements can be rewritten the same: `SELECT :a, :b` and
 `SELECT :b, :a` both become `SELECT ?, ?`. Each still has a handle of
@@ -423,11 +488,15 @@ A single array reference stands for the values in it, so
 `$sth->bind([1, 2])` is `$sth->bind(1, 2)`, and the same goes for
 `execute`, `do` and the select methods.
 
-The exception is DBD::Pg, which binds an array reference as a PostgreSQL
-array. With DBD::Pg, an array reference given to a statement taking one
-value, such as `SELECT * FROM artist WHERE id = ANY(?)`, is that value,
-as it would be with the DBI. Through another driver, such as DBD::ODBC,
-it's unwrapped as usual, as the driver can't bind arrays.
+There are two exceptions, each for a statement taking one value:
+
+- To a statement whose one value is a [list](#lists), the array
+  reference is the list.
+- DBD::Pg binds an array reference as a PostgreSQL array. With DBD::Pg,
+  an array reference given to a statement taking one value, such as
+  `SELECT * FROM artist WHERE id = ANY(?)`, is that value, as it would
+  be with the DBI. Through another driver, such as DBD::ODBC, it's
+  unwrapped as usual, as the driver can't bind arrays.
 
 ### bind_param
 
@@ -448,6 +517,8 @@ returns. The placeholder can be given:
 - by position, for named placeholders too, as with the DBI.
 
 The value is bound to every use of the placeholder in the statement.
+The value for a [list](#lists) is the list, each value of which is bound
+to a position of its own.
 
 ```perl
 my $sth = $dbh->prepare('SELECT :a + :a, :b');
@@ -586,10 +657,10 @@ or may stop early, or should go with the statement, as in
 | `next` | Returns the next result, or an empty list when there are no more. |
 | `all` | Returns the results not yet handed out, or, in scalar context, how many there were. Without stages, it fetches the rest at once. |
 | `single` | Executes the statement again, and returns its one result, or nothing if it has none. It croaks if there's more than one: `Expected one result, not more`. |
-| `reset` | Executes the statement again, ready to iterate from its first row, finishing it first if it's still active, and returns the iterator. |
+| `reset` | Executes the statement again, ready to iterate from its first row, finishing it first if it's still active, and returns the iterator. A statement taking a [list](#lists) is prepared again, on a new handle, if a list has a different number of values. |
 | `count` | Returns the number of results handed out so far. |
 | `column_names` | Returns the names of the statement's columns, as `fetchrow_hashref` would key them, following `FetchHashKeyName`. They're read when the statement is executed, as DBD::mysql gives none once the last row is fetched. |
-| `sth` | Returns the statement handle. |
+| `sth` | Returns the statement handle, which changes when `reset` prepares a statement taking a list again. |
 
 A stage can return `undef` as a result, so read `next` in list context,
 as above, rather than testing whether what it returns is defined.
@@ -1280,7 +1351,8 @@ my $found = artist id => 1;                           # the statement handle
 The statement is prepared once for each database handle, with
 `prepare_cached`. While its handle is in use, by a statement handle not
 read to the end, or by a stage calling the same function, a call
-prepares one of its own.
+prepares one of its own. A statement taking a [list](#lists) is prepared
+for each call's values instead, and isn't cached.
 
 ### Connections
 
@@ -1337,6 +1409,13 @@ starting "Expected" say what was expected.
 | `Expected names and values in pairs` | A statement with named placeholders was given an odd number of values. |
 | `Expected a placeholder of the statement (%s)` | A value was given for a placeholder the statement doesn't have. |
 | `Expected a value for each placeholder (none for %s)` | A statement with named placeholders wasn't given a value for each name, or a statement with numbered or named placeholders was executed without values when some had none bound. |
+| `Expected bind values with a statement taking a list (%s)` | `prepare` or `prepare_cached` was given a statement taking a [list](#lists). Each list placeholder is named, a `?` with its position: `...? at 2`. |
+| `Expected a placeholder to take a list everywhere or nowhere (%s)` | A placeholder was used with `...` in one place and without it in another. |
+| `Expected no list placeholder with pg_placeholder_dollaronly (%s)` | A `$1` placeholder took a list under DBD::Pg's `pg_placeholder_dollaronly`. |
+| `Expected a reference to an ARRAY for a list (%s)` | A list placeholder was given a plain value, `undef`, or a reference to something other than an array. |
+| `Expected at least one value in a list (%s)` | A list placeholder was given an empty list. |
+| `Expected plain values in a list (%s)` | A list held a reference, as `[[1, 2]]` does to a statement whose one value is a list. |
+| `Expected %d values in a list, as prepared, not %d (%s)` | The handle of a statement taking a list was executed or bound with a list of another length. |
 
 ### Iterators and result sets
 
@@ -1396,10 +1475,11 @@ result. These are the places they differ.
 |---|---|---|
 | Placeholders | `?`, and whatever the driver adds. | `?`, `?1`, `:1`, `$1`, `:name` and `$name`, rewritten as `?` for the DBI. |
 | Numbered and named placeholders | Bound by position. | Bound once, by number or name, wherever they appear. |
+| Lists, as for `IN` | A `?` for each value, written out. | `...?`, `...$1` or `...:name`, written as a `?` for each value of the list given. |
 | `connect` failing | Returns `undef`, unless `RaiseError`. | Always croaks, with the DBI's `RaiseError` message. |
 | `prepare` failing | Returns `undef`, unless `RaiseError`. | Always croaks, with the DBI's `RaiseError` message. |
 | Attributes in `do` and the select methods | Required, or `undef`, before the bind values. | May be left out. |
-| A lone array reference of bind values | A value. | The values in it, except with DBD::Pg for a statement taking one value. |
+| A lone array reference of bind values | A value. | The values in it, except for a statement taking one value that's a list, or with DBD::Pg. |
 | Where errors and warnings are reported | The line inside the module that called the DBI. | The line of your code that called DBIx::Squirrel. |
 | Statements | A string. | A string, lines in an array reference, a code reference returning either, or a statement handle. |
 | Executing an active statement | Left to the driver. | The same, or finished first with `ekorn_finish_active`. |
@@ -1547,6 +1627,6 @@ distributions of their own.
 | `DBIx::Squirrel::Stages::Taps` | Canned stages run for their side effects: `peek`, `count_into`, `dump_to`. |
 | `DBIx::Squirrel::Context` | What a stage can ask about the result it's making. |
 | `DBIx::Squirrel::Sugar` | A function for each database and statement. |
-| `DBIx::Squirrel::Placeholders` | Finds the placeholders in a statement. |
+| `DBIx::Squirrel::Placeholders` | Finds the placeholders in a statement, and matches values to them. |
 | `DBIx::Squirrel::Errors` | Reports errors at the caller's line. Internal. |
 | `DBIx::Squirrel::Util` | Helpers the modules share. Internal. |

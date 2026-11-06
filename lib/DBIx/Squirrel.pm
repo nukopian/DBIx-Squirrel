@@ -151,6 +151,11 @@ DBIx::Squirrel - DBI, minus the boilerplate, plus a pipeline
         'SELECT * FROM artist WHERE id = $1 OR parent_id = $1', undef, 2,
     );
 
+    # A placeholder with "..." takes a list: a "?" for each of its values
+    my $rows = $dbh->selectall_arrayref(
+        'SELECT * FROM artist WHERE id IN (...:ids)', ids => [1, 2, 3],
+    );
+
     # Iterate over the results, each run through a pipeline of stages
     my $names = $dbh->iterate(
         'SELECT name FROM artist WHERE name LIKE ?', 'A%',

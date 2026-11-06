@@ -27,6 +27,36 @@ sub connect_both {
     return \%dbh;
 }
 
+subtest "iterate and results prepare with a subclass's prepare" => sub {
+
+    package Counted {    ## no critic (Modules::ProhibitMultiplePackages)
+        our @ISA = 'DBIx::Squirrel';
+    }
+
+    package Counted::db {    ## no critic (Modules::ProhibitMultiplePackages)
+        our @ISA      = 'DBIx::Squirrel::db';
+        our $PREPARED = 0;
+
+
+        sub prepare ($self, @args) {
+            $PREPARED++;
+            return $self->SUPER::prepare(@args);
+        }
+    }
+
+    package Counted::st {    ## no critic (Modules::ProhibitMultiplePackages)
+        our @ISA = 'DBIx::Squirrel::st';
+    }
+
+    my $dbh = Counted->connect(@source);
+    $dbh->iterate('SELECT 1')->all;
+    $dbh->results('SELECT 1 AS one')->all;
+    is $Counted::db::PREPARED, 2, 'both call it';
+    $dbh->iterate('SELECT 1 WHERE 1 IN (...?)', [1])->all;
+    is $Counted::db::PREPARED, 2,
+        'except for a statement taking a list, prepared for its values';
+};
+
 subtest 'prepare rewrites each placeholder style as ?' => sub {
     my $dbh = connect_both()->{squirrel};
     for my $p (qw(? ?1 :1 $1 :id)) {

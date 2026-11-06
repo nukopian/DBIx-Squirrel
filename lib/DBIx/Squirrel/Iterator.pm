@@ -67,7 +67,8 @@ sub single ($self) {
 # Execute the statement again, ready to iterate from its first row, and
 # return the iterator. Bind values given replace those given before;
 # stages given are added to those given to new. Both are kept until
-# others are given.
+# others are given. A statement with list placeholders is prepared again,
+# on a new statement handle, if a list has a different number of values.
 sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my $sth   = $self->{sth};
     my $state = $sth->{private_ekorn};
@@ -82,6 +83,15 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     $self->{bind_values} //= [@{ $self->{bind_values_initial} }];
 
     $sth->finish if $sth->{Active};
+    if ($state->{Lists}) {
+        my $again = DBIx::Squirrel::db::_prepare_again(    ## no critic (Subroutines::ProtectPrivateSubs)
+            $sth->{Database}, $sth, @{ $self->{bind_values} },
+        );
+        if ($again != $sth) {
+            delete $state->{Iterator};
+            ($sth, $state) = ($self->{sth} = $again, $again->{private_ekorn});
+        }
+    }
     $state->{Iterator} = $self;
     weaken $state->{Iterator};
     # An empty array slice fetches every column, as no slice does, but the
@@ -349,6 +359,11 @@ finishing it first if it's still active, and returns the iterator. Bind
 values given replace those given before. Stages given are added to those
 given to L</new>. Both are kept until others are given.
 
+A statement taking a list, as L<DBIx::Squirrel::st/Lists> describes, is
+prepared again, on a new statement handle, if a list given has a
+different number of values from the one before; L</sth> then returns
+the new handle.
+
 =head2 count
 
     $n = $it->count;
@@ -371,7 +386,8 @@ L<DBIx::Squirrel::Context/iterator>.
 
     $sth = $it->sth;
 
-Returns the statement handle.
+Returns the statement handle, which changes if L</reset> prepares a
+statement taking a list again.
 
 =head1 DIAGNOSTICS
 
