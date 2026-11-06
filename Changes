@@ -41,7 +41,8 @@ Unreleased
       and no aliases. next no longer sets $_, and single croaks on a
       second result, where 1.x warned. Rows are fetched 100 at a time,
       in the shape the ekorn_slice attribute gives, replacing slice,
-      cache_size and their defaults.
+      cache_size and their defaults; all, without stages, fetches the
+      rest at once, close to the DBI's own speed.
     - Stages, 1.x's transformations, follow the bind values. Each takes
       a value as its argument and in $_, and returns nothing to drop it,
       one value, or several. Stop, from DBIx::Squirrel::Stop, ends a

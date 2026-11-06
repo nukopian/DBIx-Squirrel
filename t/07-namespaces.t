@@ -34,7 +34,7 @@ my %imported = (
     'DBIx::Squirrel::Errors'   => [qw(croak  is_ref)],
     'DBIx::Squirrel::Gather'   => [qw(croakf is_coderef)],
     'DBIx::Squirrel::Iterator' =>
-        [qw(at_caller croakf is_coderef iterator_going split_stages weaken)],
+        [qw(at_caller croakf is_coderef is_plain_arrayref iterator_going split_stages weaken)],
     'DBIx::Squirrel::Pipeline'     => [qw(croak  croakf is_coderef is_ref)],
     'DBIx::Squirrel::Placeholders' => [qw(croakf uniq)],
     'DBIx::Squirrel::Result'       =>

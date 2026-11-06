@@ -239,6 +239,36 @@ subtest 'what a stage can ask is a term, taking no arguments' => sub {
     is result_number // 'none', 'none',          'outside a stage too';
 };
 
+subtest 'all, without stages, after next, across batches' => sub {
+    $dbh->do('CREATE TABLE m (id INTEGER PRIMARY KEY, name TEXT)');
+    $dbh->do('INSERT INTO m VALUES (?, ?)', $_, "n$_") for 1 .. 250;
+    my $sql = 'SELECT id, name FROM m ORDER BY id';
+
+    my $it = $dbh->iterate($sql);
+    $it->next for 1 .. 3;
+    my @rest = $it->all;
+    is [map { $_->[0] } @rest], [4 .. 250],
+        'the rest of the batch, then the rows after it';
+    is $rest[0],   [4, 'n4'], 'every column';
+    is $it->count, 250,       'all counted';
+    ok !$it->sth->{Active}, 'and the statement finished';
+
+    my $rs = $dbh->results($sql);
+    $rs->next for 1 .. 120;
+    my @objects = $rs->all;
+    is [map { $_->id } @objects], [121 .. 250],
+        'as row objects, in the second batch';
+    isa_ok $objects[0], ['DBIx::Squirrel::Result'], 'each';
+
+    is [$dbh->iterate($sql, {ekorn_slice => [1]})->all]->[-1], ['n250'],
+        'with a slice of columns';
+    is [$dbh->iterate($sql, {ekorn_slice => {}})->all]->[0],
+        {id => 1, name => 'n1'},
+        'or of hashes';
+    is [$dbh->iterate($sql, {ekorn_slice => []})->all]->[0], [1, 'n1'],
+        'or of every column';
+};
+
 subtest 'column_names' => sub {
     my $it = $dbh->iterate('SELECT id, name AS Who FROM artist ORDER BY id');
     is [$it->column_names], [qw(id Who)], 'executing the statement first';

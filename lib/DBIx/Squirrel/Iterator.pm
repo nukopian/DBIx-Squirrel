@@ -6,6 +6,8 @@ use experimental qw(builtin);
 
 use builtin qw(weaken);
 
+use Ref::Util qw(is_plain_arrayref);
+
 use DBIx::Squirrel::Context  qw();
 use DBIx::Squirrel::Errors   qw(at_caller croakf);
 use DBIx::Squirrel::Pipeline qw();
@@ -82,6 +84,10 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     $sth->finish if $sth->{Active};
     $state->{Iterator} = $self;
     weaken $state->{Iterator};
+    # An empty array slice fetches every column, as no slice does, but the
+    # DBI takes its slower way given one, so it's given none.
+    my $slice = $self->_slice;
+    $slice = undef if is_plain_arrayref($slice) && !@$slice;
     my %fresh = (
         executed     => 1,
         done         => 0,
@@ -90,7 +96,7 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
         produced     => 0,
         original     => undef,
         column_names => [],
-        slice        => $self->_slice,
+        slice        => $slice,
     );
     @$self{keys %fresh} = values %fresh;
     $self->{done} = 1
@@ -152,11 +158,35 @@ sub _take ($self) {
 # the results given, and counting it as it's made, for
 # DBIx::Squirrel::Context.
 sub _drain ($self, $results) {
+    return _rest($self, $results) unless @{ $self->{stages} };
     my $next = $self->{next};
     while (my($result) = $next->()) {
         push @$results, $result;
         $self->{produced}++;
     }
+    return;
+}
+
+# Without stages, the rows are the results: add what's left of the batch
+# fetched last, and the rest of the rows, fetched at once, to the results
+# given, rather than one at a time from the source. A subclass's _row
+# makes something of each, as the source does.
+sub _rest ($self, $results) {
+    my $sth   = $self->{sth};
+    my $first = @$results;
+    push @$results, splice @{ $self->{buffer} };
+    my $rows = at_caller {
+        $sth->{Active} && $sth->{NUM_OF_FIELDS}
+            ? $sth->fetchall_arrayref($self->{slice})
+            : undef;
+    };
+    push @$results, @$rows if $rows;
+    return if @$results == $first;
+    if (my $row = $self->can('_row')) {
+        $_ = $self->$row($_) for @$results[$first .. $#$results];
+    }
+    $self->{produced} += @$results - $first;
+    $self->{original}  = $results->[-1];
     return;
 }
 
