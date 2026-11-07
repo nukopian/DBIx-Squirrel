@@ -208,6 +208,50 @@ and the chat, and Iain finds them impermanent.
 roadmap and its records, and nothing in the repository, or Claude's
 memory, points into it.
 
+## 7. A Decisions line near the top of each record, as Ekorn-Pipeline has
+
+**From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
+28a0d86148bb1f1b06a14a6be510e6b43c78d665)
+**Waiting on:** nothing
+
+**What:** Iain found a settled decision easy to miss in a record, its
+answer on the same line as its question with the options after it,
+and asked for a summary near the top, shared with DBIx-Squirrel so the
+rules stay the same. Ekorn-Pipeline made it in the commit above; make
+the same three changes, word for word:
+
+1. **CLAUDE.md, "## The roadmap",** in the bullet "An item's questions
+   are settled before work on it starts", after "checked once settled,
+   with the answer, the date and why.", add: "A **Decisions:** line
+   under the record's status sums them up, each settled or open in a
+   few words, so its state shows at a glance."
+2. **`docs/changes/README.md`, "How a record is kept",** in the bullet
+   "Its questions are settled first", after "which the record says.",
+   add: "A **Decisions:** line under the status sums them up, each
+   settled or open in a few words, so the record's state shows at a
+   glance; it changes in the commit that settles one."
+3. **The template there,** between its Status and Origin lines, add,
+   with a blank line either side:
+
+   ```markdown
+   **Decisions:** D1 settled: the answer, in a few words. D2 open: the question, in a few words. | None.
+   ```
+
+To see Ekorn-Pipeline's:
+
+```
+git -C ~/Git/github.com/nukopian/Ekorn-Pipeline show 28a0d86148bb1f1b06a14a6be510e6b43c78d665
+```
+
+Any record made before this, from task 6's plan doc, gets the line
+too.
+
+**Why:** a record's state should show at a glance, without reading
+down to its Decisions.
+
+**Done when:** the rule is in CLAUDE.md and `docs/changes/README.md`,
+the template has the line, and every record has it.
+
 ## 2. Trial, then release, v2.0.3 on Ekorn::Pipeline
 
 **When:** from 2026-11-09, once Ekorn::Pipeline v0.1.0 is released
