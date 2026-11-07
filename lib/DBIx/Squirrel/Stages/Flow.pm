@@ -4,13 +4,15 @@ package DBIx::Squirrel::Stages::Flow;
 
 use Exporter qw(import);
 
-use Ekorn::Pipeline::Stages::Flow qw(:all);
+use Ekorn::Pipeline::Stages::Flow qw(take drop take_while drop_while);
 
-# A facade over Ekorn::Pipeline::Stages::Flow, exporting what it exports,
-# whatever that becomes.
-our @EXPORT      = @Ekorn::Pipeline::Stages::Flow::EXPORT;        ## no critic (Modules::ProhibitAutomaticExportation)
-our @EXPORT_OK   = @Ekorn::Pipeline::Stages::Flow::EXPORT_OK;
-our %EXPORT_TAGS = %Ekorn::Pipeline::Stages::Flow::EXPORT_TAGS;
+# A facade over Ekorn::Pipeline::Stages::Flow, exporting DBIx::Squirrel's
+# own list of its functions, imported from it by name, so a name
+# Ekorn::Pipeline drops fails here, as the module loads, and one it
+# adds isn't exported until it's listed here.
+our @EXPORT      = qw(take drop);                          ## no critic (Modules::ProhibitAutomaticExportation)
+our @EXPORT_OK   = (@EXPORT, qw(take_while drop_while));
+our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 1;
 __END__
@@ -28,9 +30,11 @@ DBIx::Squirrel::Stages::Flow - stages taking or dropping values: take, drop, tak
 =head1 DESCRIPTION
 
 DBIx::Squirrel's name for L<Ekorn::Pipeline::Stages::Flow>, which
-describes its stages in full: C<take>, C<drop>, C<take_while> and C<drop_while>. It exports what that module exports,
-by default and on request, so a stage added there is here too. It's
-here to stay, beside DBIx::Squirrel's own stages, such as
+describes its stages in full. It exports C<take> and C<drop> by
+default, and C<take_while> and C<drop_while> on request, or all four
+with C<:all>: Ekorn's functions, from a list of DBIx::Squirrel's own,
+so a stage added there reaches this module only once it's listed here.
+It's here to stay, beside DBIx::Squirrel's own stages, such as
 L<DBIx::Squirrel::Stages::Rows>.
 
 =head1 SEE ALSO

@@ -79,7 +79,8 @@ Unreleased
       DBIx::Squirrel::Pipeline, Stop, Gather and Pipes, and the stages
       in DBIx::Squirrel::Stages::Flow, Batch and Taps, are
       DBIx::Squirrel's names for its modules, and stay: each is a
-      subclass of Ekorn's, or exports what Ekorn's exports. A stage that
+      subclass of Ekorn's, or exports Ekorn's functions, from a list of
+      its own. A stage that
       catches errors throws a stop on if it isa Ekorn::Pipeline::Stop,
       which every stop is, including those the canned stages throw.
     - results returns a DBIx::Squirrel::Results, replacing

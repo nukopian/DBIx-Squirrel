@@ -22,9 +22,10 @@ unchanged, so the code to change is small:
   inside Ekorn are still reported at the user's line.
 - Pipeline, Stop, Gather, Pipes and Stages::Flow, Batch and Taps stay,
   as a permanent facade: subclasses of Ekorn's modules, or exporting
-  what they export, copied from their lists when loaded, so a stage
-  added to Ekorn is here too. DBIx::Squirrel always inherits from
-  Ekorn, never the reverse. Iain decided this on 2026-11-07, and it's
+  their functions, imported by name from lists of DBIx::Squirrel's own,
+  so a function Ekorn drops fails as the module loads, and one it adds
+  reaches DBIx::Squirrel only once it's listed. DBIx::Squirrel always
+  inherits from Ekorn, never the reverse. Iain decided this on 2026-11-07, and it's
   done, on the branch.
 - The documented way to throw a stop on in a stage that catches errors
   becomes `die $e if $e isa 'Ekorn::Pipeline::Stop';`. Checking for
@@ -33,7 +34,8 @@ unchanged, so the code to change is small:
 - The tests stay, and test DBIx::Squirrel's behaviour through its own
   names, so a change in Ekorn that its users would notice fails here;
   only the class names they expect changed. `t/07-namespaces.t` checks
-  that the facade exports what Ekorn does. The docs say where the
+  that the facade's lists stay as documented, and name only functions
+  Ekorn still exports. The docs say where the
   pipeline lives, and `Changes` says so too. Done, on the branch; the
   condition coverage floor went from 88 to 87, as the pipeline's
   conditions, all covered, left `lib/`.

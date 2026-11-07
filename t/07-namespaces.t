@@ -102,17 +102,46 @@ subtest 'both handle classes inherit pipe and tap' => sub {
     }
 };
 
+# A package's export lists: its @EXPORT, @EXPORT_OK and %EXPORT_TAGS.
+sub exports_of ($package) {
+    no strict 'refs';    ## no critic (TestingAndDebugging::ProhibitNoStrict)
+    return (
+        [@{ "${package}::EXPORT" }],
+        [@{ "${package}::EXPORT_OK" }],
+        {%{ "${package}::EXPORT_TAGS" }},
+    );
+}
+
 # The pipeline is Ekorn::Pipeline's, behind a facade of DBIx::Squirrel's
-# names, which exports what Ekorn's modules export, whatever that becomes.
+# names: each exports Ekorn's functions from a list of its own, which
+# stays as documented, and names only functions Ekorn still exports.
 subtest 'the facades follow Ekorn::Pipeline' => sub {
-    for my $name (qw(Gather Stop Stages::Batch Stages::Flow Stages::Taps)) {
-        my($ours, $theirs) = ("DBIx::Squirrel::$name", "Ekorn::Pipeline::$name");
-        no strict 'refs';    ## no critic (TestingAndDebugging::ProhibitNoStrict)
-        is \@{ "${ours}::$_" }, \@{ "${theirs}::$_" }, "$ours\'s \@$_"
-            for qw(EXPORT EXPORT_OK);
-        is \%{ "${ours}::EXPORT_TAGS" }, \%{ "${theirs}::EXPORT_TAGS" },
-            "$ours\'s %EXPORT_TAGS";
-        for my $function (@{ "${theirs}::EXPORT" }, @{ "${theirs}::EXPORT_OK" }) {
+    # DBIx::Squirrel's own lists, as its POD documents them: @EXPORT, and
+    # the rest of @EXPORT_OK, all of which an :all tag holds.
+    my %exports = (
+        'Gather'        => [[qw(gather)]],
+        'Stop'          => [[qw(Stop)]],
+        'Stages::Batch' => [[qw(batch collect)], []],
+        'Stages::Flow'  => [[qw(take drop)], [qw(take_while drop_while)]],
+        'Stages::Taps'  => [[qw(peek count_into)], [qw(dump_to)]],
+    );
+    for my $name (sort keys %exports) {
+        my($ours,    $theirs) = ("DBIx::Squirrel::$name", "Ekorn::Pipeline::$name");
+        my($default, $more)   = @{ $exports{$name} };
+        my($export, $ok, $tags) = exports_of($ours);
+        is $export, $default, "$ours\'s \@EXPORT";
+        if (defined $more) {
+            is $ok, [@$default, @$more], "$ours\'s \@EXPORT_OK";
+            is $tags, {all => [@$default, @$more]}, "$ours\'s %EXPORT_TAGS";
+        }
+        else {
+            is $ok, [], "$ours has no \@EXPORT_OK";
+            is $tags, {}, "$ours has no %EXPORT_TAGS";
+        }
+        my($their_export, $their_ok) = exports_of($theirs);
+        my %theirs = map { $_ => 1 } @$their_export, @$their_ok;
+        for my $function (@$default, @{ $more // [] }) {
+            ok $theirs{$function}, "$theirs exports $function";
             ref_is $ours->can($function), $theirs->can($function),
                 "$ours\'s $function is $theirs\'s";
         }
