@@ -218,7 +218,8 @@ the cut-over between its steps 1 and 2.
 ## 6. Keep a roadmap and change records, with ids, as Ekorn-Pipeline does
 
 **From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
-1109d1352d9773062c1916e00ee2964bd3670fec)
+1109d1352d9773062c1916e00ee2964bd3670fec, and its dogfooding rule in
+89e12df5d6ebaaf7246ef0d99920a3f554420a4e)
 **Waiting on:** nothing
 
 **What:** Iain decided on 2026-11-07 that DBIx-Squirrel and
@@ -283,7 +284,21 @@ git -C ~/Git/github.com/nukopian/Ekorn-Pipeline show 1109d1352d9773062c1916e00ee
    open a numbered, unchecked decision in its item's record. Decisions
    already made stay in the commits and CLAUDE.md that hold them. Then
    leave the doc alone; deleting it is Iain's call.
-6. **Your memory:** if it says decisions go in a Claude Doc, change it
+6. **Dogfooding:** in "## Planned work", after the Messages bullet,
+   add Ekorn-Pipeline's bullet "`TODO.md`'s tasks and messages are the
+   only way the two sessions talk" (from
+   89e12df5d6ebaaf7246ef0d99920a3f554420a4e), word for word but for
+   its second sentence, which here reads: "Now that DBIx-Squirrel and
+   Ekorn-Pipeline are separate, DBIx-Squirrel dogfoods Ekorn-Pipeline,
+   as its first user, and what this session finds using it matters
+   most: friction, a gap, a clumsy name, or a stage it had to write
+   that others would want." So, while working on DBIx::Squirrel, note
+   anything in Ekorn::Pipeline that got in the way or would help, and
+   send it to Ekorn-Pipeline as a message; never write into its
+   `ROADMAP.md` or records. In `docs/changes/README.md`'s template, the
+   Origin also offers "a message from Ekorn-Pipeline's session,
+   2026-11-08 (Ekorn-Pipeline <commit>)".
+7. **Your memory:** if it says decisions go in a Claude Doc, change it
    to say they go in records, as CLAUDE.md now does.
 
 **Why:** Claude Docs sit outside the repository, apart from the history
