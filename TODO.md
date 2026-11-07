@@ -20,28 +20,41 @@ unchanged, so the code to change is small:
   as Iain decided on 2026-11-07.
 - `Errors.pm`'s `@INTERNAL` takes Ekorn's packages, so errors raised
   inside Ekorn are still reported at the user's line.
-- Pipeline, Stop, Gather, Pipes and Stages::Flow, Batch and Taps go, or
-  stay as re-exports and subclasses of Ekorn's (always DBIx::Squirrel
-  inheriting from Ekorn, never the reverse). Which, for each, is Iain's
-  decision. Nothing of 2.x is released yet, so no user's code names
-  them.
+- Pipeline, Stop, Gather, Pipes and Stages::Flow, Batch and Taps stay,
+  as a permanent facade: subclasses of Ekorn's modules, or exporting
+  their functions, imported by name from lists of DBIx::Squirrel's own,
+  so a function Ekorn drops fails as the module loads, and one it adds
+  reaches DBIx::Squirrel only once it's listed. DBIx::Squirrel always
+  inherits from Ekorn, never the reverse. Iain decided this on
+  2026-11-07, and it's done, on the branch.
+- `cpanfile` requires Ekorn::Pipeline `>= v0.1.0, < v0.2.0`, as Iain
+  decided on 2026-11-07: the facade keeps the names, not the
+  behaviour, so a v0.2.0 reaches DBIx::Squirrel's users only once it's
+  been tested here and the range moved. Done, on the branch.
 - The documented way to throw a stop on in a stage that catches errors
   becomes `die $e if $e isa 'Ekorn::Pipeline::Stop';`. Checking for
   `DBIx::Squirrel::Stop` would miss the stops Ekorn's own stages throw,
   such as `take`'s.
-- The tests of the modules that go are Ekorn-Pipeline's now; their
-  subtests on SQLite stay here. The docs (REFERENCE.md, HOWTO.md and
-  the README, about 55 mentions) follow the code, and `Changes` says
-  where the pipeline now lives.
+- The tests stay, and test DBIx::Squirrel's behaviour through its own
+  names, so a change in Ekorn that its users would notice fails here;
+  only the class names they expect changed. `t/07-namespaces.t` checks
+  that the facade's lists stay as documented, and name only functions
+  Ekorn still exports. The docs say where the pipeline lives, and
+  `Changes` says so too. Done, on the branch; the condition coverage
+  floor went from 88 to 87, as the pipeline's conditions, all covered,
+  left `lib/`.
 
-Until Ekorn::Pipeline is on CPAN, the branch installs it from GitHub:
-its `test.yml` adds `ekorn-pipeline` to the branches it runs on, and a
-step before `cpanm --installdeps` runs
-`cpanm https://github.com/nukopian/Ekorn-Pipeline.git`. Locally, install
-it from the working copy into each DBIx-Squirrel-2 library:
+Until Ekorn::Pipeline v0.1.0 is released (a trial is on CPAN, but
+CPAN's index, which `cpanm` installs from, doesn't hold trials), the
+branch installs it from GitHub: its `test.yml` adds `ekorn-pipeline`
+to the branches it runs on, and a step before `cpanm --installdeps`
+runs `cpanm https://github.com/nukopian/Ekorn-Pipeline.git@develop`.
+Locally, install it from the same place into each DBIx-Squirrel-2
+library, not from the working copy, which may hold a session's
+unfinished work, and again after each change to it there:
 
 ```
-for p in perl-5.36.3 perl-5.38.5 perl-5.40.5 perl-5.42.3 perl-5.44.0; do perlbrew exec --quiet --with "${p}@dbix-squirrel-2" cpanm --notest ~/Git/github.com/nukopian/Ekorn-Pipeline || echo "FAILED on ${p}"; done
+for p in perl-5.36.3 perl-5.38.5 perl-5.40.5 perl-5.42.3 perl-5.44.0; do perlbrew exec --quiet --with "${p}@dbix-squirrel-2" cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop || echo "FAILED on ${p}"; done
 ```
 
 A change Ekorn-Pipeline needs, found here, is made there, in its own
@@ -53,12 +66,14 @@ DBIx::Squirrel's pipeline modules, so nothing has to be kept for them,
 and DBIx::Squirrel, as Ekorn::Pipeline's first real user, tests the
 names Ekorn::Pipeline is about to make public.
 
-**Done when:** the branch passes every CI job and `scripts/coverage`,
-on Ekorn::Pipeline as released (task 2), and Iain has reviewed it. It's
-merged into `develop` by a fast-forward, after `develop`'s other
-commits, if any, are rebased under it; the CI steps that install from
-GitHub go in that merge, and the branch is deleted. The note on it in
-docs/MAINTAINING.md's Branches goes too.
+**Done when:** tasks 4 and 5 are done on the branch, it passes every
+CI job and `scripts/coverage` on Ekorn::Pipeline as released, and
+Iain has reviewed it. It's merged into `develop` by a fast-forward,
+after `develop`'s other commits are rebased under it; the CI steps
+that install from GitHub go in that merge, and the branch is deleted.
+The note on it in docs/MAINTAINING.md's Branches goes too. `TODO.md`
+is the same on both, so where the rebase conflicts in it, the
+branch's text is the answer.
 
 ## 4. Link to Ekorn::Pipeline's docs, and say what stage authors need
 
@@ -106,52 +121,6 @@ its version range assumes v0.1.x never changes behaviour.
 `@CARP_NOT` line is documented, and a test pins `next` after a stage
 dies; the tests pass and the PDFs are read.
 
-## 2. Trial, then release, v2.0.3 on Ekorn::Pipeline
-
-**When:** from 2026-11-09, once Ekorn::Pipeline v0.1.0 is released
-(not as a trial: CPAN Testers install dependencies from the index,
-which doesn't hold trials, so a DBIx::Squirrel trial needing an
-Ekorn::Pipeline trial would mostly report a missing prerequisite) and
-task 1 is merged.
-
-**What:** v2.0.2 went to CPAN as a trial on 2026-11-06,
-`DBIx-Squirrel-v2.0.2-TRIAL.tar.gz`, built from
-`b733ac03d2b3d374538046e5fb39dc495ae68abc`. v2.0.0 and v2.0.1 went
-before it, on 2026-11-05 and 2026-11-06. With the pipeline moved to
-Ekorn::Pipeline, the v2.0.2 trial no longer tests what the release
-would be, so, as the version moves on with each trial (Iain's decision
-of 2026-11-06), v2.0.2 stays a trial and the next is v2.0.3:
-
-1. Read the v2.0.2 trial's reports first, as a failure in them may
-   still apply; fix one on `develop`, with a test.
-2. Require Ekorn::Pipeline at the version released, in `cpanfile`, and
-   regenerate `META.json` and `Build.PL` with `minil build`.
-3. Upload a trial of v2.0.3, as "A trial release" in
-   docs/MAINTAINING.md says, and read its reports.
-4. Iain decides whether v2.0.3 is ready to release.
-
-The reports' counts by version and grade, then each report that didn't
-pass, with a link to it:
-
-```
-curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r 'group_by(.version)[] | group_by(.grade)[] | "\(.[0].version) \(.[0].grade): \(length)"'
-curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r '.[] | select((.version | startswith("v2") or startswith("2")) and .grade != "pass") | "\(.version) \(.grade) \(.osname) perl \(.perl) https://www.cpantesters.org/cpan/report/\(.guid)"'
-```
-
-An `na` from a Perl older than 5.36 is expected, and needs nothing.
-CPAN doesn't index a trial, so `cpanm DBIx::Squirrel` still installs
-1.6.5 meanwhile.
-
-**Why:** CI runs on Linux and macOS only. A trial is tested on
-platforms it doesn't cover, such as Windows and the BSDs, and now
-against Ekorn::Pipeline as CPAN installs it, before 2.x replaces 1.6.5
-for everyone.
-
-**Done when:** Iain has decided. If it's to release, the commit that
-removes this file starts release day, as `main` can't take it; the
-release then follows "Making a release" in docs/MAINTAINING.md, with
-the cut-over between its steps 1 and 2.
-
 ## 5. Take on what Ekorn-Pipeline's security review found
 
 **From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
@@ -192,3 +161,56 @@ copy on `develop` has it, and loses it when task 1 replaces that copy.
 
 **Done when:** the actions are pinned on the branch that's merged, and
 the two notes are in DBIx::Squirrel's docs.
+
+## 2. Trial, then release, v2.0.3 on Ekorn::Pipeline
+
+**When:** from 2026-11-09, once Ekorn::Pipeline v0.1.0 is released
+(not as a trial: CPAN Testers install dependencies from the index,
+which doesn't hold trials, so a DBIx::Squirrel trial needing an
+Ekorn::Pipeline trial would mostly report a missing prerequisite) and
+task 1 is merged.
+
+**What:** v2.0.2 went to CPAN as a trial on 2026-11-06,
+`DBIx-Squirrel-v2.0.2-TRIAL.tar.gz`, built from
+`b733ac03d2b3d374538046e5fb39dc495ae68abc`. v2.0.0 and v2.0.1 went
+before it, on 2026-11-05 and 2026-11-06. With the pipeline moved to
+Ekorn::Pipeline, the v2.0.2 trial no longer tests what the release
+would be, so, as the version moves on with each trial (Iain's decision
+of 2026-11-06), v2.0.2 stays a trial and the next is v2.0.3:
+
+1. Read the v2.0.2 trial's reports first, as a failure in them may
+   still apply; fix one on `develop`, with a test.
+2. Check `cpanfile`'s range for Ekorn::Pipeline, `>= v0.1.0, < v0.2.0`,
+   takes the version released, and regenerate `META.json` and
+   `Build.PL` with `minil build` if it changes. Iain decided on
+   2026-11-07 that DBIx::Squirrel requires a range of Ekorn's 0.x
+   releases, rather than waiting for Ekorn 1.0 or having Ekorn promise
+   no breaks in 0.x: the facade keeps the names, but not the behaviour,
+   such as when a `gather` stage is made, so a v0.2.0, which may break
+   it, reaches DBIx::Squirrel's users only once it's been tested here
+   and the range moved.
+3. Upload a trial of v2.0.3, as "A trial release" in
+   docs/MAINTAINING.md says, and read its reports.
+4. Iain decides whether v2.0.3 is ready to release.
+
+The reports' counts by version and grade, then each report that didn't
+pass, with a link to it:
+
+```
+curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r 'group_by(.version)[] | group_by(.grade)[] | "\(.[0].version) \(.[0].grade): \(length)"'
+curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r '.[] | select((.version | startswith("v2") or startswith("2")) and .grade != "pass") | "\(.version) \(.grade) \(.osname) perl \(.perl) https://www.cpantesters.org/cpan/report/\(.guid)"'
+```
+
+An `na` from a Perl older than 5.36 is expected, and needs nothing.
+CPAN doesn't index a trial, so `cpanm DBIx::Squirrel` still installs
+1.6.5 meanwhile.
+
+**Why:** CI runs on Linux and macOS only. A trial is tested on
+platforms it doesn't cover, such as Windows and the BSDs, and now
+against Ekorn::Pipeline as CPAN installs it, before 2.x replaces 1.6.5
+for everyone.
+
+**Done when:** Iain has decided. If it's to release, the commit that
+removes this file starts release day, as `main` can't take it; the
+release then follows "Making a release" in docs/MAINTAINING.md, with
+the cut-over between its steps 1 and 2.
