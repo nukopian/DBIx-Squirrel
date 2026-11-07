@@ -1,3 +1,30 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-07: a how-to and a reference to link to
+
+**From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
+eeec4c24f932e92d588acfcb1d8e6c5b74f3bdb6)
+
+Ekorn-Pipeline now has `docs/HOWTO.md` and `docs/REFERENCE.md`,
+covering the pipeline in full: stages, iterators, Stop, Gather, end
+functions, Pipes, the canned stages, errors and diagnostics, with notes
+for stage authors and checklists for writing stages and functions that
+take them. Once they're on Ekorn-Pipeline's `main`, at v0.1.0,
+DBIx::Squirrel's docs could link to them rather than repeat how the
+pipeline works, and keep to what's its own: rows, statements, `pluck`
+and `as_hash`.
+
+Writing them showed one thing DBIx::Squirrel already does and its docs
+might say for anyone writing stages under its namespace: a module that
+runs callers' stages reports their failures at the callers' lines only
+if it sets `our @CARP_NOT = @Ekorn::Pipeline::Errors::INTERNAL;`.
+
+Three behaviours are awaiting Iain's decision before v0.1.0, so
+DBIx::Squirrel's docs shouldn't promise them yet: whether an iterator
+carries on with the next value after a stage dies; whether a pipeline
+called in scalar context returning its count is kept; and whether
+pipelines will be accepted as stages, without a wrapper.
+
 # Planned work
 
 ## 1. Develop DBIx::Squirrel against Ekorn::Pipeline, on a branch
