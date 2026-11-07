@@ -1,30 +1,3 @@
-# Messages
-
-## From Ekorn-Pipeline, 2026-11-07: a how-to and a reference to link to
-
-**From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
-eeec4c24f932e92d588acfcb1d8e6c5b74f3bdb6)
-
-Ekorn-Pipeline now has `docs/HOWTO.md` and `docs/REFERENCE.md`,
-covering the pipeline in full: stages, iterators, Stop, Gather, end
-functions, Pipes, the canned stages, errors and diagnostics, with notes
-for stage authors and checklists for writing stages and functions that
-take them. Once they're on Ekorn-Pipeline's `main`, at v0.1.0,
-DBIx::Squirrel's docs could link to them rather than repeat how the
-pipeline works, and keep to what's its own: rows, statements, `pluck`
-and `as_hash`.
-
-Writing them showed one thing DBIx::Squirrel already does and its docs
-might say for anyone writing stages under its namespace: a module that
-runs callers' stages reports their failures at the callers' lines only
-if it sets `our @CARP_NOT = @Ekorn::Pipeline::Errors::INTERNAL;`.
-
-Three behaviours are awaiting Iain's decision before v0.1.0, so
-DBIx::Squirrel's docs shouldn't promise them yet: whether an iterator
-carries on with the next value after a stage dies; whether a pipeline
-called in scalar context returning its count is kept; and whether
-pipelines will be accepted as stages, without a wrapper.
-
 # Planned work
 
 ## 1. Develop DBIx::Squirrel against Ekorn::Pipeline, on a branch
@@ -118,6 +91,52 @@ name, at once, not read as 0 with a warning.
 
 **Done when:** each check that guards a number takes `/a`, with a test
 giving it a digit of another script.
+
+## 4. Link to Ekorn::Pipeline's docs, and say what stage authors need
+
+**From:** a message from Ekorn-Pipeline's session, 2026-11-07
+(Ekorn-Pipeline eeec4c24f932e92d588acfcb1d8e6c5b74f3bdb6)
+**Waiting on:** Ekorn::Pipeline v0.1.0, with its `docs/HOWTO.md` and
+`docs/REFERENCE.md` on its `main`, and Iain's decisions there on the
+three behaviours below.
+
+**When:** on the branch `ekorn-pipeline`, before it merges, as the
+merge waits for v0.1.0 too (task 1).
+
+**What:**
+
+1. Where DBIx::Squirrel's reference, how-to and POD explain how the
+   pipeline works, link to Ekorn-Pipeline's how-to and reference
+   instead, keeping to what's DBIx::Squirrel's own: rows, statements,
+   iterators and result sets, `pipe` and `tap` on handles,
+   DBIx::Squirrel::Context, `pluck` and `as_hash`. Show Iain the
+   trimmed sections before committing: how much to cut is his call.
+2. Say, for anyone writing stages under DBIx::Squirrel's namespace,
+   that a module running its callers' stages reports their failures
+   at the callers' lines only with
+   `our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;`, which takes in
+   Ekorn's packages, as DBIx::Squirrel's own modules do. Errors.pm's
+   POD doesn't document `@INTERNAL` yet, so document it there too.
+3. Ekorn-Pipeline is deciding, before v0.1.0, whether an iterator
+   carries on with the next value after a stage dies; whether a
+   pipeline called in scalar context returns its count; and whether a
+   pipeline is accepted as a stage. DBIx::Squirrel's docs promise none
+   of them, and its code uses none but the first: an iterator's `next`
+   pulls through Ekorn's iterator, so what Ekorn decides is what `next`
+   does after a stage dies, and no test here pins it
+   (`t/14-iterate.t`'s "errors are reported at the caller" checks the
+   error, never a `next` after it). Add a test that does, and say it
+   in the reference's "When a stage dies". Mention the other two only
+   if Iain wants DBIx::Squirrel to.
+
+**Why:** two copies of how the pipeline works would drift apart, and
+Ekorn's is the one kept up to date with the code. A behaviour no test
+pins could change in a v0.1.x without DBIx::Squirrel noticing, though
+its version range assumes v0.1.x never changes behaviour.
+
+**Done when:** the docs link to Ekorn's for the pipeline, the
+`@CARP_NOT` line is documented, and a test pins `next` after a stage
+dies; the tests pass and the PDFs are read.
 
 ## 2. Trial, then release, v2.0.3 on Ekorn::Pipeline
 
