@@ -151,3 +151,44 @@ for everyone.
 removes this file starts release day, as `main` can't take it; the
 release then follows "Making a release" in docs/MAINTAINING.md, with
 the cut-over between its steps 1 and 2.
+
+## 5. Take on what Ekorn-Pipeline's security review found
+
+**From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
+b5e28c4e48c9615366e9b34191c8c4d86ace0865)
+**Waiting on:** nothing
+
+**What:** a security review of Ekorn::Pipeline found nothing serious.
+Three of its findings apply here:
+
+1. **Pin the CI's actions to commits.** `test.yml`, on `develop` and
+   on `ekorn-pipeline`, uses `actions/checkout@v7` and
+   `shogo82148/actions-setup-perl@v1`, tags their owners can move to
+   other code. Ekorn-Pipeline pinned them in
+   b5e28c4e48c9615366e9b34191c8c4d86ace0865, to the commits the tags
+   point at today:
+
+   ```
+   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+   uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
+   ```
+
+2. **Say `croakf`'s format is a literal,** wherever DBIx::Squirrel's
+   docs tell stage authors to use it (task 4 may be the place): values
+   go in as arguments, never as the format, as a format made from data
+   does what its directives say (`%999999999s` makes a gigabyte). Its
+   own calls all use literals already.
+3. **Say `dump_to` is for debugging,** where DBIx::Squirrel documents
+   it: it writes values in full, and Data::Dumper doesn't escape
+   control characters. Ekorn's wording, in its Stages::Taps POD, is in
+   b791dbe951c8f30e3807ccaada630226adf965d3.
+
+A fourth needs nothing here: a stop that isn't an array, as by blessing
+a hash into the class, made `@$e` die inside the pipeline. Ekorn fixed
+it in f6827617d2c2cc820e56bea07cf6534f9b728a3a; DBIx::Squirrel's own
+copy on `develop` has it, and loses it when task 1 replaces that copy.
+
+**Why:** the same code and the same CI, so the same exposure.
+
+**Done when:** the actions are pinned on the branch that's merged, and
+the two notes are in DBIx::Squirrel's docs.
