@@ -25,13 +25,21 @@ the library, and how to build a Perl or the database drivers on Iain's Mac.
   is on it. Visitors to GitHub see `main`, so its README describes what
   CPAN installs.
 - There are no feature branches, for now: changes are made one at a time.
-  The one exception is `ekorn-pipeline`, an experimental branch where
+  An experiment may have a branch, named for its roadmap item's id, as
+  below. The one exception is `ekorn-pipeline`, an experimental branch where
   DBIx::Squirrel is developed against Ekorn::Pipeline, from 2026-11-07;
   `TODO.md` has the plan. It's merged into `develop` by a fast-forward,
   and this note goes with it.
 - `TODO.md`, when there is one, lists work planned for a later session.
   It's committed on `develop` and gone before a release, so it never
   reaches `main` ([CLAUDE.md](../CLAUDE.md#planned-work) has the rules).
+- [ROADMAP.md](../ROADMAP.md) lists what the project means to do, each
+  item with an id such as 2026-0001, and [docs/changes/](changes/README.md)
+  keeps a record of each planned change. Both are public, on `main`,
+  but not in the CPAN tarball
+  ([CLAUDE.md](../CLAUDE.md#the-roadmap) has the rules).
+- A branch for a roadmap item, when there is one, is named for its id,
+  as `experiment/2026-0001-a-title`.
 
 `main` is protected on GitHub. Pushes to it need signed commits, a linear
 history (no merge commits) and CI passing on every job, and it can't be
@@ -133,7 +141,9 @@ git log --format='%h %G? %s' -10
 ```
 
 Add what changed for users to `Changes` under Unreleased, in the same
-commit.
+commit. A change that ships a roadmap item ends its line with the
+item's id, as "(roadmap 2026-0001)", names it in the entry's precis,
+and takes the item off [ROADMAP.md](../ROADMAP.md).
 
 ## A trial release
 
@@ -251,8 +261,9 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
 3. **Turn Unreleased into the release** in [Changes](../Changes): rename
    the heading to the version and date, as `v2.0.2 2026-10-22`, start the
    entry with a sentence that sums it up (it becomes the tag's title),
-   and add an empty Unreleased above it. The entry's lines stay indented
-   by four spaces:
+   then the precis of the roadmap items it ships, by id, and add an
+   empty Unreleased above it. Each shipped item's record says "shipped
+   in" the version. The entry's lines stay indented by four spaces:
 
    ```
    Unreleased
