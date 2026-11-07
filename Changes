@@ -77,6 +77,14 @@ Unreleased
       batch and collect, passing values on in batches, or all at once;
       and DBIx::Squirrel::Stages::Taps's peek and count_into, with
       dump_to on request, looking at values as they go by.
+    - The pipeline is Ekorn::Pipeline, a distribution of its own, which
+      began here, and which DBIx::Squirrel requires.
+      DBIx::Squirrel::Pipeline, Stop, Gather and Pipes, and the stages
+      in DBIx::Squirrel::Stages::Flow, Batch and Taps, are
+      DBIx::Squirrel's names for its modules, and stay: each is a
+      subclass of Ekorn's, or exports what Ekorn's exports. A stage that
+      catches errors throws a stop on if it isa Ekorn::Pipeline::Stop,
+      which every stop is, including those the canned stages throw.
     - results returns a DBIx::Squirrel::Results, replacing
       DBIx::Squirrel::rs, whose rows are DBIx::Squirrel::Result objects,
       replacing DBIx::Squirrel::rc: one class for each list of column

@@ -2,53 +2,15 @@ use v5.36;
 
 package DBIx::Squirrel::Stages::Batch;
 
-use Exporter  qw(import);
-use Ref::Util qw(is_coderef);
+use Exporter qw(import);
 
-use DBIx::Squirrel::Errors qw(croakf);
-use DBIx::Squirrel::Gather qw(gather);
+use Ekorn::Pipeline::Stages::Batch qw(:all);
 
-use namespace::clean -except => 'import';
-
-our @EXPORT = qw(batch collect);    ## no critic (Modules::ProhibitAutomaticExportation)
-
-our @EXPORT_OK   = @EXPORT;
-our %EXPORT_TAGS = (all => \@EXPORT_OK);
-
-# Croak at the line that called DBIx::Squirrel.
-our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
-
-# Return a stage passing values on in batches of $size, as array
-# references, the last, shorter batch once the values run out.
-sub batch ($size) {
-    croakf 'Expected a batch size of 1 or more'
-        if !defined $size || $size !~ m( \A \d+ \z )x || $size < 1;
-    return gather {
-        my @batch;
-        my $stage = sub ($value) {
-            push @batch, $value;
-            return @batch < $size ? () : [splice @batch];
-        };
-        my $end = sub () { @batch ? [splice @batch] : () };
-        return ($stage, $end);
-    };
-}
-
-# Return a stage holding every value, and, once they run out, passing on
-# what the block given makes of them, or, without one, an array of them.
-sub collect : prototype(;&) ($make = undef) {
-    croakf 'Expected a code reference'
-        if defined $make && !is_coderef($make);
-    return gather {
-        my @values;
-        my $stage = sub ($value) { push @values, $value; return };
-        my $end   = sub () {
-            my @all = splice @values;
-            return $make ? $make->(@all) : \@all;
-        };
-        return ($stage, $end);
-    };
-}
+# A facade over Ekorn::Pipeline::Stages::Batch, exporting what it exports,
+# whatever that becomes.
+our @EXPORT      = @Ekorn::Pipeline::Stages::Batch::EXPORT;        ## no critic (Modules::ProhibitAutomaticExportation)
+our @EXPORT_OK   = @Ekorn::Pipeline::Stages::Batch::EXPORT_OK;
+our %EXPORT_TAGS = %Ekorn::Pipeline::Stages::Batch::EXPORT_TAGS;
 
 1;
 __END__
@@ -61,74 +23,19 @@ DBIx::Squirrel::Stages::Batch - stages gathering values: batch and collect
 
 =head1 SYNOPSIS
 
-    use DBIx::Squirrel::Stages::Batch;    # batch and collect
-
-    # Rows 500 at a time
-    my $batches = $dbh->iterate('SELECT id, name FROM track', batch(500));
-    while (my($batch) = $batches->next) { ... }
-
-    # Every row, as one result
-    my $rows = $dbh->iterate('SELECT id, name FROM artist', collect)->single;
-
-    # One value made from every row
-    my $names = $dbh->iterate(
-        'SELECT name FROM artist ORDER BY name',
-        sub { $_->[0] },
-        collect { join ', ', @_ },
-    )->single;
+    use DBIx::Squirrel::Stages::Batch;
 
 =head1 DESCRIPTION
 
-Stages that gather values, and pass them on together. Both are made
-with L<DBIx::Squirrel::Gather>, so what they hold starts afresh on each
-run, and both pass on what they still hold once the values run out.
-Each function returns a stage, and checks what it's given when it's
-called, not on each value.
-
-=head1 FUNCTIONS
-
-Both are exported by default, and with C<:all>.
-
-=head2 batch
-
-    batch($size)
-
-Passes values on in batches of C<$size>, each an array reference. Once
-the values run out, the last batch, which may be shorter, goes on.
-There's no empty batch: without values, there's no batch at all.
-
-=head2 collect
-
-    collect
-    collect { ... }
-
-Holds every value, and once they run out, passes on an array reference
-of them, or, given a block, what the block returns, called once with
-the values as its arguments. What it returns goes through the stages
-after it, as what a stage returns does: nothing, one value, or several.
-It's called even without values, so C<collect> still gives a result:
-an empty array, or what the block makes of none.
-
-C<collect> holds every value until the end, so the whole result is in
-memory at once; C<batch> holds no more than one batch.
-
-=head1 DIAGNOSTICS
-
-=over
-
-=item Expected a batch size of 1 or more
-
-C<batch> was given something other than a whole number above 0.
-
-=item Expected a code reference
-
-C<collect> was given something other than a block or code reference.
-
-=back
+DBIx::Squirrel's name for L<Ekorn::Pipeline::Stages::Batch>, which
+describes its stages in full: C<batch> and C<collect>. It exports what that module exports,
+by default and on request, so a stage added there is here too. It's
+here to stay, beside DBIx::Squirrel's own stages, such as
+L<DBIx::Squirrel::Stages::Rows>.
 
 =head1 SEE ALSO
 
-L<DBIx::Squirrel>, L<DBIx::Squirrel::Gather>
+L<Ekorn::Pipeline::Stages::Batch>, L<DBIx::Squirrel>
 
 =head1 AUTHOR
 

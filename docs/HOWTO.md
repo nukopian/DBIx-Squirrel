@@ -752,7 +752,7 @@ my @safe = $dbh->iterate(
             return uc $row->[0];
         }
         catch ($e) {
-            die $e if $e isa 'DBIx::Squirrel::Stop';
+            die $e if $e isa 'Ekorn::Pipeline::Stop';
             return 'unknown';
         }
     },

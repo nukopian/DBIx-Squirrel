@@ -132,6 +132,12 @@ up again and again: `take` and `drop` from
 The reference says how to write stages of your own, to work alongside
 them.
 
+The pipeline is [Ekorn::Pipeline](https://github.com/nukopian/Ekorn-Pipeline),
+which began here, and is now a distribution of its own, for any
+function to take stages from its caller. DBIx::Squirrel's names for its
+modules stay, and the stages that need a database, such as `pluck`,
+are DBIx::Squirrel's own.
+
 ### 5. Have rows as objects.
 
     my $album = $dbh->results('SELECT * FROM album WHERE id = :id', id => 2)->single;

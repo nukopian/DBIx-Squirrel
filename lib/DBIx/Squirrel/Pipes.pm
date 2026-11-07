@@ -2,29 +2,15 @@ use v5.36;
 
 package DBIx::Squirrel::Pipes;
 
-use DBIx::Squirrel::Pipeline qw();
+use Ekorn::Pipeline::Pipes qw();
 
-# Run the invocant through a pipeline of stages.
-sub pipe ($self, @stages) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my $pipeline = DBIx::Squirrel::Pipeline->new(@stages);
-    my @results  = $pipeline->($self);
-    return wantarray ? @results : $results[0];
-}
-
-# Run the invocant through a pipeline of stages for their side-effects, and
-# return the invocant.
-sub tap ($self, @stages) {
-    my $pipeline = DBIx::Squirrel::Pipeline->new(@stages);
-    $pipeline->($self);
-    return $self;
-}
+# A facade over Ekorn::Pipeline::Pipes, inheriting its methods.
+our @ISA = ('Ekorn::Pipeline::Pipes');
 
 1;
 __END__
 
 =encoding utf8
-
-=for stopwords invocant
 
 =head1 NAME
 
@@ -34,7 +20,7 @@ DBIx::Squirrel::Pipes - the pipe and tap methods of DBIx::Squirrel's handles
 
     package My::Handle;
 
-    our @ISA = ('Some::Parent', 'DBIx::Squirrel::Pipes');
+    our \@ISA = ('Some::Parent', 'DBIx::Squirrel::Pipes');
 
 =head1 DESCRIPTION
 
@@ -43,25 +29,14 @@ L<DBIx::Squirrel/tap>. DBIx::Squirrel's database and statement handle
 classes, L<DBIx::Squirrel::db> and L<DBIx::Squirrel::st>, inherit from
 it as well as from the DBI's own.
 
-=head1 METHODS
-
-=head2 pipe
-
-    @results = $h->pipe(@stages);
-
-Runs the invocant through a pipeline of stages, and returns what comes
-out of the last one, as L<DBIx::Squirrel/pipe> describes.
-
-=head2 tap
-
-    $h = $h->tap(@stages);
-
-Runs the invocant through a pipeline of stages for their side effects,
-and returns the invocant, as L<DBIx::Squirrel/tap> describes.
+It's a subclass of L<Ekorn::Pipeline::Pipes>, whose methods it
+inherits: C<pipe> runs the handle through a pipeline of stages and
+returns what comes out, and C<tap> runs it through them for their side
+effects and returns the handle.
 
 =head1 SEE ALSO
 
-L<DBIx::Squirrel>, L<DBIx::Squirrel::Pipeline>
+L<Ekorn::Pipeline::Pipes>, L<DBIx::Squirrel>
 
 =head1 AUTHOR
 

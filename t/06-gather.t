@@ -71,7 +71,7 @@ subtest 'a stage made with gather is a code reference' => sub {
     my $stage = gather {
         sub { $_ }
     };
-    isa_ok $stage, ['DBIx::Squirrel::Gather'], 'a gather';
+    isa_ok $stage, ['Ekorn::Pipeline::Gather'], 'an Ekorn::Pipeline::Gather';
     ok is_coderef($stage),            'and a code reference';
     ok lives { $class->new($stage) }, 'which a pipeline takes';
 };

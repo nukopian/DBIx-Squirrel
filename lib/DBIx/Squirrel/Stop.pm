@@ -2,24 +2,16 @@ use v5.36;
 
 package DBIx::Squirrel::Stop;
 
-use Carp     qw(croak);
 use Exporter qw(import);
 
-use namespace::clean -except => 'import';
+use Ekorn::Pipeline::Stop;
 
-use overload '""' => sub { "Stop used outside a pipeline\n" }, fallback => 1;
-
-our @EXPORT = qw(Stop);    ## no critic (Modules::ProhibitAutomaticExportation)
-
-# Syntactic sugar throwing the exception that stops a pipeline early.
-sub Stop (@data) {
-    return __PACKAGE__->throw(@data);
-}
-
-# Throws an exception that stops a pipeline early.
-sub throw ($class, @data) {
-    croak bless([$class, @data], $class);
-}
+# A facade over Ekorn::Pipeline::Stop: a subclass of it, exporting what
+# it exports, whatever that becomes.
+our @ISA         = ('Ekorn::Pipeline::Stop');
+our @EXPORT      = @Ekorn::Pipeline::Stop::EXPORT;        ## no critic (Modules::ProhibitAutomaticExportation)
+our @EXPORT_OK   = @Ekorn::Pipeline::Stop::EXPORT_OK;
+our %EXPORT_TAGS = %Ekorn::Pipeline::Stop::EXPORT_TAGS;
 
 1;
 __END__
@@ -45,12 +37,16 @@ DBIx::Squirrel::Stop - end a DBIx::Squirrel pipeline early
 
 =head1 DESCRIPTION
 
-A stop is the exception that ends a DBIx::Squirrel pipeline early and
-quietly. The rest of the stage that throws it doesn't run. The values
-already out of the pipeline are kept, the values the stop carries go
-on through the stages after it, and nothing else is processed. Stages
-after the one that stopped, made with L<DBIx::Squirrel::Gather>, still
-have their end functions called.
+DBIx::Squirrel's pipeline is L<Ekorn::Pipeline>'s, and this module is
+DBIx::Squirrel's name for L<Ekorn::Pipeline::Stop>, which describes the
+stop in full. It's a subclass of it, and exports what it exports:
+C<Stop>, by default. It's here to stay, so code written with it keeps
+working.
+
+A stop is the exception that ends a pipeline early and quietly. The
+rest of the stage that throws it doesn't run. The values already out of
+the pipeline are kept, the values the stop carries go on through the
+stages after it, and nothing else is processed.
 
 =head1 FUNCTIONS
 
@@ -59,12 +55,9 @@ have their end functions called.
     Stop();
     Stop(@values);
 
-Throws a stop carrying C<@values>, the last values of the stage that
-throws it. It's the same as
-C<< DBIx::Squirrel::Stop->throw(@values) >>, and is exported by
-default.
-
-To keep it out of your namespace:
+Throws a stop carrying C<@values>. It's L<Ekorn::Pipeline::Stop/Stop>,
+so the stop is an Ekorn::Pipeline::Stop. To keep it out of your
+namespace:
 
     use DBIx::Squirrel::Stop ();
 
@@ -72,40 +65,31 @@ To keep it out of your namespace:
 
 =head2 throw
 
-    DBIx::Squirrel::Stop->throw;
     DBIx::Squirrel::Stop->throw(@values);
     My::Stop->throw(@values);
 
-Throws a stop carrying C<@values>, blessed into the class it was called
-on, so a subclass of DBIx::Squirrel::Stop throws one of its own.
-
-=head1 THE STOP
-
-A stop is an array reference, blessed into its class. Its first element
-is that class, and the rest are the values it was thrown with:
-
-    eval { DBIx::Squirrel::Stop->throw(1, 2) };
-    my $stop = $@;    # bless ['DBIx::Squirrel::Stop', 1, 2], 'DBIx::Squirrel::Stop'
-
-A pipeline sends the values on through the stages after the one that
-threw it, as that stage's last values.
-
-As a string, a stop is "Stop used outside a pipeline", with a newline,
-which is what a user sees if one is thrown with nothing to catch it.
+Inherited from L<Ekorn::Pipeline::Stop/throw>: throws a stop carrying
+C<@values>, blessed into the class it was called on. A subclass of
+DBIx::Squirrel::Stop is a subclass of Ekorn::Pipeline::Stop too, so the
+pipeline stops for it.
 
 =head2 Catching errors in a stage
 
-A pipeline recognises a stop with C<isa>, so a subclass of
-DBIx::Squirrel::Stop stops it too. A stage that catches errors
-itself, with C<eval> or C<try>, should throw a stop on again:
+A stage that catches errors itself, with C<eval> or C<try>, should
+throw a stop on again. Check for Ekorn::Pipeline::Stop, which every
+stop is, whether thrown with C<Stop>, by this class, or by a canned
+stage such as C<take>:
 
     sub ($row) {
         try { ... }
         catch ($e) {
-            die $e if $e isa 'DBIx::Squirrel::Stop';
+            die $e if $e isa 'Ekorn::Pipeline::Stop';
             ...
         }
     }
+
+Checking for DBIx::Squirrel::Stop would miss the stops that aren't
+thrown by this class.
 
 =head1 DIAGNOSTICS
 
@@ -119,7 +103,7 @@ A stop was thrown where no pipeline was running to catch it.
 
 =head1 SEE ALSO
 
-L<DBIx::Squirrel>
+L<Ekorn::Pipeline::Stop>, L<DBIx::Squirrel>
 
 =head1 AUTHOR
 
