@@ -78,7 +78,8 @@ Unreleased
       and DBIx::Squirrel::Stages::Taps's peek and count_into, with
       dump_to on request, looking at values as they go by.
     - The pipeline is Ekorn::Pipeline, a distribution of its own, which
-      began here, and which DBIx::Squirrel requires.
+      began here, and which DBIx::Squirrel requires, from v0.1.0 up to,
+      but not including, v0.2.0.
       DBIx::Squirrel::Pipeline, Stop, Gather and Pipes, and the stages
       in DBIx::Squirrel::Stages::Flow, Batch and Taps, are
       DBIx::Squirrel's names for its modules, and stay: each is a

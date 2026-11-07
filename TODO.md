@@ -86,8 +86,15 @@ of 2026-11-06), v2.0.2 stays a trial and the next is v2.0.3:
 
 1. Read the v2.0.2 trial's reports first, as a failure in them may
    still apply; fix one on `develop`, with a test.
-2. Require Ekorn::Pipeline at the version released, in `cpanfile`, and
-   regenerate `META.json` and `Build.PL` with `minil build`.
+2. Check `cpanfile`'s range for Ekorn::Pipeline, `>= v0.1.0, < v0.2.0`,
+   takes the version released, and regenerate `META.json` and
+   `Build.PL` with `minil build` if it changes. Iain decided on
+   2026-11-07 that DBIx::Squirrel requires a range of Ekorn's 0.x
+   releases, rather than waiting for Ekorn 1.0 or having Ekorn promise
+   no breaks in 0.x: the facade keeps the names, but not the behaviour,
+   such as when a `gather` stage is made, so a v0.2.0, which may break
+   it, reaches DBIx::Squirrel's users only once it's been tested here
+   and the range moved.
 3. Upload a trial of v2.0.3, as "A trial release" in
    docs/MAINTAINING.md says, and read its reports.
 4. Iain decides whether v2.0.3 is ready to release.
