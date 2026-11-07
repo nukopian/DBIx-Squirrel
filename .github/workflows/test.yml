@@ -2,7 +2,7 @@ name: test
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, ekorn-pipeline]
   pull_request:
 
 permissions:
@@ -27,6 +27,9 @@ jobs:
       - uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: ${{ matrix.perl }}
+      # Until Ekorn::Pipeline is on CPAN, from its develop on GitHub.
+      - name: ekorn-pipeline
+        run: cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop
       - name: dependencies
         run: cpanm --notest --installdeps --with-develop .
       - name: yath
@@ -41,6 +44,9 @@ jobs:
       - uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: "5.44"
+      # Until Ekorn::Pipeline is on CPAN, from its develop on GitHub.
+      - name: ekorn-pipeline
+        run: cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop
       - name: dependencies
         run: cpanm --notest --installdeps --with-develop .
       - name: perlcritic
@@ -63,6 +69,9 @@ jobs:
       - uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: "5.36"
+      # Until Ekorn::Pipeline is on CPAN, from its develop on GitHub.
+      - name: ekorn-pipeline
+        run: cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop
       - name: dependencies
         run: cpanm --notest --installdeps --with-develop .
       - name: coverage
