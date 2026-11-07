@@ -2,60 +2,15 @@ use v5.36;
 
 package DBIx::Squirrel::Stages::Taps;
 
-use Data::Dumper qw();
-use Exporter     qw(import);
-use Ref::Util    qw(is_coderef is_plain_scalarref);
-use Scalar::Util qw(openhandle);
+use Exporter qw(import);
 
-use DBIx::Squirrel::Errors qw(croakf);
-use DBIx::Squirrel::Gather qw(gather);
+use Ekorn::Pipeline::Stages::Taps qw(:all);
 
-use namespace::clean -except => 'import';
-
-our @EXPORT = qw(peek count_into);    ## no critic (Modules::ProhibitAutomaticExportation)
-
-our @EXPORT_OK   = (@EXPORT, qw(dump_to));
-our %EXPORT_TAGS = (all => \@EXPORT_OK);
-
-# Croak at the line that called DBIx::Squirrel.
-our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
-
-# Return a stage calling the block given with each value, for its side
-# effects, and passing the value on.
-sub peek : prototype(&) ($block) {
-    croakf 'Expected a code reference' unless is_coderef($block);
-    return sub ($value) {
-        $block->($value);
-        return $value;
-    };
-}
-
-# Return a stage counting the values into the scalar given, from 0 on
-# each run, and passing them on.
-sub count_into ($count) {
-    croakf 'Expected a reference to a scalar'
-        unless is_plain_scalarref($count);
-    return gather {
-        $$count = 0;
-        return sub ($value) {
-            $$count++;
-            return $value;
-        };
-    };
-}
-
-# Return a stage writing each value, with Data::Dumper, to the filehandle
-# given, or STDERR, and passing it on.
-sub dump_to ($fh = \*STDERR) {
-    croakf 'Expected an open filehandle' unless defined openhandle($fh);
-    return sub ($value) {
-        local $Data::Dumper::Indent   = 1;
-        local $Data::Dumper::Sortkeys = 1;
-        local $Data::Dumper::Terse    = 1;
-        print { $fh } Data::Dumper::Dumper($value);
-        return $value;
-    };
-}
+# A facade over Ekorn::Pipeline::Stages::Taps, exporting what it exports,
+# whatever that becomes.
+our @EXPORT      = @Ekorn::Pipeline::Stages::Taps::EXPORT;        ## no critic (Modules::ProhibitAutomaticExportation)
+our @EXPORT_OK   = @Ekorn::Pipeline::Stages::Taps::EXPORT_OK;
+our %EXPORT_TAGS = %Ekorn::Pipeline::Stages::Taps::EXPORT_TAGS;
 
 1;
 __END__
@@ -68,83 +23,19 @@ DBIx::Squirrel::Stages::Taps - stages run for their side effects: peek, count_in
 
 =head1 SYNOPSIS
 
-    use DBIx::Squirrel::Stages::Taps;    # peek and count_into
-
-    my $read = 0;
-    my @names = $dbh->iterate(
-        'SELECT name FROM artist',
-        count_into(\$read),                 # how many rows were read
-        peek { log_row($_) },               # each row, as it goes by
-        sub { $_->[0] },
-    )->all;
-
-    use DBIx::Squirrel::Stages::Taps qw(dump_to);
-
-    $dbh->iterate('SELECT * FROM artist', dump_to)->all;    # to STDERR
+    use DBIx::Squirrel::Stages::Taps;
 
 =head1 DESCRIPTION
 
-Stages that look at each value as it goes by, and pass it on as it is,
-for logging, counting or debugging. A stage passes on what it returns,
-so a stage of your own run for its side effects has to return its
-value; these do that for you. Each function returns a stage, and checks
-what it's given when it's called, not on each value.
-
-They're stages, so they work wherever stages do: in an iterator or
-result set, in a Sugar statement, or on a handle with C<pipe> and
-C<tap>, whose first value is the handle:
-
-    $dbh->tap(peek { say "connected to $_->{Name}" })->do(...);
-
-=head1 FUNCTIONS
-
-C<peek> and C<count_into> are exported by default; C<dump_to> on
-request, or all three with C<:all>.
-
-=head2 peek
-
-    peek { ... }
-
-Calls the block with each value, in C<$_> and as its argument, and
-passes the value on, whatever the block returns.
-
-=head2 count_into
-
-    count_into(\$count)
-
-Counts the values into C<$count>, setting it to 0 at the start of each
-run, so after a run it holds how many values went by, even when that's
-none.
-
-=head2 dump_to
-
-    dump_to($fh)
-    dump_to
-
-Writes each value to C<$fh>, or to STDERR, with Data::Dumper, its keys
-in order, and passes it on.
-
-=head1 DIAGNOSTICS
-
-=over
-
-=item Expected a code reference
-
-C<peek> was given something other than a block or code reference.
-
-=item Expected a reference to a scalar
-
-C<count_into> was given something other than a reference to a scalar.
-
-=item Expected an open filehandle
-
-C<dump_to> was given something other than an open filehandle.
-
-=back
+DBIx::Squirrel's name for L<Ekorn::Pipeline::Stages::Taps>, which
+describes its stages in full: C<peek>, C<count_into> and C<dump_to>. It exports what that module exports,
+by default and on request, so a stage added there is here too. It's
+here to stay, beside DBIx::Squirrel's own stages, such as
+L<DBIx::Squirrel::Stages::Rows>.
 
 =head1 SEE ALSO
 
-L<DBIx::Squirrel>, L<DBIx::Squirrel::Gather>, L<Data::Dumper>
+L<Ekorn::Pipeline::Stages::Taps>, L<DBIx::Squirrel>
 
 =head1 AUTHOR
 

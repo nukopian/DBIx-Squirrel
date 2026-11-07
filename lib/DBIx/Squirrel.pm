@@ -405,12 +405,13 @@ without importing it.
 
 Stop works by throwing an exception, which the pipeline catches. So a
 stage that catches errors itself, with C<eval> or C<try>, should throw a
-stop on again:
+stop on again. Check for Ekorn::Pipeline::Stop, which every stop is,
+including those the canned stages throw, such as C<take>'s:
 
     sub ($row) {
         try { ... }
         catch ($e) {
-            die $e if $e isa 'DBIx::Squirrel::Stop';
+            die $e if $e isa 'Ekorn::Pipeline::Stop';
             ...
         }
     }

@@ -102,4 +102,28 @@ subtest 'both handle classes inherit pipe and tap' => sub {
     }
 };
 
+# The pipeline is Ekorn::Pipeline's, behind a facade of DBIx::Squirrel's
+# names, which exports what Ekorn's modules export, whatever that becomes.
+subtest 'the facades follow Ekorn::Pipeline' => sub {
+    for my $name (qw(Gather Stop Stages::Batch Stages::Flow Stages::Taps)) {
+        my($ours, $theirs) = ("DBIx::Squirrel::$name", "Ekorn::Pipeline::$name");
+        no strict 'refs';    ## no critic (TestingAndDebugging::ProhibitNoStrict)
+        is \@{ "${ours}::$_" }, \@{ "${theirs}::$_" }, "$ours\'s \@$_"
+            for qw(EXPORT EXPORT_OK);
+        is \%{ "${ours}::EXPORT_TAGS" }, \%{ "${theirs}::EXPORT_TAGS" },
+            "$ours\'s %EXPORT_TAGS";
+        for my $function (@{ "${theirs}::EXPORT" }, @{ "${theirs}::EXPORT_OK" }) {
+            ref_is $ours->can($function), $theirs->can($function),
+                "$ours\'s $function is $theirs\'s";
+        }
+    }
+    isa_ok 'DBIx::Squirrel::Pipeline', ['Ekorn::Pipeline'],        'Pipeline';
+    isa_ok 'DBIx::Squirrel::Pipes',    ['Ekorn::Pipeline::Pipes'], 'Pipes';
+    isa_ok 'DBIx::Squirrel::Stop',     ['Ekorn::Pipeline::Stop'],  'Stop';
+
+    my $p = DBIx::Squirrel::Pipeline->new(sub { $_ * 2 });
+    isa_ok $p, ['DBIx::Squirrel::Pipeline'], 'a pipeline made with it';
+    is [$p->(1, 2)], [2, 4], 'which can be called';
+};
+
 done_testing;

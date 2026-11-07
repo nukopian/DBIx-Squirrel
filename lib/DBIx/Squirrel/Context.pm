@@ -4,8 +4,8 @@ package DBIx::Squirrel::Context;
 
 use Exporter qw(import);
 
-use DBIx::Squirrel::Errors   qw();
-use DBIx::Squirrel::Pipeline qw();
+use DBIx::Squirrel::Errors qw();
+use Ekorn::Pipeline        qw();
 
 our @EXPORT_OK = qw(iterator result_number result_original);
 
@@ -32,7 +32,7 @@ sub result_number : prototype() () {
 # result an end function is making, which comes from every row.
 sub result_original : prototype() () {
     my $iterator = $context{iterator};
-    return $iterator && !DBIx::Squirrel::Pipeline::ending()
+    return $iterator && !Ekorn::Pipeline::ending()
         ? $iterator->{original}
         : undef;
 }

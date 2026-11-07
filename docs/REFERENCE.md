@@ -798,6 +798,15 @@ their own, with `DBIx::Squirrel::Pipeline`, or on a handle, with
 load the DBI, so a function of your own can take stages from its
 caller, as `iterate` does, and run what it returns through them.
 
+The pipeline is [Ekorn::Pipeline](https://github.com/nukopian/Ekorn-Pipeline)'s,
+a distribution of its own, which began here, for any function to take
+stages from its caller. `DBIx::Squirrel::Pipeline`, `DBIx::Squirrel::Stop`,
+`DBIx::Squirrel::Gather` and the stages in `DBIx::Squirrel::Stages::Flow`,
+`Batch` and `Taps` are DBIx::Squirrel's names for its modules, and are
+here to stay: each is a subclass of Ekorn's, or exports what Ekorn's
+exports. Stages that need DBIx::Squirrel, such as those in
+`DBIx::Squirrel::Stages::Rows`, are its own.
+
 ### Stages
 
 A stage is called with one value, as its argument and in `$_`, so write
@@ -912,19 +921,24 @@ A stop is an exception: an array reference blessed into its class, whose
 first element is the class and the rest the values it carries.
 `throw` blesses it into the class it's called on, so a subclass of
 `DBIx::Squirrel::Stop` throws one of its own, and a pipeline recognises
-it with `isa`, so a subclass stops a pipeline too.
+it with `isa`, so a subclass stops a pipeline too. `DBIx::Squirrel::Stop`
+is a subclass of `Ekorn::Pipeline::Stop`, and `Stop()` is Ekorn's, so
+every stop is an `Ekorn::Pipeline::Stop`, though not every one is a
+`DBIx::Squirrel::Stop`.
 
 As a string, a stop is `Stop used outside a pipeline`, which is what a
 user sees if one is thrown with nothing to catch it.
 
 A stage that catches errors itself, with `eval` or `try`, should throw
-a stop on again:
+a stop on again. Check for `Ekorn::Pipeline::Stop`, which every stop
+is, including those the canned stages throw, such as `take`'s; checking
+for `DBIx::Squirrel::Stop` would miss them:
 
 ```perl
 sub ($row) {
     try { ... }
     catch ($e) {
-        die $e if $e isa 'DBIx::Squirrel::Stop';
+        die $e if $e isa 'Ekorn::Pipeline::Stop';
         ...
     }
 }

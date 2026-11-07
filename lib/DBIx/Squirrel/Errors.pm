@@ -8,24 +8,30 @@ use Carp      qw(croak);
 use Exporter  qw(import);
 use Ref::Util qw(is_coderef is_ref);
 
+use Ekorn::Pipeline::Errors qw();
+
 use namespace::clean -except => 'import';
 
 our @EXPORT_OK = qw(at_caller croakf failed in_method);
 
 # The packages Carp looks past, to croak at the line that called
 # DBIx::Squirrel: the DBI's own, which call DBIx::Squirrel's methods, such
-# as prepare from prepare_cached, and DBIx::Squirrel's. Each of them that
-# croaks takes this list as its @CARP_NOT.
-our @INTERNAL = qw(
-    DBI                           DBI::db                  DBI::st
-    DBD::_::common                DBD::_::db               DBD::_::st
-    DBIx::Squirrel                DBIx::Squirrel::db       DBIx::Squirrel::st
-    DBIx::Squirrel::Context       DBIx::Squirrel::Errors   DBIx::Squirrel::Gather
-    DBIx::Squirrel::Iterator      DBIx::Squirrel::Pipeline DBIx::Squirrel::Pipes
-    DBIx::Squirrel::Placeholders  DBIx::Squirrel::Result   DBIx::Squirrel::Results
-    DBIx::Squirrel::Sugar         DBIx::Squirrel::Util
-    DBIx::Squirrel::Stages::Batch DBIx::Squirrel::Stages::Flow
-    DBIx::Squirrel::Stages::Rows  DBIx::Squirrel::Stages::Taps
+# as prepare from prepare_cached, Ekorn::Pipeline's, which runs
+# DBIx::Squirrel's stages, and DBIx::Squirrel's. Each of them that croaks
+# takes this list as its @CARP_NOT.
+our @INTERNAL = (
+    qw(
+        DBI                           DBI::db                  DBI::st
+        DBD::_::common                DBD::_::db               DBD::_::st
+        DBIx::Squirrel                DBIx::Squirrel::db       DBIx::Squirrel::st
+        DBIx::Squirrel::Context       DBIx::Squirrel::Errors   DBIx::Squirrel::Gather
+        DBIx::Squirrel::Iterator      DBIx::Squirrel::Pipeline DBIx::Squirrel::Pipes
+        DBIx::Squirrel::Placeholders  DBIx::Squirrel::Result   DBIx::Squirrel::Results
+        DBIx::Squirrel::Sugar         DBIx::Squirrel::Util
+        DBIx::Squirrel::Stages::Batch DBIx::Squirrel::Stages::Flow
+        DBIx::Squirrel::Stages::Rows  DBIx::Squirrel::Stages::Taps
+    ),
+    @Ekorn::Pipeline::Errors::INTERNAL,
 );
 our @CARP_NOT = @INTERNAL;
 

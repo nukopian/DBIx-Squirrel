@@ -20,19 +20,23 @@ unchanged, so the code to change is small:
   as Iain decided on 2026-11-07.
 - `Errors.pm`'s `@INTERNAL` takes Ekorn's packages, so errors raised
   inside Ekorn are still reported at the user's line.
-- Pipeline, Stop, Gather, Pipes and Stages::Flow, Batch and Taps go, or
-  stay as re-exports and subclasses of Ekorn's (always DBIx::Squirrel
-  inheriting from Ekorn, never the reverse). Which, for each, is Iain's
-  decision. Nothing of 2.x is released yet, so no user's code names
-  them.
+- Pipeline, Stop, Gather, Pipes and Stages::Flow, Batch and Taps stay,
+  as a permanent facade: subclasses of Ekorn's modules, or exporting
+  what they export, copied from their lists when loaded, so a stage
+  added to Ekorn is here too. DBIx::Squirrel always inherits from
+  Ekorn, never the reverse. Iain decided this on 2026-11-07, and it's
+  done, on the branch.
 - The documented way to throw a stop on in a stage that catches errors
   becomes `die $e if $e isa 'Ekorn::Pipeline::Stop';`. Checking for
   `DBIx::Squirrel::Stop` would miss the stops Ekorn's own stages throw,
   such as `take`'s.
-- The tests of the modules that go are Ekorn-Pipeline's now; their
-  subtests on SQLite stay here. The docs (REFERENCE.md, HOWTO.md and
-  the README, about 55 mentions) follow the code, and `Changes` says
-  where the pipeline now lives.
+- The tests stay, and test DBIx::Squirrel's behaviour through its own
+  names, so a change in Ekorn that its users would notice fails here;
+  only the class names they expect changed. `t/07-namespaces.t` checks
+  that the facade exports what Ekorn does. The docs say where the
+  pipeline lives, and `Changes` says so too. Done, on the branch; the
+  condition coverage floor went from 88 to 87, as the pipeline's
+  conditions, all covered, left `lib/`.
 
 Until Ekorn::Pipeline is on CPAN, the branch installs it from GitHub:
 its `test.yml` adds `ekorn-pipeline` to the branches it runs on, and a
