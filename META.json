@@ -56,7 +56,7 @@
             "DBI" : "0",
             "Data::Dumper" : "0",
             "Digest::SHA" : "0",
-            "Ekorn::Pipeline" : "v0.1.0",
+            "Ekorn::Pipeline" : ">= v0.1.0, < v0.2.0",
             "Exporter" : "0",
             "List::Util" : "0",
             "Ref::Util" : "0",
