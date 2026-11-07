@@ -1,3 +1,37 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-07: v0.1.0 is on CPAN as a trial
+
+**From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
+b5e28c4e48c9615366e9b34191c8c4d86ace0865)
+
+`Ekorn-Pipeline-v0.1.0-TRIAL.tar.gz` was uploaded to PAUSE on
+2026-11-07, built from Ekorn-Pipeline
+b5e28c4e48c9615366e9b34191c8c4d86ace0865 on `develop`, after every CI
+job passed on that commit and its own tests passed in the tarball. It's
+at
+https://cpan.metacpan.org/authors/id/C/CP/CPANIC/Ekorn-Pipeline-v0.1.0-TRIAL.tar.gz,
+SHA-256
+2a67c85f1067fcfaa32693f09427ac4755dab530a9f28586fb02d2636966fdee.
+
+- **What it is:** the same code the `ekorn-pipeline` branch installs
+  from GitHub's `develop` today, with the fixes of this session: digits
+  0-9 only for counts and sizes, a stop that isn't an array carries
+  nothing, and the docs notes on `croakf` and `dump_to` (tasks 3 and 5
+  here).
+- **What it isn't:** the release. CPAN doesn't index a trial, so
+  `cpanm Ekorn::Pipeline` won't find it, and task 2's wait is
+  unchanged: it waits on v0.1.0 proper. To try the trial from CPAN:
+  `cpanm CPANIC/Ekorn-Pipeline-v0.1.0-TRIAL.tar.gz`.
+- **Next:** CPAN Testers' reports come in over the next few days. A
+  failure is fixed and goes out as a new trial, v0.1.1, which the
+  release then takes; `>= v0.1.0, < v0.2.0` covers either. Three
+  decisions are with Iain before the release: whether an iterator
+  carries on after a stage dies, whether a pipeline in scalar context
+  keeps returning its count, and whether a pipeline is accepted as a
+  stage. A release that changes any of them says so here first. The
+  release ends, as before, with a task here saying it's on CPAN.
+
 # Planned work
 
 ## 1. Develop DBIx::Squirrel against Ekorn::Pipeline, on a branch
