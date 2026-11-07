@@ -214,3 +214,87 @@ for everyone.
 removes this file starts release day, as `main` can't take it; the
 release then follows "Making a release" in docs/MAINTAINING.md, with
 the cut-over between its steps 1 and 2.
+
+## 6. Keep a roadmap and change records, with ids, as Ekorn-Pipeline does
+
+**From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
+1109d1352d9773062c1916e00ee2964bd3670fec)
+**Waiting on:** nothing
+
+**What:** Iain decided on 2026-11-07 that DBIx-Squirrel and
+Ekorn-Pipeline keep their planned work and decisions in the
+repository, in place of Claude Docs and GitHub issues: a `ROADMAP.md`,
+and a record of each planned change in `docs/changes/`, each item named
+by an id, its year and a four-digit serial, such as 2026-0001. The
+rules follow the shared practice grammar and scalar use, but with ids
+in place of numbers, decisions numbered and checked in the records,
+and a precis in `Changes`. Ekorn-Pipeline did it in the commit above;
+do likewise, copying its text from that commit, so the two say the
+same. To read a file there:
+
+```
+git -C ~/Git/github.com/nukopian/Ekorn-Pipeline show 1109d1352d9773062c1916e00ee2964bd3670fec:CLAUDE.md
+```
+
+1. **CLAUDE.md:**
+   - Copy the sections "## The roadmap" and "## Change records", whole,
+     from Ekorn-Pipeline's CLAUDE.md, to follow "## Planned work".
+     Where they name the project they're in ("`ROADMAP.md` holds what
+     Ekorn-Pipeline means to do"), say DBIx-Squirrel; the cross-project
+     example "DBIx-Squirrel 2026-0001" becomes "Ekorn-Pipeline
+     2026-0001". The opening paragraph of "The roadmap", saying the
+     rules are both projects', stays as it is. Replace the example
+     title and slug, "A stages() method" and `stages-method`, with your
+     own first item's.
+   - In "## Planned work", replace the end of the "`TODO.md` never
+     reaches `main`" bullet, from "each task done", with Ekorn's: "each
+     task done, or, to outlast the release, moved to `ROADMAP.md`, a
+     decision awaiting Iain with it, in its record. No GitHub issues or
+     Claude Docs for planned work or decisions, as Iain decided on
+     2026-11-07: they sit outside the repository, apart from the history
+     and the chat."
+   - In "## Commits", add to the `Changes` bullet, after "in the same
+     commit.": "Each entry opens with a precis, a short paragraph saying
+     what the release brings, naming by id the roadmap items it ships,
+     kept current as Unreleased grows: CPAN's users don't get the
+     roadmap, and the precis is their account of it."
+   - The opening's paragraph pointing to the Claude Doc "DBIx-Squirrel
+     successor: plan" goes: point to `ROADMAP.md` instead (see step 5).
+2. **`ROADMAP.md`:** copy Ekorn-Pipeline's opening, from "# Roadmap" up
+   to "## Now", saying DBIx-Squirrel for Ekorn-Pipeline, with "Last id:
+   none yet." until the first item, and the four groups with "Nothing
+   yet." The ids are this repository's own, from 2026-0001.
+3. **`docs/changes/README.md`:** copy Ekorn-Pipeline's, saying
+   DBIx-Squirrel for Ekorn-Pipeline, and, in the template's Origin, "a
+   TODO task from Ekorn-Pipeline's session (Ekorn-Pipeline <commit>)";
+   its list of records starts empty.
+4. **`docs/MAINTAINING.md`, `minil.toml`:** make Ekorn-Pipeline's
+   changes (`git -C ~/Git/github.com/nukopian/Ekorn-Pipeline show
+   1109d1352d9773062c1916e00ee2964bd3670fec -- docs/MAINTAINING.md
+   minil.toml`): the Branches bullets on the roadmap and a branch named
+   for an id; the `Changes` rule's "(roadmap 2026-0001)" and precis;
+   the precis and "shipped in" in "Making a release"'s step for
+   `Changes`; and `'^ROADMAP\.md$'` in `exclude_match`, so the tarball
+   leaves it out. Check with `minil dist` that `tar tzf` of the tarball
+   lists no `ROADMAP.md` or `docs/`, then remove the tarball.
+5. **The plan doc:** with Iain, go through "DBIx-Squirrel successor:
+   plan" (https://claude.ai/artifact/1cnZmM5LRgpgX3F6sF8VqB). Each part
+   still to be done becomes a roadmap item, and each decision still
+   open a numbered, unchecked decision in its item's record. Decisions
+   already made stay in the commits and CLAUDE.md that hold them. Then
+   leave the doc alone; deleting it is Iain's call.
+6. **Your memory:** if it says decisions go in a Claude Doc, change it
+   to say they go in records, as CLAUDE.md now does.
+
+**Why:** Claude Docs sit outside the repository, apart from the history
+and the chat, and Iain finds them impermanent. An id that sorts and
+never changes names an item in commits, records and branches for good,
+and both projects keeping the same rules lets either session read the
+other's plans.
+
+**Done when:** CLAUDE.md, `ROADMAP.md`, `docs/changes/README.md`,
+`docs/MAINTAINING.md` and `minil.toml` say what Ekorn-Pipeline's do,
+with DBIx-Squirrel's names; the plan doc's open work and decisions are
+in the roadmap and its records; and the tarball leaves both out.
+Tell Ekorn-Pipeline with a message in its `TODO.md` if anything in
+the rules didn't fit, so the two can be kept the same.
