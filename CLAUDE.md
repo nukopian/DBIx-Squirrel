@@ -347,6 +347,16 @@ early.
   path, so nothing of a session working there goes with it. Its tasks
   for DBIx-Squirrel come here the same way. It's the only other
   repository this one touches, as Iain decided on 2026-11-07.
+- **Messages go in a `# Messages` section, above `# Planned work`,** in
+  the same `TODO.md`, as Iain decided on 2026-11-07. A message is news
+  the other session should know, but needs no work of its own: what one
+  side has decided or done, or a change in plan. A message that asks
+  for work is a task instead. Each is a `##` heading saying who it's
+  from, the date and what it's about, with a **From:** line, sent as
+  `docs: a message from DBIx-Squirrel: ...`, committing only that file.
+  Read messages at the start of a session, with the tasks; the session
+  they're for removes each once read, in a commit saying what came of
+  it, and the heading with the last one.
 
 Why: planned work survives between sessions in the open, where Iain
 reviews it like any other change, and a release never carries an
