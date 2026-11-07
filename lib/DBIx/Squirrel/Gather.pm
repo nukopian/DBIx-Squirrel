@@ -4,13 +4,13 @@ package DBIx::Squirrel::Gather;
 
 use Exporter qw(import);
 
-use Ekorn::Pipeline::Gather;
+use Ekorn::Pipeline::Gather qw(gather);
 
-# A facade over Ekorn::Pipeline::Gather, exporting what it exports,
-# whatever that becomes.
-our @EXPORT      = @Ekorn::Pipeline::Gather::EXPORT;        ## no critic (Modules::ProhibitAutomaticExportation)
-our @EXPORT_OK   = @Ekorn::Pipeline::Gather::EXPORT_OK;
-our %EXPORT_TAGS = %Ekorn::Pipeline::Gather::EXPORT_TAGS;
+# A facade over Ekorn::Pipeline::Gather, exporting DBIx::Squirrel's
+# own list of its functions, imported from it by name, so a name
+# Ekorn::Pipeline drops fails here, as the module loads, and one it
+# adds isn't exported until it's listed here.
+our @EXPORT = qw(gather);    ## no critic (Modules::ProhibitAutomaticExportation)
 
 1;
 __END__
@@ -42,8 +42,9 @@ DBIx::Squirrel::Gather - a stage made afresh for each run, told when the values 
 =head1 DESCRIPTION
 
 DBIx::Squirrel's name for L<Ekorn::Pipeline::Gather>, which describes
-C<gather> in full. It exports what that module exports: C<gather>, by
-default. It's here to stay, so code written with it keeps working.
+C<gather> in full. It exports C<gather>, by default: Ekorn's
+function, from a list of DBIx::Squirrel's own. It's here to stay, so
+code written with it keeps working.
 
 C<gather> makes a stage afresh at the start of each run of a pipeline:
 each execution of an iterator or result set, and each call of a Sugar

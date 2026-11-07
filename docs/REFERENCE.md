@@ -803,9 +803,17 @@ a distribution of its own, which began here, for any function to take
 stages from its caller. `DBIx::Squirrel::Pipeline`, `DBIx::Squirrel::Stop`,
 `DBIx::Squirrel::Gather` and the stages in `DBIx::Squirrel::Stages::Flow`,
 `Batch` and `Taps` are DBIx::Squirrel's names for its modules, and are
-here to stay: each is a subclass of Ekorn's, or exports what Ekorn's
-exports. Stages that need DBIx::Squirrel, such as those in
-`DBIx::Squirrel::Stages::Rows`, are its own.
+here to stay: each is a subclass of Ekorn's, or exports Ekorn's
+functions, from a list of DBIx::Squirrel's own, so a function added to
+Ekorn::Pipeline reaches DBIx::Squirrel only once it's added to its
+list, and documented here. Stages that need DBIx::Squirrel, such as
+those in `DBIx::Squirrel::Stages::Rows`, are its own.
+
+The names are DBIx::Squirrel's, but the objects are Ekorn's. A stop
+from `Stop()` is an `Ekorn::Pipeline::Stop`, and a stage made with
+`gather` an `Ekorn::Pipeline::Gather`, which is what `ref` and `isa`
+see. That's deliberate: DBIx::Squirrel's classes inherit from Ekorn's,
+never the reverse, so Ekorn::Pipeline knows nothing of DBIx::Squirrel.
 
 ### Stages
 

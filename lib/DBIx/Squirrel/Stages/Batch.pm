@@ -4,13 +4,15 @@ package DBIx::Squirrel::Stages::Batch;
 
 use Exporter qw(import);
 
-use Ekorn::Pipeline::Stages::Batch qw(:all);
+use Ekorn::Pipeline::Stages::Batch qw(batch collect);
 
-# A facade over Ekorn::Pipeline::Stages::Batch, exporting what it exports,
-# whatever that becomes.
-our @EXPORT      = @Ekorn::Pipeline::Stages::Batch::EXPORT;        ## no critic (Modules::ProhibitAutomaticExportation)
-our @EXPORT_OK   = @Ekorn::Pipeline::Stages::Batch::EXPORT_OK;
-our %EXPORT_TAGS = %Ekorn::Pipeline::Stages::Batch::EXPORT_TAGS;
+# A facade over Ekorn::Pipeline::Stages::Batch, exporting DBIx::Squirrel's
+# own list of its functions, imported from it by name, so a name
+# Ekorn::Pipeline drops fails here, as the module loads, and one it
+# adds isn't exported until it's listed here.
+our @EXPORT      = qw(batch collect);      ## no critic (Modules::ProhibitAutomaticExportation)
+our @EXPORT_OK   = @EXPORT;
+our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 1;
 __END__
@@ -28,10 +30,11 @@ DBIx::Squirrel::Stages::Batch - stages gathering values: batch and collect
 =head1 DESCRIPTION
 
 DBIx::Squirrel's name for L<Ekorn::Pipeline::Stages::Batch>, which
-describes its stages in full: C<batch> and C<collect>. It exports what that module exports,
-by default and on request, so a stage added there is here too. It's
-here to stay, beside DBIx::Squirrel's own stages, such as
-L<DBIx::Squirrel::Stages::Rows>.
+describes its stages in full. It exports C<batch> and C<collect> by
+default, or with C<:all>: Ekorn's functions, from a list of
+DBIx::Squirrel's own, so a stage added there reaches this module only
+once it's listed here. It's here to stay, beside DBIx::Squirrel's own
+stages, such as L<DBIx::Squirrel::Stages::Rows>.
 
 =head1 SEE ALSO
 

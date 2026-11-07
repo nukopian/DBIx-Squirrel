@@ -4,14 +4,14 @@ package DBIx::Squirrel::Stop;
 
 use Exporter qw(import);
 
-use Ekorn::Pipeline::Stop;
+use Ekorn::Pipeline::Stop qw(Stop);
 
-# A facade over Ekorn::Pipeline::Stop: a subclass of it, exporting what
-# it exports, whatever that becomes.
-our @ISA         = ('Ekorn::Pipeline::Stop');
-our @EXPORT      = @Ekorn::Pipeline::Stop::EXPORT;        ## no critic (Modules::ProhibitAutomaticExportation)
-our @EXPORT_OK   = @Ekorn::Pipeline::Stop::EXPORT_OK;
-our %EXPORT_TAGS = %Ekorn::Pipeline::Stop::EXPORT_TAGS;
+# A facade over Ekorn::Pipeline::Stop: a subclass of it, exporting
+# DBIx::Squirrel's own list of its functions, imported from it by
+# name, so a name Ekorn::Pipeline drops fails here, as the module
+# loads, and one it adds isn't exported until it's listed here.
+our @ISA    = ('Ekorn::Pipeline::Stop');
+our @EXPORT = qw(Stop);                    ## no critic (Modules::ProhibitAutomaticExportation)
 
 1;
 __END__
@@ -39,9 +39,9 @@ DBIx::Squirrel::Stop - end a DBIx::Squirrel pipeline early
 
 DBIx::Squirrel's pipeline is L<Ekorn::Pipeline>'s, and this module is
 DBIx::Squirrel's name for L<Ekorn::Pipeline::Stop>, which describes the
-stop in full. It's a subclass of it, and exports what it exports:
-C<Stop>, by default. It's here to stay, so code written with it keeps
-working.
+stop in full. It's a subclass of it, and exports C<Stop>, by default:
+Ekorn's function, from a list of DBIx::Squirrel's own. It's here to
+stay, so code written with it keeps working.
 
 A stop is the exception that ends a pipeline early and quietly. The
 rest of the stage that throws it doesn't run. The values already out of
