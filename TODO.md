@@ -37,11 +37,13 @@ unchanged, so the code to change is small:
 Until Ekorn::Pipeline is on CPAN, the branch installs it from GitHub:
 its `test.yml` adds `ekorn-pipeline` to the branches it runs on, and a
 step before `cpanm --installdeps` runs
-`cpanm https://github.com/nukopian/Ekorn-Pipeline.git`. Locally, install
-it from the working copy into each DBIx-Squirrel-2 library:
+`cpanm https://github.com/nukopian/Ekorn-Pipeline.git@develop`. Locally,
+install it from the same place into each DBIx-Squirrel-2 library, not
+from the working copy, which may hold a session's unfinished work, and
+again after each change to it there:
 
 ```
-for p in perl-5.36.3 perl-5.38.5 perl-5.40.5 perl-5.42.3 perl-5.44.0; do perlbrew exec --quiet --with "${p}@dbix-squirrel-2" cpanm --notest ~/Git/github.com/nukopian/Ekorn-Pipeline || echo "FAILED on ${p}"; done
+for p in perl-5.36.3 perl-5.38.5 perl-5.40.5 perl-5.42.3 perl-5.44.0; do perlbrew exec --quiet --with "${p}@dbix-squirrel-2" cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop || echo "FAILED on ${p}"; done
 ```
 
 A change Ekorn-Pipeline needs, found here, is made there, in its own
