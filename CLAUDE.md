@@ -338,6 +338,15 @@ early.
   fast-forward to `develop`, so a release waits until the file is gone:
   each task done, or moved to a GitHub issue, or for a decision awaiting
   Iain, to the plan doc.
+- **Tasks for Ekorn-Pipeline go in its `TODO.md`,** as grammar and
+  scalar hand tasks to each other: committed from a session here,
+  straight into `~/Git/github.com/nukopian/Ekorn-Pipeline`'s `TODO.md`
+  on its `develop`, as `docs: a task from DBIx-Squirrel: ...`, with
+  **From:** (this repository's commit the task came from) and
+  **Waiting on:** lines above the task. Commit only that file, by its
+  path, so nothing of a session working there goes with it. Its tasks
+  for DBIx-Squirrel come here the same way. It's the only other
+  repository this one touches, as Iain decided on 2026-11-07.
 
 Why: planned work survives between sessions in the open, where Iain
 reviews it like any other change, and a release never carries an
