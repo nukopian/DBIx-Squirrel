@@ -19,7 +19,7 @@ my %position_of;
 # from 0.
 sub get_column ($self, $column) {
     my $n
-        = $column =~ m( \A \d+ \z )x
+        = $column =~ m( \A \d+ \z )xa
         ? $column
         : $position_of{ref $self}{lc $column};
     croakf 'Expected a column of the row (%s)', $column

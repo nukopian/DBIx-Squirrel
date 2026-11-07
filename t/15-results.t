@@ -57,6 +57,9 @@ subtest 'a method for each column, in lower case' => sub {
         'croaking at the caller on a name it lacks';
     like dies { $row->get_column(2) },
         qr( \A Expected\ a\ column\ of\ the\ row\ \(2\) )x, 'or a position';
+    like dies { $row->get_column("\x{0661}") },
+        qr( \A Expected\ a\ column\ of\ the\ row\ \(\x{0661}\) )x,
+        'a digit of another script being a name, not a position';
 };
 
 subtest 'columns no method can reach' => sub {

@@ -64,13 +64,15 @@ sub study_sql ($statement, $options = {}) {
     state %NOT_SQL_FOR   = (mysql => $MYSQL_NOT_SQL, MariaDB => $MYSQL_NOT_SQL);
 
     # A placeholder: "?", "?" and a position, or ":" or "$" and a position or
-    # a name; not after a colon, as in a cast, or inside an identifier.
-    state $PLACEHOLDER = qr( (?<! [:\w\$] ) (?: \? \d* | [:\$] \w+ ) )x;
+    # a name; not after a colon, as in a cast, or inside an identifier. A
+    # position is in the digits 0-9, as \d matches a digit of any script;
+    # the /a flag would keep \w to ASCII too, and a name can be in any.
+    state $PLACEHOLDER = qr( (?<! [:\w\$] ) (?: \? [0-9]* | [:\$] \w+ ) )x;
 
     # The same, for DBD::Pg's options: only "$" and a position, or anything
     # but ":" and a position or a name.
-    state $DOLLAR_ONLY = qr( (?<! [:\w\$] ) \$ \d+ )x;
-    state $NO_COLONS   = qr( (?<! [:\w\$] ) (?: \? \d* | \$ \w+ ) )x;
+    state $DOLLAR_ONLY = qr( (?<! [:\w\$] ) \$ [0-9]+ )x;
+    state $NO_COLONS   = qr( (?<! [:\w\$] ) (?: \? [0-9]* | \$ \w+ ) )x;
 
     # With pg_placeholder_dollaronly, DBD::Pg reads the placeholders itself,
     # so the statement is left as it is.
@@ -135,14 +137,14 @@ sub study_sql ($statement, $options = {}) {
 sub key_of ($placeholder, $position = undef) {
     return $position if $placeholder eq '?';
     my $key = $placeholder =~ s( \A [?:\$] )()xr;
-    return $key =~ m( \A \d+ \z )x ? 0+ $key : $key;
+    return $key =~ m( \A \d+ \z )xa ? 0+ $key : $key;
 }
 
 # Return true if a statement's placeholders are numbered, not named,
 # given its map of their numbers or names to their positions.
 sub is_numbered ($binds) {
     my($key) = keys %$binds;
-    return $key =~ m( \A \d+ \z )x;
+    return $key =~ m( \A \d+ \z )xa;
 }
 
 # Return how many values a statement takes in order, given its map of
@@ -250,7 +252,7 @@ sub _list ($name, $list) {
 sub _style ($placeholder) {
     my($sigil, $rest) = $placeholder =~ m( \A (.) (.*) \z )xs;
     return $sigil      if $rest eq '';
-    return "${sigil}1" if $rest =~ m( \A \d+ \z )x;
+    return "${sigil}1" if $rest =~ m( \A \d+ \z )xa;
     return "${sigil}name";
 }
 

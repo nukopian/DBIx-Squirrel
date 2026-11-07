@@ -22,10 +22,13 @@ Unreleased
       or DBD::Proxy. DBD::Pg's placeholder options are followed.
       Comments are passed on to the database, where 1.x removed them.
     - A numbered or named placeholder takes one value wherever it
-      appears. Named values come as pairs or in a hash reference, with
-      or without the sigil, and an array reference stands for the
-      values in it. Values that don't match the placeholders croak, and
-      so does executing a statement with some left unbound.
+      appears. Numbers are written in the digits 0-9: a digit of another
+      script is part of a name, there and in get_column, pluck and
+      bind_param, rather than read as 0. Named values come as pairs or
+      in a hash reference, with or without the sigil, and an array
+      reference stands for the values in it. Values that don't match
+      the placeholders croak, and so does executing a statement with
+      some left unbound.
     - A placeholder with "..." before it, such as ...:ids or ...?, takes
       a list, written as a ? for each of its values, for IN and anywhere
       else SQL takes a list. The statement is prepared with its values,

@@ -394,7 +394,7 @@ sub _binds ($placeholders, $normalised, $original) {
         my $placeholder = $placeholders->{$position};
         my $key         = key_of($placeholder, $position);
         croakf 'Expected placeholders numbered from 1 (%s)', $placeholder
-            if $key =~ m( \A \d+ \z )x && $key == 0;
+            if $key =~ m( \A \d+ \z )xa && $key == 0;
         push @{ $binds{$key} }, $position;
     }
     return \%binds;

@@ -59,7 +59,7 @@ sub bind_param ($self, $param, $value, @attrs) {
     unless ($binds->{$key}) {
 
         # A position, for a statement with named placeholders.
-        if ($param =~ m( \A \d+ \z )x && !is_numbered($binds)) {
+        if ($param =~ m( \A \d+ \z )xa && !is_numbered($binds)) {
             my $rv = at_caller { $self->SUPER::bind_param($param, $value, @attrs) };
             $self->{private_ekorn}{Bound}{$param} = 1 if $rv;
             return $rv;

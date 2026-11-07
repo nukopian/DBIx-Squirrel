@@ -48,6 +48,8 @@ subtest 'numbered placeholders' => sub {
     like dies { $dbh->prepare('SELECT $0') },
         qr( \A Expected\ placeholders\ numbered\ from\ 1\ \(\$0\) )x,
         'numbered from 1';
+    is row("SELECT :\x{0660}", "\x{0660}" => 5), [5],
+        'but a digit of another script, such as U+0660, is a name';
 };
 
 subtest 'named placeholders' => sub {
@@ -84,6 +86,9 @@ subtest 'bind_param' => sub {
     like dies { $sth->bind_param('c', 1) },
         qr( \A Expected\ a\ placeholder\ of\ the\ statement\ \(c\) )x,
         'a name not used';
+    like dies { $sth->bind_param("\x{0661}", 1) },
+        qr( \A Expected\ a\ placeholder\ of\ the\ statement\ \(\x{0661}\) )x,
+        'nor a digit of another script, which is no position';
 
     $sth = $dbh->prepare('SELECT $2, $1 + $1');
     ok $sth->bind_param(1,    2), 'by number';

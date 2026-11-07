@@ -25,7 +25,7 @@ our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 sub pluck ($column) {
     croakf 'Expected a column, by name or position'
         unless defined $column && length $column;
-    my $by_position = $column =~ m( \A \d+ \z )x;
+    my $by_position = $column =~ m( \A \d+ \z )xa;
     return gather {
         my $key;    # the array index or hash key, found once a run
         return sub ($row) {

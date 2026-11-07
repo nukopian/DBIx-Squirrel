@@ -118,6 +118,9 @@ subtest 'mistakes' => sub {
         'saying which';
     like dies { $dbh->iterate($all, pluck(2))->all },
         qr( Expected\ a\ column\ of\ the\ row\ \(2\) )x, 'or a position';
+    like dies { $dbh->iterate($all, pluck("\x{0661}"))->all },
+        qr( Expected\ a\ column\ of\ the\ row\ \(\x{0661}\) )x,
+        'a digit of another script being a name, not a position';
     my @slice = ({ekorn_slice => {}});
     like dies { $dbh->iterate($all, @slice, pluck('age'))->all },
         qr( Expected\ a\ column\ of\ the\ row\ \(age\) )x, 'or in a hash';

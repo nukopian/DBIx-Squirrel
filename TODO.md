@@ -60,38 +60,6 @@ commits, if any, are rebased under it; the CI steps that install from
 GitHub go in that merge, and the branch is deleted. The note on it in
 docs/MAINTAINING.md's Branches goes too.
 
-## 3. Accept only ASCII digits where a number is checked with \d
-
-**From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
-3323a7f4e4500894e846984b403126d2ad936b58)
-**Waiting on:** nothing
-
-**What:** `\d` matches a digit of any script, so `m( \A \d+ \z )x`
-passes a string such as `"\x{0663}"`, ARABIC-INDIC DIGIT THREE, which
-Perl then reads as 0, with an "isn't numeric" warning. Ekorn-Pipeline
-fixed this in `take`, `drop` and `batch` by adding the `/a` flag,
-which keeps `\d` to 0-9 (3323a7f4e4500894e846984b403126d2ad936b58,
-with tests). The same check, followed by numeric use, is in
-DBIx::Squirrel's own code, on `develop` and on `ekorn-pipeline`:
-
-- `lib/DBIx/Squirrel/Placeholders.pm`, the three `m( \A \d+ \z )x`
-  (lines 138, 145 and 253 on `develop`);
-- `lib/DBIx/Squirrel/Result.pm`, line 22;
-- `lib/DBIx/Squirrel/Stages/Rows.pm`, line 28 on `ekorn-pipeline`,
-  where `pluck` takes a column by position;
-- `lib/DBIx/Squirrel/Stages/Batch.pm`, line 25 on `develop`, which goes
-  when the branch replaces it with Ekorn's.
-
-The `\d` in Errors.pm, Placeholders.pm's `qr` patterns and the like
-match text Perl or a driver wrote, and needn't change, but whether a
-non-ASCII digit can reach them is for that session to judge.
-
-**Why:** a value that isn't a number should be refused, or taken as a
-name, at once, not read as 0 with a warning.
-
-**Done when:** each check that guards a number takes `/a`, with a test
-giving it a digit of another script.
-
 ## 4. Link to Ekorn::Pipeline's docs, and say what stage authors need
 
 **From:** a message from Ekorn-Pipeline's session, 2026-11-07

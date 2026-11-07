@@ -238,6 +238,23 @@ subtest 'key_of' => sub {
     is key_of('ids'),  'ids', 'a name given without a sigil';
 };
 
+# A digit of another script, such as U+0663, ARABIC-INDIC DIGIT THREE,
+# isn't a position: \d alone would take it as one, and read it as 0.
+subtest 'a digit of another script is not a position' => sub {
+    my $three = "\x{0663}";
+    is key_of(":$three"), $three, 'a name, not a number';
+    my($placeholders, $normalised) = study_sql("SELECT ?$three");
+    is $placeholders, {1 => '?'}, 'after ?, a bare ?';
+    is $normalised, "SELECT ?$three", 'with the digit left in the statement';
+    ($placeholders) = study_sql("SELECT \$$three");
+    is $placeholders, {1 => "\$$three"}, 'after $, a name';
+    ($placeholders) = study_sql(
+        "SELECT \$$three, \$1",
+        {ekorn_dialect => 'Pg', pg_placeholder_dollaronly => 1},
+    );
+    is $placeholders, {1 => '$1'}, "not one, for DBD::Pg's dollar-only";
+};
+
 subtest 'values_for and values_taken' => sub {
     my $numbered = {1 => [1, 3], 2 => [2]};
     my $named    = {a => [1], b => [2, 3]};
