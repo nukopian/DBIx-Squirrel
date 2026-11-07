@@ -25,6 +25,10 @@ the library, and how to build a Perl or the database drivers on Iain's Mac.
   is on it. Visitors to GitHub see `main`, so its README describes what
   CPAN installs.
 - There are no feature branches, for now: changes are made one at a time.
+  The one exception is `ekorn-pipeline`, an experimental branch where
+  DBIx::Squirrel is developed against Ekorn::Pipeline, from 2026-11-07;
+  `TODO.md` has the plan. It's merged into `develop` by a fast-forward,
+  and this note goes with it.
 - `TODO.md`, when there is one, lists work planned for a later session.
   It's committed on `develop` and gone before a release, so it never
   reaches `main` ([CLAUDE.md](../CLAUDE.md#planned-work) has the rules).
