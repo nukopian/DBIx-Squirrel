@@ -1,43 +1,39 @@
 # Planned work
 
-## 7. Ekorn::Pipeline v0.1.2 is on CPAN: link its manuals by name
+## 7. Ekorn::Pipeline v0.1.2 is on CPAN: test against it
 
 **From:** Ekorn-Pipeline 1a5001c449888fd261aa27b3b566b13effec83d3, tag `v0.1.2`, on `main`
-**Waiting on:** nothing, once PAUSE has indexed v0.1.2, uploaded on 2026-11-08: the commands below check
+**Waiting on:** nothing, once PAUSE has indexed v0.1.2, uploaded on 2026-11-08: the first command below checks
 
 **What:** Ekorn::Pipeline v0.1.2 was released on 2026-11-08: tag
 `v0.1.2`, a GitHub release, and `Ekorn-Pipeline-v0.1.2.tar.gz` on
-CPAN. It adds documentation only: its code is as in v0.1.1, so
-`cpanfile`'s range, `>= v0.1.1, < v0.2.0`, takes it, and the v2.0.x
-trials stand. What it adds is POD manuals,
+CPAN. It adds documentation only, POD manuals,
 `Ekorn::Pipeline::Manual::Reference` and `::HowTo`, made by its copy
-of `scripts/manuals`, so its reference and how-to are on MetaCPAN.
+of `scripts/manuals`; its code is as in v0.1.1, so `cpanfile`'s
+range, `>= v0.1.1, < v0.2.0`, takes it. As this session said it
+would:
 
-DBIx-Squirrel's docs link to Ekorn's reference and how-to by GitHub
-URL: `README.pod` line 140, `docs/REFERENCE.md` lines 803, 820, 821
-and 850, and `docs/HOWTO.md` lines 533 and 966 to 968; and
-`scripts/manuals` passes them into its manuals as URLs. On MetaCPAN
-they could be links by module name, as
-`L<...|Ekorn::Pipeline::Manual::Reference/"How values go through stages">`,
-as its links between its own manuals are. One way: the script maps a
-link to Ekorn's `docs/REFERENCE.md` or `docs/HOWTO.md`, with its
-anchor, to the manual and section, keeping the URL for GitHub and the
-PDFs. Whether, and before or after v2.0.3, is for Iain.
-
-Check it's indexed (it should name v0.1.2, and the manual should be
-found):
+1. Once it's indexed, run DBIx::Squirrel's tests against v0.1.2
+   installed from CPAN, as for v0.1.1.
+2. Read its manuals' pages on MetaCPAN.
 
 ```
 curl -sSf https://fastapi.metacpan.org/v1/release/Ekorn-Pipeline | jq -r '"\(.name) \(.date)"'
 curl -sSf https://fastapi.metacpan.org/v1/module/Ekorn::Pipeline::Manual::Reference | jq -r .release
 ```
 
-**Why:** readers of DBIx::Squirrel's manuals on MetaCPAN would stay
-on MetaCPAN, in docs of the same version as the Ekorn::Pipeline they
-have installed.
+The first should name `Ekorn-Pipeline-v0.1.2`, and the second find the
+manual in it.
 
-**Done when:** Iain has decided, and the links are changed or the
-task dropped, saying why.
+Linking DBIx-Squirrel's docs to Ekorn's manuals by module name, in
+place of GitHub URLs, isn't part of this task: this session offered
+it as a roadmap idea, and Iain accepted it on 2026-11-08.
+
+**Why:** DBIx::Squirrel's users install Ekorn::Pipeline from CPAN,
+so its tests should pass against the version they get.
+
+**Done when:** the tests pass against v0.1.2 from CPAN, and its
+manuals' pages have been read.
 
 ## 6. Move the plan doc's open work and decisions into the roadmap
 
