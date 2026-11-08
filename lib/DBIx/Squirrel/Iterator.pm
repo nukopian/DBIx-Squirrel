@@ -318,6 +318,10 @@ Returns the next result, or an empty list when there are no more. A
 stage can return C<undef> as a result, so read C<next> in list context,
 as above, rather than testing whether what it returns is defined.
 
+Once a stage dies, the iterator has ended: C<next> returns an empty
+list on every call after, C<all> nothing, and the statement is
+finished. L</reset> runs it again, from the start.
+
 =head2 all
 
     @results = $it->all;
