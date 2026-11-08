@@ -108,6 +108,14 @@ of 2026-11-06), v2.0.2 stays a trial and the next is v2.0.3:
    3576350cac66e488232bfbaeee78f74d675da463779ac9917371fb148c3a0cf9.
    Read its reports next; the release takes the version of its last
    trial.
+   The v2.0.5 trial followed at 17:27 UTC on 2026-11-08, as Iain asked,
+   as the reference and the how-to became POD manuals after v2.0.4's
+   upload (roadmap 2026-0001), so the release would otherwise differ
+   from what was tried: `DBIx-Squirrel-v2.0.5-TRIAL.tar.gz`, built from
+   `149f991f5faa39134a6e1e26ed544b3489f97dcf` after CI passed on it, its
+   tests passing in the tarball, SHA-256
+   06fb09da0914bd7c7d1f960bad2f08c3eaf85d337122c05ea7ed8008aea8b671.
+   Its reports, and v2.0.4's, come next.
 4. Iain decides whether v2.0.3 is ready to release.
 
 The reports' counts by version and grade, then each report that didn't
