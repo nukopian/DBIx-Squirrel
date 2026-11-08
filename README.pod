@@ -166,12 +166,11 @@ its stages declared beside its SQL.
 
 =head2 Documentation
 
-L<The reference|https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md>
-describes every feature in detail, with examples, and
-L<the how-to|https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/HOWTO.md>
-shows how to do common tasks with them, one recipe at a time. Each
-module's POD, starting with L<DBIx::Squirrel>, says the same more
-briefly.
+L<The reference|DBIx::Squirrel::Manual::Reference> describes every
+feature in detail, with examples, and
+L<the how-to|DBIx::Squirrel::Manual::HowTo> shows how to do common
+tasks with them, one recipe at a time. Each module's POD, starting with
+L<DBIx::Squirrel>, says the same more briefly.
 
 =head2 Installing
 
@@ -182,7 +181,7 @@ It needs Perl 5.36 or later.
 =head2 Upgrading from 1.x
 
 Version 2 is a rewrite, and code written for 1.x needs changes to run.
-L<Upgrading from 1.x|https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md#upgrading-from-1x>,
+L<Upgrading from 1.x|DBIx::Squirrel::Manual::Reference/"Upgrading from 1.x">,
 in the reference, lists them. To stay on 1.x, which also runs on older
 Perls, install its last version:
 

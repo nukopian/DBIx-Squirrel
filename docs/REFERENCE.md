@@ -1,5 +1,7 @@
 # DBIx::Squirrel reference
 
+<!-- stopwords: flatMap -->
+
 DBI, minus the boilerplate, plus a pipeline.
 
 DBIx::Squirrel keeps you writing SQL, as the DBI does, and takes away the

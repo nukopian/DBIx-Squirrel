@@ -161,12 +161,11 @@ its stages declared beside its SQL.
 
 ## Documentation
 
-[The reference](https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md)
-describes every feature in detail, with examples, and
-[the how-to](https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/HOWTO.md)
-shows how to do common tasks with them, one recipe at a time. Each
-module's POD, starting with [DBIx::Squirrel](https://metacpan.org/pod/DBIx%3A%3ASquirrel), says the same more
-briefly.
+[The reference](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AReference) describes every
+feature in detail, with examples, and
+[the how-to](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AHowTo) shows how to do common
+tasks with them, one recipe at a time. Each module's POD, starting with
+[DBIx::Squirrel](https://metacpan.org/pod/DBIx%3A%3ASquirrel), says the same more briefly.
 
 ## Installing
 
@@ -177,7 +176,7 @@ It needs Perl 5.36 or later.
 ## Upgrading from 1.x
 
 Version 2 is a rewrite, and code written for 1.x needs changes to run.
-[Upgrading from 1.x](https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md#upgrading-from-1x),
+[Upgrading from 1.x](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AReference#Upgrading-from-1.x),
 in the reference, lists them. To stay on 1.x, which also runs on older
 Perls, install its last version:
 

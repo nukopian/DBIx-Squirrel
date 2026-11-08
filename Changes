@@ -2,13 +2,13 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    The successor to 1.6.5: a rewrite in modern Perl.
+    The successor to 1.6.5: a rewrite in modern Perl, with a reference
+    and a how-to as POD manuals (roadmap 2026-0001).
 
     Code written for 1.x needs changes to run. "Upgrading from 1.x", in
-    the reference, lists them:
-    https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md
-    To stay on 1.x, which supports older Perls, install its last
-    version: cpanm DBIx::Squirrel@1.6.5. Its code is archived at
+    DBIx::Squirrel::Manual::Reference, lists them. To stay on 1.x, which
+    supports older Perls, install its last version:
+    cpanm DBIx::Squirrel@1.6.5. Its code is archived at
     https://github.com/nukopian/DBIx-Squirrel-1.
 
     - Requires Perl 5.36 or later. Compress::Bzip2, Crypt::CBC, Dotenv,
@@ -110,6 +110,10 @@ Unreleased
       prepares.
     - use DBIx::Squirrel takes the names the DBI exports, such as
       :sql_types, as use DBI does.
+    - The reference and the how-to ship as POD,
+      DBIx::Squirrel::Manual::Reference and DBIx::Squirrel::Manual::HowTo,
+      made from their Markdown, so MetaCPAN and perldoc have them with
+      the modules (roadmap 2026-0001).
     - SECURITY.md says how to report a vulnerability, privately, and
       CONTRIBUTING.md how to report a bug or ask for a feature; the
       distribution takes issues, not pull requests.

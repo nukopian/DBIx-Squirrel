@@ -517,10 +517,9 @@ L<DBIx::Squirrel::Stop>, L<DBIx::Squirrel::Gather>,
 L<DBIx::Squirrel::Stages::Flow>, L<DBIx::Squirrel::Stages::Rows>,
 L<DBIx::Squirrel::Stages::Batch>, L<DBIx::Squirrel::Stages::Taps>
 
-L<The reference|https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/REFERENCE.md>
-describes every feature in detail, with examples, and
-L<the how-to|https://github.com/nukopian/DBIx-Squirrel/blob/main/docs/HOWTO.md>
-shows how to do common tasks with them.
+L<DBIx::Squirrel::Manual::Reference> describes every feature in detail,
+with examples, and L<DBIx::Squirrel::Manual::HowTo> shows how to do
+common tasks with them.
 
 =head1 AUTHOR
 

@@ -1,5 +1,7 @@
 # DBIx::Squirrel how-to
 
+<!-- stopwords: flatMap jsonb's -->
+
 Recipes for everyday database work with DBIx::Squirrel, one task at a
 time. Each shows the shortest way to do the job; [the
 reference](REFERENCE.md) says what every method and attribute does, in

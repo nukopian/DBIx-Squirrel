@@ -102,6 +102,12 @@ what was Iain's.
     use it: `minil prepare VERSION` sets the version, we commit, move
     `main` and sign the tag, `minil dist --skip-prepare` builds the
     tarball, and `cpan-upload` uploads it.
+- **The manuals are made from `docs/`.** `scripts/manuals` makes
+  `lib/DBIx/Squirrel/Manual/Reference.pod` and `HowTo.pod` from
+  `docs/REFERENCE.md` and `docs/HOWTO.md`, so MetaCPAN lists the
+  reference and the how-to, as Iain decided on 2026-11-08 (roadmap
+  2026-0001). Edit the Markdown and run the script, as with the README,
+  never the POD; `xt/manuals.t` fails if they differ.
 - Locally, Iain uses perlbrew with a library of the project's own,
   `perl-5.36.3@dbix-squirrel-2`, so its modules don't mix with other
   projects'. Whatever his default Perl is at the time, run commands with

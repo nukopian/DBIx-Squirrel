@@ -114,6 +114,21 @@ perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil build
 git status --short
 ```
 
+The manuals, `lib/DBIx/Squirrel/Manual/Reference.pod` and
+`HowTo.pod`, are generated too, by `scripts/manuals`, from
+`docs/REFERENCE.md` and `docs/HOWTO.md`, so that MetaCPAN lists the
+reference and the how-to with the modules (roadmap 2026-0001). After a
+change to either, generate them again, and commit them with it;
+`xt/manuals.t`, which CI runs, fails if they're not what the Markdown
+makes. The script converts only the Markdown the docs use, and refuses
+anything else, naming it:
+
+```
+cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 scripts/manuals
+git status --short
+```
+
 Minilla takes the branch in `README.md`'s CI badge from GitHub, with
 `git remote show origin`. If GitHub can't be reached, it writes
 `master` instead, and the badge breaks. Check that this prints

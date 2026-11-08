@@ -1,6 +1,6 @@
 # 2026-0001. The reference and the how-to on MetaCPAN
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: Markdown stays the source; POD made from it. D2 settled: DBIx::Squirrel::Manual::Reference and ::HowTo.
 
@@ -9,6 +9,8 @@ Ekorn-Pipeline's reference and how-to were missing from its
 Documentation on MetaCPAN
 
 **Started:** 2026-11-08
+
+**Finished:** 2026-11-08
 
 ## Background
 
@@ -70,4 +72,35 @@ the check that they're current runs in CI, and the PDFs and the
 rendered POD of the changed pages are read.
 
 ## What happened
+
+- **Outcome:** against Done when, met. `scripts/manuals` makes
+  `lib/DBIx/Squirrel/Manual/Reference.pod` and `HowTo.pod`, which the
+  tarball has, from `docs/`; both pass Pod::Checker, with no errors and
+  no unresolved links, and `xt/manuals.t`, which CI runs, fails if
+  they're not what the Markdown makes, as a stale how-to showed it
+  does. Rendered through pod2html, the tables read as lists, each
+  column after its name in bold. The README, the main module's POD and
+  `Changes` link to the manuals by module name, not GitHub URLs.
+- **Changes from the plan:**
+  - The Markdown carries its spelling stopwords, as a comment,
+    `<!-- stopwords: ... -->`, which the script makes `=for stopwords`:
+    Minilla's spelling test, run by `minil dist`, failed on
+    "flatMap" and "jsonb's" in the manuals.
+  - A second heading of the same name, as the reference's two
+    "Pipelines", has `-1` added to its anchor, as GitHub adds it. POD
+    names a section by its text, so a link to such a heading is
+    refused; none is made. Pod::Checker warns of such repeats, and of
+    table rows that share a section's name, as link targets met twice;
+    the test passes over that warning alone.
+  - `scripts/coverage` adds up `lib/`'s coverage itself. Loading
+    `scripts/manuals` into `xt/manuals.t`'s process put it in
+    Devel::Cover's report, whose Total counts every file, whatever
+    `-select_re` says, which took branch coverage from 97.3% to 92.7%;
+    added up from `lib/`'s files, it's 97.3% again, as before.
+- **Found by the tests:** escaping `<` as `E<lt>` and then `>` turned
+  `E<lt>` into `E<ltE<gt>`; both are escaped in one pass now. The docs
+  had no bare `<` in their text, so the manuals weren't affected.
+- **What's left:** the manuals' own Contents sections repeat the
+  contents MetaCPAN builds itself; harmless, and left. The message to
+  Ekorn-Pipeline, step 5, follows this commit.
 
