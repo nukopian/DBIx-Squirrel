@@ -82,6 +82,15 @@ of 2026-11-06), v2.0.2 stays a trial and the next is v2.0.3:
    and the range moved.
 3. Upload a trial of v2.0.3, as "A trial release" in
    docs/MAINTAINING.md says, and read its reports.
+   Uploaded at 02:15 UTC on 2026-11-08, at Iain's word, a day before
+   the date above: `DBIx-Squirrel-v2.0.3-TRIAL.tar.gz`, built from
+   `512cd7439c3d21ed6d8bed7e4fc45cf11d7d4f49` after CI passed on it,
+   its tests passing in the tarball, SHA-256
+   9c7399f9ffb1fee973f88f0f0099bc370aaee8d30ad5c5f75e8bff4a4f54d20c.
+   Before it, the v2.0.2 trial's reports were read again: no new ones
+   since 01:06 UTC. Its reports come in over the next few days; read
+   them with the commands below, and fix a failure on `develop`, with
+   a test, before a new trial, v2.0.4.
 4. Iain decides whether v2.0.3 is ready to release.
 
 The reports' counts by version and grade, then each report that didn't
