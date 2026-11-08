@@ -64,6 +64,11 @@ Unreleased
       iterator, result_number and result_original.
     - DBIx::Squirrel::Pipeline runs any values through stages, and pipe
       and tap run a database or statement handle through them.
+      A pipeline's stages method returns its stages, to give wherever
+      stages go, with more after them.
+    - Once a stage dies, an iterator or result set has ended: next and
+      all return nothing more, and the statement is finished; reset
+      runs it again from the start.
     - gather, from DBIx::Squirrel::Gather, makes a stage afresh for each
       run of its pipeline, from a block returning the stage and,
       optionally, a function called once the values run out, whose
@@ -78,7 +83,7 @@ Unreleased
       and DBIx::Squirrel::Stages::Taps's peek and count_into, with
       dump_to on request, looking at values as they go by.
     - The pipeline is Ekorn::Pipeline, a distribution of its own, which
-      began here, and which DBIx::Squirrel requires, from v0.1.0 up to,
+      began here, and which DBIx::Squirrel requires, from v0.1.1 up to,
       but not including, v0.2.0.
       DBIx::Squirrel::Pipeline, Stop, Gather and Pipes, and the stages
       in DBIx::Squirrel::Stages::Flow, Batch and Taps, are

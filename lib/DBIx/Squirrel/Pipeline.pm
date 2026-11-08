@@ -40,15 +40,22 @@ DBIx::Squirrel::Pipeline - run values through a list of stages
 DBIx::Squirrel's pipeline, which its iterators, result sets, Sugar
 statements and handles' C<pipe> and C<tap> run their stages with. It's
 a subclass of L<Ekorn::Pipeline>, which describes it in full, and
-inherits its methods, C<new> and C<iterator>; a pipeline can be called
-as a code reference with values, as an Ekorn::Pipeline can.
+inherits its methods, C<new>, C<iterator> and C<stages>; a pipeline can
+be called as a code reference with values, as an Ekorn::Pipeline can.
 
 A function of your own can take stages from its caller, and run what it
 returns through them:
 
-    sub bands (\@stages) {
-        return DBIx::Squirrel::Pipeline->new(\@stages)->(load_bands());
+    sub bands (@stages) {
+        return DBIx::Squirrel::Pipeline->new(@stages)->(load_bands());
     }
+
+C<stages> returns a pipeline's stages, in order, so a pipeline made once
+can be used wherever stages go, with more after them. A pipeline isn't
+a stage itself, so give its stages, not the pipeline:
+
+    my $hits = DBIx::Squirrel::Pipeline->new(sub { $_->[1] >= 5000 ? $_ : () }, pluck('name'));
+    my @top  = $dbh->iterate($sql, $hits->stages, take(10))->all;
 
 =head1 SEE ALSO
 

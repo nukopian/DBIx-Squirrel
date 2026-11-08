@@ -146,6 +146,9 @@ subtest 'the facades follow Ekorn::Pipeline' => sub {
                 "$ours\'s $function is $theirs\'s";
         }
     }
+    ref_is +DBIx::Squirrel::Pipeline->can('stages'),
+        Ekorn::Pipeline->can('stages'),
+        "Pipeline's stages is Ekorn's";
     isa_ok 'DBIx::Squirrel::Pipeline', ['Ekorn::Pipeline'],        'Pipeline';
     isa_ok 'DBIx::Squirrel::Pipes',    ['Ekorn::Pipeline::Pipes'], 'Pipes';
     isa_ok 'DBIx::Squirrel::Stop',     ['Ekorn::Pipeline::Stop'],  'Stop';

@@ -3,7 +3,7 @@ requires 'Carp';
 requires 'DBI';
 requires 'Data::Dumper';
 requires 'Digest::SHA';
-requires 'Ekorn::Pipeline', '>= v0.1.0, < v0.2.0';
+requires 'Ekorn::Pipeline', '>= v0.1.1, < v0.2.0';
 requires 'Exporter';
 requires 'List::Util';
 requires 'Ref::Util';

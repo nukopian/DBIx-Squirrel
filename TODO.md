@@ -27,8 +27,9 @@ unchanged, so the code to change is small:
   reaches DBIx::Squirrel only once it's listed. DBIx::Squirrel always
   inherits from Ekorn, never the reverse. Iain decided this on
   2026-11-07, and it's done, on the branch.
-- `cpanfile` requires Ekorn::Pipeline `>= v0.1.0, < v0.2.0`, as Iain
-  decided on 2026-11-07: the facade keeps the names, not the
+- `cpanfile` requires Ekorn::Pipeline `>= v0.1.1, < v0.2.0`, as Iain
+  decided on 2026-11-07 (from v0.1.1, its first with an iterator that
+  ends once a stage dies, task 8, on 2026-11-08): the facade keeps the names, not the
   behaviour, so a v0.2.0 reaches DBIx::Squirrel's users only once it's
   been tested here and the range moved. Done, on the branch.
 - The documented way to throw a stop on in a stage that catches errors
@@ -44,7 +45,7 @@ unchanged, so the code to change is small:
   floor went from 88 to 87, as the pipeline's conditions, all covered,
   left `lib/`.
 
-Until Ekorn::Pipeline v0.1.0 is released (a trial is on CPAN, but
+Until Ekorn::Pipeline v0.1.1 is released (a trial is on CPAN, but
 CPAN's index, which `cpanm` installs from, doesn't hold trials), the
 branch installs it from GitHub: its `test.yml` adds `ekorn-pipeline`
 to the branches it runs on, and a step before `cpanm --installdeps`
@@ -79,12 +80,11 @@ branch's text is the answer.
 
 **From:** a message from Ekorn-Pipeline's session, 2026-11-07
 (Ekorn-Pipeline eeec4c24f932e92d588acfcb1d8e6c5b74f3bdb6)
-**Waiting on:** Ekorn::Pipeline v0.1.0, with its `docs/HOWTO.md` and
-`docs/REFERENCE.md` on its `main`, and Iain's decisions there on the
-three behaviours below.
+**Waiting on:** Ekorn::Pipeline v0.1.1, with its `docs/HOWTO.md` and
+`docs/REFERENCE.md` on its `main`.
 
 **When:** on the branch `ekorn-pipeline`, before it merges, as the
-merge waits for v0.1.0 too (task 1).
+merge waits for v0.1.1 too (task 1).
 
 **What:**
 
@@ -100,26 +100,16 @@ merge waits for v0.1.0 too (task 1).
    `our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;`, which takes in
    Ekorn's packages, as DBIx::Squirrel's own modules do. Errors.pm's
    POD doesn't document `@INTERNAL` yet, so document it there too.
-3. Ekorn-Pipeline is deciding, before v0.1.0, whether an iterator
-   carries on with the next value after a stage dies; whether a
-   pipeline called in scalar context returns its count; and whether a
-   pipeline is accepted as a stage. DBIx::Squirrel's docs promise none
-   of them, and its code uses none but the first: an iterator's `next`
-   pulls through Ekorn's iterator, so what Ekorn decides is what `next`
-   does after a stage dies, and no test here pins it
-   (`t/14-iterate.t`'s "errors are reported at the caller" checks the
-   error, never a `next` after it). Add a test that does, and say it
-   in the reference's "When a stage dies". Mention the other two only
-   if Iain wants DBIx::Squirrel to.
+
+What an iterator does after a stage dies, the third part of this task
+when it came, was settled by Ekorn-Pipeline's v0.1.1 and done with
+task 8, on 2026-11-08: the docs say it, and `t/14-iterate.t` pins it.
 
 **Why:** two copies of how the pipeline works would drift apart, and
-Ekorn's is the one kept up to date with the code. A behaviour no test
-pins could change in a v0.1.x without DBIx::Squirrel noticing, though
-its version range assumes v0.1.x never changes behaviour.
+Ekorn's is the one kept up to date with the code.
 
-**Done when:** the docs link to Ekorn's for the pipeline, the
-`@CARP_NOT` line is documented, and a test pins `next` after a stage
-dies; the tests pass and the PDFs are read.
+**Done when:** the docs link to Ekorn's for the pipeline, and the
+`@CARP_NOT` line is documented; the tests pass and the PDFs are read.
 
 ## 5. Take on what Ekorn-Pipeline's security review found
 
@@ -210,7 +200,7 @@ memory, points into it.
 
 ## 2. Trial, then release, v2.0.3 on Ekorn::Pipeline
 
-**When:** from 2026-11-09, once Ekorn::Pipeline v0.1.0 is released
+**When:** from 2026-11-09, once Ekorn::Pipeline v0.1.1 is released
 (not as a trial: CPAN Testers install dependencies from the index,
 which doesn't hold trials, so a DBIx::Squirrel trial needing an
 Ekorn::Pipeline trial would mostly report a missing prerequisite) and
@@ -226,7 +216,7 @@ of 2026-11-06), v2.0.2 stays a trial and the next is v2.0.3:
 
 1. Read the v2.0.2 trial's reports first, as a failure in them may
    still apply; fix one on `develop`, with a test.
-2. Check `cpanfile`'s range for Ekorn::Pipeline, `>= v0.1.0, < v0.2.0`,
+2. Check `cpanfile`'s range for Ekorn::Pipeline, `>= v0.1.1, < v0.2.0`,
    takes the version released, and regenerate `META.json` and
    `Build.PL` with `minil build` if it changes. Iain decided on
    2026-11-07 that DBIx::Squirrel requires a range of Ekorn's 0.x

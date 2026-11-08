@@ -4,6 +4,8 @@ use Test2::Plugin::NoWarnings;
 
 use DBI;
 use DBIx::Squirrel;
+use DBIx::Squirrel::Gather;
+use DBIx::Squirrel::Pipeline;
 use DBIx::Squirrel::Stop;
 use DBIx::Squirrel::Context qw(iterator result_number result_original);
 use experimental            qw(builtin);
@@ -347,6 +349,63 @@ subtest 'errors are reported at the caller' => sub {
     like dies { $dbh->iterate($overflow)->all },
         qr( \A \Q$failed\E \ at\ \Q${\ __FILE__ }\E\ line\ $line\. )x,
         "from a fetch, with the DBI's message";
+};
+
+# Ekorn::Pipeline, from v0.1.1, ends an iterator once a stage dies.
+subtest 'once a stage dies, the iterator has ended' => sub {
+    $dbh->do('CREATE TABLE number (n INTEGER)');
+    $dbh->do('INSERT INTO number VALUES (?)', $_) for 1 .. 250;
+    my $numbers = 'SELECT n FROM number ORDER BY n';
+    my $dies    = sub ($row) { die "no 2\n" if $row->[0] == 2; $row->[0] };
+    my $it      = $dbh->iterate($numbers, $dies);
+    is [$it->next], [1], 'a row before the stage dies';
+    like dies { $it->next }, qr( no\ 2 )x, 'the stage dies';
+    is [$it->next], [], 'then next returns nothing';
+    is [$it->next], [], 'on every call';
+    is [$it->all],  [], 'and all nothing';
+    ok !$it->sth->{Active}, 'the statement finished, part way through';
+    is $it->count, 1, 'counting what was handed out';
+    $it->reset;
+    is [$it->next], [1], 'reset runs it again, from the start';
+
+    my $rs = $dbh->results(
+        $numbers,
+        sub ($row) { die "no 2\n" if $row->n == 2; $row->n },
+    );
+    is [$rs->next], [1], 'a result set too';
+    ok dies { $rs->next }, 'whose stage dies';
+    is [$rs->next], [], 'and has ended';
+};
+
+subtest "a pipeline's stages, wherever stages go" => sub {
+    my $even = DBIx::Squirrel::Pipeline->new(sub ($row) {
+        $row->[0] % 2 ? () : $row;
+    });
+    my $named = DBIx::Squirrel::Pipeline->new(sub ($row) {
+        $row->[1];
+    });
+    my @spliced = ($even->stages, $named->stages);
+    is [$dbh->iterate($all, @spliced)->all], [qw(Blur Dido Faust Hole Japan)],
+        'spliced into iterate';
+    is [$dbh->iterate("$all LIMIT ?", 4, @spliced)->all], [qw(Blur Dido)],
+        'after bind values';
+    is [
+        $dbh->results($all, sub ($row) { [$row->id, $row->name] }, @spliced)->all
+        ],
+        [qw(Blur Dido Faust Hole Japan)], 'and into results';
+    my $both = DBIx::Squirrel::Pipeline->new(@spliced, sub { lc });
+    is [$dbh->iterate($all, $both->stages)->all],
+        [qw(blur dido faust hole japan)],
+        'from a pipeline made of pipelines';
+
+    my $counted = DBIx::Squirrel::Pipeline->new(gather {
+        my $n = 0;
+        (sub { ++$n; () }, sub { $n });
+    });
+    is [$dbh->iterate($all, $counted->stages)->all], [10], 'a gather stage';
+    is [$dbh->iterate("$all LIMIT 3", $counted->stages)->all], [3],
+        'made afresh for each run';
+    is scalar($both->stages), 3, 'how many, in scalar context';
 };
 
 subtest 'a statement without rows' => sub {

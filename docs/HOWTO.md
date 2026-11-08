@@ -735,6 +735,34 @@ say "@first, from $read rows";
 `take` stops the iteration once it has two, so the third row is never
 read.
 
+### Reuse a pipeline's stages
+
+Make a pipeline once, and give its stages, with `stages`, wherever
+stages go: to `iterate`, `results` or another pipeline, with more
+stages after them:
+
+```perl
+use DBIx::Squirrel::Pipeline;
+use DBIx::Squirrel::Stages::Flow;
+use DBIx::Squirrel::Stages::Rows;
+
+my $hits = DBIx::Squirrel::Pipeline->new(
+    sub { $_->[1] >= 5000 ? $_ : () },    # 5,000 plays or more
+    pluck('name'),
+);
+
+my $by_plays = 'SELECT name, plays FROM track ORDER BY plays DESC';
+say join ', ', $dbh->iterate($by_plays, $hits->stages)->all;
+    # Dancing Queen, Sunshine of Your Love, Girls & Boys, Parklife
+say join ', ', $dbh->iterate($by_plays, $hits->stages, take(2))->all;
+    # Dancing Queen, Sunshine of Your Love
+```
+
+The stages run as if listed there. Give `$hits->stages`, not `$hits`:
+a pipeline isn't a stage. A stage that keeps count or remembers
+something should be made with `gather`, so it starts afresh in each
+pipeline it's given to.
+
 ### Catch errors in a stage
 
 A stage that catches errors itself should throw a stop on again, so the
@@ -770,7 +798,14 @@ my $it = $dbh->iterate('SELECT name FROM artist', sub { die "no names today\n" }
 eval { $it->next };
 print $@;    # Pipeline stage #1 failed at ... line ...:
              #     no names today
+
+my @after = $it->next;    # (): the iterator has ended
 ```
+
+Once a stage dies, the iterator has ended: `next` returns nothing more,
+and the statement is finished. `reset` runs it again from the start.
+To pass over a row a stage can't handle, catch the error in the stage,
+as in [Catch errors in a stage](#catch-errors-in-a-stage).
 
 ## Rows as objects
 

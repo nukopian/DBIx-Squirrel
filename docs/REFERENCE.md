@@ -876,6 +876,46 @@ and any [end functions](#gathering-stages-with-state-and-an-end) have
 given theirs, and on every call after that. Read it in list context, so
 an `undef` value isn't mistaken for the end.
 
+### A pipeline's stages
+
+```perl
+my @stages = $p->stages;
+```
+
+`stages` returns a pipeline's stages, in order, as given to `new`, or,
+in scalar context, how many there are. A pipeline made once can then
+be used wherever stages go: spliced into another pipeline, or given to
+`iterate`, `results`, `pipe`, `tap` or a Sugar statement.
+
+```perl
+use DBIx::Squirrel::Stages::Flow;
+use DBIx::Squirrel::Stages::Rows;
+
+my $hits = DBIx::Squirrel::Pipeline->new(
+    sub { $_->[1] >= 5000 ? $_ : () },    # 5,000 plays or more
+    pluck('name'),
+);
+
+my @hits    = $dbh->iterate('SELECT name, plays FROM track', $hits->stages)->all;
+my @top_ten = $dbh->iterate('SELECT name, plays FROM track ORDER BY plays DESC',
+    $hits->stages, take(10))->all;
+my $first   = DBIx::Squirrel::Pipeline->new($hits->stages, take(1));
+```
+
+The stages run as if they were listed where they're spliced in, so
+composing pipelines this way is flat:
+
+- A pipeline isn't a stage. Give its stages, `$hits->stages`, not
+  `$hits`: `new` croaks given a pipeline.
+- A stage made with [`gather`](#gathering-stages-with-state-and-an-end)
+  is made afresh for each run, so pipelines sharing it share no state. A
+  plain closure keeps its variables between runs, and between the
+  pipelines it's spliced into, so a stage that counts or remembers
+  should be made with `gather`.
+- A stop in a spliced stage ends the run it's in, as any stop does.
+- A stage that dies is named by its place in the list it was spliced
+  into, not in the pipeline it came from.
+
 ### When a stage dies
 
 If a stage dies, the pipeline croaks at the line that called it, naming
@@ -888,6 +928,16 @@ Pipeline stage #2 failed at script.pl line 12:
 ```
 
 An exception object is passed on as it is.
+
+Once a stage dies, its run has ended. An iterator, whether a
+pipeline's `iterator` or one that `iterate` or `results` returns, then
+returns nothing more: `next` an empty list on every call after, and
+`all` nothing. No more
+values are taken from its source, no end function is called, and a
+statement's handle is finished, so no more rows are fetched. `reset`
+runs the statement again, from the start. To pass over a value a stage
+can't handle, the stage catches its own error and returns nothing for
+it, as [What a stop is](#what-a-stop-is) shows.
 
 ## Stopping a pipeline
 
