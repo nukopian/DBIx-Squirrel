@@ -20,7 +20,7 @@ prints `Ekorn-Pipeline-v0.1.2` once it has:
 curl -sSf https://fastapi.metacpan.org/v1/release/Ekorn-Pipeline | jq -r '"\(.name) \(.date)"'
 ```
 
-For v2.0.3: the release is documentation only, the code as in
+For v2.0.5: the release is documentation only, the code as in
 v0.1.1, so the v2.0.x trials' reports still stand, and
 `cpanfile`'s range, `>= v0.1.1, < v0.2.0`, takes it with no change.
 CPAN Testers installing DBIx::Squirrel will now get v0.1.2.
