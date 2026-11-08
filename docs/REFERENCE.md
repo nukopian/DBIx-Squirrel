@@ -815,6 +815,12 @@ from `Stop()` is an `Ekorn::Pipeline::Stop`, and a stage made with
 see. That's deliberate: DBIx::Squirrel's classes inherit from Ekorn's,
 never the reverse, so Ekorn::Pipeline knows nothing of DBIx::Squirrel.
 
+Ekorn::Pipeline's [reference](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md) describes the pipeline in full, and
+its [how-to](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md) has recipes for it, for any values. This chapter
+keeps to what DBIx::Squirrel's iterators, result sets and handles do
+with it, and to what's DBIx::Squirrel's own, and links there for the
+rest.
+
 ### Stages
 
 A stage is called with one value, as its argument and in `$_`, so write
@@ -839,7 +845,8 @@ Each value goes through every stage before the next one starts, so the
 values come out in order, and a stage sees them in the order a `for`
 loop would. A stage returns whatever its last statement gives, so a
 stage run for its side effects should still return what the next stage
-needs.
+needs. [How values go through stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#how-values-go-through-stages)
+has the details.
 
 ```perl
 use DBIx::Squirrel::Pipeline;
@@ -862,19 +869,14 @@ my $next = $p->iterator($source);      # pull: one value per call
 while (my($x) = $next->()) { ... }
 ```
 
-A pipeline is an object that can be called as a code reference. Called
-with values, it returns the list that comes out of the last stage. With
-no stages, it returns its values as they are. `new` croaks if a stage
-isn't a code reference: `Expected stage #2 to be a code reference`.
-
-`iterator` returns a closure handing out, one per call, the values that
-come out of the stages. `$source` is a code reference returning the
-next value or values on each call, and an empty list when there are no
-more; it's called only when the values from its last call have all been
-handed out. The closure returns an empty list when the values run out,
-and any [end functions](#gathering-stages-with-state-and-an-end) have
-given theirs, and on every call after that. Read it in list context, so
-an `undef` value isn't mistaken for the end.
+A pipeline is an object that can be called as a code reference: called
+with values, it returns what comes out of the last stage. `iterator`
+returns a closure handing out those values one per call, from a source
+called only when the values from its last call have run out; read it
+in list context, so an `undef` value isn't mistaken for the end.
+Ekorn's reference has the details: [new](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#new), with the errors it
+raises, [calling a pipeline](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#calling-a-pipeline) and
+[iterator](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#iterator).
 
 ### A pipeline's stages
 
@@ -903,24 +905,18 @@ my $first   = DBIx::Squirrel::Pipeline->new($hits->stages, take(1));
 ```
 
 The stages run as if they were listed where they're spliced in, so
-composing pipelines this way is flat:
-
-- A pipeline isn't a stage. Give its stages, `$hits->stages`, not
-  `$hits`: `new` croaks given a pipeline.
-- A stage made with [`gather`](#gathering-stages-with-state-and-an-end)
-  is made afresh for each run, so pipelines sharing it share no state. A
-  plain closure keeps its variables between runs, and between the
-  pipelines it's spliced into, so a stage that counts or remembers
-  should be made with `gather`.
-- A stop in a spliced stage ends the run it's in, as any stop does.
-- A stage that dies is named by its place in the list it was spliced
-  into, not in the pipeline it came from.
+composing pipelines this way is flat. Give `$hits->stages`, not
+`$hits`: a pipeline isn't a stage. Make a stage that counts or
+remembers with [`gather`](#gathering-stages-with-state-and-an-end), as
+a plain closure's state is shared by every pipeline it's spliced into.
+[stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#stages), in Ekorn's reference, says more.
 
 ### When a stage dies
 
 If a stage dies, the pipeline croaks at the line that called it, naming
 the stage by its position, from `#1`, with the stage's message
-indented:
+indented, as [When a stage dies](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#when-a-stage-dies), in Ekorn's
+reference, says:
 
 ```
 Pipeline stage #2 failed at script.pl line 12:
@@ -932,9 +928,9 @@ An exception object is passed on as it is.
 Once a stage dies, its run has ended. An iterator, whether a
 pipeline's `iterator` or one that `iterate` or `results` returns, then
 returns nothing more: `next` an empty list on every call after, and
-`all` nothing. No more
-values are taken from its source, no end function is called, and a
-statement's handle is finished, so no more rows are fetched. `reset`
+`all` nothing. No more values are taken from its source, no end
+function is called, and a statement's handle is finished, so no more
+rows are fetched. `reset`
 runs the statement again, from the start. To pass over a value a stage
 can't handle, the stage catches its own error and returns nothing for
 it, as [What a stop is](#what-a-stop-is) shows.
@@ -975,17 +971,12 @@ use DBIx::Squirrel::Stop ();
 
 ### What a stop is
 
-A stop is an exception: an array reference blessed into its class, whose
-first element is the class and the rest the values it carries.
-`throw` blesses it into the class it's called on, so a subclass of
-`DBIx::Squirrel::Stop` throws one of its own, and a pipeline recognises
-it with `isa`, so a subclass stops a pipeline too. `DBIx::Squirrel::Stop`
-is a subclass of `Ekorn::Pipeline::Stop`, and `Stop()` is Ekorn's, so
-every stop is an `Ekorn::Pipeline::Stop`, though not every one is a
-`DBIx::Squirrel::Stop`.
-
-As a string, a stop is `Stop used outside a pipeline`, which is what a
-user sees if one is thrown with nothing to catch it.
+A stop is an exception. `DBIx::Squirrel::Stop` is a subclass of
+`Ekorn::Pipeline::Stop`, and `Stop()` is Ekorn's, so every stop is an
+`Ekorn::Pipeline::Stop`, though not every one is a
+`DBIx::Squirrel::Stop`. Ekorn's reference says what a stop holds, in
+[The stop object](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#the-stop-object), and how a subclass of your own
+stops a pipeline too, in [Subclasses](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#subclasses).
 
 A stage that catches errors itself, with `eval` or `try`, should throw
 a stop on again. Check for `Ekorn::Pipeline::Stop`, which every stop
@@ -1040,34 +1031,21 @@ each value as any stage is, and optionally an end function. A stage
 that keeps state of any kind, even a count, should be made with
 `gather`, so that it starts afresh.
 
-The end function is called with no arguments, and `$_` undefined. What
-it returns goes through the rest of the stages, as what a stage returns
-does: nothing, one value, or several. It's called even when there were
-no values, so an end can give an empty result. The ends are called in
-order, first stage first, and what one returns goes through the stages
-after it before the next end is called, so an end later in the pipeline
-gets everything sent to it.
+The end function is called once the values run out, even when there
+were none, and what it returns goes through the rest of the stages, as
+what a stage returns does. After a [stop](#stopping-a-pipeline), only
+the ends of the stages after the one that stopped are called. Ekorn's
+reference gives the order the ends are called in, in
+[End functions](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#end-functions), and what the block must return, in
+[gather](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#gather).
 
-After a [stop](#stopping-a-pipeline), the ends of the stages after the
-one that stopped are called, so they get the values before the stop and
-any it carries. The ends of the stage that stopped and the stages before
-it aren't, as nothing else is processed. An end can stop the pipeline
-too: the values its stop carries go on, and the ends after it are still
-called.
-
-A stage made with `gather` is a code reference, blessed into
-`DBIx::Squirrel::Gather`, so it can be given wherever a stage can.
-`gather` is exported by default; to keep it out of your namespace:
+A stage made with `gather` is an `Ekorn::Pipeline::Gather`, a code
+reference, so it can be given wherever a stage can. `gather` is
+exported by default; to keep it out of your namespace:
 
 ```perl
 use DBIx::Squirrel::Gather ();
 ```
-
-The block must return a stage, or a stage and an end function, or the
-pipeline croaks when it starts to run:
-`Expected stage #2, made with gather, to return one or two code references`.
-An end that dies is reported as its stage would be:
-`Pipeline stage #2 failed at ...`.
 
 ## What a stage can ask: Context
 
@@ -1095,7 +1073,9 @@ my $it = $dbh->iterate(
 
 Database and statement handles both have these methods. The examples use
 a database handle; on a statement handle, the statement handle goes
-through the stages instead.
+through the stages instead. They're Ekorn::Pipeline::Pipes's, which
+[pipe and tap](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#pipe-and-tap-ekornpipelinepipes), in Ekorn's
+reference, describes, with how to give a class of your own the same.
 
 ### pipe
 
@@ -1181,6 +1161,10 @@ What each stage does:
 all, and doesn't escape control characters in strings, so a value from
 outside can send escape sequences to a terminal.
 
+Flow's, Batch's and Taps' stages are Ekorn::Pipeline's, which its
+reference's [Canned stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#canned-stages) describes in full; Rows'
+are DBIx::Squirrel's own.
+
 Each is a function that makes a stage, checking what it's given when
 it's called, not on each value. Those that keep a count or hold values
 are made with [`gather`](#gathering-stages-with-state-and-an-end), so
@@ -1223,55 +1207,16 @@ values from `pipe`.
 
 ## Writing stages
 
-A stage of your own is a code reference, as any stage is. Here's how
-the canned stages are written, so that yours work alongside them.
-
-**A stage, or a function that makes one.** A plain `sub` is a stage.
-For a stage others will use, write a function that returns one, as
-`take(10)` does. It can take options, and check them once, when it's
-called, not on each value. Called with no arguments, an imported
-function needs no parentheses, as with `as_hash`; with options, it
-does, or Perl passes the stages after it to it as options too.
-
-```perl
-use Carp qw(croak);
-
-sub prefixed ($prefix) {
-    croak 'Expected a prefix' unless defined $prefix;
-    return sub ($value) { "$prefix$value" };
-}
-```
-
-**State.** Anything a stage keeps, even a count, goes in a
-[`gather`](#gathering-stages-with-state-and-an-end) block, so it starts
-afresh on each run: after `reset`, on each call of a Sugar statement,
-and each time the same stage is given to another statement. A variable
-outside the block would carry over from one run to the next.
-
-```perl
-use DBIx::Squirrel::Gather;
-
-sub numbered () {
-    return gather {
-        my $n = 0;    # this run's
-        return sub ($value) { [++$n, $value] };
-    };
-}
-```
-
-**Ends.** A stage that holds values, as `batch` and `collect` do, or
-says something once they've all gone by, has an end function, the
-second code reference its `gather` block returns. It's called once the
-values run out, even when there were none, and what it returns goes on
-through the stages after it.
-
-**Stopping.** A stage that knows no more values are wanted ends the
-pipeline with [`Stop`](#stopping-a-pipeline), as `take` does, so an
-iterator fetches no more rows. `Stop($value)` passes a last value on.
-A stage that catches errors itself throws a stop on.
-
-**Taps.** A stage passes on what it returns, so one run for its side
-effects returns the value it was given, as `peek` and `count_into` do.
+A stage of your own is a code reference, as any stage is. Ekorn's
+reference, in [Writing stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#writing-stages), and its how-to, in
+[Writing stages for others](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-stages-for-others), say how
+to write one that works alongside the canned stages: a function that
+makes it, checking its options once; state in a `gather` block, so it
+starts afresh on each run, as after `reset` or on each call of a Sugar
+statement; an end, for a stage that holds values; `Stop`, for one that
+knows no more are wanted; a tap that returns the value it was given;
+names, exports and tests. What follows is what's particular to stages
+for rows.
 
 **The shapes of a row.** A row can be an array, a hash (with the
 `ekorn_slice` attribute), or a row object (from `results`), and a stage
@@ -1280,26 +1225,44 @@ does. [Context](#what-a-stage-can-ask-context) gives the iterator
 running the stage, whose `column_names` are the statement's columns,
 and `result_original`, the row as fetched.
 
-**Errors.** A function that makes a stage croaks with Carp's `croak`
-when it's given the wrong things, so the message names the line that
-called it. A stage that dies is reported with its number, and the
-line that asked for the result.
+**Errors.** A function that makes a stage croaks when it's given the
+wrong things, so the message names the line that called it. A module
+of stages sets its `@CARP_NOT` to DBIx::Squirrel's internal packages,
+which take in the DBI's and Ekorn::Pipeline's, so that what it croaks
+while a row goes through its stage is reported at the line that asked
+for the result, not inside DBIx::Squirrel:
 
-**Names and exports.** A name says what the stage does to a value:
-`as_*` converts a row, and a tap's name says it passes values on, as
-`peek`, `count_into` and `dump_to` do. Choose names that don't clash
-with what common modules export: Flow has `drop`, not `skip`, which
-Test2::V0 and Test::More both export. Export the stages a module is
-usually used for by default, in `@EXPORT`, and the rest in
-`@EXPORT_OK`, with an `:all` tag.
+```perl
+use DBIx::Squirrel::Errors qw(croakf);
+
+our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
+```
+
+`croakf` croaks with a message made by `sprintf`. Its format is a
+literal, written in the code, with the values as its arguments, never
+a format made from data, which does whatever its `%` directives say.
+
+**Where they go.** A stage that needs a database, a row or its column
+names goes under `DBIx::Squirrel::Stages::`. One that suits any values
+belongs under `Ekorn::Pipeline::Stages::`, where any function's
+stages can use it.
 
 **Testing.** A pipeline called with values tests a stage without a
-database. Run it twice, to show it starts afresh, then run it on rows
-from an in-memory SQLite database, in each shape it takes:
+database. Run it twice, to show it starts afresh, then on rows from an
+in-memory SQLite database, in each shape it takes:
 
 ```perl
 use Test2::V0;
+use DBIx::Squirrel::Gather;
 use DBIx::Squirrel::Pipeline;
+
+# Each value, numbered from 1 on each run
+sub numbered () {
+    return gather {
+        my $n = 0;
+        return sub ($value) { [++$n, $value] };
+    };
+}
 
 my $p = DBIx::Squirrel::Pipeline->new(numbered);
 is [$p->(qw(a b))], [[1, 'a'], [2, 'b']], 'numbered';
@@ -1308,8 +1271,8 @@ is [$p->(qw(c))],   [[1, 'c']],           'from 1 on each run';
 
 **Publishing.** Name a module of stages for its job, as
 `DBIx::Squirrel::Stages::JSON`, in a distribution named
-`DBIx-Squirrel-Stages-JSON`, and have it require DBIx::Squirrel v2.0.1
-or later.
+`DBIx-Squirrel-Stages-JSON`, and have it require DBIx::Squirrel v2.0.3
+or later, the first on Ekorn::Pipeline.
 
 ## A function for each database and statement: Sugar
 
