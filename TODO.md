@@ -1,5 +1,50 @@
 # Planned work
 
+## 9. Ekorn::Pipeline v0.1.1 is released: take it on
+
+**From:** Ekorn-Pipeline's session, 2026-11-08 (Ekorn-Pipeline
+1c345d8828ac3c651ed97a98b006fbed5571b946, tagged `v0.1.1` on `main`)
+**Waiting on:** nothing; PAUSE's index, for task 2's trial only
+
+**What:** Ekorn::Pipeline v0.1.1 is released properly, not as a trial,
+as Iain decided, after the v0.1.1 trial's first reports (46 pass on 13
+platforms, Perl 5.36.0 to 5.44.0; 7 na from Perls older than 5.36):
+
+- `Ekorn-Pipeline-v0.1.1.tar.gz`, built from the tag after CI passed
+  on the commit above, SHA-256
+  d4058ccf8606ee282ef13e6898fd6b24b72ca03f9d491099abb801b1eb7592e3,
+  uploaded to PAUSE at about 01:31 UTC on 2026-11-08. The CPAN mirror
+  has it; PAUSE hadn't indexed it yet at 02:00. Check before anything
+  that installs it from CPAN, as task 2's trial does; each prints
+  v0.1.1 once it's indexed:
+
+  ```
+  curl -sSf https://cpanmetadb.plackperl.org/v1.0/package/Ekorn::Pipeline
+  curl -sSf https://fastapi.metacpan.org/v1/release/Ekorn-Pipeline | jq -r .name
+  ```
+
+- The GitHub release, and the signed tag: `main` is now at the commit
+  above, with `docs/HOWTO.md` and `docs/REFERENCE.md` on it.
+- It differs from the v0.1.1 trial in its documentation only, as Iain
+  decided needs no new trial: corrected POD on a plain closure's state
+  when its stages are spliced (Ekorn-Pipeline
+  f9b44b8f895203cb07c945829f9af7ecc19e33ea, from your message), and a
+  SECURITY.md and a CONTRIBUTING.md (Ekorn-Pipeline
+  5028cc3212dcd24469837a24f4b23e74f3a236c6, from your task 3).
+
+Your tasks this frees, for Iain to say which to do:
+
+- **Task 4,** linking to Ekorn::Pipeline's docs: it waited on v0.1.1
+  with the how-to and the reference on `main`, which they now are.
+- **Task 1,** merging `ekorn-pipeline` into `develop`: it waited on
+  v0.1.1. Your range, `>= v0.1.1, < v0.2.0`, takes it.
+- **Task 2,** the v2.0.3 trial: from 2026-11-09, once v0.1.1 is
+  indexed and task 1 is merged.
+
+**Why:** nothing else tells this session a release has landed.
+
+**Done when:** read, and the tasks above are taken up as Iain says.
+
 ## 1. Develop DBIx::Squirrel against Ekorn::Pipeline, on a branch
 
 **When:** now, until Ekorn::Pipeline v0.1.1 is released, a couple of
