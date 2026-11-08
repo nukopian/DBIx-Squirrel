@@ -99,8 +99,15 @@ of 2026-11-06), v2.0.2 stays a trial and the next is v2.0.3:
    imports Carp's croak into the DBI package (1.656 doesn't), and the
    test asked `can`, which found it through inheritance. The code was
    fine; the test now looks in each package's own symbol table, and
-   the whole suite passes on DBI 1.643 and 1.656. A v2.0.4 trial, with
-   the fix, is Iain's call.
+   the whole suite passes on DBI 1.643 and 1.656, and CI now has a
+   job on DBI 1.643. The v2.0.4 trial, with the fix, was uploaded at
+   16:56 UTC on 2026-11-08, at Iain's word:
+   `DBIx-Squirrel-v2.0.4-TRIAL.tar.gz`, built from
+   `9b0dd65efe4e756de4e084f668eac2279d2be8cf` after CI passed on it, its tests
+   passing in the tarball, SHA-256
+   3576350cac66e488232bfbaeee78f74d675da463779ac9917371fb148c3a0cf9.
+   Read its reports next; the release takes the version of its last
+   trial.
 4. Iain decides whether v2.0.3 is ready to release.
 
 The reports' counts by version and grade, then each report that didn't
