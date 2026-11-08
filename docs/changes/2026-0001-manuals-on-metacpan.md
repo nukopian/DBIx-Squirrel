@@ -100,6 +100,17 @@ rendered POD of the changed pages are read.
 - **Found by the tests:** escaping `<` as `E<lt>` and then `>` turned
   `E<lt>` into `E<ltE<gt>`; both are escaped in one pass now. The docs
   had no bare `<` in their text, so the manuals weren't affected.
+- **Shared with Ekorn-Pipeline, 2026-11-08:** Ekorn-Pipeline took the
+  script and its test, and added what its docs needed: quotes, as
+  indented paragraphs; italics; links to other files, through a table,
+  `%ELSEWHERE`, of where each is instead; and refusing a list in a
+  list, which had been folded into the item's text. Taken here as Iain
+  asked, from Ekorn-Pipeline
+  448171b83782eb5004d814123881319d01569f92, with its tests, so the two
+  copies differ only in their settings; the manuals made here are
+  unchanged by it. Test::Spellunker joined the `cpanfile`'s develop
+  modules, as there, so a fresh library runs Minilla's spelling test
+  rather than skipping it.
 - **What's left:** the manuals' own Contents sections repeat the
   contents MetaCPAN builds itself; harmless, and left. The message to
   Ekorn-Pipeline, step 5, follows this commit.

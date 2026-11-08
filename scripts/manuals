@@ -8,9 +8,10 @@ use v5.36;
 #   scripts/manuals --check    # exits 1 if they're not what docs/ makes
 #
 # It converts the Markdown the docs use: headings, the first as NAME;
-# code blocks, as verbatim paragraphs; inline code, bold and links;
-# lists; tables, each as a list of its rows; and a comment
-# <!-- stopwords: ... -->, as the words POD's spelling test passes over.
+# code blocks, as verbatim paragraphs; inline code, bold, italics and
+# links; lists; quotes, as indented paragraphs; tables, each as a list
+# of its rows; and a comment <!-- stopwords: ... -->, as the words
+# POD's spelling test passes over.
 # Anything else it refuses, so a new construct in the Markdown is
 # noticed, not mangled.
 # It's a modulino: xt/manuals.t loads it to test the conversion.
@@ -25,6 +26,12 @@ our %MANUAL = (
     ],
     'HOWTO.md' =>
         ['DBIx::Squirrel::Manual::HowTo', 'lib/DBIx/Squirrel/Manual/HowTo.pod'],
+);
+
+# Other files the docs link to, which POD can't, and where each is
+# instead.
+our %ELSEWHERE = (
+    '../Changes' => 'https://metacpan.org/dist/DBIx-Squirrel/changes',
 );
 
 # What ends each manual, as the main module's POD ends.
@@ -62,6 +69,7 @@ sub plain ($text) {
     $text =~ s( \[ ([^\]]*) \] \( [^\)]* \) )($1)xg;
     $text =~ s( `+ ([^`]*?) `+ )($1)xg;
     $text =~ s( \*\* ([^*]+) \*\* )($1)xg;
+    $text =~ s( \* (?=\S) ([^*]+?) (?<=\S) \* )($1)xg;
     return $text;
 }
 
@@ -92,7 +100,7 @@ sub code ($text) {
 
 
 # Return text, without links, as POD: inline code as C<>, bold as B<>,
-# and < and > escaped.
+# italics as I<>, and < and > escaped.
 sub formatted ($text) {
     my @parts = split m( (`[^`]*`) )x, $text;
     for my $part (@parts) {
@@ -103,6 +111,7 @@ sub formatted ($text) {
         die "A code span isn't closed: $part\n" if $part =~ m( ` )x;
         $part =~ s( ([<>]) )($1 eq '<' ? 'E<lt>' : 'E<gt>')xge;
         $part =~ s( \*\* ([^*]+) \*\* )(B<$1>)xg;
+        $part =~ s( \* (?=\S) ([^*]+?) (?<=\S) \* )(I<$1>)xg;
     }
     return join '', @parts;
 }
@@ -112,9 +121,10 @@ sub formatted ($text) {
 # sections of each manual, and the Markdown file it's in.
 sub link_to ($text, $target, $sections, $file) {
     my $shown = formatted($text);
-    $shown                                =~ s( \| )(E<verbar>)xg;
-    $shown                                =~ s( / )(E<sol>)xg;
+    $shown =~ s( \| )(E<verbar>)xg;
+    $shown =~ s( / )(E<sol>)xg;
     return "L<$shown|$target>" if $target =~ m( \A https?:// )x;
+    return "L<$shown|$ELSEWHERE{$target}>" if $ELSEWHERE{$target};
     my($doc, $anchor) = $target =~ m( \A ([^\#]*) (?: \# (.*) )? \z )x;
     $doc = $file if $doc eq '';
     die "A link to $target, which isn't a manual\n" unless $MANUAL{$doc};
@@ -193,6 +203,27 @@ sub list ($items, $sections, $file) {
 }
 
 
+# Return a quote as POD's indented paragraphs, given its lines. It holds
+# paragraphs only: anything else in it is refused.
+sub quote ($lines, $sections, $file) {
+    my @paragraphs = ([]);
+    for my $line (@$lines) {
+        my($text) = $line =~ m( \A > \ ? (.*) \z )x;
+        if    ($text eq '') { push @paragraphs, [] if @{ $paragraphs[-1] } }
+        elsif ($text =~ m( \A (?: ``` | \# | \| | - \  | \d+\. \  | > | \s ) )x) {
+            die "Markdown this doesn't convert in a quote: $line\n";
+        }
+        else { push @{ $paragraphs[-1] }, $text }
+    }
+    return "=over 4\n",
+        (
+        map  { inline(join("\n", @$_), $sections, $file) . "\n" }
+        grep { @$_ } @paragraphs
+        ),
+        "=back\n";
+}
+
+
 # Return the POD made from a manual's Markdown, given each manual's
 # sections and the Markdown file's name.
 sub convert ($markdown, $sections, $file) {
@@ -235,9 +266,11 @@ sub convert ($markdown, $sections, $file) {
         elsif ($line =~ m( \A (-|\d+\.) \  (.*) \z )x) {
             my @items = ([$1, $2]);
             while (@lines) {
-                if ($lines[0] =~ m( \A \ {2,} (\S.*) \z )x) {
-                    die "A code block in a list\n" if $1 =~ m( \A ``` )x;
-                    $items[-1][1] .= "\n$1";
+                if (my($more) = $lines[0] =~ m( \A \ {2,} (\S.*) \z )x) {
+                    die "A code block in a list\n" if $more =~ m( \A ``` )x;
+                    die "A list in a list: $lines[0]\n"
+                        if $more =~ m( \A (?: - | \d+\. ) \  )x;
+                    $items[-1][1] .= "\n$more";
                     shift @lines;
                 }
                 elsif ($lines[0] =~ m( \A (-|\d+\.) \  (.*) \z )x) {
@@ -254,6 +287,11 @@ sub convert ($markdown, $sections, $file) {
             }
             push @pod, list(\@items, $sections, $file);
         }
+        elsif ($line =~ m( \A > (?: \  | \z ) )x) {
+            my @quote = ($line);
+            push @quote, shift @lines while @lines && $lines[0] =~ m( \A > )x;
+            push @pod,   quote(\@quote, $sections, $file);
+        }
         elsif ($line =~ m( \A (?: \s | > | --- | \*\*\* | \#{5} ) )x) {
             die "Markdown this doesn't convert: $line\n";
         }
@@ -262,7 +300,7 @@ sub convert ($markdown, $sections, $file) {
             push @paragraph, shift @lines
                 while @lines
                 && $lines[0]
-                !~ m( \A (?: \s* \z | ``` | \# | \| | - \  | \d+\. \  | <!-- ) )x;
+                !~ m( \A (?: \s* \z | ``` | \# | \| | - \  | \d+\. \  | <!-- | > ) )x;
             push @pod, inline(join("\n", @paragraph), $sections, $file) . "\n";
         }
     }

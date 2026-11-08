@@ -67,6 +67,12 @@ subtest 'headings, paragraphs and code' => sub {
 subtest 'inline' => sub {
     is body("A `code` and **bold** word.\n"),
         "A C<code> and B<bold> word.\n\n", 'code and bold';
+    is body("Each is a *run*, or an *end\nfunction*.\n"),
+        "Each is a I<run>, or an I<end\nfunction>.\n\n",
+        'italics, across lines too';
+    is body("Two **bold** and *italic*, a * b * c.\n"),
+        "Two B<bold> and I<italic>, a * b * c.\n\n",
+        'bold and italics apart, a lone * left as it is';
     is body("Use `\$x->y` or `<\$fh>`.\n"),
         "Use C<< \$x->y >> or C<< <\$fh> >>.\n\n",
         'code with a < or >, with more brackets';
@@ -94,6 +100,9 @@ subtest 'links' => sub {
     is body("[a/b|c](#the-pipeline)\n"),
         qq{L<aE<sol>bE<verbar>c|/"The pipeline">\n\n},
         'with / and | in its text, escaped';
+    is body("[Changes](../Changes) says.\n"),
+        "L<Changes|https://metacpan.org/dist/DBIx-Squirrel/changes> says.\n\n",
+        'to another file, where it is instead';
 };
 
 subtest 'lists and tables' => sub {
@@ -110,9 +119,23 @@ subtest 'lists and tables' => sub {
         'of three, an empty cell left out, a | in code kept';
 };
 
+subtest 'quotes' => sub {
+    is body("> **Note:** one,\n> and on.\n"),
+        "=over 4\n\nB<Note:> one,\nand on.\n\n=back\n\n", 'a quote, indented';
+    is body("> One.\n>\n> Two.\n"),
+        "=over 4\n\nOne.\n\nTwo.\n\n=back\n\n", 'of two paragraphs';
+    is body("Text,\n> quoted.\n"),
+        "Text,\n\n=over 4\n\nquoted.\n\n=back\n\n", 'after a paragraph';
+};
+
 subtest 'what it refuses' => sub {
-    like dies { body("> A quote.\n") },
-        qr( \A Markdown\ this\ doesn't\ convert )x, 'a quote';
+    like dies { body("> - A list.\n") },
+        qr( \A Markdown\ this\ doesn't\ convert\ in\ a\ quote )x,
+        'anything but paragraphs in a quote';
+    like dies { body(">A quote.\n") },
+        qr( \A Markdown\ this\ doesn't\ convert )x, 'a quote with no space';
+    like dies { body("- One.\n  - Two.\n") }, qr( \A A\ list\ in\ a\ list )x,
+        'a list in a list';
     like dies { body("    indented\n") },
         qr( \A Markdown\ this\ doesn't\ convert )x, 'indented code';
     like dies { body("```perl\nunclosed\n") },

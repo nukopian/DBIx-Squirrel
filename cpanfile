@@ -28,5 +28,6 @@ on develop => sub {
     requires 'Pod::Coverage';
     requires 'Test2::Harness';
     requires 'Test2::Plugin::Cover';
+    requires 'Test::Spellunker';
     requires 'UUID';
 };
