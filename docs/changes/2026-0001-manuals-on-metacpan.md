@@ -1,6 +1,6 @@
 # 2026-0001. The reference and the how-to on MetaCPAN
 
-**Status:** shipped, unreleased
+**Status:** shipped in v2.0.5
 
 **Decisions:** D1 settled: Markdown stays the source; POD made from it. D2 settled: DBIx::Squirrel::Manual::Reference and ::HowTo.
 

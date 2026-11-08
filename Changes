@@ -2,8 +2,12 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    The successor to 1.6.5: a rewrite in modern Perl, with a reference
-    and a how-to as POD manuals (roadmap 2026-0001).
+v2.0.5 2026-11-08
+
+    The successor to 1.6.5: a rewrite in modern Perl.
+
+    The reference and the how-to ship as POD manuals, so MetaCPAN and
+    perldoc have them with the modules (roadmap 2026-0001).
 
     Code written for 1.x needs changes to run. "Upgrading from 1.x", in
     DBIx::Squirrel::Manual::Reference, lists them. To stay on 1.x, which
