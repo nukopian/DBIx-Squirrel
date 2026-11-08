@@ -116,6 +116,12 @@ of 2026-11-06), v2.0.2 stays a trial and the next is v2.0.3:
    tests passing in the tarball, SHA-256
    06fb09da0914bd7c7d1f960bad2f08c3eaf85d337122c05ea7ed8008aea8b671.
    Its reports, and v2.0.4's, come next.
+   Read on 2026-11-08, at 17:58 UTC: v2.0.4, 49 passes and 5 `na`, no
+   failures, on 13 operating systems, among them 4 passes on Slaven
+   Rezić's DBI 1.643 machines, so the fix holds; v2.0.5, 34 passes and
+   3 `na`, no failures so far, one a pass there. Those machines had
+   also failed v2.0.0 to v2.0.2 since, in the same batch as v2.0.3,
+   on the same check, as each had the same test.
 4. Iain decides whether v2.0.3 is ready to release.
 
 The reports' counts by version and grade, then each report that didn't
