@@ -78,13 +78,13 @@
    "release_status" : "unstable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/nukopian/DBIx-Squirrel-2/issues"
+         "web" : "https://github.com/nukopian/DBIx-Squirrel/issues"
       },
-      "homepage" : "https://github.com/nukopian/DBIx-Squirrel-2",
+      "homepage" : "https://github.com/nukopian/DBIx-Squirrel",
       "repository" : {
          "type" : "git",
-         "url" : "https://github.com/nukopian/DBIx-Squirrel-2.git",
-         "web" : "https://github.com/nukopian/DBIx-Squirrel-2"
+         "url" : "https://github.com/nukopian/DBIx-Squirrel.git",
+         "web" : "https://github.com/nukopian/DBIx-Squirrel"
       }
    },
    "version" : "v2.0.5",

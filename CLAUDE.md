@@ -9,8 +9,7 @@ the reason for it.
 What DBIx-Squirrel means to do is in [ROADMAP.md](ROADMAP.md), and
 the decisions each item waits on in its record, in
 [docs/changes/](docs/changes/README.md).
-How the repository is kept, from every commit to a release on CPAN and
-the cut-over to the final name, is in
+How the repository is kept, from every commit to a release on CPAN, is in
 [docs/MAINTAINING.md](docs/MAINTAINING.md), with commands to paste.
 
 ## What DBIx-Squirrel is for
@@ -315,18 +314,16 @@ same day.
 
 ## The name
 
-The repository is DBIx-Squirrel-2 while it's in development. At release
-it's renamed to DBIx-Squirrel, as docs/MAINTAINING.md's "The cut-over"
-describes. Minilla takes the repository and
-issues URLs in `META.json` from the git remote, with no setting to
-override them, so until then they name DBIx-Squirrel-2. The first
-release comes after the rename, so its metadata names the final URL.
+The repository was DBIx-Squirrel-2 while it was in development, and
+was renamed to DBIx-Squirrel on 2026-11-08, before the first release,
+so that Minilla, which takes the repository and issues URLs in
+`META.json` from the git remote, names the final URL. The perlbrew
+libraries keep the name `dbix-squirrel-2`.
 
-**Never create anything at `github.com/nukopian/DBIx-Squirrel`**, in any
-case: GitHub's names ignore case, so `dbix-squirrel` is the same name.
-That name now redirects to the archived DBIx-Squirrel-1, which is how
-CPAN's links for 1.6.5 reach it. Anything created there ends the redirect
-early.
+**Never create anything at `github.com/nukopian/DBIx-Squirrel-2`**, in
+any case: GitHub's names ignore case, and that name now redirects here,
+so old links still reach the repository. Anything created there ends
+the redirect.
 
 ## Planned work
 

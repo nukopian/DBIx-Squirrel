@@ -1,7 +1,7 @@
 # Maintaining
 
-How DBIx-Squirrel is kept: its branches, releases to CPAN, the one-off
-cut-over to its final name, and the git and GitHub work done by hand.
+How DBIx-Squirrel is kept: its branches, releases to CPAN, and the git
+and GitHub work done by hand.
 It's for whoever maintains it, Iain and Claude now. Every command can be
 pasted as it stands. The few that need a value say so on the line
 before, and set it in a variable on their first line.
@@ -11,7 +11,7 @@ before, and set it in a variable on their first line.
 is where this one comes from. What's particular here is Perl: Minilla
 builds the distribution, and a release goes to CPAN.
 
-The working copy is `~/Git/github.com/nukopian/DBIx-Squirrel-2`, and Perl
+The working copy is `~/Git/github.com/nukopian/DBIx-Squirrel`, and Perl
 commands run in the project's perlbrew library, named on each command so
 they don't depend on the default Perl. [CLAUDE.md](../CLAUDE.md#perl) has
 the library, and how to build a Perl or the database drivers on Iain's Mac.
@@ -43,7 +43,7 @@ history (no merge commits) and CI passing on every job, and it can't be
 force-pushed or deleted. This holds for admins too. To see the settings:
 
 ```
-gh api repos/nukopian/DBIx-Squirrel-2/branches/main/protection --jq '{signatures: .required_signatures.enabled, linear: .required_linear_history.enabled, checks: .required_status_checks.contexts, force_push: .allow_force_pushes.enabled, admins: .enforce_admins.enabled}'
+gh api repos/nukopian/DBIx-Squirrel/branches/main/protection --jq '{signatures: .required_signatures.enabled, linear: .required_linear_history.enabled, checks: .required_status_checks.contexts, force_push: .allow_force_pushes.enabled, admins: .enforce_admins.enabled}'
 ```
 
 ### A fresh clone
@@ -56,7 +56,7 @@ distribution. Minilla isn't in `cpanfile`, so that installing from it
 shows the distribution needs nothing else:
 
 ```
-cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+cd ~/Git/github.com/nukopian/DBIx-Squirrel
 git config user.name nukopian
 git config user.email nukopian@users.noreply.github.com
 git config user.signingkey /Users/icampbell/.ssh/github_nukopian_noreply_rsa.pub
@@ -78,7 +78,7 @@ last command's, and hides a failure. The perltidy loop is CI's style
 check: it prints a diff for each file perltidy would change.
 
 ```
-cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+cd ~/Git/github.com/nukopian/DBIx-Squirrel
 perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test -L
 perlbrew exec --with perl-5.36.3@dbix-squirrel-2 perlcritic lib
 for f in $(git ls-files 'lib/*.pm' 't/*.t' 'xt/*.t'); do perlbrew exec --quiet --with perl-5.36.3@dbix-squirrel-2 perltidy "$f" | diff -u "$f" -; done
@@ -93,13 +93,13 @@ raise the floors to just under it; lower one only with the reason in
 the commit message.
 
 ```
-perlbrew exec --with perl-5.36.3@dbix-squirrel-2 ~/Git/github.com/nukopian/DBIx-Squirrel-2/scripts/coverage
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 ~/Git/github.com/nukopian/DBIx-Squirrel/scripts/coverage
 ```
 
 To see which lines and branches the tests miss, after it has run:
 
 ```
-cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+cd ~/Git/github.com/nukopian/DBIx-Squirrel
 perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cover -report text -select_re '^lib/'
 ```
 
@@ -109,7 +109,7 @@ that `cpanm` can install from GitHub. After a change to `cpanfile`,
 again, and commit what changes with the change that caused it:
 
 ```
-cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+cd ~/Git/github.com/nukopian/DBIx-Squirrel
 perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil build
 git status --short
 ```
@@ -124,7 +124,7 @@ makes. The script converts only the Markdown the docs use, and refuses
 anything else, naming it:
 
 ```
-cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+cd ~/Git/github.com/nukopian/DBIx-Squirrel
 perlbrew exec --with perl-5.36.3@dbix-squirrel-2 scripts/manuals
 git status --short
 ```
@@ -135,13 +135,13 @@ Minilla takes the branch in `README.md`'s CI badge from GitHub, with
 `branch=main` before committing:
 
 ```
-head -1 ~/Git/github.com/nukopian/DBIx-Squirrel-2/README.md | grep -o 'branch=[a-z]*'
+head -1 ~/Git/github.com/nukopian/DBIx-Squirrel/README.md | grep -o 'branch=[a-z]*'
 ```
 
 If it prints `branch=master`, put `main` back:
 
 ```
-sed -i '' '1s/branch=master/branch=main/' ~/Git/github.com/nukopian/DBIx-Squirrel-2/README.md
+sed -i '' '1s/branch=master/branch=main/' ~/Git/github.com/nukopian/DBIx-Squirrel/README.md
 ```
 
 Commits are signed, and use conventional prefixes (`feat:`, `fix:`,
@@ -187,7 +187,7 @@ was a trial of.
 
    ```
    v=v2.0.2
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil prepare "$v" </dev/null
    git status --short
    ```
@@ -200,7 +200,7 @@ was a trial of.
 
    ```
    v=v2.0.2
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist > "$TMPDIR/dist-$v.log" 2>&1
    grep '^Result:' "$TMPDIR/dist-$v.log"
    ```
@@ -212,7 +212,7 @@ was a trial of.
 
    ```
    v=v2.0.2
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
    mv "DBIx-Squirrel-$v.tar.gz" "DBIx-Squirrel-$v-TRIAL.tar.gz"
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpan-upload "DBIx-Squirrel-$v-TRIAL.tar.gz"
    rm "DBIx-Squirrel-$v-TRIAL.tar.gz"
@@ -241,14 +241,11 @@ Releases don't use `minil release`: it makes its own commit and an
 unsigned tag, and pushes both. `minil prepare` sets the version and
 `minil dist` builds the tarball, and the git steps are ours.
 
-The first release is also the cut-over to the name DBIx-Squirrel: do
-[The cut-over](#the-cut-over-first-release-only) between steps 1 and 2.
-
 1. **Check `develop`:** CI is green on its last commit, there's no
    `TODO.md`, and the history has no secrets.
 
    ```
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
    git switch develop
    git pull --ff-only
    gh run list --branch develop --limit 1
@@ -265,7 +262,7 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
 
    ```
    v=v2.0.2
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil prepare "$v" </dev/null
    git status --short
    ```
@@ -298,7 +295,7 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
 
    ```
    v=v2.0.2
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
    v=$v perl -0777 -ne 'print "$1\n" =~ s/^    //mgr if /^\Q$ENV{v}\E [^\n]*\n\n(.*?)\n*(?=^\S|\z)/ms' Changes > "$TMPDIR/notes-$v.txt"
    sed "1s/^/$v: /" "$TMPDIR/notes-$v.txt" > "$TMPDIR/tag-$v.txt"
    cat "$TMPDIR/tag-$v.txt"
@@ -311,8 +308,8 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
    listed once, from `develop`'s push:
 
    ```
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
-   gh api "repos/nukopian/DBIx-Squirrel-2/commits/$(git rev-parse develop)/check-runs" --jq '.check_runs[] | "\(.name) \(.status) \(.conclusion)"'
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
+   gh api "repos/nukopian/DBIx-Squirrel/commits/$(git rev-parse develop)/check-runs" --jq '.check_runs[] | "\(.name) \(.status) \(.conclusion)"'
    ```
 
    Every line ends `completed success`; if one doesn't, see
@@ -343,7 +340,7 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
 
    ```
    v=v2.0.2
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
    git switch --detach "$v"
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist --skip-prepare > "$TMPDIR/dist-$v.log" 2>&1
    grep '^Result:' "$TMPDIR/dist-$v.log"
@@ -356,7 +353,7 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
 
    ```
    v=v2.0.2
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpan-upload "DBIx-Squirrel-$v.tar.gz"
    git switch develop
    rm "DBIx-Squirrel-$v.tar.gz"
@@ -370,57 +367,19 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
    curl -sSf https://fastapi.metacpan.org/v1/release/DBIx-Squirrel | jq -r '"\(.name) \(.date) \(.resources.repository.web)"'
    ```
 
-## The cut-over (first release only)
+## The name
 
-The repository is DBIx-Squirrel-2 while it's in development, and takes
-the name DBIx-Squirrel at the first release. Until then, that name
-redirects to the archived DBIx-Squirrel-1, which is how CPAN's links for
-1.6.5 reach it. Never create anything there before the cut-over: the
-redirect would end early.
+The repository was DBIx-Squirrel-2 while version 2 was in development,
+and took the name DBIx-Squirrel on 2026-11-08, before its first release,
+so that release's metadata names the final URL: Minilla takes the
+repository's URL in `META.json`, and the CI badge in `README.md`, from
+`origin`. The name DBIx-Squirrel had redirected to the archived
+DBIx-Squirrel-1, which is how CPAN's links for 1.6.5 reached it; the
+rename ended that, as intended.
 
-Minilla takes the repository's URL in `META.json`, and the CI badge in
-`README.md`, from `origin`, so renaming first means the release's
-metadata names the final URL. On release day, after step 1:
-
-1. **Rename the repository on GitHub.** It works because GitHub lets a
-   repository take a name that is only a redirect; the redirect to
-   DBIx-Squirrel-1 ends at that moment, as intended, and GitHub then
-   redirects DBIx-Squirrel-2 to the new name. Ask Iain first.
-
-   ```
-   gh repo rename DBIx-Squirrel -R nukopian/DBIx-Squirrel-2 --yes
-   ```
-
-2. **Move the working copy to the new name.** The local `DBIx-Squirrel`
-   is a symlink to `DBIx-Squirrel-2`: remove it with `rm`, not `rm -r`,
-   so only the link goes. Then repoint `origin`:
-
-   ```
-   rm ~/Git/github.com/nukopian/DBIx-Squirrel
-   mv ~/Git/github.com/nukopian/DBIx-Squirrel-2 ~/Git/github.com/nukopian/DBIx-Squirrel
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel
-   git remote set-url origin git@github.com:nukopian/DBIx-Squirrel.git
-   git fetch origin
-   ```
-
-   Re-add the folder in VS Code. The perlbrew library keeps its name,
-   `perl-5.36.3@dbix-squirrel-2`.
-
-3. **Update the text that names DBIx-Squirrel-2:** `README.pod`, which
-   says the repository is named so in development, `CLAUDE.md`, and this
-   guide, whose commands then use the new name and path. Commit, and go
-   on with step 2 of the release, whose `minil prepare` regenerates
-   `META.json` and `README.md` from the new `origin`. Before committing
-   the release, nothing generated should name the old repository, so
-   this prints nothing:
-
-   ```
-   cd ~/Git/github.com/nukopian/DBIx-Squirrel
-   grep -n 'DBIx-Squirrel-2' META.json README.md Build.PL
-   ```
-
-`main`'s protection and required checks move with the rename. Check
-them with the command under [Branches](#branches), using the new name.
+GitHub now redirects DBIx-Squirrel-2 here. Never create anything at
+`github.com/nukopian/DBIx-Squirrel-2`, which would end that redirect.
+The perlbrew libraries keep their name, as `perl-5.36.3@dbix-squirrel-2`.
 
 ## Changing the CI matrix
 
@@ -433,7 +392,7 @@ to the jobs' names, and run it; it replaces the whole list, so `secrets`,
 it, or says Claude may:
 
 ```
-gh api --method PATCH repos/nukopian/DBIx-Squirrel-2/branches/main/protection/required_status_checks --silent --input - <<'EOF'
+gh api --method PATCH repos/nukopian/DBIx-Squirrel/branches/main/protection/required_status_checks --silent --input - <<'EOF'
 {
   "strict": false,
   "checks": [
@@ -450,7 +409,7 @@ gh api --method PATCH repos/nukopian/DBIx-Squirrel-2/branches/main/protection/re
   ]
 }
 EOF
-gh api repos/nukopian/DBIx-Squirrel-2/branches/main/protection --jq .required_status_checks.contexts
+gh api repos/nukopian/DBIx-Squirrel/branches/main/protection --jq .required_status_checks.contexts
 ```
 
 `15368` is GitHub Actions, so only a job of this repository's workflows
@@ -494,8 +453,8 @@ Ubuntu's DBI moves on, so does that job's.
   check on `develop`'s commit and re-runs it:
 
   ```
-  cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
-  gh api "repos/nukopian/DBIx-Squirrel-2/commits/$(git rev-parse develop)/check-runs" --jq '.check_runs[] | select(.status != "completed") | .details_url' | sed -E 's|.*/runs/([0-9]+)/job/([0-9]+).*|\1 \2|' | while read run job; do gh run rerun "$run" --job "$job"; done
+  cd ~/Git/github.com/nukopian/DBIx-Squirrel
+  gh api "repos/nukopian/DBIx-Squirrel/commits/$(git rev-parse develop)/check-runs" --jq '.check_runs[] | select(.status != "completed") | .details_url' | sed -E 's|.*/runs/([0-9]+)/job/([0-9]+).*|\1 \2|' | while read run job; do gh run rerun "$run" --job "$job"; done
   ```
 
   Then check the check runs again, as in step 5.
@@ -507,7 +466,7 @@ Ubuntu's DBI moves on, so does that job's.
 
   ```
   v=v2.0.2
-  cd ~/Git/github.com/nukopian/DBIx-Squirrel-2
+  cd ~/Git/github.com/nukopian/DBIx-Squirrel
   git switch main
   git merge --ff-only "$v"
   git push origin main
@@ -530,10 +489,10 @@ Ubuntu's DBI moves on, so does that job's.
 To see the settings, and any open alerts:
 
 ```
-gh api repos/nukopian/DBIx-Squirrel-2 --jq '.security_and_analysis | to_entries[] | "\(.key) \(.value.status)"'
-gh api repos/nukopian/DBIx-Squirrel-2/vulnerability-alerts --silent && echo "Dependabot alerts on"
-gh api repos/nukopian/DBIx-Squirrel-2/dependabot/alerts --jq '.[] | select(.state == "open") | "\(.number) \(.security_advisory.summary)"'
-gh api repos/nukopian/DBIx-Squirrel-2/secret-scanning/alerts --jq '.[] | select(.state == "open") | "\(.number) \(.secret_type_display_name)"'
+gh api repos/nukopian/DBIx-Squirrel --jq '.security_and_analysis | to_entries[] | "\(.key) \(.value.status)"'
+gh api repos/nukopian/DBIx-Squirrel/vulnerability-alerts --silent && echo "Dependabot alerts on"
+gh api repos/nukopian/DBIx-Squirrel/dependabot/alerts --jq '.[] | select(.state == "open") | "\(.number) \(.security_advisory.summary)"'
+gh api repos/nukopian/DBIx-Squirrel/secret-scanning/alerts --jq '.[] | select(.state == "open") | "\(.number) \(.secret_type_display_name)"'
 ```
 
 ## Tools

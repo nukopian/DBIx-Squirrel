@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/nukopian/DBIx-Squirrel-2/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/nukopian/DBIx-Squirrel-2/actions?workflow=test)
+[![Actions Status](https://github.com/nukopian/DBIx-Squirrel/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/nukopian/DBIx-Squirrel/actions?workflow=test)
 # DBIx-Squirrel
 
 DBI, minus the boilerplate, plus a pipeline.
@@ -186,8 +186,9 @@ Its code is in the archived
 [DBIx-Squirrel-1](https://github.com/nukopian/DBIx-Squirrel-1)
 repository.
 
-The repository is called DBIx-Squirrel-2 while it's in development. At
-release it takes the original name, DBIx-Squirrel.
+The repository was called DBIx-Squirrel-2 while version 2 was in
+development, and took the original name, DBIx-Squirrel, before its first
+release.
 
 ## Licence
 
