@@ -182,6 +182,19 @@ is no help to its user. This module moves the error to the user's line,
 and does the same for the DBI's warnings, under C<PrintError>.
 Nothing is exported by default.
 
+=head1 VARIABLES
+
+=head2 @INTERNAL
+
+    our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
+
+The packages L<Carp> looks past to report an error at the line that
+called DBIx::Squirrel: the DBI's, DBIx::Squirrel's, and
+L<Ekorn::Pipeline>'s, which runs its stages. A module of stages, or of
+functions that take stages, sets its C<@CARP_NOT> to it, so that what
+it croaks while a stage runs is reported at the line that asked for
+the result, not inside DBIx::Squirrel.
+
 =head1 FUNCTIONS
 
 =head2 at_caller

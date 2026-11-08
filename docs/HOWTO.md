@@ -528,6 +528,10 @@ my @b = $dbh->iterate('SELECT name FROM artist', sub { $_->[0] })->all;
 say "@a" eq "@b" ? 'the same' : 'different';    # the same
 ```
 
+The recipes here are for rows. Ekorn::Pipeline's [how-to](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md) has
+more, for stages over any values, and they work here too, with
+DBIx::Squirrel's names for its modules.
+
 ### Change each row (map)
 
 Return one value:
@@ -956,25 +960,10 @@ iterator, DBIx::Squirrel::Context's functions return `undef`.
 ### Pull values from anything, one at a time
 
 A pipeline's `iterator` pulls values from a source of your own, such as
-a file:
-
-```perl
-use DBIx::Squirrel::Pipeline;
-
-my $log_text = <<'LOG';
-127.0.0.1 - - [05/Nov/2026:10:00:00 +0000] "GET /index.html HTTP/1.1" 200 512
-127.0.0.1 - - [05/Nov/2026:10:00:01 +0000] "GET /missing HTTP/1.1" 404 0
-LOG
-open my $log, '<', \$log_text or die "log: $!";
-
-my $next = DBIx::Squirrel::Pipeline->new(
-    sub { m( \"\ 404\ )x ? $_ : () },
-    sub { (split ' ')[6] },
-)->iterator(sub { my $line = <$log>; defined $line ? $line : () });
-while (my($path) = $next->()) {
-    say $path;    # /missing
-}
-```
+a file or a paged API. Ekorn::Pipeline's how-to has the recipes, in
+[Pulling values one at a time](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#pulling-values-one-at-a-time), and
+more on functions that take stages, in
+[Writing a function that takes stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-a-function-that-takes-stages).
 
 ## A function for each database and statement
 

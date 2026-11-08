@@ -114,7 +114,7 @@ DBIx::Squirrel's pipeline modules, so nothing has to be kept for them,
 and DBIx::Squirrel, as Ekorn::Pipeline's first real user, tests the
 names Ekorn::Pipeline is about to make public.
 
-**Done when:** task 4 is done on the branch, as task 5 is, it passes every
+**Done when:** tasks 4 and 5 are done on the branch, as they are, it passes every
 CI job and `scripts/coverage` on Ekorn::Pipeline as released, and
 Iain has reviewed it. It's merged into `develop` by a fast-forward,
 after `develop`'s other commits are rebased under it; the CI steps
@@ -123,43 +123,6 @@ The note on it in docs/MAINTAINING.md's Branches goes too. `TODO.md`
 is kept on the branch while it lives, as CLAUDE.md's Planned work says
 (Iain, 2026-11-08), and `develop`'s copy falls behind, so where the
 rebase conflicts in it, the branch's text is the answer.
-
-## 4. Link to Ekorn::Pipeline's docs, and say what stage authors need
-
-**From:** a message from Ekorn-Pipeline's session, 2026-11-07
-(Ekorn-Pipeline eeec4c24f932e92d588acfcb1d8e6c5b74f3bdb6)
-**Waiting on:** Ekorn::Pipeline v0.1.1, with its `docs/HOWTO.md` and
-`docs/REFERENCE.md` on its `main`.
-
-**When:** on the branch `ekorn-pipeline`, before it merges, as the
-merge waits for v0.1.1 too (task 1).
-
-**What:**
-
-1. Where DBIx::Squirrel's reference, how-to and POD explain how the
-   pipeline works, link to Ekorn-Pipeline's how-to and reference
-   instead, keeping to what's DBIx::Squirrel's own: rows, statements,
-   iterators and result sets, `pipe` and `tap` on handles,
-   DBIx::Squirrel::Context, `pluck` and `as_hash`. Show Iain the
-   trimmed sections before committing: how much to cut is his call.
-2. Say, for anyone writing stages under DBIx::Squirrel's namespace,
-   that a module running its callers' stages reports their failures
-   at the callers' lines only with
-   `our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;`, which takes in
-   Ekorn's packages, as DBIx::Squirrel's own modules do. Errors.pm's
-   POD doesn't document `@INTERNAL` yet, so document it there too.
-   Where they're told to use `croakf`, say its format is a literal, with
-   the values as arguments, as Errors.pm's POD has said since task 5.
-
-What an iterator does after a stage dies, the third part of this task
-when it came, was settled by Ekorn-Pipeline's v0.1.1 and done with
-task 8, on 2026-11-08: the docs say it, and `t/14-iterate.t` pins it.
-
-**Why:** two copies of how the pipeline works would drift apart, and
-Ekorn's is the one kept up to date with the code.
-
-**Done when:** the docs link to Ekorn's for the pipeline, and the
-`@CARP_NOT` line is documented; the tests pass and the PDFs are read.
 
 ## 6. Move the plan doc's open work and decisions into the roadmap
 
