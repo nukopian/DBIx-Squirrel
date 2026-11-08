@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0002.
+Last id: 2026-0003.
 
 Items come in four groups:
 
@@ -49,7 +49,16 @@ Nothing yet.
 
 ## Later
 
-Nothing yet.
+### 2026-0003. Add-on stage distributions
+
+**Added:** 2026-11-08. **Size:** L (5)
+
+Stages for one concern each, in distributions of their own after 2.0,
+as the plan for 2.0 had them: serializers (JSON, YAML, XML, CSV,
+dumps), decoding columns, types such as dates and booleans,
+validation, and progress and logging taps. Those that need no database
+may belong in Ekorn::Pipeline's `Ekorn::Pipeline::Stages::` instead.
+Split into items, each sized, when one is taken up.
 
 ## Ideas
 

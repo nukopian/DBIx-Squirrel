@@ -36,7 +36,7 @@ the library, and how to build a Perl or the database drivers on Iain's Mac.
   but not in the CPAN tarball
   ([CLAUDE.md](../CLAUDE.md#the-roadmap) has the rules).
 - A branch for a roadmap item, when there is one, is named for its id,
-  as `experiment/2026-0001-a-title`.
+  as `experiment/2026-0001-manuals-on-metacpan`.
 
 `main` is protected on GitHub. Pushes to it need signed commits, a linear
 history (no merge commits) and CI passing on every job, and it can't be
@@ -373,11 +373,10 @@ The first release is also the cut-over to the name DBIx-Squirrel: do
 ## The cut-over (first release only)
 
 The repository is DBIx-Squirrel-2 while it's in development, and takes
-the name DBIx-Squirrel at the first release, as the plan doc's "Cut-over
-to DBIx-Squirrel" section describes. Until then, that name redirects to
-the archived DBIx-Squirrel-1, which is how CPAN's links for 1.6.5 reach
-it. Never create anything there before the cut-over: the redirect would
-end early.
+the name DBIx-Squirrel at the first release. Until then, that name
+redirects to the archived DBIx-Squirrel-1, which is how CPAN's links for
+1.6.5 reach it. Never create anything there before the cut-over: the
+redirect would end early.
 
 Minilla takes the repository's URL in `META.json`, and the CI badge in
 `README.md`, from `origin`, so renaming first means the release's

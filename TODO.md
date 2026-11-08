@@ -1,51 +1,5 @@
 # Planned work
 
-## 6. Move the plan doc's open work and decisions into the roadmap
-
-**From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
-1109d1352d9773062c1916e00ee2964bd3670fec, and its dogfooding rule in
-89e12df5d6ebaaf7246ef0d99920a3f554420a4e)
-**Waiting on:** Iain, once he's done with Ekorn-Pipeline, as he said
-on 2026-11-07.
-
-**What:** the rest of the task to keep a roadmap and change records,
-with ids, as Ekorn-Pipeline does. Its other steps are done: CLAUDE.md's
-"The roadmap", "Change records", dogfooding and precis rules,
-`ROADMAP.md`, `docs/changes/README.md`, docs/MAINTAINING.md and
-`minil.toml`, as Ekorn-Pipeline has them, with DBIx-Squirrel's names.
-Iain decided on 2026-11-07 that the tasks already in `TODO.md` get no
-ids or records: the rule applies to tasks added from then on.
-
-1. With Iain, go through the Claude Doc "DBIx-Squirrel successor:
-   plan" (https://claude.ai/artifact/1cnZmM5LRgpgX3F6sF8VqB). Each part
-   still to be done becomes a roadmap item, with the next id, from
-   2026-0001, and each decision still open a numbered, unchecked
-   decision in its item's record. Decisions already made stay in the
-   commits and CLAUDE.md that hold them. `ROADMAP.md` and the records
-   are public: nothing personal from the doc goes in them.
-2. Replace the examples "A title" and `a-title`, in CLAUDE.md's "The
-   roadmap" and docs/MAINTAINING.md's Branches, with the first item's
-   title and slug.
-3. Three places still point into the doc. Move what they need, and
-   point them at its new home:
-   - the opening of CLAUDE.md, whose sentence "Until the open work and
-     decisions of the Claude Doc ... they're in it still" goes;
-   - the doc's "Cut-over to DBIx-Squirrel" section, which CLAUDE.md's
-     "The name" and docs/MAINTAINING.md's "The cut-over" both name:
-     check it against "The cut-over", move anything that's only in the
-     doc there, and name that section instead;
-   - the doc's "Canned stages" section, which Claude's memory
-     `default-exports.md` names for the open questions on canned
-     stages: point it at their record instead.
-4. Then leave the doc alone; deleting it is Iain's call.
-
-**Why:** Claude Docs sit outside the repository, apart from the history
-and the chat, and Iain finds them impermanent.
-
-**Done when:** the plan doc's open work and decisions are in the
-roadmap and its records, and nothing in the repository, or Claude's
-memory, points into it.
-
 ## 2. Trial, then release, v2.0.x on Ekorn::Pipeline: v2.0.5, as it stands
 
 **When:** from 2026-11-09. What it waited on is done: Ekorn::Pipeline

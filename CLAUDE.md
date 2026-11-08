@@ -8,10 +8,7 @@ the reason for it.
 
 What DBIx-Squirrel means to do is in [ROADMAP.md](ROADMAP.md), and
 the decisions each item waits on in its record, in
-[docs/changes/](docs/changes/README.md). Until the open work and
-decisions of the Claude Doc
-[DBIx-Squirrel successor: plan](https://claude.ai/artifact/1cnZmM5LRgpgX3F6sF8VqB)
-move there (`TODO.md`'s task 6), they're in it still.
+[docs/changes/](docs/changes/README.md).
 How the repository is kept, from every commit to a release on CPAN and
 the cut-over to the final name, is in
 [docs/MAINTAINING.md](docs/MAINTAINING.md), with commands to paste.
@@ -319,8 +316,8 @@ same day.
 ## The name
 
 The repository is DBIx-Squirrel-2 while it's in development. At release
-it's renamed to DBIx-Squirrel, as the plan doc's "Cut-over to
-DBIx-Squirrel" section describes. Minilla takes the repository and
+it's renamed to DBIx-Squirrel, as docs/MAINTAINING.md's "The cut-over"
+describes. Minilla takes the repository and
 issues URLs in `META.json` from the git remote, with no setting to
 override them, so until then they name DBIx-Squirrel-2. The first
 release comes after the rename, so its metadata names the final URL.
@@ -436,12 +433,13 @@ a number.
   this year, and add one to the last serial if its year is this year,
   or start at 0001 if not, and change that line in the commit that adds
   the item.
-- **The id names the item everywhere:** its heading, `### 2026-0001. A
-  title`; its record, `docs/changes/2026-0001-a-title.md`;
-  its line in `Changes`, which ends "(roadmap 2026-0001)"; commit
-  messages; and a branch for it, such as
-  `experiment/2026-0001-a-title`. Another repository's id goes
-  with that repository's name, as "Ekorn-Pipeline 2026-0001".
+- **The id names the item everywhere:** its heading, `### 2026-0001.
+  The reference and the how-to on MetaCPAN`; its record,
+  `docs/changes/2026-0001-manuals-on-metacpan.md`; its line in
+  `Changes`, which ends "(roadmap 2026-0001)"; commit messages; and a
+  branch for it, such as `experiment/2026-0001-manuals-on-metacpan`.
+  Another repository's id goes with that repository's name, as
+  "Ekorn-Pipeline 2026-0001".
 - **Every item has a size,** a guess at how much work it is, as a
   T-shirt size and its story points, XS 1, S 2, M 3 and L 5, in a
   **Size:** line, such as `**Size:** S (2)`. An item bigger than L is
@@ -478,7 +476,7 @@ an id that sorts and never changes can be searched for years later.
 ## Change records
 
 - **A planned change keeps a record** in `docs/changes/`, named for its
-  id and the change: `2026-0001-a-title.md`. A roadmap item's
+  id and the change: `2026-0001-manuals-on-metacpan.md`. A roadmap item's
   record is opened when it first has a question to settle, or when
   work on it starts. A task in `TODO.md` with steps gets a record too,
   taking the next id from the roadmap's opening, in the same sequence,
