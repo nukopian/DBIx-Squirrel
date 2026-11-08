@@ -180,6 +180,13 @@ of 2026-11-06), v2.0.2 stays a trial and the next is v2.0.3:
 
 1. Read the v2.0.2 trial's reports first, as a failure in them may
    still apply; fix one on `develop`, with a test.
+   Read on 2026-11-08, at 01:06 UTC: 80 passes, 16 `na`, no failures.
+   The `na`s are all Perls before 5.36 (5.12.5 to 5.34.3); the passes
+   span 5.36.0 to 5.45.5, on Linux, FreeBSD, OpenBSD, NetBSD,
+   DragonFly, MidnightBSD, Windows, Cygwin, macOS, Solaris, Android,
+   Haiku and GNU/Hurd. CPANTS gives the trial no core Kwalitee issues,
+   only the experimental three, for a SECURITY and a CONTRIBUTING
+   document. Read again for reports since, before the v2.0.3 trial.
 2. Check `cpanfile`'s range for Ekorn::Pipeline, `>= v0.1.1, < v0.2.0`,
    takes the version released, and regenerate `META.json` and
    `Build.PL` with `minil build` if it changes. Iain decided on
