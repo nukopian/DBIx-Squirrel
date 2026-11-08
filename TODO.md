@@ -46,7 +46,7 @@ and the chat, and Iain finds them impermanent.
 roadmap and its records, and nothing in the repository, or Claude's
 memory, points into it.
 
-## 2. Trial, then release, v2.0.3 on Ekorn::Pipeline
+## 2. Trial, then release, v2.0.x on Ekorn::Pipeline: v2.0.5, as it stands
 
 **When:** from 2026-11-09. What it waited on is done: Ekorn::Pipeline
 v0.1.1 was released on 2026-11-08, not as a trial, and indexed, as
