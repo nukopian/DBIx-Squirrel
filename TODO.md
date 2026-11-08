@@ -208,6 +208,56 @@ and the chat, and Iain finds them impermanent.
 roadmap and its records, and nothing in the repository, or Claude's
 memory, points into it.
 
+## 8. Take on Ekorn::Pipeline v0.1.1, on CPAN as a trial
+
+**From:** Ekorn-Pipeline's session, 2026-11-08 (Ekorn-Pipeline
+372f94b1a13d129cde42030da6f5658d88b111b4)
+**Waiting on:** nothing
+
+**What:** Ekorn::Pipeline v0.1.1 is on CPAN as a trial,
+`Ekorn-Pipeline-v0.1.1-TRIAL.tar.gz`, built from the commit above after
+CI passed on it, SHA-256
+a2e32438c9c037e64dd269ed4b1068e9fbf24eff03be61d245d760aea5e8a5b7. It's
+inside DBIx::Squirrel's range, `>= v0.1.0, < v0.2.0`, and the release
+Ekorn's task 1 makes will be v0.1.1, not v0.1.0. The branch
+`ekorn-pipeline` installs Ekorn from its `develop` on GitHub, so it
+has all of this already. Since v0.1.0's trial, three roadmap items,
+each with its record in Ekorn-Pipeline's `docs/changes/`:
+
+- **Ekorn-Pipeline 2026-0002, a behaviour change:** once a stage, or
+  an end function, dies, an iterator has ended, as a pushed run has:
+  every later call returns an empty list, nothing waiting goes on, no
+  end function is called, and the source isn't called again. Before, it
+  carried on, without the value that died. So a loop over a statement's
+  rows that catches a stage's error and reads on now stops getting
+  rows. Check DBIx::Squirrel's tests and docs for such a loop, and
+  where its docs describe reading an iterator after an error, say it
+  ends; to skip a bad row, a stage catches its own error
+  (Ekorn-Pipeline 66b9b6bc866f25659067a2f4669ef52ecf11a863).
+- **Ekorn-Pipeline 2026-0001, an addition:** `$p->stages` returns a
+  pipeline's stages, as a copy, in order, so they can be spliced into
+  another pipeline, or given to any function that takes stages, running
+  as if listed there. DBIx::Squirrel::Pipeline inherits it, as a
+  subclass, and DBIx::Squirrel's functions take the stages as they are,
+  as `split_stages` looks for code references, which they are. Decide
+  with Iain whether DBIx::Squirrel's docs show it, such as
+  `$sth->iterate($id, $first_active->stages, pluck('name'))`, and
+  whether its facade's POD lists the method
+  (Ekorn-Pipeline 753f101a7a20ed8de49f9eda6944cd1dbaf64604).
+- **Ekorn-Pipeline 2026-0003, a promise:** a pipeline called in scalar
+  context returns how many results came out, as before, and as
+  DBIx::Squirrel's own functions do; the POD now says so. Nothing to do
+  (Ekorn-Pipeline f9aba199a9cbcacb7de2a899bb565b47f48e941a).
+
+**Why:** DBIx::Squirrel's users get Ekorn's behaviour, so its tests and
+docs must match it before v2.0.3's trial requires v0.1.1 from CPAN.
+
+**Done when:** DBIx::Squirrel's tests pass on the branch against
+Ekorn-Pipeline's `develop` at the commit above or later, its docs say
+what an iterator does after a stage dies, and Iain has decided about
+showing `stages`. Anything in Ekorn that got in the way goes back as a
+message, as CLAUDE.md's dogfooding rule says.
+
 ## 2. Trial, then release, v2.0.3 on Ekorn::Pipeline
 
 **When:** from 2026-11-09, once Ekorn::Pipeline v0.1.0 is released
