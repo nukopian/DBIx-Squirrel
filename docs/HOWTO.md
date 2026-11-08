@@ -712,7 +712,9 @@ say "@lines";    # Abba Blur Cream (3)
 
 `peek` and `count_into`, from DBIx::Squirrel::Stages::Taps, look at each
 value as it goes by, and pass it on as it is. `dump_to`, on request,
-writes each with Data::Dumper, to STDERR or a filehandle you give:
+writes each with Data::Dumper, to STDERR or a filehandle you give. It's
+for debugging, and writes values in full, so take it out before the
+code goes live:
 
 ```perl
 use DBIx::Squirrel::Stages::Flow;

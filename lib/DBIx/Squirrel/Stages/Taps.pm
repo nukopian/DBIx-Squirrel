@@ -37,6 +37,10 @@ reaches this module only once it's listed here. It's here to stay,
 beside DBIx::Squirrel's own stages, such as
 L<DBIx::Squirrel::Stages::Rows>.
 
+C<dump_to> is for debugging. It writes each value in full, secrets and
+all, and doesn't escape control characters in strings, so a value from
+outside can send escape sequences to a terminal.
+
 =head1 SEE ALSO
 
 L<Ekorn::Pipeline::Stages::Taps>, L<DBIx::Squirrel>
