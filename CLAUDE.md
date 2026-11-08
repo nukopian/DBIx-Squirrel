@@ -367,15 +367,30 @@ early.
   merge brings the branch's back, so where the rebase conflicts in
   `TODO.md`, the branch's text is the answer.
 - **Tasks for Ekorn-Pipeline go in its `TODO.md`,** as grammar and
-  scalar hand tasks to each other: committed from a session here,
-  straight into `~/Git/github.com/nukopian/Ekorn-Pipeline`'s `TODO.md`
-  on its `develop`, or on the experimental branch carrying its work,
-  if it has one, as `docs: a task from DBIx-Squirrel: ...`, with
-  **From:** (this repository's commit the task came from) and
-  **Waiting on:** lines above the task. Commit only that file, by its
-  path, so nothing of a session working there goes with it. Its tasks
-  for DBIx-Squirrel come here the same way. It's the only other
-  repository this one touches, as Iain decided on 2026-11-07.
+  scalar hand tasks to each other: committed from a session here into
+  `~/Git/github.com/nukopian/Ekorn-Pipeline`'s `TODO.md` on its
+  `develop`, or on the experimental branch carrying its work, if it has
+  one, as `docs: a task from DBIx-Squirrel: ...`, with **From:** (this
+  repository's commit the task came from) and **Waiting on:** lines
+  above the task, and pushed at once. Commit only that file, by its
+  path, so nothing of a session working there goes with it. Commit in
+  its working copy only if it's on that branch with a clean tree, after
+  a `git pull --ff-only`; otherwise, never switch it, as a session may
+  be working there, but use a worktree of the branch as GitHub has it,
+  and push from there:
+
+  ```
+  git -C ~/Git/github.com/nukopian/Ekorn-Pipeline fetch -q origin
+  git -C ~/Git/github.com/nukopian/Ekorn-Pipeline worktree add --detach /tmp/ekorn-pipeline-todo origin/develop
+  git -C /tmp/ekorn-pipeline-todo push origin HEAD:develop
+  git -C ~/Git/github.com/nukopian/Ekorn-Pipeline worktree remove /tmp/ekorn-pipeline-todo
+  ```
+
+  A push refused as not a fast-forward means the branch moved: remove
+  the worktree and start again from the fetch. Its tasks for
+  DBIx-Squirrel come here the same way, as its CLAUDE.md says. It's the
+  only other repository this one touches, as Iain decided on
+  2026-11-07.
 - **Messages go in a `# Messages` section, above `# Planned work`,** in
   the same `TODO.md`, as Iain decided on 2026-11-07. A message is news
   the other session should know, but needs no work of its own: what one
