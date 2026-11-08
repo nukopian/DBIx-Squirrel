@@ -20,7 +20,11 @@ use DBIx::Squirrel::Sugar         ();
 use DBIx::Squirrel::Util;
 
 # Imported functions are cleaned out of each package, so they can't be
-# called as methods.
+# called as methods. Each is looked for in the package's own symbol
+# table, not with can, which would find one a parent class defines: DBI
+# 1.643, as Debian and Ubuntu ship it, imports Carp's croak (1.656
+# doesn't), which DBIx::Squirrel, a subclass of the DBI, would then seem
+# to have.
 my %imported = (
     'DBIx::Squirrel'     => [qw(canonical croak is_hashref split_attrs)],
     'DBIx::Squirrel::db' => [
@@ -70,9 +74,15 @@ my %imported = (
     ],
 );
 
+# True if a package defines a sub of its own of that name.
+sub defines ($package, $name) {
+    no strict 'refs';    ## no critic (TestingAndDebugging::ProhibitNoStrict)
+    return defined &{ "${package}::$name" };
+}
+
 for my $pkg (sort keys %imported) {
     subtest $pkg => sub {
-        ok !$pkg->can($_), "no $_" for @{ $imported{$pkg} };
+        ok !defines($pkg, $_), "no $_" for @{ $imported{$pkg} };
     };
 }
 

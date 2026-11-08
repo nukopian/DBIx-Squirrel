@@ -91,6 +91,16 @@ of 2026-11-06), v2.0.2 stays a trial and the next is v2.0.3:
    since 01:06 UTC. Its reports come in over the next few days; read
    them with the commands below, and fix a failure on `develop`, with
    a test, before a new trial, v2.0.4.
+   Read on 2026-11-08, at 16:38 UTC: 57 passes on 13 operating
+   systems, Perl 5.36.0 to 5.44.0, 9 `na` from older Perls, and 2
+   failures, both Slaven Rezić's, on Debian and Ubuntu system Perls
+   5.36.0 and 5.38.2 with their DBI, 1.643. Both failed one check,
+   `t/07-namespaces.t`'s "no croak" for DBIx::Squirrel: DBI 1.643
+   imports Carp's croak into the DBI package (1.656 doesn't), and the
+   test asked `can`, which found it through inheritance. The code was
+   fine; the test now looks in each package's own symbol table, and
+   the whole suite passes on DBI 1.643 and 1.656. A v2.0.4 trial, with
+   the fix, is Iain's call.
 4. Iain decides whether v2.0.3 is ready to release.
 
 The reports' counts by version and grade, then each report that didn't
