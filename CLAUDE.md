@@ -328,11 +328,13 @@ early.
 ## Planned work
 
 - **At the start of a session, check for `TODO.md`** at the top of the
-  repository, on `develop`. If it's there, read it, ask Iain whether each
-  task should still be done, and do the ones he confirms. Remove each
-  task in the commit that completes it, so the history shows which
-  commit did which, and delete the file with the last one. A task he
-  drops is removed too, saying why in the commit message.
+  repository, on `develop`, and on any experimental branch carrying
+  work, which docs/MAINTAINING.md's Branches names. If it's there, read
+  it, ask Iain whether each task should still be done, and do the ones
+  he confirms. Remove each task in the commit that completes it, so the
+  history shows which commit did which, and delete the file with the
+  last one. A task he drops is removed too, saying why in the commit
+  message.
 - **Work planned for a later session goes into `TODO.md`,** committed on
   `develop`, with enough to do it cold: what, why, the files involved,
   and how to check it's done. Not only in Claude's memory or the chat,
@@ -341,8 +343,9 @@ early.
   talk.** Now that DBIx-Squirrel and Ekorn-Pipeline are separate,
   DBIx-Squirrel dogfoods Ekorn-Pipeline, as its first user, and what
   this session finds using it matters most: friction, a gap, a clumsy
-  name, or a stage it had to write that others would want. Either session that finds such a
-  thing in the other's product while working sends it as a message:
+  name, or a stage it had to write that others would want. Either
+  session that finds such a thing in the other's product while working
+  sends it as a message:
   what was found, where (the file and commit), and what might be done.
   Nothing enters the other's `ROADMAP.md` or records directly; the
   session it's for takes the message to Iain, who decides whether it
@@ -356,10 +359,18 @@ early.
   Claude Docs for planned work or decisions, as Iain decided on
   2026-11-07: they sit outside the repository, apart from the history
   and the chat.
+- **While an experimental branch carries the work, `TODO.md` is kept
+  there,** as Iain decided on 2026-11-08. The branch's copy is the one
+  worked from: its tasks are added, done and removed there, and
+  Ekorn-Pipeline's session hands tasks and messages to that branch, not
+  `develop`. `develop`'s copy is left alone, and falls behind; the
+  merge brings the branch's back, so where the rebase conflicts in
+  `TODO.md`, the branch's text is the answer.
 - **Tasks for Ekorn-Pipeline go in its `TODO.md`,** as grammar and
   scalar hand tasks to each other: committed from a session here,
   straight into `~/Git/github.com/nukopian/Ekorn-Pipeline`'s `TODO.md`
-  on its `develop`, as `docs: a task from DBIx-Squirrel: ...`, with
+  on its `develop`, or on the experimental branch carrying its work,
+  if it has one, as `docs: a task from DBIx-Squirrel: ...`, with
   **From:** (this repository's commit the task came from) and
   **Waiting on:** lines above the task. Commit only that file, by its
   path, so nothing of a session working there goes with it. Its tasks
