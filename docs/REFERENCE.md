@@ -1175,7 +1175,11 @@ What each stage does:
 | `collect { ... }` | Holds every value, and when they run out, passes on what the block makes of them, given as its arguments. |
 | `peek { ... }` | Calls the block with each value, and passes the value on. |
 | `count_into(\$n)` | Counts the values into `$n`, from 0 on each run, and passes them on. |
-| `dump_to($fh)` | Writes each value, with Data::Dumper, to `$fh` or STDERR, and passes it on. |
+| `dump_to($fh)` | Writes each value, with Data::Dumper, to `$fh` or STDERR, and passes it on. For debugging: see below. |
+
+`dump_to` is for debugging. It writes each value in full, secrets and
+all, and doesn't escape control characters in strings, so a value from
+outside can send escape sequences to a terminal.
 
 Each is a function that makes a stage, checking what it's given when
 it's called, not on each value. Those that keep a count or hold values

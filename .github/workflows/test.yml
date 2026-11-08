@@ -23,8 +23,8 @@ jobs:
           - os: macos-26
             perl: "5.44"
     steps:
-      - uses: actions/checkout@v7
-      - uses: shogo82148/actions-setup-perl@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
         with:
           perl-version: ${{ matrix.perl }}
       # Until Ekorn::Pipeline is on CPAN, from its develop on GitHub.
@@ -40,8 +40,8 @@ jobs:
   style:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
-      - uses: shogo82148/actions-setup-perl@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
         with:
           perl-version: "5.44"
       # Until Ekorn::Pipeline is on CPAN, from its develop on GitHub.
@@ -65,8 +65,8 @@ jobs:
   coverage:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
-      - uses: shogo82148/actions-setup-perl@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
         with:
           perl-version: "5.36"
       # Until Ekorn::Pipeline is on CPAN, from its develop on GitHub.
@@ -83,7 +83,7 @@ jobs:
   secrets:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # the whole history
       - name: gitleaks

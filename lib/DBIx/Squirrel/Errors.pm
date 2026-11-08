@@ -209,6 +209,11 @@ C<__WARN__> handler there was before, or warned without one.
 Croaks with a message made by C<sprintf> from a format and its
 arguments, reporting it at the same line as L<Carp/croak> would.
 
+The format is a literal, written in the code: values go in as
+arguments, through C<%s> and the like, never as the format. A format
+made from data does whatever its C<%> directives say, such as
+C<%999999999s>, which makes a string of a gigabyte.
+
 =head2 failed
 
     croak failed($dbh, 'prepare');
