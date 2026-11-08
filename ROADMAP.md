@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: none yet.
+Last id: 2026-0001.
 
 Items come in four groups:
 
@@ -41,7 +41,16 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing yet.
+### 2026-0001. The reference and the how-to on MetaCPAN
+
+**Size:** M (3)
+
+MetaCPAN's Documentation lists only POD, so the reference and the
+how-to, kept as Markdown in `docs/` and left out of the tarball, don't
+appear there. `scripts/manuals` makes them POD manuals,
+DBIx::Squirrel::Manual::Reference and ::HowTo, from the Markdown,
+which stays the source. Before the first release, when v2 is first
+found on MetaCPAN. [Its record](docs/changes/2026-0001-manuals-on-metacpan.md).
 
 ## Next
 

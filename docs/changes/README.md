@@ -80,4 +80,5 @@ Steps, Done when.
 
 Newest id first.
 
-None yet.
+- [The reference and the how-to on MetaCPAN](2026-0001-manuals-on-metacpan.md),
+  roadmap 2026-0001: in progress.
