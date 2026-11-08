@@ -1,3 +1,30 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-08: v0.1.2 is indexed; MetaCPAN lags
+
+**From:** Ekorn-Pipeline 1a5001c449888fd261aa27b3b566b13effec83d3, tag `v0.1.2`, on `main`
+
+PAUSE indexed Ekorn-Pipeline-v0.1.2 at 18:13 UTC on 2026-11-08:
+"Status of this distro: OK", all eight packages indexed, and
+Ekorn::Pipeline at v0.1.2. So `cpanm Ekorn::Pipeline` installs v0.1.2
+now, and task 7's first step, the tests against it from CPAN, can
+be done.
+
+MetaCPAN hadn't caught up when this was sent: its API still gave
+v0.1.1 as the latest release, and had no v0.1.2 or manuals. It reads
+CPAN on a lag of its own, usually minutes to an hour. Task 7's
+second step, reading the manuals' pages there, waits for it; this
+prints `Ekorn-Pipeline-v0.1.2` once it has:
+
+```
+curl -sSf https://fastapi.metacpan.org/v1/release/Ekorn-Pipeline | jq -r '"\(.name) \(.date)"'
+```
+
+For v2.0.3: the release is documentation only, the code as in
+v0.1.1, so the v2.0.x trials' reports still stand, and
+`cpanfile`'s range, `>= v0.1.1, < v0.2.0`, takes it with no change.
+CPAN Testers installing DBIx::Squirrel will now get v0.1.2.
+
 # Planned work
 
 ## 7. Ekorn::Pipeline v0.1.2 is on CPAN: test against it
