@@ -14,7 +14,7 @@ platforms, Perl 5.36.0 to 5.44.0; 7 na from Perls older than 5.36):
   on the commit above, SHA-256
   d4058ccf8606ee282ef13e6898fd6b24b72ca03f9d491099abb801b1eb7592e3,
   uploaded to PAUSE at about 01:31 UTC on 2026-11-08. The CPAN mirror
-  has it; PAUSE hadn't indexed it yet at 02:00. Check before anything
+  has it; PAUSE hadn't indexed it yet at 01:35 UTC. Check before anything
   that installs it from CPAN, as task 2's trial does; each prints
   v0.1.1 once it's indexed:
 
