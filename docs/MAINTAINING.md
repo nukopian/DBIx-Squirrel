@@ -430,6 +430,7 @@ gh api --method PATCH repos/nukopian/DBIx-Squirrel-2/branches/main/protection/re
     {"context": "perl 5.42 (ubuntu-24.04)", "app_id": 15368},
     {"context": "perl 5.44 (ubuntu-24.04)", "app_id": 15368},
     {"context": "perl 5.44 (macos-26)", "app_id": 15368},
+    {"context": "perl 5.36, DBI 1.643 (ubuntu-24.04)", "app_id": 15368},
     {"context": "style", "app_id": 15368},
     {"context": "coverage", "app_id": 15368}
   ]
@@ -440,7 +441,9 @@ gh api repos/nukopian/DBIx-Squirrel-2/branches/main/protection --jq .required_st
 
 `15368` is GitHub Actions, so only a job of this repository's workflows
 can satisfy a check. When the floor moves up, from Perl 5.36 to 5.40 for
-`try`/`catch`, the oldest jobs go, from the matrix and this list alike.
+`try`/`catch`, the oldest jobs go, from the matrix and this list alike,
+and the job on DBI 1.643 moves to the new floor. When Debian's and
+Ubuntu's DBI moves on, so does that job's.
 
 ## When something goes wrong
 

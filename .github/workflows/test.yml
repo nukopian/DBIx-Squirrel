@@ -32,6 +32,28 @@ jobs:
       - name: yath
         run: yath test
 
+  # The tests on the DBI that Debian 12 and Ubuntu 24.04 ship, 1.643,
+  # with Perl 5.36, the floor: a DBI older than CPAN's newest, as many
+  # system Perls have. It's installed first, and checked after the rest,
+  # as the cpanfile takes any DBI. The v2.0.3 trial failed on it, on
+  # CPAN Testers, where CI's newest DBI hadn't.
+  old-dbi:
+    name: perl 5.36, DBI 1.643 (ubuntu-24.04)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
+        with:
+          perl-version: "5.36"
+      - name: DBI 1.643
+        run: cpanm --notest TIMB/DBI-1.643.tar.gz
+      - name: dependencies
+        run: cpanm --notest --installdeps --with-develop .
+      - name: check the DBI
+        run: perl -MDBI -e 'die "DBI is $DBI::VERSION, not 1.643\n" unless $DBI::VERSION eq "1.643"; print "DBI $DBI::VERSION\n"'
+      - name: yath
+        run: yath test
+
   # Perl::Critic and Perl::Tidy, with the repository's profiles, on the
   # newest Perl. A file perltidy would change fails, showing the diff.
   style:
