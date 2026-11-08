@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0001.
+Last id: 2026-0002.
 
 Items come in four groups:
 
@@ -53,4 +53,13 @@ Nothing yet.
 
 ## Ideas
 
-Nothing yet.
+### 2026-0002. Link to Ekorn::Pipeline's manuals by module name
+
+**Added:** 2026-11-08. **Size:** S (2)
+
+The reference and the how-to link to Ekorn::Pipeline's docs by their
+GitHub URLs, which the POD manuals carry over. Since Ekorn::Pipeline
+v0.1.2 has POD manuals of its own, `scripts/manuals` could make those
+links `L<Ekorn::Pipeline::Manual::Reference/"End functions">`, keeping
+a reader on MetaCPAN, or in `perldoc`, with a test; GitHub keeps the
+URLs.
