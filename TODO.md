@@ -2,8 +2,10 @@
 
 ## 1. Develop DBIx::Squirrel against Ekorn::Pipeline, on a branch
 
-**When:** now, until 2026-11-09, while Ekorn-Pipeline is stabilised in
-a session of its own, in `~/Git/github.com/nukopian/Ekorn-Pipeline`.
+**When:** now, until Ekorn::Pipeline v0.1.1 is released, a couple of
+days from 2026-11-08, as Iain expects, with no more trials before it;
+Ekorn-Pipeline is stabilised in a session of its own, in
+`~/Git/github.com/nukopian/Ekorn-Pipeline`.
 
 **What:** on a branch `ekorn-pipeline`, made from `develop`, replace
 DBIx::Squirrel's own copy of the pipeline with Ekorn::Pipeline, as a
@@ -73,8 +75,9 @@ Iain has reviewed it. It's merged into `develop` by a fast-forward,
 after `develop`'s other commits are rebased under it; the CI steps
 that install from GitHub go in that merge, and the branch is deleted.
 The note on it in docs/MAINTAINING.md's Branches goes too. `TODO.md`
-is the same on both, so where the rebase conflicts in it, the
-branch's text is the answer.
+is kept on the branch while it lives, as CLAUDE.md's Planned work says
+(Iain, 2026-11-08), and `develop`'s copy falls behind, so where the
+rebase conflicts in it, the branch's text is the answer.
 
 ## 4. Link to Ekorn::Pipeline's docs, and say what stage authors need
 
