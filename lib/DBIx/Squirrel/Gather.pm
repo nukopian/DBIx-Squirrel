@@ -28,10 +28,10 @@ DBIx::Squirrel::Gather - a stage made afresh for each run, told when the values 
     # Rows in batches of $size, the last batch given at the end
     sub batches_of ($size) {
         return gather {
-            my \@batch;    # this run's
+            my @batch;    # this run's
             return (
-                sub ($row) { push \@batch, $row; \@batch == $size ? [splice \@batch] : () },
-                sub ()     { \@batch ? [\@batch] : () },
+                sub ($row) { push @batch, $row; @batch == $size ? [splice @batch] : () },
+                sub ()     { @batch ? [@batch] : () },
             );
         };
     }

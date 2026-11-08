@@ -24,12 +24,12 @@ DBIx::Squirrel::Pipeline - run values through a list of stages
 
     my $p = DBIx::Squirrel::Pipeline->new(
         sub { $_->{active} ? $_ : () },          # filter
-        sub ($row) { \@{ $row->{tags} } },        # flatMap
+        sub ($row) { @{ $row->{tags} } },        # flatMap
         sub { uc },                              # map
     );
 
     # Push: values in, a list out
-    my \@tags = $p->(\@rows);
+    my @tags = $p->(@rows);
 
     # Pull: one value per call, from a source
     my $next = $p->iterator(sub { $sth->fetchrow_hashref // () });

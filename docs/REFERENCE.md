@@ -1667,5 +1667,9 @@ distributions of their own.
 | `DBIx::Squirrel::Context` | What a stage can ask about the result it's making. |
 | `DBIx::Squirrel::Sugar` | A function for each database and statement. |
 | `DBIx::Squirrel::Placeholders` | Finds the placeholders in a statement, and matches values to them. |
-| `DBIx::Squirrel::Errors` | Reports errors at the caller's line. Internal. |
+| `DBIx::Squirrel::Errors` | Reports errors at the caller's line. Internal, but for `croakf` and `@INTERNAL`, which a module of stages uses, as [Writing stages](#writing-stages) says. |
 | `DBIx::Squirrel::Util` | Helpers the modules share. Internal. |
+
+`DBIx::Squirrel::Pipeline`, `Pipes`, `Stop` and `Gather`, and the
+stages in `DBIx::Squirrel::Stages::Flow`, `Batch` and `Taps`, are
+DBIx::Squirrel's names for [Ekorn::Pipeline](#pipelines)'s modules.

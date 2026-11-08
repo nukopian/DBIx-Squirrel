@@ -84,14 +84,13 @@ Unreleased
       dump_to on request, looking at values as they go by.
     - The pipeline is Ekorn::Pipeline, a distribution of its own, which
       began here, and which DBIx::Squirrel requires, from v0.1.1 up to,
-      but not including, v0.2.0.
-      DBIx::Squirrel::Pipeline, Stop, Gather and Pipes, and the stages
-      in DBIx::Squirrel::Stages::Flow, Batch and Taps, are
-      DBIx::Squirrel's names for its modules, and stay: each is a
-      subclass of Ekorn's, or exports Ekorn's functions, from a list of
-      its own. A stage that
-      catches errors throws a stop on if it isa Ekorn::Pipeline::Stop,
-      which every stop is, including those the canned stages throw.
+      but not including, v0.2.0. DBIx::Squirrel::Pipeline, Stop, Gather
+      and Pipes, and the stages in DBIx::Squirrel::Stages::Flow, Batch
+      and Taps, are DBIx::Squirrel's names for its modules, and stay:
+      each is a subclass of Ekorn's, or exports Ekorn's functions, from
+      a list of its own. A stage that catches errors throws a stop on if
+      it isa Ekorn::Pipeline::Stop, which every stop is, including those
+      the canned stages throw.
     - results returns a DBIx::Squirrel::Results, replacing
       DBIx::Squirrel::rs, whose rows are DBIx::Squirrel::Result objects,
       replacing DBIx::Squirrel::rc: one class for each list of column

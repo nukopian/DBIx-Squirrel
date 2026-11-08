@@ -20,7 +20,7 @@ DBIx::Squirrel::Pipes - the pipe and tap methods of DBIx::Squirrel's handles
 
     package My::Handle;
 
-    our \@ISA = ('Some::Parent', 'DBIx::Squirrel::Pipes');
+    our @ISA = ('Some::Parent', 'DBIx::Squirrel::Pipes');
 
 =head1 DESCRIPTION
 
