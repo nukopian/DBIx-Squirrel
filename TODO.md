@@ -1,129 +1,5 @@
 # Planned work
 
-## 9. Ekorn::Pipeline v0.1.1 is released: take it on
-
-**From:** Ekorn-Pipeline's session, 2026-11-08 (Ekorn-Pipeline
-1c345d8828ac3c651ed97a98b006fbed5571b946, tagged `v0.1.1` on `main`)
-**Waiting on:** nothing; PAUSE's index, for task 2's trial only
-
-**What:** Ekorn::Pipeline v0.1.1 is released properly, not as a trial,
-as Iain decided, after the v0.1.1 trial's first reports (46 pass on 13
-platforms, Perl 5.36.0 to 5.44.0; 7 na from Perls older than 5.36):
-
-- `Ekorn-Pipeline-v0.1.1.tar.gz`, built from the tag after CI passed
-  on the commit above, SHA-256
-  d4058ccf8606ee282ef13e6898fd6b24b72ca03f9d491099abb801b1eb7592e3,
-  uploaded to PAUSE at about 01:31 UTC on 2026-11-08. The CPAN mirror
-  has it; PAUSE hadn't indexed it yet at 01:35 UTC. Check before anything
-  that installs it from CPAN, as task 2's trial does; each prints
-  v0.1.1 once it's indexed:
-
-  ```
-  curl -sSf https://cpanmetadb.plackperl.org/v1.0/package/Ekorn::Pipeline
-  curl -sSf https://fastapi.metacpan.org/v1/release/Ekorn-Pipeline | jq -r .name
-  ```
-
-- The GitHub release, and the signed tag: `main` is now at the commit
-  above, with `docs/HOWTO.md` and `docs/REFERENCE.md` on it.
-- It differs from the v0.1.1 trial in its documentation only, as Iain
-  decided needs no new trial: corrected POD on a plain closure's state
-  when its stages are spliced (Ekorn-Pipeline
-  f9b44b8f895203cb07c945829f9af7ecc19e33ea, from your message), and a
-  SECURITY.md and a CONTRIBUTING.md (Ekorn-Pipeline
-  5028cc3212dcd24469837a24f4b23e74f3a236c6, from your task 3).
-
-Your tasks this frees, for Iain to say which to do:
-
-- **Task 4,** linking to Ekorn::Pipeline's docs: it waited on v0.1.1
-  with the how-to and the reference on `main`, which they now are.
-- **Task 1,** merging `ekorn-pipeline` into `develop`: it waited on
-  v0.1.1. Your range, `>= v0.1.1, < v0.2.0`, takes it.
-- **Task 2,** the v2.0.3 trial: from 2026-11-09, once v0.1.1 is
-  indexed and task 1 is merged.
-
-**Why:** nothing else tells this session a release has landed.
-
-**Done when:** read, and the tasks above are taken up as Iain says.
-
-## 1. Develop DBIx::Squirrel against Ekorn::Pipeline, on a branch
-
-**When:** now, until Ekorn::Pipeline v0.1.1 is released, a couple of
-days from 2026-11-08, as Iain expects, with no more trials before it;
-Ekorn-Pipeline is stabilised in a session of its own, in
-`~/Git/github.com/nukopian/Ekorn-Pipeline`.
-
-**What:** on a branch `ekorn-pipeline`, made from `develop`, replace
-DBIx::Squirrel's own copy of the pipeline with Ekorn::Pipeline, as a
-dependency. The copy came out as Ekorn-Pipeline on 2026-11-07, from
-`5e30135672d8002b0bb67ba68278e5b1c262df8b`, renamed and otherwise
-unchanged, so the code to change is small:
-
-- `Iterator.pm` makes an `Ekorn::Pipeline`, and `Context.pm` calls
-  `Ekorn::Pipeline::ending()`.
-- `db.pm` and `st.pm` inherit `pipe` and `tap` from
-  `Ekorn::Pipeline::Pipes`.
-- `Stages/Rows.pm` stays DBIx::Squirrel's, made with Ekorn's `gather`;
-  stages that need DBIx::Squirrel stay under `DBIx::Squirrel::Stages::*`,
-  as Iain decided on 2026-11-07.
-- `Errors.pm`'s `@INTERNAL` takes Ekorn's packages, so errors raised
-  inside Ekorn are still reported at the user's line.
-- Pipeline, Stop, Gather, Pipes and Stages::Flow, Batch and Taps stay,
-  as a permanent facade: subclasses of Ekorn's modules, or exporting
-  their functions, imported by name from lists of DBIx::Squirrel's own,
-  so a function Ekorn drops fails as the module loads, and one it adds
-  reaches DBIx::Squirrel only once it's listed. DBIx::Squirrel always
-  inherits from Ekorn, never the reverse. Iain decided this on
-  2026-11-07, and it's done, on the branch.
-- `cpanfile` requires Ekorn::Pipeline `>= v0.1.1, < v0.2.0`, as Iain
-  decided on 2026-11-07 (from v0.1.1, its first with an iterator that
-  ends once a stage dies, task 8, on 2026-11-08): the facade keeps the names, not the
-  behaviour, so a v0.2.0 reaches DBIx::Squirrel's users only once it's
-  been tested here and the range moved. Done, on the branch.
-- The documented way to throw a stop on in a stage that catches errors
-  becomes `die $e if $e isa 'Ekorn::Pipeline::Stop';`. Checking for
-  `DBIx::Squirrel::Stop` would miss the stops Ekorn's own stages throw,
-  such as `take`'s.
-- The tests stay, and test DBIx::Squirrel's behaviour through its own
-  names, so a change in Ekorn that its users would notice fails here;
-  only the class names they expect changed. `t/07-namespaces.t` checks
-  that the facade's lists stay as documented, and name only functions
-  Ekorn still exports. The docs say where the pipeline lives, and
-  `Changes` says so too. Done, on the branch; the condition coverage
-  floor went from 88 to 87, as the pipeline's conditions, all covered,
-  left `lib/`.
-
-Until Ekorn::Pipeline v0.1.1 is released (a trial is on CPAN, but
-CPAN's index, which `cpanm` installs from, doesn't hold trials), the
-branch installs it from GitHub: its `test.yml` adds `ekorn-pipeline`
-to the branches it runs on, and a step before `cpanm --installdeps`
-runs `cpanm https://github.com/nukopian/Ekorn-Pipeline.git@develop`.
-Locally, install it from the same place into each DBIx-Squirrel-2
-library, not from the working copy, which may hold a session's
-unfinished work, and again after each change to it there:
-
-```
-for p in perl-5.36.3 perl-5.38.5 perl-5.40.5 perl-5.42.3 perl-5.44.0; do perlbrew exec --quiet --with "${p}@dbix-squirrel-2" cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop || echo "FAILED on ${p}"; done
-```
-
-A change Ekorn-Pipeline needs, found here, is made there, in its own
-session, and installed again; not patched here.
-
-**Why:** DBIx::Squirrel is to depend on Ekorn::Pipeline. Doing it
-before the first 2.x release means no user has code naming
-DBIx::Squirrel's pipeline modules, so nothing has to be kept for them,
-and DBIx::Squirrel, as Ekorn::Pipeline's first real user, tests the
-names Ekorn::Pipeline is about to make public.
-
-**Done when:** tasks 4 and 5 are done on the branch, as they are, it passes every
-CI job and `scripts/coverage` on Ekorn::Pipeline as released, and
-Iain has reviewed it. It's merged into `develop` by a fast-forward,
-after `develop`'s other commits are rebased under it; the CI steps
-that install from GitHub go in that merge, and the branch is deleted.
-The note on it in docs/MAINTAINING.md's Branches goes too. `TODO.md`
-is kept on the branch while it lives, as CLAUDE.md's Planned work says
-(Iain, 2026-11-08), and `develop`'s copy falls behind, so where the
-rebase conflicts in it, the branch's text is the answer.
-
 ## 6. Move the plan doc's open work and decisions into the roadmap
 
 **From:** Ekorn-Pipeline's session, 2026-11-07 (Ekorn-Pipeline
@@ -172,11 +48,11 @@ memory, points into it.
 
 ## 2. Trial, then release, v2.0.3 on Ekorn::Pipeline
 
-**When:** from 2026-11-09, once Ekorn::Pipeline v0.1.1 is released
-(not as a trial: CPAN Testers install dependencies from the index,
-which doesn't hold trials, so a DBIx::Squirrel trial needing an
-Ekorn::Pipeline trial would mostly report a missing prerequisite) and
-task 1 is merged.
+**When:** from 2026-11-09. What it waited on is done: Ekorn::Pipeline
+v0.1.1 was released on 2026-11-08, not as a trial, and indexed, as
+CPAN Testers install dependencies from the index, which doesn't hold
+trials; and the branch `ekorn-pipeline`, which ran DBIx::Squirrel on
+it, was merged into `develop` the same day.
 
 **What:** v2.0.2 went to CPAN as a trial on 2026-11-06,
 `DBIx-Squirrel-v2.0.2-TRIAL.tar.gz`, built from

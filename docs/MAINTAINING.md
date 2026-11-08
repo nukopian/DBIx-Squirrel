@@ -26,11 +26,7 @@ the library, and how to build a Perl or the database drivers on Iain's Mac.
   CPAN installs.
 - There are no feature branches, for now: changes are made one at a
   time. An experiment may have a branch, named for its roadmap item's
-  id, as below. The one exception is `ekorn-pipeline`, an experimental
-  branch where DBIx::Squirrel is developed against Ekorn::Pipeline, from
-  2026-11-07; its own `TODO.md` has the plan, kept on the branch while
-  it lives ([CLAUDE.md](../CLAUDE.md#planned-work) says why). It's
-  merged into `develop` by a fast-forward, and this note goes with it.
+  id, as below.
 - `TODO.md`, when there is one, lists work planned for a later session.
   It's committed on `develop` and gone before a release, so it never
   reaches `main` ([CLAUDE.md](../CLAUDE.md#planned-work) has the rules).
