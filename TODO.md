@@ -59,6 +59,11 @@ ever, Iain decides.
 
 ## 1. Take a pipeline where a stage goes, with Ekorn::Pipeline's is_stage, and sign off v0.1.3
 
+(Updated 2026-11-09, at Ekorn-Pipeline
+514e19d1a385791ac7aae6723173c9097542c462, for roadmap 2026-0007 and
+the docs. Iain asked that DBIx-Squirrel follow suit, so the docs are
+now a step of this task, not only a message.)
+
 **From:** Ekorn-Pipeline's session, 2026-11-09 (Ekorn-Pipeline
 45b33a4668c2700a825bfb25483bc4386158d9ca), in place of the task of the
 same name from 3f3e94d809bf7a277f749dfa1e7fae4abb76038a
@@ -74,6 +79,15 @@ pipeline, "#2.3". It also exports `is_stage` on request
 (`use Ekorn::Pipeline qw(is_stage)`), true for a code reference or an
 `Ekorn::Pipeline`, of a subclass too: the test `new` makes, so
 DBIx::Squirrel and Ekorn::Pipeline agree on what a stage is.
+
+Ekorn-Pipeline's roadmap 2026-0007 (514e19d1a385791ac7aae6723173c9097542c462)
+also lets a `gather` block return a pipeline as its stage: its stages
+are made for each run in its place, `gather` stages inside it afresh,
+and the block's end function, if any, is called after theirs. A stage
+inside it is named "#2.3". The message for a bad block is unchanged.
+DBIx::Squirrel's `gather` is Ekorn's, so it gets this as it stands.
+This repository's tests pass against Ekorn's `develop` at that commit,
+on 5.36.3 and 5.44.0, run by Ekorn's session.
 
 It's on Ekorn-Pipeline's `develop`, for v0.1.3, an addition within
 `cpanfile`'s range, `>= v0.1.1, < v0.2.0`. Iain has gated v0.1.3's
@@ -122,19 +136,36 @@ in Ekorn's DIAGNOSTICS now; a flat pipeline's read as before.
    (near line 910) and `docs/HOWTO.md` (near line 769), and their
    examples, to give `$hits`, keeping `->stages` for a function that
    takes only code references; then the manuals, and `Changes`.
-5. Keep this work off `develop` until v0.1.3 is on CPAN, as CI installs
+5. Bring the docs into line with Ekorn's, as v0.1.3 makes them:
+   - Where they say what a stage is, say it's a code reference or a
+     pipeline, as the message "a stage is a code reference or a
+     pipeline", above, lists: `lib/DBIx/Squirrel.pm` near line 324,
+     `docs/REFERENCE.md` near line 796, `docs/HOWTO.md` near line 521.
+   - DIAGNOSTICS, in `lib/DBIx/Squirrel.pm` (near lines 488 to 501)
+     and `docs/REFERENCE.md`'s table (near lines 1475 to 1478): the
+     two messages naming a stage that runs read `#%s`, not `#%d`, since
+     a stage inside a pipeline is named "#2.3"; "Expected stage #%d to
+     be a code reference" is raised for something that isn't a code
+     reference or a pipeline; and a `gather` block may return a code
+     reference or a pipeline as its stage. Ekorn's
+     `lib/Ekorn/Pipeline.pm` DIAGNOSTICS has the wording.
+   - Test that `gather` (this repository's) takes a block returning a
+     pipeline, in one run, as Ekorn's `t/11-gather-pipeline.t` does.
+6. Keep this work off `develop` until v0.1.3 is on CPAN, as CI installs
    Ekorn::Pipeline from CPAN, where v0.1.2 has no `is_stage`: on a
    branch, as Iain decides.
-6. Sign off: send Ekorn-Pipeline a message, in its `TODO.md`, on its
+7. Sign off: send Ekorn-Pipeline a message, in its `TODO.md`, on its
    `develop`, saying what was tried, against which Ekorn commit, and
    whether the tests pass; or what was found, if not, for its session
-   to fix before the release. Its release task waits on it.
-7. Once Ekorn-Pipeline tells this session v0.1.3 is on CPAN: raise
+   to fix before the release. Its release task waits on it, and covers
+   2026-0004 and 2026-0007.
+8. Once Ekorn-Pipeline tells this session v0.1.3 is on CPAN: raise
    `cpanfile`'s range to `>= v0.1.3, < v0.2.0`, regenerate `META.json`
    and `Build.PL` with `minil build`, and bring the work to `develop`.
-8. Remove the worktree: `git -C ~/Git/github.com/nukopian/Ekorn-Pipeline worktree remove /tmp/ekorn-pipeline-develop`.
+9. Remove the worktree: `git -C ~/Git/github.com/nukopian/Ekorn-Pipeline worktree remove /tmp/ekorn-pipeline-develop`.
 
 **Done when:** the sign-off is sent; and, after v0.1.3,
 `$dbh->iterate($sql, $pipeline, take(2))` runs the pipeline's stages
 and then `take(2)`, in one run, tested, on `develop`, with the docs
-showing it and `cpanfile` asking for v0.1.3.
+showing it, saying a stage is a code reference or a pipeline, and
+matching Ekorn's DIAGNOSTICS, and `cpanfile` asking for v0.1.3.
