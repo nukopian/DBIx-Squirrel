@@ -216,21 +216,22 @@ DBIx::Squirrel::Sugar - a function for each database, and each statement
 
 =head1 DESCRIPTION
 
-DBIx::Squirrel::Sugar gives each database a name, and the package that
-names it a function of that name, which returns the database handle, or
-runs a statement on it. It gives a statement a function too, which runs
-it, with the bind values and any stages given.
+DBIx::Squirrel::Sugar gives each database a name. The package that
+names it gets a function of that name, which returns the database
+handle, or runs a statement on it. A statement gets a function too,
+which runs it, with the bind values and any stages given.
 
-A database is connected to when it's first used, not when it's defined,
-with L<DBIx::Squirrel/connect_cached>, so two databases defined with the
-same arguments share a handle, as C<connect_cached> shares it.
+A database is connected to when it's first used, not when it's
+defined, with L<DBIx::Squirrel/connect_cached>. So two databases
+defined with the same arguments share a handle, as C<connect_cached>
+shares it.
 
-The handle is kept, and each use has the same one, without a ping to the
-database each time. It's pinged only while its last call has failed,
-which leaves the error to be read, and made again if the connection has
-gone, or if the handle has been disconnected. So a connection that drops between uses is noticed by the
-call after it, which fails, as it would with plain DBI, and the call
-after that has a new connection.
+The handle is kept, and each use has the same one, without a ping to
+the database each time. It's pinged only while its last call has
+failed, which leaves the error to be read. It's made again if the
+connection has gone, or if the handle has been disconnected. So the
+call after a connection drops fails, as it would with plain DBI, and
+the call after that has a new connection.
 
 =head1 IMPORTING
 
@@ -240,13 +241,15 @@ after that has a new connection.
         $name => [$database, $statement, \%attr, @stages], ...
     };
 
-Gives the package L</database>, or L</statement>, or both. Given a hash
-reference after either, it also defines each database or statement named
-in it, with the arguments it takes, in an array reference, and gives the
-package its function, while the package is compiled, so it can be
-called without parentheses. The arguments are worked out then too: the
-environment, literals, and what a C<BEGIN> block has set are there, but
-a variable the program sets as it runs is not yet.
+Gives the package L</database>, or L</statement>, or both. Given a
+hash reference after either, it also defines each database or
+statement named in it, with the arguments it takes, in an array
+reference. It gives the package each function while the package is
+compiled, so the function can be called without parentheses.
+
+The arguments are worked out then too. The environment, literals, and
+what a C<BEGIN> block has set are there, but a variable the program
+sets as it runs is not yet.
 
 =head1 FUNCTIONS
 
@@ -256,29 +259,32 @@ a variable the program sets as it runs is not yet.
     $function = database($name, @connect_args);
 
 Given a name, returns the handle of the database defined by that name,
-anywhere in the program, connecting to it if it isn't connected.
+anywhere in the program. It connects to the database if it isn't
+connected.
 
-Given a name and the arguments L<DBIx::Squirrel/connect> takes, defines
-a database by that name, gives the calling package a function of that
-name, and returns the function. A database defined with a database
-handle, in place of a data source, is a clone of it, as
-L<DBIx::Squirrel/connect> makes, made when it's first used. The DBI
-makes a clone the way the handle was made, so a clone of a handle from
-C<connect_cached>, such as another database's, is that same handle.
+Given a name and the arguments L<DBIx::Squirrel/connect> takes, it
+defines a database by that name. It gives the calling package a
+function of that name, and returns the function.
+
+A database defined with a database handle, in place of a data source,
+is a clone of it, as L<DBIx::Squirrel/connect> makes. The clone is made
+when the database is first used. The DBI makes a clone the way the
+handle was made. So a clone of a handle from C<connect_cached>, such
+as another database's, is that same handle.
 
 A database is defined once in a program, by a name that can be a
-function's, and the package can't have a function of that name already.
+function's. The package can't have a function of that name already.
 
 =head2 statement
 
     $function = statement($name, $database, $statement, @stages);
     $function = statement($name, $database, $statement, \%attr, @stages);
 
-Defines a statement by that name, on the database of that name, with the
-attributes to prepare it with, and stages, if given, gives the calling
-package a function of that name, and returns the function. The database
-is found when the function runs, so it can be defined after the
-statement.
+Defines a statement by that name, on the database of that name. The
+attributes are those to prepare it with, and the stages are its own.
+It gives the calling package a function of that name, and returns the
+function. The database is found when the function runs, so it can be
+defined after the statement.
 
 =head2 The function a database is given
 
@@ -290,18 +296,18 @@ statement.
 
 Called with nothing, returns the database handle.
 
-Called with a statement, prepares it, executes it with the bind values,
-in any form L<DBIx::Squirrel::st/execute> takes, and returns the
-statement handle, or nothing if it couldn't be executed. A hash
+Called with a statement, prepares it and executes it with the bind
+values, in any form L<DBIx::Squirrel::st/execute> takes. It returns
+the statement handle, or nothing if it couldn't be executed. A hash
 reference, or C<undef>, straight after the statement is the attributes
 to prepare it with, as with L<DBIx::Squirrel::db/do>.
 
-With stages at the end, code references or pipelines, it iterates
-over the results, as L<DBIx::Squirrel::db/iterate> does, and returns them all, or
-how many there were in scalar context.
+With stages at the end, code references or pipelines, it iterates over
+the results, as L<DBIx::Squirrel::db/iterate> does. It returns them
+all, or, in scalar context, how many there were.
 
-The statement can be a statement handle, which is executed, or iterated
-over, itself.
+The statement can be a statement handle, which is itself executed, or
+iterated over.
 
 =head2 The function a statement is given
 
@@ -310,16 +316,18 @@ over, itself.
     $count   = artist(@bind_values, @stages);
 
 Executes the statement with the bind values, and returns the statement
-handle, or nothing if it couldn't be executed. With stages, its own or
-those given after the bind values, it iterates over the results, through
-its own stages and then those given, and returns them all, or how many
-there were in scalar context. Stages given are for that call only.
+handle, or nothing if it couldn't be executed.
+
+With stages, its own or those given after the bind values, it iterates
+over the results. They go through its own stages, then those given. It
+returns them all, or, in scalar context, how many there were. Stages
+given are for that call only.
 
 The statement is prepared once for each database handle, with
-L<DBIx::Squirrel::db/prepare_cached>. While its handle is in use, by a
+L<DBIx::Squirrel::db/prepare_cached>. Its handle may be in use: by a
 statement handle not read to the end, or by a stage calling the same
-function, a call prepares one of its own. A statement taking a list, as
-L<DBIx::Squirrel::st/Lists> describes, is prepared for each call's
+function. A call then prepares one of its own. A statement taking a
+list (see L<DBIx::Squirrel::st/Lists>) is prepared for each call's
 values instead, and isn't cached.
 
 =head1 DIAGNOSTICS

@@ -2,7 +2,9 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    A pipeline can go wherever a stage goes (roadmap 2026-0004).
+    A pipeline can go wherever a stage goes (roadmap 2026-0004), and
+    the docs are rewritten in plainer, shorter sentences (roadmap
+    2026-0005).
 
     - iterate, results, and Sugar's statements and functions take a
       pipeline among their stages. Before, they took only code
@@ -12,6 +14,9 @@ Unreleased
     - A gather block can return a pipeline as its stage.
     - Error messages name a stage inside a pipeline by its place, such
       as #2.3 for the third stage of a pipeline given as the second.
+    - The README, the POD, the reference and the how-to are rewritten
+      plainly. What they say is unchanged, and so are their examples,
+      headings and DIAGNOSTICS entries.
 
 v2.0.5 2026-11-08
 

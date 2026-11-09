@@ -112,8 +112,8 @@ DBIx::Squirrel::Util - helpers shared by DBIx::Squirrel's modules
 =head1 DESCRIPTION
 
 Functions DBIx::Squirrel's modules share, exported on request. They're
-for DBIx::Squirrel itself, not for use elsewhere, and may change without
-notice.
+for DBIx::Squirrel itself, not for use elsewhere. They may change
+without notice.
 
 =head1 FUNCTIONS
 
@@ -123,8 +123,8 @@ notice.
 
     $string = canonical(\%options);
 
-Returns options as a string, the same for the same options, for the
-DBI's caches to key on.
+Returns options as a string, for the DBI's caches to key on. The same
+options give the same string.
 
 =item install_sub
 
@@ -142,8 +142,8 @@ Returns true if a name can be a subroutine's.
 
     $iterator = iterator_going($sth);
 
-Returns the iterator going through a statement handle's results, if one
-has results left to hand out, or nothing.
+Returns the iterator going through a statement handle's results, if it
+has results left to hand out. Otherwise returns nothing.
 
 =item shift_attrs
 
@@ -171,8 +171,9 @@ of arguments, and returns them.
     @values = unwrap_values($driver, $taken, $lists, @values);
 
 Returns the bind values given, or those in an array reference given
-alone, unless it's the one value of a statement taking one: a list, for
-a list placeholder, or, with DBD::Pg, a PostgreSQL array.
+alone. The exception is an array reference that's the one value of a
+statement taking one: a list, for a list placeholder, or, with
+DBD::Pg, a PostgreSQL array. That's returned unchanged.
 
 =back
 
@@ -182,8 +183,8 @@ a list placeholder, or, with DBD::Pg, a PostgreSQL array.
 
 =item Expected a reference to a HASH or ARRAY
 
-The first argument after a statement was a reference, but not to a hash
-or an array, as L<DBIx::Squirrel::db/do> describes.
+The first argument after a statement was a reference, but not to a
+hash or an array. See L<DBIx::Squirrel::db/do>.
 
 =back
 

@@ -37,11 +37,12 @@ DBIx::Squirrel::Pipeline - run values through a list of stages
 
 =head1 DESCRIPTION
 
-DBIx::Squirrel's pipeline, which its iterators, result sets, Sugar
-statements and handles' C<pipe> and C<tap> run their stages with. It's
-a subclass of L<Ekorn::Pipeline>, which describes it in full, and
-inherits its methods, C<new>, C<iterator> and C<stages>; a pipeline can
-be called as a code reference with values, as an Ekorn::Pipeline can.
+DBIx::Squirrel's pipeline. Its iterators, result sets, Sugar
+statements, and handles' C<pipe> and C<tap> run their stages with it.
+It's a subclass of L<Ekorn::Pipeline>, which describes it in full. It
+inherits its methods, C<new>, C<iterator> and C<stages>. A pipeline
+can be called as a code reference with values, as an Ekorn::Pipeline
+can.
 
 A function of your own can take stages from its caller, and run what it
 returns through them:
