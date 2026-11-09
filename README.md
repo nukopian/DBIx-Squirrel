@@ -1,4 +1,6 @@
-[![Actions Status](https://github.com/nukopian/DBIx-Squirrel/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/nukopian/DBIx-Squirrel/actions?workflow=test)
+[![Actions Status](https://github.com/nukopian/DBIx-Squirrel/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/nukopian/DBIx-Squirrel/actions?workflow=test) [![MetaCPAN Release](https://badge.fury.io/pl/DBIx-Squirrel.svg)](https://metacpan.org/release/DBIx-Squirrel)
+[![Kwalitee](https://cpants.cpanauthors.org/dist/DBIx-Squirrel.svg)](https://cpants.cpanauthors.org/dist/DBIx-Squirrel)
+
 # DBIx-Squirrel
 
 DBI, minus the boilerplate, plus a pipeline.

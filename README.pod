@@ -1,5 +1,7 @@
 =encoding utf8
 
+=for markdown [![Kwalitee](https://cpants.cpanauthors.org/dist/DBIx-Squirrel.svg)](https://cpants.cpanauthors.org/dist/DBIx-Squirrel)
+
 =head1 DBIx-Squirrel
 
 DBI, minus the boilerplate, plus a pipeline.
