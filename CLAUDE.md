@@ -215,6 +215,28 @@ installed, as DBD::Pg links to its `libpq` by full path.
   The second shows the tests that failed in the last run;
   `yath replay lastlog.jsonl` shows all of it.
 
+- **Locally, test against Ekorn-Pipeline's working copy,** as Iain
+  decided on 2026-11-09. DBIx-Squirrel dogfoods Ekorn-Pipeline, so its
+  tests should catch a change there before Ekorn releases it, not
+  after. Put `~/Git/github.com/nukopian/Ekorn-Pipeline/lib` first on
+  `PERL5LIB`, which reaches the subprocesses `xt/howto.t` starts, as
+  yath's `-I` doesn't; its manuals' POD is there too, for
+  `xt/manuals.t` and `scripts/manuals`:
+
+  ```
+  perlbrew exec --with perl-5.36.3@dbix-squirrel-2 sh -c 'PERL5LIB=/Users/icampbell/Git/github.com/nukopian/Ekorn-Pipeline/lib:$PERL5LIB yath test -L'
+  ```
+
+  The same `sh -c` wraps `scripts/coverage`, `scripts/manuals`, and the
+  other Perls' libraries. Say which Ekorn commit a run used
+  (`git -C ~/Git/github.com/nukopian/Ekorn-Pipeline log -1 --oneline`),
+  as its working copy may be on any branch, with changes not yet
+  committed. CI installs Ekorn from CPAN, within the `cpanfile`'s
+  range, so it checks the release DBIx-Squirrel's users get; a run of
+  both, where they differ, is the full check. A failure only against
+  the working copy means the two have parted: find which side should
+  change, and if it's Ekorn's, tell it in a message in its `TODO.md`.
+
 - **Coverage has floors, which it mustn't fall below.**
   `scripts/coverage` runs the tests under Devel::Cover, from an empty
   `cover_db`, and fails if the coverage of `lib/` falls below the floors
