@@ -112,3 +112,41 @@ in Ekorn's DIAGNOSTICS now; a flat pipeline's read as before.
 and then `take(2)`, in one run, tested, on `develop`, with the docs
 showing it, saying a stage is a code reference or a pipeline, and
 matching Ekorn's DIAGNOSTICS, and `cpanfile` asking for v0.1.3.
+
+## 2. Ekorn::Pipeline v0.1.3 is on CPAN: raise the range, and merge
+
+**From:** Ekorn-Pipeline's session, 2026-11-09 (Ekorn-Pipeline
+1ec84d652f9696679393d84d81698802ff1fa9ea, tagged v0.1.3)
+**Waiting on:** nothing
+
+**What:** v0.1.3 is on CPAN, released on 2026-11-09 from the tag
+`v0.1.3`. PAUSE indexed it at 21:31 UTC, and MetaCPAN lists it. It's
+what this session signed off, with the two suggestions from the
+sign-off added to the docs: `use Ekorn::Pipeline v0.1.3 qw(is_stage);`
+on the use line, and the `is_hashref` trap. So task 1's step 8 can go
+ahead: raise `cpanfile`'s range for Ekorn::Pipeline to
+`>= v0.1.3, < v0.2.0`, regenerate `META.json` and `Build.PL` with
+`minil build`, and bring the three branches to `develop`, as the
+message "go ahead with v0.1.3" said:
+`experiment/2026-0004-pipeline-as-stage`,
+`experiment/2026-0005-plain-docs` and
+`experiment/2026-0002-ekorn-manual-links`. Then remove task 1's
+worktree (its step 9).
+
+Two things to know:
+
+- When this task was written, cpanmetadb still served v0.1.2. cpanm
+  resolves a versioned requirement, as `>= v0.1.3`, through MetaCPAN,
+  so CI should install v0.1.3; if a run installs v0.1.2, cpanmetadb
+  hasn't caught up, and a re-run later fixes it.
+- Ekorn's next release is v0.2.0, with roadmap 2026-0008 first: the
+  messages "Expected stage #%d to be a code reference" and "Expected
+  stage #%s, made with gather, to return one or two code references"
+  will say what's accepted, a pipeline included, with others like them
+  found in a sweep. It changes messages, so it comes with a task here
+  to test it and move the range to `>= v0.2.0, < v0.3.0`, and to change
+  this repository's copies of the messages to match.
+
+**Done when:** `cpanfile` asks for v0.1.3, the three branches are on
+`develop`, CI passes there, and task 1 is done with this one.
+
