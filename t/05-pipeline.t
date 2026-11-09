@@ -30,8 +30,9 @@ subtest 'new checks its stages' => sub {
     my $p = $class->new(sub { $_ });
     isa_ok $p, [$class], 'a pipeline';
     ok ref($p) && $p->can('iterator'), 'with an iterator method';
-    my $msg = qr( Expected\ stage\ \#2\ to\ be\ a\ code\ reference )x;
-    my $at  = qr( at\ \Q${\ __FILE__ }\E\ line\ \d+ )x;
+    my $msg
+        = qr( Expected\ stage\ \#2\ to\ be\ a\ code\ reference\ or\ a\ pipeline )x;
+    my $at = qr( at\ \Q${\ __FILE__ }\E\ line\ \d+ )x;
     like dies {
         $class->new(sub { $_ }, 'x')
     }, qr( \A $msg \ $at \. \n \z )x,

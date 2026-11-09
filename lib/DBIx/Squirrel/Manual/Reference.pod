@@ -1878,7 +1878,7 @@ C<get_column> was given a name or position the row doesn't have.
 
 =over 4
 
-=item C<Expected stage #%d to be a code reference>
+=item C<Expected stage #%d to be a code reference or a pipeline>
 
 Something passed as a stage wasn't a code reference or a pipeline. No stage runs.
 
@@ -1886,9 +1886,9 @@ Something passed as a stage wasn't a code reference or a pipeline. No stage runs
 
 The source given to a pipeline's C<iterator>, or the block given to C<gather>, wasn't a code reference.
 
-=item C<Expected stage #%s, made with gather, to return one or two code references>
+=item C<Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally an end function>
 
-The block given to C<gather> for that stage returned something other than a stage (a code reference or a pipeline), or a stage and an end function.
+The block given to C<gather> for that stage returned something else.
 
 =item C<Pipeline stage #%s failed at %s line %d:>
 

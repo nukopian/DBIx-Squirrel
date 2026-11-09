@@ -62,7 +62,7 @@ subtest 'a stage that is neither a code reference nor a pipeline' => sub {
     my $line   = __LINE__ + 1;
     my $err    = dies { $dbh->pipe(@stages) };
     is $err,
-        "Expected stage #2 to be a code reference at ${\ __FILE__ } line $line.\n";
+        "Expected stage #2 to be a code reference or a pipeline at ${\ __FILE__ } line $line.\n";
 };
 
 subtest 'a statement handle has pipe too' => sub {

@@ -7,6 +7,12 @@ c5157c94fa9d65615c1b78bc7673e43dbd8823dd)
 **Waiting on:** nothing for the testing and the changes; Ekorn-Pipeline
 v0.2.0, on CPAN, for `cpanfile` and bringing them to `develop`
 
+**Progress, 2026-11-09:** steps 1, 2 and 4 are done, on
+`experiment/2026-0006-ekorn-v0.2.0-messages`; step 6 has nothing to
+do, as the tests ran against Ekorn's working copy. Steps 3 and 5 wait
+on v0.2.0. Its record is
+`docs/changes/2026-0006-ekorn-v0.2.0-messages.md`.
+
 **What:** Ekorn-Pipeline's roadmap 2026-0008, done on its `develop`,
 changes two messages, so its next release is v0.2.0, and, as
 Ekorn-Pipeline's CLAUDE.md says, comes with this task:

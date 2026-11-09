@@ -1532,9 +1532,9 @@ caller's line. Those starting "Expected" say what was expected.
 
 | Message | Cause |
 |---|---|
-| `Expected stage #%d to be a code reference` | Something passed as a stage wasn't a code reference or a pipeline. No stage runs. |
+| `Expected stage #%d to be a code reference or a pipeline` | Something passed as a stage wasn't a code reference or a pipeline. No stage runs. |
 | `Expected a code reference` | The source given to a pipeline's `iterator`, or the block given to `gather`, wasn't a code reference. |
-| `Expected stage #%s, made with gather, to return one or two code references` | The block given to `gather` for that stage returned something other than a stage (a code reference or a pipeline), or a stage and an end function. |
+| `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally an end function` | The block given to `gather` for that stage returned something else. |
 | `Pipeline stage #%s failed at %s line %d:` | A stage, or its end function, died. The message it died with follows, indented. A stage inside a pipeline given as a stage is named `#2.3`, for the third stage of the pipeline given as stage #2. |
 | `Stop used outside a pipeline` | `Stop` was called where no pipeline was running to catch it. |
 

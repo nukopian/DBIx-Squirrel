@@ -494,16 +494,14 @@ message it died with follows, indented. A stage inside a pipeline given
 as a stage is named C<#2.3>, for the third stage of the pipeline given
 as stage #2.
 
-=item Expected stage #%d to be a code reference
+=item Expected stage #%d to be a code reference or a pipeline
 
 Something passed to L</pipe> or L</tap> wasn't a code reference or a
 pipeline. No stage runs.
 
-=item Expected stage #%s, made with gather, to return one or two code references
+=item Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally an end function
 
-The block given to L</gather> for that stage returned something other
-than a stage (a code reference or a pipeline), or a stage and an end
-function.
+The block given to L</gather> for that stage returned something else.
 
 =item Stop used outside a pipeline
 
