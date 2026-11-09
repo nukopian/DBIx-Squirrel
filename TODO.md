@@ -1,34 +1,57 @@
 # Planned work
 
-## 1. Take a pipeline where a stage goes, with Ekorn::Pipeline's is_stage
+## 1. Take a pipeline where a stage goes, with Ekorn::Pipeline's is_stage, and sign off v0.1.3
 
 **From:** Ekorn-Pipeline's session, 2026-11-09 (Ekorn-Pipeline
-3f3e94d809bf7a277f749dfa1e7fae4abb76038a)
-**Waiting on:** Ekorn-Pipeline v0.1.3, on CPAN
+45b33a4668c2700a825bfb25483bc4386158d9ca), in place of the task of the
+same name from 3f3e94d809bf7a277f749dfa1e7fae4abb76038a
+**Waiting on:** nothing for the work and the sign-off; Ekorn-Pipeline
+v0.1.3, on CPAN, for `cpanfile` and a release here
 
 **What:** Ekorn-Pipeline's roadmap 2026-0004 lets
 `Ekorn::Pipeline->new` take a pipeline where a stage goes, composing
-its stages in place, as if its `stages` had been given there; a stage
-inside is named in messages by its place in each pipeline, "#2.3".
-It's in v0.1.3, an addition within `cpanfile`'s range,
-`>= v0.1.1, < v0.2.0`, so DBIx::Squirrel's users get it without a
-release here, but only where DBIx::Squirrel passes its stages straight
-to `new`: `DBIx::Squirrel::Pipeline->new($hits, take(1))` works at
-once. `$dbh->iterate($sql, $hits)` doesn't, as DBIx::Squirrel looks
-for stages at the end of a call's arguments with Ref::Util's
-`is_coderef`, and a pipeline, a blessed hash that overloads `&{}`,
-fails it, so it's taken for a bind value.
+its stages in place, as if its `stages` had been given there (its
+`stages` method, so a subclass that overrides it is composed as it
+says); a stage inside is named in messages by its place in each
+pipeline, "#2.3". It also exports `is_stage` on request
+(`use Ekorn::Pipeline qw(is_stage)`), true for a code reference or an
+`Ekorn::Pipeline`, of a subclass too: the test `new` makes, so
+DBIx::Squirrel and Ekorn::Pipeline agree on what a stage is.
 
-v0.1.3 exports `is_stage` on request (`use Ekorn::Pipeline
-qw(is_stage)`), true for a code reference or an `Ekorn::Pipeline`, of
-a subclass too: the test `new` makes, so DBIx::Squirrel and
-Ekorn::Pipeline agree on what a stage is.
+It's on Ekorn-Pipeline's `develop`, for v0.1.3, an addition within
+`cpanfile`'s range, `>= v0.1.1, < v0.2.0`. Iain has gated v0.1.3's
+release on this session's sign-off, so it's tried here first, as
+DBIx::Squirrel's use of it, before CPAN has it.
+
+With no change here, `DBIx::Squirrel::Pipeline->new($hits, take(1))`
+works, and this repository's tests pass: Ekorn-Pipeline's session ran
+them, 1431 assertions, against its `develop` at
+ce35c04334e0b9138bd90ac193c76a7c50f02be4, on 5.36.3 and 5.44.0. But
+`$dbh->iterate($sql, $hits)` doesn't work, as DBIx::Squirrel looks for
+stages at the end of a call's arguments with Ref::Util's `is_coderef`,
+and a pipeline, a blessed hash that overloads `&{}`, fails it, so it's
+taken for a bind value.
+
+Two things to know. `DBIx::Squirrel::Pipeline` now inherits Exporter's
+`import` from Ekorn::Pipeline, which is harmless for
+`use DBIx::Squirrel::Pipeline;` and `qw()`, but `is_stage` must be
+imported from Ekorn::Pipeline, not the facade, unless the facade
+exports it. And the two messages naming a stage that runs read "#%s"
+in Ekorn's DIAGNOSTICS now; a flat pipeline's read as before.
 
 **Steps:**
 
-1. Raise `cpanfile`'s range for Ekorn::Pipeline to `>= v0.1.3,
-   < v0.2.0`, as `is_stage` is new in v0.1.3, and regenerate
-   `META.json` and `Build.PL` with `minil build`.
+1. Try Ekorn-Pipeline's `develop` without installing it, so this
+   repository's library keeps v0.1.2, from a worktree of it:
+
+   ```
+   git -C ~/Git/github.com/nukopian/Ekorn-Pipeline fetch -q origin
+   git -C ~/Git/github.com/nukopian/Ekorn-Pipeline worktree add --detach /tmp/ekorn-pipeline-develop origin/develop
+   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test -I/tmp/ekorn-pipeline-develop/lib
+   ```
+
+   `-I` is needed: perlbrew's library sets `PERL5LIB`, which would
+   otherwise find the installed v0.1.2 first.
 2. Use `is_stage` in place of `is_coderef` where a call's stages are
    looked for: `split_stages` in `lib/DBIx/Squirrel/Util.pm`,
    `_ends_in_stages` in `lib/DBIx/Squirrel/Sugar.pm`, and Sugar's check
@@ -42,7 +65,19 @@ Ekorn::Pipeline agree on what a stage is.
    (near line 910) and `docs/HOWTO.md` (near line 769), and their
    examples, to give `$hits`, keeping `->stages` for a function that
    takes only code references; then the manuals, and `Changes`.
+5. Keep this work off `develop` until v0.1.3 is on CPAN, as CI installs
+   Ekorn::Pipeline from CPAN, where v0.1.2 has no `is_stage`: on a
+   branch, as Iain decides.
+6. Sign off: send Ekorn-Pipeline a message, in its `TODO.md`, on its
+   `develop`, saying what was tried, against which Ekorn commit, and
+   whether the tests pass; or what was found, if not, for its session
+   to fix before the release. Its release task waits on it.
+7. Once Ekorn-Pipeline tells this session v0.1.3 is on CPAN: raise
+   `cpanfile`'s range to `>= v0.1.3, < v0.2.0`, regenerate `META.json`
+   and `Build.PL` with `minil build`, and bring the work to `develop`.
+8. Remove the worktree: `git -C ~/Git/github.com/nukopian/Ekorn-Pipeline worktree remove /tmp/ekorn-pipeline-develop`.
 
-**Done when:** `$dbh->iterate($sql, $pipeline, take(2))` runs the
-pipeline's stages and then `take(2)`, in one run, tested; the docs
-show it; and `cpanfile` asks for v0.1.3.
+**Done when:** the sign-off is sent; and, after v0.1.3,
+`$dbh->iterate($sql, $pipeline, take(2))` runs the pipeline's stages
+and then `take(2)`, in one run, tested, on `develop`, with the docs
+showing it and `cpanfile` asking for v0.1.3.
