@@ -7,6 +7,8 @@ use DBI        qw();
 use List::Util qw(all max);
 use Ref::Util  qw(is_arrayref is_coderef is_hashref is_ref);
 
+use Ekorn::Pipeline qw(is_stage);
+
 use DBIx::Squirrel::Errors       qw(at_caller croakf failed in_method);
 use DBIx::Squirrel::Placeholders qw(
     expand_lists key_of study_sql values_for values_taken
@@ -243,7 +245,7 @@ sub results ($self, $statement, @args) {
 # prepare, for the bind values in their arguments, taking the attributes
 # off the front of them, unless a stage is there.
 sub _prepare_to_iterate ($self, $statement, $args) {
-    my $attrs  = @$args && is_coderef($args->[0]) ? undef : shift_attrs($args);
+    my $attrs  = @$args && is_stage($args->[0]) ? undef : shift_attrs($args);
     my @values = @$args;
     split_stages(\@values);
     return _prepare_as($self, 'prepare', $statement, $attrs, undef, @values);

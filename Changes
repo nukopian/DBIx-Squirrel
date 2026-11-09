@@ -2,6 +2,17 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    A pipeline can go wherever a stage goes (roadmap 2026-0004).
+
+    - iterate, results, and Sugar's statements and functions take a
+      pipeline among their stages. Before, they took only code
+      references, and a pipeline there was taken for a bind value. Its
+      stages run in its place, in the same run, so a take(2) inside it
+      gives two results in all.
+    - A gather block can return a pipeline as its stage.
+    - Error messages name a stage inside a pipeline by its place, such
+      as #2.3 for the third stage of a pipeline given as the second.
+
 v2.0.5 2026-11-08
 
     The successor to 1.6.5: a rewrite in modern Perl.

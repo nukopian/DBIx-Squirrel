@@ -2,7 +2,9 @@ use v5.36;
 
 package DBIx::Squirrel::Sugar;
 
-use Ref::Util qw(is_arrayref is_coderef is_hashref);
+use Ref::Util qw(is_arrayref is_hashref);
+
+use Ekorn::Pipeline qw(is_stage);
 
 use DBIx::Squirrel         qw();
 use DBIx::Squirrel::Errors qw(croakf);
@@ -100,7 +102,7 @@ sub _define_statement ($package, $name, @definition) {
     my $attrs = @rest
         && (!defined $rest[0] || is_hashref($rest[0])) ? shift @rest : undef;
     croakf 'Expected only stages after the statement for %s', $name
-        if grep { !is_coderef($_) } @rest;
+        if grep { !is_stage($_) } @rest;
     my %definition = (
         database  => $database,
         statement => $statement,
@@ -157,7 +159,7 @@ sub _execute ($sth, @args) {
 
 # Return true if a list of arguments ends in a stage.
 sub _ends_in_stages ($args) {
-    return @$args && is_coderef($args->[-1]);
+    return @$args && is_stage($args->[-1]);
 }
 
 # Give a package a named function, croaking if it has one of that name,

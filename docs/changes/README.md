@@ -80,5 +80,7 @@ Steps, Done when.
 
 Newest id first.
 
+- [A pipeline where a stage goes](2026-0004-pipeline-as-stage.md),
+  from a task of Ekorn-Pipeline's: in progress.
 - [The reference and the how-to on MetaCPAN](2026-0001-manuals-on-metacpan.md),
   roadmap 2026-0001: shipped in v2.0.5.

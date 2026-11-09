@@ -4,8 +4,10 @@ package DBIx::Squirrel::Util;
 
 use Data::Dumper qw();
 use Exporter     qw(import);
-use Ref::Util    qw(is_arrayref is_coderef is_hashref is_ref);
+use Ref::Util    qw(is_arrayref is_hashref is_ref);
 use Sub::Util    qw(set_subname subname);
+
+use Ekorn::Pipeline qw(is_stage);
 
 use DBIx::Squirrel::Errors qw(croakf);
 
@@ -73,11 +75,11 @@ sub split_attrs ($attrs) {
     return $attrs && \%dbi, \%ekorn;
 }
 
-# Take the code references off the end of a list of arguments, and return
-# them.
+# Take the stages off the end of a list of arguments, and return them. A
+# stage is a code reference or a pipeline.
 sub split_stages ($args) {
     my $n = @$args;
-    $n -= 1 while $n && is_coderef($args->[$n - 1]);
+    $n -= 1 while $n && is_stage($args->[$n - 1]);
     return splice @$args, $n;
 }
 
