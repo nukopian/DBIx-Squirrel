@@ -7,40 +7,43 @@ pasted as it stands. The few that need a value say so on the line
 before, and set it in a variable on their first line.
 
 [scalar](https://github.com/nukopian/scalar) is kept the same way, and
-[its guide](https://github.com/nukopian/scalar/blob/main/docs/MAINTAINING.md)
-is where this one comes from. What's particular here is Perl: Minilla
-builds the distribution, and a release goes to CPAN.
+this guide comes from
+[its guide](https://github.com/nukopian/scalar/blob/main/docs/MAINTAINING.md).
+What's particular here is Perl: Minilla builds the distribution, and a
+release goes to CPAN.
 
-The working copy is `~/Git/github.com/nukopian/DBIx-Squirrel`, and Perl
-commands run in the project's perlbrew library, named on each command so
-they don't depend on the default Perl. [CLAUDE.md](../CLAUDE.md#perl) has
-the library, and how to build a Perl or the database drivers on Iain's Mac.
+The working copy is `~/Git/github.com/nukopian/DBIx-Squirrel`. Perl
+commands run in the project's perlbrew library. It's named on each
+command, so they don't depend on the default Perl.
+[CLAUDE.md](../CLAUDE.md#perl) has the library, and how to build a Perl
+or the database drivers on Iain's Mac.
 
 ## Branches
 
 - `develop` is where work happens. Every commit goes there, and CI runs
   on every push to it.
 - `main` is the latest release, and nothing else. It moves only when a
-  release is made, by a fast-forward to `develop`, and the release's tag
-  is on it. Visitors to GitHub see `main`, so its README describes what
+  release is made, by a fast-forward to `develop`. The release's tag is
+  on it. Visitors to GitHub see `main`, so its README describes what
   CPAN installs.
-- There are no feature branches, for now: changes are made one at a
+- There are no feature branches, for now. Changes are made one at a
   time. An experiment may have a branch, named for its roadmap item's
   id, as below.
 - `TODO.md`, when there is one, lists work planned for a later session.
   It's committed on `develop` and gone before a release, so it never
-  reaches `main` ([CLAUDE.md](../CLAUDE.md#planned-work) has the rules).
-- [ROADMAP.md](../ROADMAP.md) lists what the project means to do, each
-  item with an id such as 2026-0001, and [docs/changes/](changes/README.md)
-  keeps a record of each planned change. Both are public, on `main`,
-  but not in the CPAN tarball
-  ([CLAUDE.md](../CLAUDE.md#the-roadmap) has the rules).
+  reaches `main`. [CLAUDE.md](../CLAUDE.md#planned-work) has the rules.
+- [ROADMAP.md](../ROADMAP.md) lists what the project means to do. Each
+  item has an id, such as 2026-0001.
+  [docs/changes/](changes/README.md) keeps a record of each planned
+  change. Both are public, on `main`, but not in the CPAN tarball.
+  [CLAUDE.md](../CLAUDE.md#the-roadmap) has the rules.
 - A branch for a roadmap item, when there is one, is named for its id,
   as `experiment/2026-0001-manuals-on-metacpan`.
 
-`main` is protected on GitHub. Pushes to it need signed commits, a linear
-history (no merge commits) and CI passing on every job, and it can't be
-force-pushed or deleted. This holds for admins too. To see the settings:
+`main` is protected on GitHub. Pushes to it need signed commits, a
+linear history (no merge commits) and CI passing on every job. It
+can't be force-pushed or deleted. This holds for admins too. To see
+the settings:
 
 ```
 gh api repos/nukopian/DBIx-Squirrel/branches/main/protection --jq '{signatures: .required_signatures.enabled, linear: .required_linear_history.enabled, checks: .required_status_checks.contexts, force_push: .allow_force_pushes.enabled, admins: .enforce_admins.enabled}'
@@ -49,11 +52,11 @@ gh api repos/nukopian/DBIx-Squirrel/branches/main/protection --jq '{signatures: 
 ### A fresh clone
 
 The settings that sign commits are in the working copy's own
-`.git/config`, not the global one, so a fresh clone needs them before its
-first commit. Then switch to `develop`, and install the dependencies,
-the maintainers' tools among them, and Minilla, which builds the
-distribution. Minilla isn't in `cpanfile`, so that installing from it
-shows the distribution needs nothing else:
+`.git/config`, not the global one. So a fresh clone needs them before
+its first commit. Then switch to `develop`, and install the
+dependencies, the maintainers' tools among them. Install Minilla too,
+which builds the distribution. Minilla isn't in `cpanfile`, so that
+installing from it shows the distribution needs nothing else:
 
 ```
 cd ~/Git/github.com/nukopian/DBIx-Squirrel
@@ -73,9 +76,9 @@ perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpanm Minilla
 ## Every commit
 
 Run these first, and check that each one succeeds. Don't pipe them
-through `tail` or `grep` to judge them: the pipe's exit status is the
+through `tail` or `grep` to judge them. The pipe's exit status is the
 last command's, and hides a failure. The perltidy loop is CI's style
-check: it prints a diff for each file perltidy would change.
+check. It prints a diff for each file perltidy would change.
 
 ```
 cd ~/Git/github.com/nukopian/DBIx-Squirrel
@@ -86,11 +89,11 @@ for f in $(git ls-files 'lib/*.pm' 't/*.t' 'xt/*.t'); do perlbrew exec --quiet -
 
 After a change to the code, check its coverage too, as CI does.
 `scripts/coverage` runs the tests under Devel::Cover, from an empty
-`cover_db`, and fails if the coverage of `lib/` falls below any of the
-floors at its top, printing each with what the tests reached. New code
-comes with the tests that keep it above them. When coverage rises,
-raise the floors to just under it; lower one only with the reason in
-the commit message.
+`cover_db`. It fails if the coverage of `lib/` falls below any of the
+floors at its top, and prints each floor with what the tests reached.
+New code comes with the tests that keep it above them. When coverage
+rises, raise the floors to just under it. Lower one only with the
+reason in the commit message.
 
 ```
 perlbrew exec --with perl-5.36.3@dbix-squirrel-2 ~/Git/github.com/nukopian/DBIx-Squirrel/scripts/coverage
@@ -103,10 +106,11 @@ cd ~/Git/github.com/nukopian/DBIx-Squirrel
 perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cover -report text -select_re '^lib/'
 ```
 
-`Build.PL`, `META.json` and `README.md` are generated, and committed so
-that `cpanm` can install from GitHub. After a change to `cpanfile`,
-`minil.toml`, `README.pod` or the main module's POD, generate them
-again, and commit what changes with the change that caused it:
+`Build.PL`, `META.json` and `README.md` are generated. They're
+committed so that `cpanm` can install from GitHub. After a change to
+`cpanfile`, `minil.toml`, `README.pod` or the main module's POD,
+generate them again. Commit what changes with the change that caused
+it:
 
 ```
 cd ~/Git/github.com/nukopian/DBIx-Squirrel
@@ -115,12 +119,12 @@ git status --short
 ```
 
 The manuals, `lib/DBIx/Squirrel/Manual/Reference.pod` and
-`HowTo.pod`, are generated too, by `scripts/manuals`, from
+`HowTo.pod`, are generated too. `scripts/manuals` makes them from
 `docs/REFERENCE.md` and `docs/HOWTO.md`, so that MetaCPAN lists the
 reference and the how-to with the modules (roadmap 2026-0001). After a
-change to either, generate them again, and commit them with it;
+change to either, generate them again, and commit them with it.
 `xt/manuals.t`, which CI runs, fails if they're not what the Markdown
-makes. The script converts only the Markdown the docs use, and refuses
+makes. The script converts only the Markdown the docs use. It refuses
 anything else, naming it:
 
 ```
@@ -145,8 +149,9 @@ sed -i '' '1s/branch=master/branch=main/' ~/Git/github.com/nukopian/DBIx-Squirre
 ```
 
 Commits are signed, and use conventional prefixes (`feat:`, `fix:`,
-`docs:`, `test:`, `ci:`, `refactor:`, `style:`, `chore:`), saying why as well as
-what. To check the signatures of the last ten (`G` is good, `N` is none):
+`docs:`, `test:`, `ci:`, `refactor:`, `style:`, `chore:`). They say
+why as well as what. To check the signatures of the last ten (`G` is
+good, `N` is none):
 
 ```
 git log --format='%h %G? %s' -10
@@ -154,35 +159,35 @@ git log --format='%h %G? %s' -10
 
 Add what changed for users to `Changes` under Unreleased, in the same
 commit. A change that ships a roadmap item ends its line with the
-item's id, as "(roadmap 2026-0001)", names it in the entry's precis,
-and takes the item off [ROADMAP.md](../ROADMAP.md).
+item's id, as "(roadmap 2026-0001)". It names the item in the entry's
+precis, and takes the item off [ROADMAP.md](../ROADMAP.md).
 
 ## A trial release
 
 A trial puts a version on CPAN for CPAN Testers to test, on platforms
-CI doesn't cover, such as Windows and the BSDs, without CPAN indexing
-it: `cpanm DBIx::Squirrel` still installs the last release. PAUSE takes
-a tarball whose name ends `-TRIAL` as a trial, which is all Minilla's
-own `minil release --trial` does. There's no tag and no GitHub release,
-and `main` doesn't move. v2.0.0 had one, uploaded on 2026-11-05, and
-v2.0.1 and v2.0.2 one each, on 2026-11-06.
+CI doesn't cover, such as Windows and the BSDs. CPAN doesn't index it,
+so `cpanm DBIx::Squirrel` still installs the last release. PAUSE takes
+a tarball whose name ends `-TRIAL` as a trial. That's all Minilla's
+own `minil release --trial` does. There's no tag and no GitHub
+release, and `main` doesn't move. v2.0.0 had one, uploaded on
+2026-11-05, and v2.0.1 and v2.0.2 one each, on 2026-11-06.
 
-PAUSE never takes the same file name twice, so each trial has a version
-of its own, and the release takes the version of its last trial. A
-second trial moves the version on: gather changed the pipeline after
-v2.0.0's trial, so the next trial was v2.0.1, and list placeholders
-came after that one, so the next, and the release, are v2.0.2. Don't
-use an underscore version, such as `v2.0.0_1`, for a trial of v2.0.0:
-`version.pm` reads it as v2.0.1, so it would rank above the release it
-was a trial of.
+PAUSE never takes the same file name twice. So each trial has a
+version of its own, and the release takes the version of its last
+trial. A second trial moves the version on. Gather changed the
+pipeline after v2.0.0's trial, so the next trial was v2.0.1. List
+placeholders came after that one, so the next, and the release, were
+v2.0.2. Don't use an underscore version, such as `v2.0.0_1`, for a
+trial of v2.0.0. `version.pm` reads it as v2.0.1, so it would rank
+above the release it was a trial of.
 
 1. **Check `develop`,** as in step 1 of
-   [Making a release](#making-a-release), with the working tree clean,
-   so the tarball is built from a commit CI has passed.
+   [Making a release](#making-a-release), with the working tree clean.
+   Then the tarball is built from a commit CI has passed.
 
 2. **Set the version, if it has had a trial.** The version is the one
    in the main module. If PAUSE already has a trial of it, set the next
-   on the first line, then commit and push, and wait for CI to pass on
+   on the first line. Then commit and push, and wait for CI to pass on
    the commit before going on:
 
    ```
@@ -205,7 +210,7 @@ was a trial of.
    grep '^Result:' "$TMPDIR/dist-$v.log"
    ```
 
-   It must print `Result: PASS`: `minil dist` exits 0 even when the
+   It must print `Result: PASS`. `minil dist` exits 0 even when the
    tests fail.
 
 4. **Rename it, and upload it:**
@@ -219,7 +224,7 @@ was a trial of.
    ```
 
 5. **Read the reports,** as they come in over the next few days. The
-   first command counts each version's reports by grade; the second
+   first command counts each version's reports by grade. The second
    lists those that didn't pass, with a link to each:
 
    ```
@@ -227,19 +232,19 @@ was a trial of.
    curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r '.[] | select((.version | startswith("v2") or startswith("2")) and .grade != "pass") | "\(.version) \(.grade) \(.osname) perl \(.perl) https://www.cpantesters.org/cpan/report/\(.guid)"'
    ```
 
-   A failure is fixed on `develop`, and a new trial uploaded, with a
-   version of its own, before the release.
+   A failure is fixed on `develop` before the release, and a new trial
+   uploaded, with a version of its own.
 
 ## Making a release
 
-A release is a version on CPAN, and a signed, annotated tag on `main`
-with a GitHub release for it. Versions are dotted, as `v2.0.0`, in the
-main module's `$VERSION`, the tag and the tarball's name alike. Claude
-asks before tagging.
+A release is a version on CPAN, and a signed, annotated tag on `main`,
+with a GitHub release for it. Versions are dotted, as `v2.0.0`. That
+goes for the main module's `$VERSION`, the tag and the tarball's name
+alike. Claude asks before tagging.
 
-Releases don't use `minil release`: it makes its own commit and an
-unsigned tag, and pushes both. `minil prepare` sets the version and
-`minil dist` builds the tarball, and the git steps are ours.
+Releases don't use `minil release`. It makes its own commit and an
+unsigned tag, and pushes both. `minil prepare` sets the version, and
+`minil dist` builds the tarball. The git steps are ours.
 
 1. **Check `develop`:** CI is green on its last commit, there's no
    `TODO.md`, and the history has no secrets.
@@ -253,11 +258,11 @@ unsigned tag, and pushes both. `minil prepare` sets the version and
    gitleaks git --redact --no-banner .
    ```
 
-   If `TODO.md` is there, its tasks come first: do them, or move them
-   where CLAUDE.md says, and delete the file before going on.
+   If `TODO.md` is there, its tasks come first. Do them, or move them
+   where CLAUDE.md says. Delete the file before going on.
 
-2. **Set the version.** `minil prepare` writes it into the main module,
-   and regenerates `META.json`, `Build.PL` and `README.md`. Set the
+2. **Set the version.** `minil prepare` writes it into the main module.
+   It also regenerates `META.json`, `Build.PL` and `README.md`. Set the
    version on the first line:
 
    ```
@@ -267,12 +272,16 @@ unsigned tag, and pushes both. `minil prepare` sets the version and
    git status --short
    ```
 
-3. **Turn Unreleased into the release** in [Changes](../Changes): rename
-   the heading to the version and date, as `v2.0.2 2026-10-22`, start the
-   entry with a sentence that sums it up (it becomes the tag's title),
-   then the precis of the roadmap items it ships, by id, and add an
-   empty Unreleased above it. Each shipped item's record says "shipped
-   in" the version. The entry's lines stay indented by four spaces:
+3. **Turn Unreleased into the release** in [Changes](../Changes):
+   - Rename the heading to the version and date, as
+     `v2.0.2 2026-10-22`.
+   - Start the entry with a sentence that sums it up. It becomes the
+     tag's title.
+   - Follow it with the precis of the roadmap items it ships, by id.
+   - Add an empty Unreleased above it.
+
+   Each shipped item's record says "shipped in" the version. The
+   entry's lines stay indented by four spaces:
 
    ```
    Unreleased
@@ -288,8 +297,8 @@ unsigned tag, and pushes both. `minil prepare` sets the version and
    for CI.
 
 4. **Write the tag message from the entry,** and read it. The entry,
-   without its indent, is also the GitHub release's notes, and the tag
-   message is the same with the version in front. An empty file means
+   without its indent, is also the GitHub release's notes. The tag
+   message is the same, with the version in front. An empty file means
    the heading doesn't match the version. Set the version on the first
    line:
 
@@ -312,11 +321,11 @@ unsigned tag, and pushes both. `minil prepare` sets the version and
    gh api "repos/nukopian/DBIx-Squirrel/commits/$(git rev-parse develop)/check-runs" --jq '.check_runs[] | "\(.name) \(.status) \(.conclusion)"'
    ```
 
-   Every line ends `completed success`; if one doesn't, see
-   [When something goes wrong](#when-something-goes-wrong). Then the
-   merge, which is a fast-forward, so `main` gets exactly the commits CI
-   tested on `develop`, with their signatures. Set the version on the
-   first line:
+   Every line ends `completed success`. If one doesn't, see
+   [When something goes wrong](#when-something-goes-wrong). Then
+   merge. The merge is a fast-forward, so `main` gets exactly the
+   commits CI tested on `develop`, with their signatures. Set the
+   version on the first line:
 
    ```
    v=v2.0.2
@@ -331,7 +340,7 @@ unsigned tag, and pushes both. `minil prepare` sets the version and
 
    `--verify-tag` refuses to make a tag of its own if the push didn't
    happen. If the merge says it can't fast-forward, `main` has a commit
-   `develop` doesn't. Stop and find out why; don't make a merge commit.
+   `develop` doesn't. Stop and find out why. Don't make a merge commit.
 
 6. **Build the tarball and upload it to CPAN,** from the tag.
    `minil dist` runs the tests again on the built distribution first.
@@ -347,8 +356,8 @@ unsigned tag, and pushes both. `minil prepare` sets the version and
    ```
 
    It must print `Result: PASS`. `minil dist` exits 0, and writes the
-   tarball, even when the tests fail, so read this line, not its exit
-   status. On a failure, the log says which test failed; remove the
+   tarball, even when the tests fail. So read this line, not its exit
+   status. On a failure, the log says which test failed. Remove the
    tarball, fix it on `develop`, and start again. Then upload:
 
    ```
@@ -369,12 +378,12 @@ unsigned tag, and pushes both. `minil prepare` sets the version and
 
 ## The name
 
-The repository was DBIx-Squirrel-2 while version 2 was in development,
-and took the name DBIx-Squirrel on 2026-11-08, before its first release,
-so that release's metadata names the final URL: Minilla takes the
-repository's URL in `META.json`, and the CI badge in `README.md`, from
-`origin`. The name DBIx-Squirrel had redirected to the archived
-DBIx-Squirrel-1, which is how CPAN's links for 1.6.5 reached it; the
+The repository was DBIx-Squirrel-2 while version 2 was in development.
+It took the name DBIx-Squirrel on 2026-11-08, before its first
+release, so that release's metadata names the final URL. Minilla takes
+the repository's URL in `META.json`, and the CI badge in `README.md`,
+from `origin`. The name DBIx-Squirrel had redirected to the archived
+DBIx-Squirrel-1. That's how CPAN's links for 1.6.5 reached it. The
 rename ended that, as intended.
 
 GitHub now redirects DBIx-Squirrel-2 here. Never create anything at
@@ -383,13 +392,13 @@ The perlbrew libraries keep their name, as `perl-5.36.3@dbix-squirrel-2`.
 
 ## Changing the CI matrix
 
-`main` requires each CI job by its name, as `perl 5.44 (macos-26)`, so a
-new Perl, or a new runner, means changing the required checks to match.
-Otherwise `main` waits for a check that never reports, and can't move.
-After the new jobs have passed once on `develop`, change the list here
-to the jobs' names, and run it; it replaces the whole list, so `secrets`,
-`style` and `coverage` stay in it. It's a GitHub setting, so Iain runs
-it, or says Claude may:
+`main` requires each CI job by its name, as `perl 5.44 (macos-26)`. So
+a new Perl, or a new runner, means changing the required checks to
+match. Otherwise `main` waits for a check that never reports, and
+can't move. After the new jobs have passed once on `develop`, change
+the list here to the jobs' names, and run it. It replaces the whole
+list, so `secrets`, `style` and `coverage` stay in it. It's a GitHub
+setting, so Iain runs it, or says Claude may:
 
 ```
 gh api --method PATCH repos/nukopian/DBIx-Squirrel/branches/main/protection/required_status_checks --silent --input - <<'EOF'
@@ -412,33 +421,33 @@ EOF
 gh api repos/nukopian/DBIx-Squirrel/branches/main/protection --jq .required_status_checks.contexts
 ```
 
-`15368` is GitHub Actions, so only a job of this repository's workflows
-can satisfy a check. When the floor moves up, from Perl 5.36 to 5.40 for
-`try`/`catch`, the oldest jobs go, from the matrix and this list alike,
-and the job on DBI 1.643 moves to the new floor. When Debian's and
-Ubuntu's DBI moves on, so does that job's.
+`15368` is GitHub Actions, so only a job of this repository's
+workflows can satisfy a check. When the floor moves up, from Perl 5.36
+to 5.40 for `try`/`catch`, the oldest jobs go, from the matrix and this
+list alike. The job on DBI 1.643 moves to the new floor. When Debian's
+and Ubuntu's DBI moves on, so does that job's.
 
 ## When something goes wrong
 
-- **A bad commit pushed to `develop`:** fix it in a new commit, or revert
-  it with `git revert`, and push. Don't force-push: Iain reviews what's
-  pushed, and a rewrite moves it under him.
+- **A bad commit pushed to `develop`:** fix it in a new commit, or
+  revert it with `git revert`, and push. Don't force-push. Iain reviews
+  what's pushed, and a rewrite moves it under him.
 - **A mistake in a pushed commit message:** leave it, and correct it in
   the next release's entry in `Changes`.
 - **A bad release:** never move or delete a published tag, and never
   reuse a version. PAUSE refuses a file name it has had before, even one
   deleted since. Release a fixed version instead. To keep the bad one
   from being installed meanwhile, delete it from CPAN on PAUSE
-  (`https://pause.perl.org`, "Delete Files"); it goes after three days,
+  (`https://pause.perl.org`, "Delete Files"). It goes after three days,
   and stays on BackPAN.
 - **An upload refused or lost:** if PAUSE never had the file, run
   `cpan-upload` again with the same tarball. If it did, the version is
-  spent: release the next one.
+  spent. Release the next one.
 - **`cpan-upload --dry-run` prints the PAUSE password,** with or without
   `--verbose`. Don't run it where the output is shared or logged.
-- **A commit made on `main` by mistake,** before it's pushed: move it to
-  `develop`, and put `main` back. Do this only if `main` hasn't been pushed
-  since:
+- **A commit made on `main` by mistake,** before it's pushed: move it
+  to `develop`, and put `main` back. Do this only if `main` hasn't been
+  pushed since:
 
   ```
   git switch develop
@@ -448,9 +457,9 @@ Ubuntu's DBI moves on, so does that job's.
 
 - **A push to `main` refused:** the protection did its job. Push to
   `develop` instead, or, at a release, wait for CI to pass on the commit.
-- **A check stuck "in progress"** after all its steps passed: GitHub never
-  marked it complete. Re-run that job alone. This finds every unfinished
-  check on `develop`'s commit and re-runs it:
+- **A check stuck "in progress"** after all its steps passed: GitHub
+  never marked it complete. Re-run that job alone. This finds every
+  unfinished check on `develop`'s commit, and re-runs it:
 
   ```
   cd ~/Git/github.com/nukopian/DBIx-Squirrel
@@ -459,10 +468,10 @@ Ubuntu's DBI moves on, so does that job's.
 
   Then check the check runs again, as in step 5.
 - **`main` refused after the tag went up:** `git push origin main "$v"`
-  sends both, so the tag can be published while `main` is refused. Leave
-  the tag as it is: it points at the right commit. Fix the check, then
-  push `main` to the tagged commit, make the release, and go on with
-  step 6. Set the version on the first line:
+  sends both, so the tag can be published while `main` is refused.
+  Leave the tag unchanged. It points at the right commit. Fix the
+  check, then push `main` to the tagged commit, make the release, and
+  go on with step 6. Set the version on the first line:
 
   ```
   v=v2.0.2
@@ -478,11 +487,11 @@ Ubuntu's DBI moves on, so does that job's.
 
 - **gitleaks** scans the whole history for secrets on every push, in
   `test.yml`'s `secrets` job, and by hand before a tag (step 1).
-- **Secret scanning and push protection** are on: push protection
+- **Secret scanning and push protection** are on. Push protection
   refuses a push with a recognised secret in it, before gitleaks would
   see it.
 - **Dependabot alerts** are on, and **Dependabot security updates** are
-  off on purpose: they open pull requests against `main`, which moves
+  off on purpose. They'd open pull requests against `main`, which moves
   only at a release. Dependabot doesn't read a `cpanfile`, so its alerts
   cover the workflow's actions, not the Perl dependencies.
 
@@ -497,8 +506,11 @@ gh api repos/nukopian/DBIx-Squirrel/secret-scanning/alerts --jq '.[] | select(.s
 
 ## Tools
 
-The project's perlbrew library, with Minilla and the dependencies in
-`cpanfile` (yath, Perl::Critic, Perl::Tidy and CPAN::Uploader among them),
-`gh`, `gitleaks`, `jq`, and for the PDFs, `pandoc` and Prince.
+- The project's perlbrew library, with Minilla and the dependencies in
+  `cpanfile` (yath, Perl::Critic, Perl::Tidy and CPAN::Uploader among
+  them);
+- `gh`, `gitleaks` and `jq`;
+- for the PDFs, `pandoc` and Prince.
+
 `scripts/readme-pdf.sh` builds a PDF of the README, the reference, the
-how-to and this guide, for reading offline; the PDFs are git-ignored.
+how-to and this guide, for reading offline. The PDFs are git-ignored.
