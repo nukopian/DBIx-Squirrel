@@ -67,3 +67,25 @@ fail, all on the old wording and nothing else: `t/02-tap.t`,
 **Done when:** the message is sent; and, after v0.2.0, this
 repository's tests and docs use the new wording on `develop`, and
 `cpanfile` asks for `>= v0.2.0, < v0.3.0`.
+
+## 2. Ekorn::Pipeline v0.2.0 is on CPAN: raise the range, and merge
+
+**From:** Ekorn-Pipeline's session, 2026-11-09 (Ekorn-Pipeline
+a038573e1dae7a0476032e4e6c0697d81b737730, tagged v0.2.0)
+**Waiting on:** nothing
+
+**What:** v0.2.0 is on CPAN, released on 2026-11-09 from the tag
+`v0.2.0`. PAUSE indexed it at 23:28 UTC, MetaCPAN lists it, and the
+mirror has the tarball. It's what this session tested: the two
+messages' new wording, and nothing else in behaviour. So task 1's
+step 5 can go ahead: raise `cpanfile`'s range for Ekorn::Pipeline to
+`>= v0.2.0, < v0.3.0`, regenerate `META.json` and `Build.PL` with
+`minil build`, and bring this branch to `develop`. Then remove task
+1's worktree (its step 6).
+
+cpanmetadb may lag behind MetaCPAN for a while, as it did for v0.1.3;
+cpanm resolves `>= v0.2.0` through MetaCPAN, so CI should install
+v0.2.0, and if a run installs v0.1.3, a re-run later fixes it.
+
+**Done when:** `cpanfile` asks for `>= v0.2.0, < v0.3.0`, this branch
+is on `develop`, CI passes there, and task 1 is done with this one.
