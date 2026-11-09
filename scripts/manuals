@@ -34,6 +34,16 @@ our %ELSEWHERE = (
     '../Changes' => 'https://metacpan.org/dist/DBIx-Squirrel/changes',
 );
 
+# Ekorn::Pipeline on GitHub, and the module each of its documents is
+# installed as (roadmap 2026-0002). A link to one becomes a link to the
+# module, so a reader on MetaCPAN, or in perldoc, stays there.
+our $EKORN = 'https://github.com/nukopian/Ekorn-Pipeline';
+our %EKORN = (
+    ''                  => 'Ekorn::Pipeline',
+    'docs/REFERENCE.md' => 'Ekorn::Pipeline::Manual::Reference',
+    'docs/HOWTO.md'     => 'Ekorn::Pipeline::Manual::HowTo',
+);
+
 # What ends each manual, as the main module's POD ends.
 our $FOOTER = <<'POD';
 =head1 SEE ALSO
@@ -123,7 +133,9 @@ sub link_to ($text, $target, $sections, $file) {
     my $shown = formatted($text);
     $shown =~ s( \| )(E<verbar>)xg;
     $shown =~ s( / )(E<sol>)xg;
-    return "L<$shown|$target>" if $target =~ m( \A https?:// )x;
+    return ekorn_link($shown, $target, $sections)
+        if $target =~ m( \A \Q$EKORN\E (?: [/\#] | \z ) )x;
+    return "L<$shown|$target>"             if $target =~ m( \A https?:// )x;
     return "L<$shown|$ELSEWHERE{$target}>" if $ELSEWHERE{$target};
     my($doc, $anchor) = $target =~ m( \A ([^\#]*) (?: \# (.*) )? \z )x;
     $doc = $file if $doc eq '';
@@ -136,6 +148,60 @@ sub link_to ($text, $target, $sections, $file) {
         if $section eq '';
     $section =~ s( \| )(E<verbar>)xg;
     return qq{L<$shown|$module/"$section">};
+}
+
+
+# Return a link to Ekorn::Pipeline on GitHub as POD's L<> to its module,
+# given the link's text, already as POD, its target, and the sections of
+# each manual, Ekorn's keyed by their modules.
+sub ekorn_link ($shown, $target, $sections) {
+    my($doc, $anchor)
+        = $target
+        =~ m( \A \Q$EKORN\E (?: /blob/main/ ([^\#]+) )? /? (?: \# (.+) )? \z )x
+        or die "A link to $target, which isn't one of Ekorn::Pipeline's manuals\n";
+    my $module = $EKORN{$doc // ''}
+        // die "A link to $target, which isn't one of Ekorn::Pipeline's manuals\n";
+    return "L<$shown|$module>" unless defined $anchor;
+    die "A link to $target, which isn't one of Ekorn::Pipeline's manuals\n"
+        if $module eq 'Ekorn::Pipeline';
+    my $section = ($sections->{$module} // ekorn_sections($module))->{$anchor}
+        // die "A link to $target, which $module has no heading for\n";
+    die "A link to $target, a heading POD can't tell from an earlier one\n"
+        if $section eq '';
+    $section =~ s( \| )(E<verbar>)xg;
+    return qq{L<$shown|$module/"$section">};
+}
+
+
+# Return the sections of one of Ekorn::Pipeline's manuals, as installed,
+# keyed by their anchors on GitHub, as sections does for ours.
+sub ekorn_sections ($module) {
+    state %sections;
+    return $sections{$module} //= do {
+        my $file = ($module =~ s( :: )(/)xgr) . '.pod';
+        my($path) = grep { -e "$_/$file" } @INC
+            or die "$module isn't installed, for its sections\n";
+        my $markdown = '';
+        for my $line (split m( \n )x, slurp("$path/$file")) {
+            my($level, $heading) = $line =~ m( \A =head([1-3]) \  (.+) \z )x
+                or next;
+            $markdown .= ('#' x ($level + 1)) . ' ' . pod_plain($heading) . "\n";
+        }
+        sections($markdown);
+    };
+}
+
+
+# Return POD's text without its formatting codes, as a link names a
+# section: C<< a > b >> and C<x> as their text, E<lt> and E<gt> as < and >.
+sub pod_plain ($text) {
+    $text         =~ s( [A-Z] <{2,} \s (.*?) \s >{2,} )($1)xg;
+    $text         =~ s( E<lt> )(\0lt)xg;
+    $text         =~ s( E<gt> )(\0gt)xg;
+    1 while $text =~ s( [A-Z] < ([^<>]*) > )($1)xg;
+    $text         =~ s( \0lt )(<)xg;
+    $text         =~ s( \0gt )(>)xg;
+    return $text;
 }
 
 

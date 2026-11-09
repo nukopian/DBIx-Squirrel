@@ -51,16 +51,6 @@ the examples, the DIAGNOSTICS entries and the anchors. It's on a
 branch from 2026-0004's, so it reaches `develop` after it. Its
 [record](docs/changes/2026-0005-plain-docs.md) has the rules.
 
-### 2026-0002. Link to Ekorn::Pipeline's manuals by module name
-
-**Added:** 2026-11-08. **Size:** S (2). **Depends on:** 2026-0005
-
-`scripts/manuals` turns the reference's and the how-to's links to
-Ekorn-Pipeline on GitHub into POD links to its manuals by module name,
-so a reader on MetaCPAN, or in `perldoc`, stays there. It's on a
-branch from 2026-0005's. Its
-[record](docs/changes/2026-0002-ekorn-manual-links.md) has the plan.
-
 ## Next
 
 Nothing yet.

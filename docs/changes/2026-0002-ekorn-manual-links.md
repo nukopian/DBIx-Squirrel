@@ -1,6 +1,6 @@
 # 2026-0002. Link to Ekorn::Pipeline's manuals by module name
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: on a branch from 2026-0005's. D2 settled:
 section names from Ekorn's installed manuals. D3 settled: whole
@@ -11,6 +11,8 @@ documents and the repository as module links.
 **Depends on:** 2026-0005, whose branch this one starts from
 
 **Started:** 2026-11-09, on `experiment/2026-0002-ekorn-manual-links`
+
+**Finished:** 2026-11-09
 
 ## Background
 
@@ -72,3 +74,22 @@ Markdown is unchanged.
 
 ## What happened
 
+- **Outcome:** Done when is met. All 20 links to Ekorn-Pipeline on
+  GitHub are POD links by module name in the manuals: 17 to a
+  section, two to a whole document, and one to the repository, as
+  `L<Ekorn::Pipeline>`. No URL to it is left there, and the Markdown
+  is unchanged.
+- **Tests:** `xt/manuals.t` has 34 more assertions: each kind of link,
+  the three it refuses, a URL that only starts the same, section names
+  from POD's formatting codes, and that each link in the manuals finds
+  its section in the installed manual. The tests pass against
+  Ekorn-Pipeline's `develop` (1,496 assertions).
+- **The guard works:** run against the 5.36 library's own Ekorn, the
+  check fails, naming `Ekorn::Pipeline::Manual::HowTo` as not
+  installed. That library has Ekorn::Pipeline v0.1.1, which had no
+  manuals. Against v0.1.2 it would fail on "A pipeline as a stage",
+  new in v0.1.3. So the manuals need Ekorn::Pipeline v0.1.3, which
+  2026-0004's `cpanfile` asks for.
+- **Changes from the plan:** none. Section names in Ekorn's POD can
+  hold formatting codes, so `pod_plain` strips them, as POD names a
+  section by its text.

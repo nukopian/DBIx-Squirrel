@@ -504,7 +504,7 @@ reads best:
     say "@a" eq "@b" ? 'the same' : 'different';    # the same
 
 The recipes here are for rows. Ekorn::Pipeline's
-L<how-to|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md>
+L<how-to|Ekorn::Pipeline::Manual::HowTo>
 has more, for stages over any values. They work here too, with
 DBIx::Squirrel's names for its modules.
 
@@ -894,9 +894,9 @@ iterator, DBIx::Squirrel::Context's functions return C<undef>.
 
 A pipeline's C<iterator> pulls values from a source of your own, such as
 a file or a paged API. Ekorn::Pipeline's how-to has the recipes, in
-L<Pulling values one at a time|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#pulling-values-one-at-a-time>.
+L<Pulling values one at a time|Ekorn::Pipeline::Manual::HowTo/"Pulling values one at a time">.
 It has more on functions that take stages, in
-L<Writing a function that takes stages|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-a-function-that-takes-stages>.
+L<Writing a function that takes stages|Ekorn::Pipeline::Manual::HowTo/"Writing a function that takes stages">.
 
 =head1 A function for each database and statement
 

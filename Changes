@@ -2,9 +2,10 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    A pipeline can go wherever a stage goes (roadmap 2026-0004), and
-    the docs are rewritten in plainer, shorter sentences (roadmap
-    2026-0005).
+    A pipeline can go wherever a stage goes (roadmap 2026-0004). The
+    docs are rewritten in plainer, shorter sentences (roadmap
+    2026-0005), and the manuals link to Ekorn::Pipeline's by module
+    name (roadmap 2026-0002).
 
     - iterate, results, and Sugar's statements and functions take a
       pipeline among their stages. Before, they took only code
@@ -17,6 +18,9 @@ Unreleased
     - The README, the POD, the reference and the how-to are rewritten
       plainly. What they say is unchanged, and so are their examples,
       headings and DIAGNOSTICS entries.
+    - The reference and the how-to, as POD manuals, link to
+      Ekorn::Pipeline's manuals by module name, not to GitHub, so a
+      reader on MetaCPAN or in perldoc stays there (roadmap 2026-0002).
 
 v2.0.5 2026-11-08
 

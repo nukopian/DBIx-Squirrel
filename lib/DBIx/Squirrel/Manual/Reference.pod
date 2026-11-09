@@ -1027,7 +1027,7 @@ L<C<pipe> and C<tap>|/"pipe and tap on handles">. Loading a pipeline
 doesn't load the DBI. So a function of your own can take stages from
 its caller, as C<iterate> does, and run what it returns through them.
 
-The pipeline is L<Ekorn::Pipeline|https://github.com/nukopian/Ekorn-Pipeline>'s.
+The pipeline is L<Ekorn::Pipeline|Ekorn::Pipeline>'s.
 It began here, and is now a distribution of its own, so that any
 function can take stages from its caller. DBIx::Squirrel keeps its own
 names for the modules: C<DBIx::Squirrel::Pipeline>,
@@ -1045,9 +1045,9 @@ C<gather> is an C<Ekorn::Pipeline::Gather>. That's what C<ref> and C<isa>
 see. It's deliberate. DBIx::Squirrel's classes inherit from Ekorn's,
 never the reverse, so Ekorn::Pipeline knows nothing of DBIx::Squirrel.
 
-Ekorn::Pipeline's L<reference|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md>
+Ekorn::Pipeline's L<reference|Ekorn::Pipeline::Manual::Reference>
 describes the pipeline in full, and its
-L<how-to|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md>
+L<how-to|Ekorn::Pipeline::Manual::HowTo>
 has recipes for any values. This chapter keeps to what DBIx::Squirrel's
 iterators, result sets and handles do with it, and to what's
 DBIx::Squirrel's own. It links there for the rest.
@@ -1090,7 +1090,7 @@ Each value goes through every stage before the next one starts. So the
 values come out in order, and a stage sees them in the order a C<for>
 loop would. A stage returns whatever its last statement gives. So a
 stage run for its side effects should still return what the next stage
-needs. L<How values go through stages|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#how-values-go-through-stages>
+needs. L<How values go through stages|Ekorn::Pipeline::Manual::Reference/"How values go through stages">
 has the details.
 
     use DBIx::Squirrel::Pipeline;
@@ -1116,10 +1116,10 @@ returns a closure handing out those values one per call. Its source is
 called only when the values from its last call have run out. Read the
 closure in list context, so an C<undef> value isn't mistaken for the
 end. Ekorn's reference has the details:
-L<new|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#new>,
+L<new|Ekorn::Pipeline::Manual::Reference/"new">,
 with the errors it raises,
-L<calling a pipeline|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#calling-a-pipeline>
-and L<iterator|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#iterator>.
+L<calling a pipeline|Ekorn::Pipeline::Manual::Reference/"Calling a pipeline">
+and L<iterator|Ekorn::Pipeline::Manual::Reference/"iterator">.
 
 =head2 A pipeline's stages
 
@@ -1155,7 +1155,7 @@ Make a stage that counts or remembers with
 L<C<gather>|/"Gathering: stages with state, and an end">. A plain closure is
 the same code reference wherever it goes, so its state is shared by
 every pipeline it's in.
-L<A pipeline as a stage|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#a-pipeline-as-a-stage>,
+L<A pipeline as a stage|Ekorn::Pipeline::Manual::Reference/"A pipeline as a stage">,
 in Ekorn's reference, says more.
 
 =head2 When a stage dies
@@ -1163,7 +1163,7 @@ in Ekorn's reference, says more.
 If a stage dies, the pipeline croaks at the line that called it. It
 names the stage by its position, from C<#1>, and indents the stage's
 message. See
-L<When a stage dies|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#when-a-stage-dies>,
+L<When a stage dies|Ekorn::Pipeline::Manual::Reference/"When a stage dies">,
 in Ekorn's reference.
 
     Pipeline stage #2 failed at script.pl line 12:
@@ -1238,9 +1238,9 @@ A stop is an exception. C<DBIx::Squirrel::Stop> is a subclass of
 C<Ekorn::Pipeline::Stop>, and C<Stop()> is Ekorn's. So every stop is an
 C<Ekorn::Pipeline::Stop>, though not every one is a
 C<DBIx::Squirrel::Stop>. Ekorn's reference says what a stop holds, in
-L<The stop object|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#the-stop-object>.
+L<The stop object|Ekorn::Pipeline::Manual::Reference/"The stop object">.
 It also says how a subclass of your own stops a pipeline, in
-L<Subclasses|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#subclasses>.
+L<Subclasses|Ekorn::Pipeline::Manual::Reference/"Subclasses">.
 
 A stage that catches errors itself, with C<eval> or C<try>, should throw
 a stop on again. Check for C<Ekorn::Pipeline::Stop>. Every stop is one,
@@ -1296,9 +1296,9 @@ were none. What it returns goes through the rest of the stages, as
 what a stage returns does. After a L<stop|/"Stopping a pipeline">, only
 the ends of the stages after the one that stopped are called. Ekorn's
 reference gives the order the ends are called in, in
-L<End functions|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#end-functions>.
+L<End functions|Ekorn::Pipeline::Manual::Reference/"End functions">.
 It also says what the block must return, in
-L<gather|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#gather>.
+L<gather|Ekorn::Pipeline::Manual::Reference/"gather">.
 
 The stage the block returns can be a pipeline. Its stages are made for
 the run in its place, so the block can build a pipeline for each run,
@@ -1355,7 +1355,7 @@ Database and statement handles both have these methods. The examples
 use a database handle. On a statement handle, the statement handle
 goes through the stages instead. The methods are
 Ekorn::Pipeline::Pipes's.
-L<pipe and tap|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#pipe-and-tap-ekornpipelinepipes>,
+L<pipe and tap|Ekorn::Pipeline::Manual::Reference/"pipe and tap: Ekorn::Pipeline::Pipes">,
 in Ekorn's reference, describes them, and how to give a class of your
 own the same.
 
@@ -1488,7 +1488,7 @@ outside can send escape sequences to a terminal.
 
 Flow's, Batch's and Taps' stages are Ekorn::Pipeline's. Its
 reference's
-L<Canned stages|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#canned-stages>
+L<Canned stages|Ekorn::Pipeline::Manual::Reference/"Canned stages">
 describes them in full. Rows' stages are DBIx::Squirrel's own.
 
 Each is a function that makes a stage. It checks what it's given when
@@ -1532,9 +1532,9 @@ values from C<pipe>.
 =head1 Writing stages
 
 A stage of your own is a code reference. Ekorn's reference, in
-L<Writing stages|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#writing-stages>,
+L<Writing stages|Ekorn::Pipeline::Manual::Reference/"Writing stages">,
 and its how-to, in
-L<Writing stages for others|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-stages-for-others>,
+L<Writing stages for others|Ekorn::Pipeline::Manual::HowTo/"Writing stages for others">,
 say how to write one that works alongside the canned stages:
 
 =over 4
