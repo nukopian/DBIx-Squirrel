@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0003.
+Last id: 2026-0005.
 
 Items come in four groups:
 
@@ -45,7 +45,27 @@ Nothing yet.
 
 ## Next
 
-Nothing yet.
+### 2026-0005. Plain docs
+
+**Added:** 2026-11-09. **Size:** L (5)
+
+The docs share a house style that makes them hard to read: the same
+word several times in a sentence, chains of "as X says" links, long
+sentences joined by commas and colons, and qualifiers that repeat each
+other. Rewrite the README (`README.pod`), every module's POD,
+`docs/REFERENCE.md`, `docs/HOWTO.md` and `docs/MAINTAINING.md` in
+shorter sentences. Keep what they say, the examples, the DIAGNOSTICS
+entries and the anchors other pages link to. Ekorn-Pipeline did the
+same as its 2026-0006, and its record gives rules that would suit
+these docs.
+
+Why: a reader meets the docs before the code, and they should be easy
+to read. Until it's done, new text is written plainly.
+
+Done when: each document has had the pass, in a commit of its own;
+the manuals and `README.md` are generated again; the tests,
+`xt/howto.t`, `xt/manuals.t` and `podchecker` pass; and Iain has read
+the PDFs.
 
 ## Later
 
