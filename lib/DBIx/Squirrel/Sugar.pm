@@ -101,7 +101,8 @@ sub _define_statement ($package, $name, @definition) {
         unless defined $database && defined $statement;
     my $attrs = @rest
         && (!defined $rest[0] || is_hashref($rest[0])) ? shift @rest : undef;
-    croakf 'Expected only stages after the statement for %s', $name
+    croakf 'Expected only code references or pipelines after the statement for %s',
+        $name
         if grep { !is_stage($_) } @rest;
     my %definition = (
         database  => $database,
@@ -353,10 +354,10 @@ A name can't be a function's.
 
 A statement given to C<use> didn't name its database, or have its SQL.
 
-=item Expected only stages after the statement for %s
+=item Expected only code references or pipelines after the statement for %s
 
-A statement's definition had something other than stages (code
-references or pipelines) after the statement and its attributes.
+A statement's definition had something other than stages, which are
+code references or pipelines, after the statement and its attributes.
 
 =item Expected a name for a database (%s)
 

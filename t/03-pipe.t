@@ -57,7 +57,7 @@ subtest 'a stage that dies is reported where pipe was called' => sub {
         "Pipeline stage #2 failed at ${\ __FILE__ } line $line:\n    boom\n";
 };
 
-subtest 'a stage that is not a code reference' => sub {
+subtest 'a stage that is neither a code reference nor a pipeline' => sub {
     my @stages = (sub { $_ }, 'x');
     my $line   = __LINE__ + 1;
     my $err    = dies { $dbh->pipe(@stages) };

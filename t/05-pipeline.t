@@ -35,7 +35,7 @@ subtest 'new checks its stages' => sub {
     like dies {
         $class->new(sub { $_ }, 'x')
     }, qr( \A $msg \ $at \. \n \z )x,
-        'croaks on a stage that is not a code reference, naming it';
+        'croaks on a stage that is neither a code reference nor a pipeline, naming it';
 };
 
 subtest 'a stage sees one value, in $_ and as its argument' => sub {

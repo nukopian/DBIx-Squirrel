@@ -143,7 +143,8 @@ subtest 'anything else is still a bind value' => sub {
         DBIx::Squirrel::Sugar->import(statement => {
             bad => [music => $all, undef, bless {}, 'Not::A::Pipeline'],
         });
-    }, qr( \A Expected\ only\ stages\ after\ the\ statement\ for\ bad )x,
+    },
+        qr( \A \QExpected only code references or pipelines after the statement for bad\E )x,
         'and a statement\'s definition says so';
 };
 

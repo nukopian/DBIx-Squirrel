@@ -1563,7 +1563,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected a database defined once (%s)` | The name was given to another database already. |
 | `Expected a database defined as %s` | `database` was given a name no database has. |
 | `Expected a database and a statement for %s` | A statement's definition didn't name its database, or have its SQL. |
-| `Expected only stages after the statement for %s` | A statement's definition had something other than stages (code references or pipelines) after the statement and its attributes. |
+| `Expected only code references or pipelines after the statement for %s` | A statement's definition had something other than stages, which are code references or pipelines, after the statement and its attributes. |
 | `Expected no function of the name in %s already (%s)` | The package has a function of that name already. |
 
 ## Differences from plain DBI

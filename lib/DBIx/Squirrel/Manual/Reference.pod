@@ -1977,9 +1977,9 @@ C<database> was given a name no database has.
 
 A statement's definition didn't name its database, or have its SQL.
 
-=item C<Expected only stages after the statement for %s>
+=item C<Expected only code references or pipelines after the statement for %s>
 
-A statement's definition had something other than stages (code references or pipelines) after the statement and its attributes.
+A statement's definition had something other than stages, which are code references or pipelines, after the statement and its attributes.
 
 =item C<Expected no function of the name in %s already (%s)>
 
