@@ -47,6 +47,9 @@ use DBIx::Squirrel::Sugar statement => {
         music => 'SELECT id, name FROM artist WHERE id > ? ORDER BY id',
         {ekorn_slice => {}},
     ],
+    names_without_attrs => [
+        music => 'SELECT id, name FROM artist ORDER BY id', $names,
+    ],
 };
 
 music 'CREATE TABLE artist (id INTEGER PRIMARY KEY, name TEXT)';
@@ -106,6 +109,14 @@ subtest 'Sugar takes one where a stage goes' => sub {
         'after a database\'s statement';
     is [music($after, {ekorn_slice => {}}, 4, $names)], ['ENYA'],
         'and its bind values';
+};
+
+subtest 'a pipeline straight after the statement is a stage' => sub {
+    is [names_without_attrs()], \@all, 'defined on use';
+    statement(names_as_it_runs => music => $all, $names);
+    is [names_as_it_runs()], \@all, 'defined as the program runs';
+    is [names_as_it_runs(take(2))], [qw(ABBA BLUR)],
+        'with more stages for a call';
 };
 
 subtest 'a gather block can return a pipeline' => sub {

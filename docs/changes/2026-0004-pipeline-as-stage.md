@@ -173,3 +173,11 @@ matching Ekorn's DIAGNOSTICS, and `cpanfile` asking for v0.1.3.
   first, 1,496 assertions, on 5.36.3 and 5.44.0, against Ekorn's
   working copy at 182cf5ef0cad25b39fe3498df3459dc878b6c2d1, whose
   `lib` is the release's.
+- **Found after, on 2026-11-09, in a review of the docs:** a Sugar
+  statement defined with a pipeline straight after its SQL, with no
+  attributes between, took the pipeline for its attributes, the
+  `is_hashref` trap again: `_define_statement`, in
+  `lib/DBIx/Squirrel/Sugar.pm`, wasn't changed with
+  `_prepare_to_iterate`. The tests had always given attributes first.
+  Fixed, with tests of it defined on `use` and as the program runs,
+  before any release had it.

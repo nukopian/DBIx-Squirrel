@@ -99,8 +99,13 @@ sub _define_statement ($package, $name, @definition) {
         unless is_name($name);
     croakf 'Expected a database and a statement for %s', $name
         unless defined $database && defined $statement;
-    my $attrs = @rest
-        && (!defined $rest[0] || is_hashref($rest[0])) ? shift @rest : undef;
+    # A pipeline is a blessed hash, so is_hashref is true of it too: one
+    # straight after the statement is a stage, not the attributes.
+    my $attrs
+        = @rest
+        && (!defined $rest[0] || is_hashref($rest[0]) && !is_stage($rest[0]))
+        ? shift @rest
+        : undef;
     croakf 'Expected only code references or pipelines after the statement for %s',
         $name
         if grep { !is_stage($_) } @rest;
