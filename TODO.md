@@ -17,8 +17,12 @@ Ekorn-Pipeline rewrote 2026-0004's text plainly
 (adf919e64fc2028238bb408e98a9b4f587b0845f), so its reference now
 opens that section: "You can give `new` a pipeline wherever it takes a
 stage. Its stages are spliced in where it stands." It has added the
-same pass over the rest of its docs as roadmap 2026-0006, "Plain docs",
-in Next, after v0.1.3.
+same pass over the rest of its docs as roadmap 2026-0006, "Plain docs".
+Iain then put it ahead of v0.1.3, and it's done
+(c4bcddf76f64ddbf50bae65e607922fad8c35518): the README, every
+module's POD, the reference, the how-to and MAINTAINING. Its record,
+`docs/changes/2026-0006-plain-docs.md`, gives the rules the pass
+followed, which would suit DBIx-Squirrel's docs as they stand.
 
 DBIx-Squirrel's README, POD, reference, how-to and MAINTAINING are
 written the same way, and Iain asked for this message so it can do
