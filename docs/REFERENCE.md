@@ -808,9 +808,10 @@ another pipeline, which stands for its stages. See
 [A pipeline's stages](#a-pipelines-stages). Iterators and result sets
 run their stages with a pipeline. You can also use one on its own,
 with `DBIx::Squirrel::Pipeline`, or on a handle, with
-[`pipe` and `tap`](#pipe-and-tap-on-handles). Loading a pipeline
-doesn't load the DBI. So a function of your own can take stages from
-its caller, as `iterate` does, and run what it returns through them.
+[`pipe` and `tap`](#pipe-and-tap-on-handles). A function of your own
+can take stages from its caller, as `iterate` does, and run what it
+returns through them. Loading a pipeline doesn't load the DBI, so that
+works in code that has nothing to do with a database.
 
 The pipeline is [Ekorn::Pipeline](https://github.com/nukopian/Ekorn-Pipeline)'s.
 It began here, and is now a distribution of its own, so that any
@@ -1651,7 +1652,7 @@ sigil, works as it did.
 |---|---|
 | **In list context, `do` returned the row count and the statement handle.** | `do` returns what the DBI's returns, in any context. Use `prepare` and `execute` for the handle. |
 
-### Iterators and result sets
+### Iterator and result set methods
 
 | 1.x | 2.0 |
 |---|---|

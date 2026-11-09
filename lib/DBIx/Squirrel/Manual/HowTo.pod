@@ -669,6 +669,26 @@ optionally an end function, called when the rows run out:
     my @lines = $dbh->iterate('SELECT name FROM artist ORDER BY name', sub { $_->[0] }, and_count)->all;
     say "@lines";    # Abba Blur Cream (3)
 
+=head2 Build a pipeline afresh for each run
+
+The stage a C<gather> block returns can be a pipeline. The block runs at
+the start of each run, so it can build the pipeline then, or choose
+one, and whatever the pipeline's stages keep starts afresh:
+
+    use DBIx::Squirrel::Gather;
+    use DBIx::Squirrel::Pipeline;
+    use DBIx::Squirrel::Stages::Flow;
+
+    my $it = $dbh->iterate(
+        'SELECT name FROM artist ORDER BY name',
+        gather {
+            my $n = 0;    # this run's
+            DBIx::Squirrel::Pipeline->new(sub { ++$n . ". $_->[0]" }, take(2));
+        },
+    );
+    say join ', ', $it->all;           # 1. Abba, 2. Blur
+    say join ', ', $it->reset->all;    # 1. Abba, 2. Blur, counted afresh
+
 =head2 Watch rows go by, or count them
 
 C<peek> and C<count_into>, from DBIx::Squirrel::Stages::Taps, look at
@@ -699,7 +719,8 @@ read.
 =head2 Reuse a pipeline
 
 Make a pipeline once, and give it wherever a stage goes: to C<iterate>,
-C<results> or another pipeline, with more stages before or after it:
+C<results>, C<pipe>, C<tap>, a L<statement's function|/"Give a statement a pipeline">
+or another pipeline, with more stages before or after it:
 
     use DBIx::Squirrel::Pipeline;
     use DBIx::Squirrel::Stages::Flow;
@@ -720,7 +741,8 @@ Its stages run in its place, as if written out there. For a function
 that takes only code references, give it C<< $hits->stages >>.
 
 A stage that keeps count or remembers something should be made with
-C<gather>, so it starts afresh in each run.
+C<gather>, so it starts afresh in each run, as in
+L<Build a pipeline afresh for each run|/"Build a pipeline afresh for each run">.
 
 =head2 Catch errors in a stage
 
@@ -756,6 +778,16 @@ The message gives the stage's number:
                  #     no names today
 
     my @after = $it->next;    # (): the iterator has ended
+
+A stage inside a pipeline given as a stage is named by its place in
+each: C<#2.2> is the second stage of the pipeline given as stage #2:
+
+    use DBIx::Squirrel::Pipeline;
+
+    my $checked = DBIx::Squirrel::Pipeline->new(sub { $_ }, sub { die "no names today\n" });
+    eval { $dbh->iterate('SELECT name FROM artist', sub { $_ }, $checked)->next };
+    print $@;    # Pipeline stage #2.2 failed at ... line ...:
+                 #     no names today
 
 Once a stage dies, the iterator has ended. C<next> returns nothing more,
 and the statement is finished. C<reset> runs it again from the start.
@@ -947,6 +979,26 @@ when it's first used.
     my($n) = artist_count();
     say $n;    # 3
     say ref database('archive');    # DBIx::Squirrel::db
+
+=head2 Give a statement a pipeline
+
+A pipeline can be one of a statement's own stages, or be given to a
+call of its function, as any stage can. One made as the program runs
+needs a statement defined then too:
+
+    use DBIx::Squirrel::Pipeline;
+    use DBIx::Squirrel::Stages::Flow;
+    use DBIx::Squirrel::Stages::Rows;
+    use DBIx::Squirrel::Sugar qw(statement);
+
+    my $hits = DBIx::Squirrel::Pipeline->new(
+        sub { $_->[1] >= 5000 ? $_ : () },    # 5,000 plays or more
+        pluck('name'),
+    );
+    statement(top_hits => archive => 'SELECT name, plays FROM track ORDER BY plays DESC', $hits);
+
+    say join ', ', top_hits();           # Dancing Queen, Sunshine of Your Love, Girls & Boys, Parklife
+    say join ', ', top_hits(take(2));    # Dancing Queen, Sunshine of Your Love
 
 =head1 Caching
 

@@ -48,9 +48,10 @@ stay, so code written with it keeps working.
 
 C<gather> makes a stage afresh at the start of each run of a pipeline:
 each execution of an iterator or result set, and each call of a Sugar
-statement or of a pipeline itself. Its block returns the stage, and
-optionally an end function. The end is called once the values have
-run out, and what it returns goes through the rest of the stages.
+statement or of a pipeline itself. Its block returns the stage, which
+can be a pipeline, and optionally an end function. The end is called
+once the values have run out, and what it returns goes through the
+rest of the stages.
 
 The stage it makes is an Ekorn::Pipeline::Gather, which is what a
 pipeline looks for. So check for that class, not this one.

@@ -1023,9 +1023,10 @@ another pipeline, which stands for its stages. See
 L<A pipeline's stages|/"A pipeline's stages">. Iterators and result sets
 run their stages with a pipeline. You can also use one on its own,
 with C<DBIx::Squirrel::Pipeline>, or on a handle, with
-L<C<pipe> and C<tap>|/"pipe and tap on handles">. Loading a pipeline
-doesn't load the DBI. So a function of your own can take stages from
-its caller, as C<iterate> does, and run what it returns through them.
+L<C<pipe> and C<tap>|/"pipe and tap on handles">. A function of your own
+can take stages from its caller, as C<iterate> does, and run what it
+returns through them. Loading a pipeline doesn't load the DBI, so that
+works in code that has nothing to do with a database.
 
 The pipeline is L<Ekorn::Pipeline|Ekorn::Pipeline>'s.
 It began here, and is now a distribution of its own, so that any
@@ -2169,7 +2170,7 @@ C<do> returns what the DBI's returns, in any context. Use C<prepare> and C<execu
 
 =back
 
-=head2 Iterators and result sets
+=head2 Iterator and result set methods
 
 =over 4
 
