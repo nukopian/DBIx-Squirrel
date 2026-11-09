@@ -3,9 +3,9 @@
 <!-- stopwords: flatMap jsonb's -->
 
 Recipes for everyday database work with DBIx::Squirrel, one task at a
-time. Each shows the shortest way to do the job; [the
-reference](REFERENCE.md) says what every method and attribute does, in
-full.
+time. Each shows the shortest way to do the job.
+[The reference](REFERENCE.md) says what every method and attribute
+does, in full.
 
 This is version 2, a rewrite of DBIx::Squirrel 1.x for Perl 5.36 or
 later. The reference's [Upgrading from 1.x](REFERENCE.md#upgrading-from-1x)
@@ -29,8 +29,8 @@ lists what changes for code written for 1.x.
 ## The examples' database
 
 Every example below runs against this small SQLite database, a file
-called `music.db`, set up here. The examples follow on from each other,
-so `$dbh` is this handle wherever it appears.
+called `music.db`, set up here. The examples follow on from each
+other, so `$dbh` is this handle wherever it appears.
 
 ```perl
 use v5.36;
@@ -117,7 +117,7 @@ say SQL_INTEGER;    # 4
 
 Statements are read by the database's own rules for strings and
 comments. Through DBD::ODBC or DBD::Proxy, DBIx::Squirrel asks the
-database what it is; when it can't tell, name it:
+database what it is. When it can't tell, name it:
 
 <!-- not run -->
 ```perl
@@ -162,7 +162,7 @@ So does a named one, wherever its name appears.
 
 ### Match any of a list of values
 
-Put `...` before a placeholder, and give it an array reference: it's
+Put `...` before a placeholder, and give it an array reference. It's
 written as a `?` for each value.
 
 ```perl
@@ -177,13 +177,13 @@ my $names = $dbh->selectcol_arrayref('SELECT name FROM artist WHERE id IN (...?)
 say "@$names";    # Abba Cream
 ```
 
-The statement is prepared for its values, so give them with it, to
-`do`, a select method, `iterate` or `results`; `prepare` alone croaks.
+The statement is prepared for its values. So give them with it, to
+`do`, a select method, `iterate` or `results`. `prepare` alone croaks.
 An empty list croaks too, as `IN ()` isn't SQL, so check for one first.
 
 ### Write a long statement over several lines
 
-Give the lines in an array reference; they're joined with spaces:
+Give the lines in an array reference. They're joined with spaces:
 
 ```perl
 my $sth = $dbh->prepare([
@@ -198,7 +198,7 @@ say $_->[0] for @{ $sth->fetchall_arrayref };    # Disraeli Gears, Arrival
 
 ### Keep quotes, comments and casts as they are
 
-Placeholders are only looked for in the SQL itself, so these need no
+Placeholders are looked for only in the SQL itself, so these need no
 escaping:
 
 ```perl
@@ -262,8 +262,8 @@ say $_->[0] for @{ $sth->fetchall_arrayref };    # Dancing Queen, Sunshine of Yo
 
 ### Bind one value, with its type
 
-`bind_param` takes a placeholder's name or number, and binds every use
-of it:
+`bind_param` takes a placeholder's name or number. It binds every use
+of the placeholder:
 
 ```perl
 use DBIx::Squirrel qw(:sql_types);
@@ -278,7 +278,7 @@ say $sth->fetchrow_arrayref->[0];    # Dancing Queen
 
 ### Change rows
 
-`do` takes bind values without the attributes in front, and returns the
+`do` takes bind values without the attributes in front. It returns the
 number of rows changed:
 
 ```perl
@@ -289,9 +289,9 @@ say $rows;    # 2: Arrival's two tracks, one play more each from here on
 ### Fetch one row
 
 The DBI's select methods work as they do with the DBI, with
-placeholders in any style, and, as with `do`, the attributes left out
-when there are none. `selectrow_array` returns the first row's columns,
-or, in scalar context, its first column:
+placeholders in any style. As with `do`, the attributes can be left out
+when there are none. `selectrow_array` returns the first row's
+columns. In scalar context, it returns its first column:
 
 ```perl
 my($title, $year) = $dbh->selectrow_array('SELECT title, year FROM album WHERE id = ?', 2);
@@ -301,8 +301,8 @@ my $tracks = $dbh->selectrow_array('SELECT COUNT(*) FROM track');
 say $tracks;    # 6
 ```
 
-`selectrow_arrayref` and `selectrow_hashref` return the row as an array
-or a hash, or `undef` if there's none:
+`selectrow_arrayref` and `selectrow_hashref` return the row as an
+array or a hash. They return `undef` if there's none:
 
 ```perl
 my $top = $dbh->selectrow_arrayref(
@@ -328,7 +328,7 @@ say "@$titles";    # Parklife The Great Escape
 ```
 
 With the DBI's `Columns` attribute, it returns those columns of each
-row, one after the other, which makes a hash of two:
+row, one after the other. Two columns make a hash:
 
 ```perl
 my %name = @{ $dbh->selectcol_arrayref('SELECT id, name FROM artist', {Columns => [1, 2]}) };
@@ -336,7 +336,8 @@ say $name{3};    # Cream
 ```
 
 Named values in a hash reference need the attributes, or `undef`, in
-front, as a hash reference there is taken as the attributes:
+front. A hash reference straight after the statement is taken as the
+attributes:
 
 ```perl
 my $between = $dbh->selectcol_arrayref(
@@ -348,8 +349,9 @@ say join ', ', @$between;    # Arrival, Parklife, The Great Escape
 
 ### Fetch every row
 
-`selectall_arrayref` returns every row, each as an array, or, with the
-DBI's `Slice` attribute, as a hash; `MaxRows` stops after that many:
+`selectall_arrayref` returns every row, each as an array. With the
+DBI's `Slice` attribute, each is a hash. `MaxRows` stops after that
+many:
 
 ```perl
 my $rows = $dbh->selectall_arrayref(
@@ -374,8 +376,8 @@ for my $row ($dbh->selectall_array($sql, artist => 2)) {
 }
 ```
 
-`selectall_hashref` returns the rows keyed by a column, or by several,
-nested in order:
+`selectall_hashref` returns the rows keyed by a column. Keyed by
+several, they're nested in order:
 
 ```perl
 my $by_id = $dbh->selectall_hashref('SELECT id, name FROM artist', 'id');
@@ -393,8 +395,9 @@ say join ', ', sort keys %$since;    # Parklife, The Great Escape
 
 ### Select with a statement handle, lines or an array of values
 
-Each select method also takes a statement handle, prepared once, a
-statement over several lines, or its values in an array reference:
+Each select method also takes a statement handle, prepared once, or a
+statement over several lines. It also takes its values in an array
+reference:
 
 ```perl
 my $sth = $dbh->prepare('SELECT name FROM track WHERE album_id = :album ORDER BY name');
@@ -461,10 +464,10 @@ say "@names";    # Abba Blur Cream
 say $count;      # 3
 ```
 
-Without stages, `all` fetches the rest of the rows at once, nearly as
-quickly as the DBI's own `selectall_arrayref`. Stages cost a little for
-each row, so for a large result, when every row is wanted and only
-needs changing, `map` over `all` is quicker:
+Without stages, `all` fetches the rest of the rows at once. That's
+nearly as quick as the DBI's own `selectall_arrayref`. Stages cost a
+little for each row. So for a large result, when every row is wanted
+and only needs changing, `map` over `all` is quicker:
 
 ```perl
 my @fast = map { $_->[0] } $dbh->iterate('SELECT name FROM artist')->all;
@@ -473,7 +476,7 @@ say "@fast";    # Abba Blur Cream
 
 ### Get exactly one result
 
-`single` returns the one result, or nothing, and croaks if there's more
+`single` returns the one result, or nothing. It croaks if there's more
 than one:
 
 ```perl
@@ -505,7 +508,7 @@ for my $artist_id (1, 2) {
 ### Start an iterator again from the top
 
 `reset` executes the statement again. Bind values given replace those
-given before; stages given are added to those given when the iterator
+given before. Stages given are added to those given when the iterator
 was made.
 
 ```perl
@@ -519,10 +522,11 @@ say join ' ', $it->reset(sub { lc })->all;      # blur cream
 ## Transforming rows with stages
 
 Stages are given after the bind values. A stage is a code reference,
-or a pipeline, which stands for its stages; see
+or a pipeline, which stands for its stages. See
 [Reuse a pipeline](#reuse-a-pipeline). Each row goes through every
-stage in turn, and what comes out of the last is the result. A stage gets its value as its argument and in `$_`, so write it
-whichever way reads best:
+stage in turn, and what comes out of the last is the result. A stage
+gets its value as its argument and in `$_`. Write it whichever way
+reads best:
 
 ```perl
 my @a = $dbh->iterate('SELECT name FROM artist', sub ($row) { $row->[0] })->all;
@@ -531,8 +535,9 @@ my @b = $dbh->iterate('SELECT name FROM artist', sub { $_->[0] })->all;
 say "@a" eq "@b" ? 'the same' : 'different';    # the same
 ```
 
-The recipes here are for rows. Ekorn::Pipeline's [how-to](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md) has
-more, for stages over any values, and they work here too, with
+The recipes here are for rows. Ekorn::Pipeline's
+[how-to](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md)
+has more, for stages over any values. They work here too, with
 DBIx::Squirrel's names for its modules.
 
 ### Change each row (map)
@@ -592,11 +597,11 @@ say "@upto";    # Disraeli Gears Arrival Parklife
 ### Take the first few, or drop some, after a stage
 
 `take`, `drop`, `take_while` and `drop_while`, from
-DBIx::Squirrel::Stages::Flow, decide which values go on, by their place
-or by a test. In plain SQL, `LIMIT` and `OFFSET` do the first two in
-the database; these are for when a stage in Perl decides which rows go
-on, or for `pipe`. `take` stops the iteration once it has its values,
-so no more rows are fetched:
+DBIx::Squirrel::Stages::Flow, decide which values go on, by their
+place or by a test. In plain SQL, `LIMIT` and `OFFSET` do the first
+two in the database. These are for when a stage in Perl decides which
+rows go on, or for `pipe`. `take` stops the iteration once it has its
+values, so no more rows are fetched:
 
 ```perl
 use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while);
@@ -620,9 +625,9 @@ say join ', ', @hits;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
 
 ### Take one column, or make rows hashes
 
-`pluck` and `as_hash`, from DBIx::Squirrel::Stages::Rows, work whatever
-shape the rows were fetched in. `pluck` takes a column by name, in any
-case, or by position, from 0; `as_hash` gives each row as
+`pluck` and `as_hash`, from DBIx::Squirrel::Stages::Rows, work
+whatever shape the rows were fetched in. `pluck` takes a column by
+name, in any case, or by position, from 0. `as_hash` gives each row as
 `fetchrow_hashref` would:
 
 ```perl
@@ -653,8 +658,9 @@ say $chart[0];    # 1. Dancing Queen (9101 plays)
 
 ### Hand out rows in batches
 
-`batch`, from DBIx::Squirrel::Stages::Batch, passes rows on in batches,
-each an array, the last, shorter one when the rows run out:
+`batch`, from DBIx::Squirrel::Stages::Batch, passes rows on in
+batches, each an array. The last, shorter one comes when the rows run
+out:
 
 ```perl
 use DBIx::Squirrel::Stages::Batch;
@@ -670,9 +676,9 @@ while (my($batch) = $batches->next) {
 
 ### Make one value from every row
 
-`collect` holds the rows, and once they run out, passes on what its
-block makes of them, given as its arguments, or, without a block, an
-array of them:
+`collect` holds the rows. Once they run out, it passes on what its
+block makes of them, given as its arguments. Without a block, it
+passes on an array of them:
 
 ```perl
 use DBIx::Squirrel::Stages::Batch;
@@ -688,15 +694,15 @@ my $rows = $dbh->iterate('SELECT name FROM artist', collect)->single;
 say scalar @$rows;    # 3
 ```
 
-The block is called even when there are no rows, so an empty result
+The block is called even when there are no rows. So an empty result
 still gives a value: here, an empty string, or an empty array.
 
 ### Write a stage that keeps count, or acts at the end
 
 `batch` and `collect` are made with `gather`, from
 DBIx::Squirrel::Gather. Its block is called each time the statement
-runs, so what it declares starts afresh, and it returns the stage, and
-optionally a function called when the rows run out:
+runs, so what it declares starts afresh. It returns the stage, and
+optionally an end function, called when the rows run out:
 
 ```perl
 use DBIx::Squirrel::Gather;
@@ -717,11 +723,11 @@ say "@lines";    # Abba Blur Cream (3)
 
 ### Watch rows go by, or count them
 
-`peek` and `count_into`, from DBIx::Squirrel::Stages::Taps, look at each
-value as it goes by, and pass it on as it is. `dump_to`, on request,
-writes each with Data::Dumper, to STDERR or a filehandle you give. It's
-for debugging, and writes values in full, so take it out before the
-code goes live:
+`peek` and `count_into`, from DBIx::Squirrel::Stages::Taps, look at
+each value as it goes by, and pass it on unchanged. `dump_to`, on
+request, writes each with Data::Dumper, to STDERR or a filehandle you
+give. It's for debugging, and writes values in full, so take it out
+before the code goes live:
 
 ```perl
 use DBIx::Squirrel::Stages::Flow;
@@ -774,8 +780,8 @@ A stage that keeps count or remembers something should be made with
 
 ### Catch errors in a stage
 
-A stage that catches errors itself should throw a stop on again, so the
-iterator still stops:
+A stage that catches errors itself should throw a stop on again. Then
+the iterator still stops:
 
 ```perl
 use experimental qw(try);
@@ -799,8 +805,8 @@ say "@safe";    # ABBA BLUR
 
 ### See what went wrong in a stage
 
-A stage that dies is reported at the line that asked for the result,
-with the stage's number:
+A stage that dies is reported at the line that asked for the result.
+The message gives the stage's number:
 
 ```perl
 my $it = $dbh->iterate('SELECT name FROM artist', sub { die "no names today\n" });
@@ -811,7 +817,7 @@ print $@;    # Pipeline stage #1 failed at ... line ...:
 my @after = $it->next;    # (): the iterator has ended
 ```
 
-Once a stage dies, the iterator has ended: `next` returns nothing more,
+Once a stage dies, the iterator has ended. `next` returns nothing more,
 and the statement is finished. `reset` runs it again from the start.
 To pass over a row a stage can't handle, catch the error in the stage,
 as in [Catch errors in a stage](#catch-errors-in-a-stage).
@@ -833,7 +839,7 @@ Rows are arrays still, so `$album->[1]` works too.
 ### Name a column that has no method
 
 A column whose name can't be a method's, such as `COUNT(*)`, gets a
-method if the statement gives it a name, and `get_column` reaches it
+method if the statement gives it a name. `get_column` reaches it
 either way:
 
 ```perl
@@ -882,7 +888,7 @@ say "@recent";    # Parklife The Great Escape
 
 `pipe` runs a database or statement handle through stages, and returns
 what comes out. `tap` does the same for the side effects, and returns
-the handle:
+the handle instead:
 
 ```perl
 my @names = $dbh->pipe(
@@ -895,7 +901,7 @@ $dbh->tap(sub ($dbh) { say 'albums: ', $dbh->selectrow_array('SELECT COUNT(*) FR
     ->do('UPDATE album SET year = year WHERE id = 1');
 ```
 
-The canned stages work here too, as the handle is just the first value:
+The canned stages work here too. The handle is just the first value:
 
 ```perl
 use DBIx::Squirrel::Stages::Flow;
@@ -929,9 +935,9 @@ say join ' ', $evens_squared->(1 .. 6);    # 4 16 36
 ### Let callers of your own functions add stages
 
 A function can take stages from its caller, as `iterate` does, and run
-what it returns through them, so the caller gets it ready to use.
+what it returns through them. The caller then gets it ready to use.
 Loading the pipeline, `gather`, `Stop` and the canned stages doesn't
-load the DBI, so this works in code that has nothing to do with a
+load the DBI. So this works in code that has nothing to do with a
 database:
 
 ```perl
@@ -955,7 +961,7 @@ my @all = bands();    # without stages, as they are
 say scalar @all;      # 3
 ```
 
-The stages that need a statement's column names need an iterator:
+Some stages need a statement's column names, so they need an iterator:
 `as_hash`, and `pluck` with a name for an array or a position for a
 hash. `pluck` with a name for a hash, as here, doesn't. Outside an
 iterator, DBIx::Squirrel::Context's functions return `undef`.
@@ -964,20 +970,20 @@ iterator, DBIx::Squirrel::Context's functions return `undef`.
 
 A pipeline's `iterator` pulls values from a source of your own, such as
 a file or a paged API. Ekorn::Pipeline's how-to has the recipes, in
-[Pulling values one at a time](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#pulling-values-one-at-a-time), and
-more on functions that take stages, in
+[Pulling values one at a time](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#pulling-values-one-at-a-time).
+It has more on functions that take stages, in
 [Writing a function that takes stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-a-function-that-takes-stages).
 
 ## A function for each database and statement
 
 DBIx::Squirrel::Sugar gives each database, and each statement, a
-function of its own name.
+function with its own name.
 
 ### Name a database
 
-Defined on `use`, the function is there as the program compiles, so it
-can be called without parentheses. The database is connected to when
-it's first used.
+Defined on `use`, the function is there as the program compiles. So
+it can be called without parentheses. The database is connected to
+when it's first used.
 
 ```perl
 use DBIx::Squirrel::Sugar database => {
@@ -1028,8 +1034,8 @@ say ref database('archive');    # DBIx::Squirrel::db
 
 ### Prepare a statement once, wherever it's used
 
-`prepare_cached` keeps the handle on the database handle, as the DBI
-does. A statement written two ways gets a handle each:
+`prepare_cached` keeps the statement handle on the database handle, as
+the DBI does. A statement written two ways gets a handle for each:
 
 ```perl
 my $one = $dbh->prepare_cached('SELECT :a, :b');
@@ -1037,8 +1043,8 @@ my $two = $dbh->prepare_cached('SELECT :b, :a');
 say $one == $two ? 'shared' : 'apart';    # apart
 ```
 
-A cached handle an iterator is part way through is left to it, and a
-new one is made in its place:
+A cached handle an iterator is part way through is left to it. A new
+one is made in its place:
 
 ```perl
 my $sql   = 'SELECT name FROM artist ORDER BY id';
@@ -1065,15 +1071,15 @@ say $one == $two ? 'the same handle' : 'two handles';    # the same handle
 ### Find the line that went wrong
 
 Every error is reported at the line of your code that called
-DBIx::Squirrel, the DBI's own included:
+DBIx::Squirrel, including the DBI's own:
 
 ```perl
 eval { $dbh->prepare('SELEC name FROM artist') };
 print $@;    # DBD::SQLite::db prepare failed: near "SELEC": syntax error at ... line ...
 ```
 
-So is each warning the DBI gives under `PrintError`, its default, naming
-the method you called, as plain DBI does:
+So is each warning the DBI gives under `PrintError`, its default. It
+names the method you called, as plain DBI does:
 
 ```perl
 my $chatty = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', {RaiseError => 0, PrintError => 1});
@@ -1086,7 +1092,7 @@ $chatty->selectrow_array('SELECT * FROM nowhere');
 
 `connect` and `prepare` croak whatever `RaiseError` says, so they need
 no `or die`. Without `RaiseError`, the other methods return what the
-DBI's return:
+DBI's methods return:
 
 ```perl
 my $quiet = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', {RaiseError => 0, PrintError => 0});
@@ -1100,7 +1106,7 @@ say $@ ? 'prepare croaked' : 'prepare returned';           # prepare croaked
 
 ### Mismatched bind values
 
-Binding croaks, at your line, when the values don't fit the
+Binding croaks at your line when the values don't fit the
 placeholders:
 
 ```perl
@@ -1108,8 +1114,8 @@ eval { $dbh->prepare('SELECT :id, :name')->execute(id => 1) };
 print $@;    # Expected a value for each placeholder (none for name) at ... line ...
 ```
 
-Executing without any values croaks too, unless each placeholder has a
-value bound already, where the DBI would quietly read it as `NULL`:
+Executing without any values croaks too, unless each placeholder
+already has a value bound. The DBI would quietly read it as `NULL`:
 
 ```perl
 my $sth = $dbh->prepare('SELECT name FROM artist WHERE id = :id');

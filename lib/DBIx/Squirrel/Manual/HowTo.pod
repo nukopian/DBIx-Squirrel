@@ -12,9 +12,9 @@ DBIx::Squirrel::Manual::HowTo - DBIx::Squirrel how-to
 =head1 DESCRIPTION
 
 Recipes for everyday database work with DBIx::Squirrel, one task at a
-time. Each shows the shortest way to do the job; L<the
-reference|DBIx::Squirrel::Manual::Reference> says what every method and attribute does, in
-full.
+time. Each shows the shortest way to do the job.
+L<The reference|DBIx::Squirrel::Manual::Reference> says what every method and attribute
+does, in full.
 
 This is version 2, a rewrite of DBIx::Squirrel 1.x for Perl 5.36 or
 later. The reference's L<Upgrading from 1.x|DBIx::Squirrel::Manual::Reference/"Upgrading from 1.x">
@@ -77,8 +77,8 @@ L<Handling errors|/"Handling errors">
 =head1 The examples' database
 
 Every example below runs against this small SQLite database, a file
-called C<music.db>, set up here. The examples follow on from each other,
-so C<$dbh> is this handle wherever it appears.
+called C<music.db>, set up here. The examples follow on from each
+other, so C<$dbh> is this handle wherever it appears.
 
     use v5.36;
     use DBIx::Squirrel;
@@ -152,7 +152,7 @@ C<use DBIx::Squirrel> takes whatever C<use DBI> takes:
 
 Statements are read by the database's own rules for strings and
 comments. Through DBD::ODBC or DBD::Proxy, DBIx::Squirrel asks the
-database what it is; when it can't tell, name it:
+database what it is. When it can't tell, name it:
 
     my $dbh = DBIx::Squirrel->connect($odbc_dsn, $user, $pass, {ekorn_dialect => 'mysql'});
 
@@ -190,7 +190,7 @@ So does a named one, wherever its name appears.
 
 =head2 Match any of a list of values
 
-Put C<...> before a placeholder, and give it an array reference: it's
+Put C<...> before a placeholder, and give it an array reference. It's
 written as a C<?> for each value.
 
     my $titles = $dbh->selectcol_arrayref(
@@ -203,13 +203,13 @@ written as a C<?> for each value.
     my $names = $dbh->selectcol_arrayref('SELECT name FROM artist WHERE id IN (...?)', [1, 3]);
     say "@$names";    # Abba Cream
 
-The statement is prepared for its values, so give them with it, to
-C<do>, a select method, C<iterate> or C<results>; C<prepare> alone croaks.
+The statement is prepared for its values. So give them with it, to
+C<do>, a select method, C<iterate> or C<results>. C<prepare> alone croaks.
 An empty list croaks too, as C<IN ()> isn't SQL, so check for one first.
 
 =head2 Write a long statement over several lines
 
-Give the lines in an array reference; they're joined with spaces:
+Give the lines in an array reference. They're joined with spaces:
 
     my $sth = $dbh->prepare([
         'SELECT title',
@@ -222,7 +222,7 @@ Give the lines in an array reference; they're joined with spaces:
 
 =head2 Keep quotes, comments and casts as they are
 
-Placeholders are only looked for in the SQL itself, so these need no
+Placeholders are looked for only in the SQL itself, so these need no
 escaping:
 
     my $row = $dbh->selectrow_arrayref(
@@ -272,8 +272,8 @@ is a PostgreSQL array, as with the DBI:
 
 =head2 Bind one value, with its type
 
-C<bind_param> takes a placeholder's name or number, and binds every use
-of it:
+C<bind_param> takes a placeholder's name or number. It binds every use
+of the placeholder:
 
     use DBIx::Squirrel qw(:sql_types);
 
@@ -286,7 +286,7 @@ of it:
 
 =head2 Change rows
 
-C<do> takes bind values without the attributes in front, and returns the
+C<do> takes bind values without the attributes in front. It returns the
 number of rows changed:
 
     my $rows = $dbh->do('UPDATE track SET plays = plays + 1 WHERE album_id = :album', album => 1);
@@ -295,9 +295,9 @@ number of rows changed:
 =head2 Fetch one row
 
 The DBI's select methods work as they do with the DBI, with
-placeholders in any style, and, as with C<do>, the attributes left out
-when there are none. C<selectrow_array> returns the first row's columns,
-or, in scalar context, its first column:
+placeholders in any style. As with C<do>, the attributes can be left out
+when there are none. C<selectrow_array> returns the first row's
+columns. In scalar context, it returns its first column:
 
     my($title, $year) = $dbh->selectrow_array('SELECT title, year FROM album WHERE id = ?', 2);
     say "$title ($year)";    # Parklife (1994)
@@ -305,8 +305,8 @@ or, in scalar context, its first column:
     my $tracks = $dbh->selectrow_array('SELECT COUNT(*) FROM track');
     say $tracks;    # 6
 
-C<selectrow_arrayref> and C<selectrow_hashref> return the row as an array
-or a hash, or C<undef> if there's none:
+C<selectrow_arrayref> and C<selectrow_hashref> return the row as an
+array or a hash. They return C<undef> if there's none:
 
     my $top = $dbh->selectrow_arrayref(
         'SELECT name, plays FROM track WHERE album_id = $1 AND plays > $2 ORDER BY plays DESC',
@@ -328,13 +328,14 @@ C<selectcol_arrayref> returns the first column of every row:
     say "@$titles";    # Parklife The Great Escape
 
 With the DBI's C<Columns> attribute, it returns those columns of each
-row, one after the other, which makes a hash of two:
+row, one after the other. Two columns make a hash:
 
     my %name = @{ $dbh->selectcol_arrayref('SELECT id, name FROM artist', {Columns => [1, 2]}) };
     say $name{3};    # Cream
 
 Named values in a hash reference need the attributes, or C<undef>, in
-front, as a hash reference there is taken as the attributes:
+front. A hash reference straight after the statement is taken as the
+attributes:
 
     my $between = $dbh->selectcol_arrayref(
         'SELECT title FROM album WHERE year BETWEEN :from AND :to ORDER BY year',
@@ -344,8 +345,9 @@ front, as a hash reference there is taken as the attributes:
 
 =head2 Fetch every row
 
-C<selectall_arrayref> returns every row, each as an array, or, with the
-DBI's C<Slice> attribute, as a hash; C<MaxRows> stops after that many:
+C<selectall_arrayref> returns every row, each as an array. With the
+DBI's C<Slice> attribute, each is a hash. C<MaxRows> stops after that
+many:
 
     my $rows = $dbh->selectall_arrayref(
         'SELECT name, plays FROM track WHERE plays >= ?1 ORDER BY plays DESC',
@@ -366,8 +368,8 @@ C<selectall_array> returns the rows as a list:
         say $row->[0];    # Parklife, then The Great Escape
     }
 
-C<selectall_hashref> returns the rows keyed by a column, or by several,
-nested in order:
+C<selectall_hashref> returns the rows keyed by a column. Keyed by
+several, they're nested in order:
 
     my $by_id = $dbh->selectall_hashref('SELECT id, name FROM artist', 'id');
     say $by_id->{3}{name};    # Cream
@@ -383,8 +385,9 @@ nested in order:
 
 =head2 Select with a statement handle, lines or an array of values
 
-Each select method also takes a statement handle, prepared once, a
-statement over several lines, or its values in an array reference:
+Each select method also takes a statement handle, prepared once, or a
+statement over several lines. It also takes its values in an array
+reference:
 
     my $sth = $dbh->prepare('SELECT name FROM track WHERE album_id = :album ORDER BY name');
     say join ', ', @{ $dbh->selectcol_arrayref($sth, album => 2) };    # Girls & Boys, Parklife
@@ -441,17 +444,17 @@ reads the rest:
     say "@names";    # Abba Blur Cream
     say $count;      # 3
 
-Without stages, C<all> fetches the rest of the rows at once, nearly as
-quickly as the DBI's own C<selectall_arrayref>. Stages cost a little for
-each row, so for a large result, when every row is wanted and only
-needs changing, C<map> over C<all> is quicker:
+Without stages, C<all> fetches the rest of the rows at once. That's
+nearly as quick as the DBI's own C<selectall_arrayref>. Stages cost a
+little for each row. So for a large result, when every row is wanted
+and only needs changing, C<map> over C<all> is quicker:
 
     my @fast = map { $_->[0] } $dbh->iterate('SELECT name FROM artist')->all;
     say "@fast";    # Abba Blur Cream
 
 =head2 Get exactly one result
 
-C<single> returns the one result, or nothing, and croaks if there's more
+C<single> returns the one result, or nothing. It croaks if there's more
 than one:
 
     my $total = $dbh->iterate('SELECT SUM(plays) FROM track', sub { $_->[0] })->single;
@@ -477,7 +480,7 @@ Prepare it once, and iterate over it with each value:
 =head2 Start an iterator again from the top
 
 C<reset> executes the statement again. Bind values given replace those
-given before; stages given are added to those given when the iterator
+given before. Stages given are added to those given when the iterator
 was made.
 
     my $it = $dbh->iterate('SELECT name FROM artist WHERE id > ? ORDER BY id', 0, sub { $_->[0] });
@@ -489,18 +492,20 @@ was made.
 =head1 Transforming rows with stages
 
 Stages are given after the bind values. A stage is a code reference,
-or a pipeline, which stands for its stages; see
+or a pipeline, which stands for its stages. See
 L<Reuse a pipeline|/"Reuse a pipeline">. Each row goes through every
-stage in turn, and what comes out of the last is the result. A stage gets its value as its argument and in C<$_>, so write it
-whichever way reads best:
+stage in turn, and what comes out of the last is the result. A stage
+gets its value as its argument and in C<$_>. Write it whichever way
+reads best:
 
     my @a = $dbh->iterate('SELECT name FROM artist', sub ($row) { $row->[0] })->all;
     my @b = $dbh->iterate('SELECT name FROM artist', sub { $_->[0] })->all;
 
     say "@a" eq "@b" ? 'the same' : 'different';    # the same
 
-The recipes here are for rows. Ekorn::Pipeline's L<how-to|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md> has
-more, for stages over any values, and they work here too, with
+The recipes here are for rows. Ekorn::Pipeline's
+L<how-to|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md>
+has more, for stages over any values. They work here too, with
 DBIx::Squirrel's names for its modules.
 
 =head2 Change each row (map)
@@ -552,11 +557,11 @@ values given to C<Stop> go on through the stages after it:
 =head2 Take the first few, or drop some, after a stage
 
 C<take>, C<drop>, C<take_while> and C<drop_while>, from
-DBIx::Squirrel::Stages::Flow, decide which values go on, by their place
-or by a test. In plain SQL, C<LIMIT> and C<OFFSET> do the first two in
-the database; these are for when a stage in Perl decides which rows go
-on, or for C<pipe>. C<take> stops the iteration once it has its values,
-so no more rows are fetched:
+DBIx::Squirrel::Stages::Flow, decide which values go on, by their
+place or by a test. In plain SQL, C<LIMIT> and C<OFFSET> do the first
+two in the database. These are for when a stage in Perl decides which
+rows go on, or for C<pipe>. C<take> stops the iteration once it has its
+values, so no more rows are fetched:
 
     use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while);
 
@@ -578,9 +583,9 @@ so no more rows are fetched:
 
 =head2 Take one column, or make rows hashes
 
-C<pluck> and C<as_hash>, from DBIx::Squirrel::Stages::Rows, work whatever
-shape the rows were fetched in. C<pluck> takes a column by name, in any
-case, or by position, from 0; C<as_hash> gives each row as
+C<pluck> and C<as_hash>, from DBIx::Squirrel::Stages::Rows, work
+whatever shape the rows were fetched in. C<pluck> takes a column by
+name, in any case, or by position, from 0. C<as_hash> gives each row as
 C<fetchrow_hashref> would:
 
     use DBIx::Squirrel::Stages::Rows;
@@ -607,8 +612,9 @@ row it's making it from:
 
 =head2 Hand out rows in batches
 
-C<batch>, from DBIx::Squirrel::Stages::Batch, passes rows on in batches,
-each an array, the last, shorter one when the rows run out:
+C<batch>, from DBIx::Squirrel::Stages::Batch, passes rows on in
+batches, each an array. The last, shorter one comes when the rows run
+out:
 
     use DBIx::Squirrel::Stages::Batch;
     use DBIx::Squirrel::Stages::Rows;
@@ -622,9 +628,9 @@ each an array, the last, shorter one when the rows run out:
 
 =head2 Make one value from every row
 
-C<collect> holds the rows, and once they run out, passes on what its
-block makes of them, given as its arguments, or, without a block, an
-array of them:
+C<collect> holds the rows. Once they run out, it passes on what its
+block makes of them, given as its arguments. Without a block, it
+passes on an array of them:
 
     use DBIx::Squirrel::Stages::Batch;
 
@@ -638,15 +644,15 @@ array of them:
     my $rows = $dbh->iterate('SELECT name FROM artist', collect)->single;
     say scalar @$rows;    # 3
 
-The block is called even when there are no rows, so an empty result
+The block is called even when there are no rows. So an empty result
 still gives a value: here, an empty string, or an empty array.
 
 =head2 Write a stage that keeps count, or acts at the end
 
 C<batch> and C<collect> are made with C<gather>, from
 DBIx::Squirrel::Gather. Its block is called each time the statement
-runs, so what it declares starts afresh, and it returns the stage, and
-optionally a function called when the rows run out:
+runs, so what it declares starts afresh. It returns the stage, and
+optionally an end function, called when the rows run out:
 
     use DBIx::Squirrel::Gather;
 
@@ -665,11 +671,11 @@ optionally a function called when the rows run out:
 
 =head2 Watch rows go by, or count them
 
-C<peek> and C<count_into>, from DBIx::Squirrel::Stages::Taps, look at each
-value as it goes by, and pass it on as it is. C<dump_to>, on request,
-writes each with Data::Dumper, to STDERR or a filehandle you give. It's
-for debugging, and writes values in full, so take it out before the
-code goes live:
+C<peek> and C<count_into>, from DBIx::Squirrel::Stages::Taps, look at
+each value as it goes by, and pass it on unchanged. C<dump_to>, on
+request, writes each with Data::Dumper, to STDERR or a filehandle you
+give. It's for debugging, and writes values in full, so take it out
+before the code goes live:
 
     use DBIx::Squirrel::Stages::Flow;
     use DBIx::Squirrel::Stages::Taps;
@@ -718,8 +724,8 @@ C<gather>, so it starts afresh in each run.
 
 =head2 Catch errors in a stage
 
-A stage that catches errors itself should throw a stop on again, so the
-iterator still stops:
+A stage that catches errors itself should throw a stop on again. Then
+the iterator still stops:
 
     use experimental qw(try);
     use DBIx::Squirrel::Stop;
@@ -741,8 +747,8 @@ iterator still stops:
 
 =head2 See what went wrong in a stage
 
-A stage that dies is reported at the line that asked for the result,
-with the stage's number:
+A stage that dies is reported at the line that asked for the result.
+The message gives the stage's number:
 
     my $it = $dbh->iterate('SELECT name FROM artist', sub { die "no names today\n" });
     eval { $it->next };
@@ -751,7 +757,7 @@ with the stage's number:
 
     my @after = $it->next;    # (): the iterator has ended
 
-Once a stage dies, the iterator has ended: C<next> returns nothing more,
+Once a stage dies, the iterator has ended. C<next> returns nothing more,
 and the statement is finished. C<reset> runs it again from the start.
 To pass over a row a stage can't handle, catch the error in the stage,
 as in L<Catch errors in a stage|/"Catch errors in a stage">.
@@ -771,7 +777,7 @@ Rows are arrays still, so C<< $album->[1] >> works too.
 =head2 Name a column that has no method
 
 A column whose name can't be a method's, such as C<COUNT(*)>, gets a
-method if the statement gives it a name, and C<get_column> reaches it
+method if the statement gives it a name. C<get_column> reaches it
 either way:
 
     my $row = $dbh->results('SELECT COUNT(*), COUNT(*) AS albums FROM album')->single;
@@ -814,7 +820,7 @@ Stages see the objects:
 
 C<pipe> runs a database or statement handle through stages, and returns
 what comes out. C<tap> does the same for the side effects, and returns
-the handle:
+the handle instead:
 
     my @names = $dbh->pipe(
         sub ($dbh) { @{ $dbh->selectcol_arrayref('SELECT name FROM artist') } },
@@ -825,7 +831,7 @@ the handle:
     $dbh->tap(sub ($dbh) { say 'albums: ', $dbh->selectrow_array('SELECT COUNT(*) FROM album') })
         ->do('UPDATE album SET year = year WHERE id = 1');
 
-The canned stages work here too, as the handle is just the first value:
+The canned stages work here too. The handle is just the first value:
 
     use DBIx::Squirrel::Stages::Flow;
     use DBIx::Squirrel::Stages::Taps;
@@ -855,9 +861,9 @@ last stage:
 =head2 Let callers of your own functions add stages
 
 A function can take stages from its caller, as C<iterate> does, and run
-what it returns through them, so the caller gets it ready to use.
+what it returns through them. The caller then gets it ready to use.
 Loading the pipeline, C<gather>, C<Stop> and the canned stages doesn't
-load the DBI, so this works in code that has nothing to do with a
+load the DBI. So this works in code that has nothing to do with a
 database:
 
     use DBIx::Squirrel::Pipeline;
@@ -879,7 +885,7 @@ database:
     my @all = bands();    # without stages, as they are
     say scalar @all;      # 3
 
-The stages that need a statement's column names need an iterator:
+Some stages need a statement's column names, so they need an iterator:
 C<as_hash>, and C<pluck> with a name for an array or a position for a
 hash. C<pluck> with a name for a hash, as here, doesn't. Outside an
 iterator, DBIx::Squirrel::Context's functions return C<undef>.
@@ -888,20 +894,20 @@ iterator, DBIx::Squirrel::Context's functions return C<undef>.
 
 A pipeline's C<iterator> pulls values from a source of your own, such as
 a file or a paged API. Ekorn::Pipeline's how-to has the recipes, in
-L<Pulling values one at a time|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#pulling-values-one-at-a-time>, and
-more on functions that take stages, in
+L<Pulling values one at a time|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#pulling-values-one-at-a-time>.
+It has more on functions that take stages, in
 L<Writing a function that takes stages|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-a-function-that-takes-stages>.
 
 =head1 A function for each database and statement
 
 DBIx::Squirrel::Sugar gives each database, and each statement, a
-function of its own name.
+function with its own name.
 
 =head2 Name a database
 
-Defined on C<use>, the function is there as the program compiles, so it
-can be called without parentheses. The database is connected to when
-it's first used.
+Defined on C<use>, the function is there as the program compiles. So
+it can be called without parentheses. The database is connected to
+when it's first used.
 
     use DBIx::Squirrel::Sugar database => {
         music => ['dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1}],
@@ -946,15 +952,15 @@ it's first used.
 
 =head2 Prepare a statement once, wherever it's used
 
-C<prepare_cached> keeps the handle on the database handle, as the DBI
-does. A statement written two ways gets a handle each:
+C<prepare_cached> keeps the statement handle on the database handle, as
+the DBI does. A statement written two ways gets a handle for each:
 
     my $one = $dbh->prepare_cached('SELECT :a, :b');
     my $two = $dbh->prepare_cached('SELECT :b, :a');
     say $one == $two ? 'shared' : 'apart';    # apart
 
-A cached handle an iterator is part way through is left to it, and a
-new one is made in its place:
+A cached handle an iterator is part way through is left to it. A new
+one is made in its place:
 
     my $sql   = 'SELECT name FROM artist ORDER BY id';
     my $first = $dbh->prepare_cached($sql)->iterate(sub { $_->[0] });
@@ -977,13 +983,13 @@ C<connect_cached> hands back the same handle for the same arguments:
 =head2 Find the line that went wrong
 
 Every error is reported at the line of your code that called
-DBIx::Squirrel, the DBI's own included:
+DBIx::Squirrel, including the DBI's own:
 
     eval { $dbh->prepare('SELEC name FROM artist') };
     print $@;    # DBD::SQLite::db prepare failed: near "SELEC": syntax error at ... line ...
 
-So is each warning the DBI gives under C<PrintError>, its default, naming
-the method you called, as plain DBI does:
+So is each warning the DBI gives under C<PrintError>, its default. It
+names the method you called, as plain DBI does:
 
     my $chatty = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', {RaiseError => 0, PrintError => 1});
     local $SIG{__WARN__} = sub ($warning) { print "warned: $warning" };
@@ -994,7 +1000,7 @@ the method you called, as plain DBI does:
 
 C<connect> and C<prepare> croak whatever C<RaiseError> says, so they need
 no C<or die>. Without C<RaiseError>, the other methods return what the
-DBI's return:
+DBI's methods return:
 
     my $quiet = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', {RaiseError => 0, PrintError => 0});
 
@@ -1006,14 +1012,14 @@ DBI's return:
 
 =head2 Mismatched bind values
 
-Binding croaks, at your line, when the values don't fit the
+Binding croaks at your line when the values don't fit the
 placeholders:
 
     eval { $dbh->prepare('SELECT :id, :name')->execute(id => 1) };
     print $@;    # Expected a value for each placeholder (none for name) at ... line ...
 
-Executing without any values croaks too, unless each placeholder has a
-value bound already, where the DBI would quietly read it as C<NULL>:
+Executing without any values croaks too, unless each placeholder
+already has a value bound. The DBI would quietly read it as C<NULL>:
 
     my $sth = $dbh->prepare('SELECT name FROM artist WHERE id = :id');
     eval { $sth->execute };
