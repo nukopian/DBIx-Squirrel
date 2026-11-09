@@ -307,8 +307,8 @@ at a time.
 
 Returns an iterator over the rows of C<$sth>, a L<DBIx::Squirrel::st>,
 executed with C<@bind_values>, in any form L<DBIx::Squirrel::st/execute>
-takes, and run through C<@stages>, the code references at the end of the
-arguments. It doesn't execute the statement.
+takes, and run through C<@stages>, the code references or pipelines at
+the end of the arguments. It doesn't execute the statement.
 
 =head2 next
 

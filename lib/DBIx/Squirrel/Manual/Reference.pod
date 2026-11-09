@@ -820,9 +820,10 @@ does, and returns a C<DBIx::Squirrel::Iterator> over its results. As
 with C<do>, the attributes may be left out. On a statement handle, it
 returns an iterator over that statement's results.
 
-The bind values are in any form C<execute> takes. The B<stages> are the
-code references at the end of the arguments: each row is run through
-them, and what comes out is the result. With no stages, the result is
+The bind values are in any form C<execute> takes. The B<stages> are at
+the end of the arguments. Each is a code reference, or a pipeline,
+which stands for its stages. Each row is run through them, and what
+comes out is the result. With no stages, the result is
 the row. A stage can name the row with a signature, or leave it out and
 use C<$_>, as here; see L<Stages|/"Stages">.
 
@@ -1008,7 +1009,9 @@ C<Expected ekorn_result_class to be a subclass of DBIx::Squirrel::Result (My::Ot
 
 =head1 Pipelines
 
-A pipeline is a list of stages, each a code reference. Pipelines are how
+A pipeline is a list of stages. A stage is a code reference, or
+another pipeline, which stands for its stages; see
+L<A pipeline's stages|/"A pipeline's stages">. Pipelines are how
 iterators and result sets run their stages, and they can be used on
 their own, with C<DBIx::Squirrel::Pipeline>, or on a handle, with
 L<C<pipe> and C<tap>|/"pipe and tap on handles">. Loading a pipeline doesn't
@@ -1109,10 +1112,13 @@ L<iterator|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.m
 
     my @stages = $p->stages;
 
-C<stages> returns a pipeline's stages, in order, as given to C<new>, or,
-in scalar context, how many there are. A pipeline made once can then
-be used wherever stages go: spliced into another pipeline, or given to
-C<iterate>, C<results>, C<pipe>, C<tap> or a Sugar statement.
+C<stages> returns a pipeline's stages, in order. A pipeline given to
+C<new> as a stage appears as the stages it was made of. In scalar
+context, C<stages> returns how many there are.
+
+A pipeline can go wherever a stage goes: in another pipeline, or given
+to C<iterate>, C<results>, C<pipe>, C<tap> or a Sugar statement. Its stages
+run in its place.
 
     use DBIx::Squirrel::Stages::Flow;
     use DBIx::Squirrel::Stages::Rows;
@@ -1122,17 +1128,22 @@ C<iterate>, C<results>, C<pipe>, C<tap> or a Sugar statement.
         pluck('name'),
     );
 
-    my @hits    = $dbh->iterate('SELECT name, plays FROM track', $hits->stages)->all;
+    my @hits    = $dbh->iterate('SELECT name, plays FROM track', $hits)->all;
     my @top_ten = $dbh->iterate('SELECT name, plays FROM track ORDER BY plays DESC',
-        $hits->stages, take(10))->all;
-    my $first   = DBIx::Squirrel::Pipeline->new($hits->stages, take(1));
+        $hits, take(10))->all;
+    my $first   = DBIx::Squirrel::Pipeline->new($hits, take(1));
 
-The stages run as if they were listed where they're spliced in, so
-composing pipelines this way is flat. Give C<< $hits->stages >>, not
-C<$hits>: a pipeline isn't a stage. Make a stage that counts or
-remembers with L<C<gather>|/"Gathering: stages with state, and an end">, as
-a plain closure's state is shared by every pipeline it's spliced into.
-L<stages|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#stages>, in Ekorn's reference, says more.
+The stages run as if they were written out where the pipeline stands.
+They belong to that run, so a C<take> inside C<$hits> limits the whole
+run. Give C<< $hits->stages >> only to a function that takes code
+references alone.
+
+Make a stage that counts or remembers with
+L<C<gather>|/"Gathering: stages with state, and an end">. A plain closure is
+the same code reference wherever it goes, so its state is shared by
+every pipeline it's in.
+L<A pipeline as a stage|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#a-pipeline-as-a-stage>,
+in Ekorn's reference, says more.
 
 =head2 When a stage dies
 
@@ -1144,7 +1155,9 @@ reference, says:
     Pipeline stage #2 failed at script.pl line 12:
         Illegal division by zero at script.pl line 8.
 
-An exception object is passed on as it is.
+An exception object is passed on as it is. A stage inside a pipeline
+given as a stage is named by its place in each: C<#2.3> is the third
+stage of the pipeline given as stage #2.
 
 Once a stage dies, its run has ended. An iterator, whether a
 pipeline's C<iterator> or one that C<iterate> or C<results> returns, then
@@ -1243,6 +1256,19 @@ and each call of a pipeline. It returns the stage, which is called with
 each value as any stage is, and optionally an end function. A stage
 that keeps state of any kind, even a count, should be made with
 C<gather>, so that it starts afresh.
+
+The stage the block returns can be a pipeline. Its stages are made for
+the run in its place, so the block can build a pipeline for each run,
+or choose one. The block's end function, if any, is called after the
+ends of the pipeline's stages.
+
+    my $two = $dbh->iterate(
+        'SELECT name FROM artist ORDER BY name',
+        gather {
+            my $n = 0;    # this run's
+            DBIx::Squirrel::Pipeline->new(sub { ++$n . ". $_->[0]" }, take(2));
+        },
+    );
 
 The end function is called once the values run out, even when there
 were none, and what it returns goes through the rest of the stages, as
@@ -1466,7 +1492,7 @@ values from C<pipe>.
 
 =head1 Writing stages
 
-A stage of your own is a code reference, as any stage is. Ekorn's
+A stage of your own is a code reference. Ekorn's
 reference, in L<Writing stages|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#writing-stages>, and its how-to, in
 L<Writing stages for others|https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-stages-for-others>, say how
 to write one that works alongside the canned stages: a function that
@@ -1786,19 +1812,19 @@ C<get_column> was given a name or position the row doesn't have.
 
 =item C<Expected stage #%d to be a code reference>
 
-Something passed as a stage wasn't a code reference. No stage runs.
+Something passed as a stage wasn't a code reference or a pipeline. No stage runs.
 
 =item C<Expected a code reference>
 
 The source given to a pipeline's C<iterator>, or the block given to C<gather>, wasn't a code reference.
 
-=item C<Expected stage #%d, made with gather, to return one or two code references>
+=item C<Expected stage #%s, made with gather, to return one or two code references>
 
-The block given to C<gather> for that stage returned something other than a stage, or a stage and an end function.
+The block given to C<gather> for that stage returned something other than a stage (a code reference or a pipeline), or a stage and an end function.
 
-=item C<Pipeline stage #%d failed at %s line %d:>
+=item C<Pipeline stage #%s failed at %s line %d:>
 
-A stage, or its end function, died. The message it died with follows, indented.
+A stage, or its end function, died. The message it died with follows, indented. A stage inside a pipeline given as a stage is named C<#2.3>, for the third stage of the pipeline given as stage #2.
 
 =item C<Stop used outside a pipeline>
 
@@ -1886,7 +1912,7 @@ A statement's definition didn't name its database, or have its SQL.
 
 =item C<Expected only stages after the statement for %s>
 
-A statement's definition had something other than code references after the statement and its attributes.
+A statement's definition had something other than stages (code references or pipelines) after the statement and its attributes.
 
 =item C<Expected no function of the name in %s already (%s)>
 
@@ -2090,7 +2116,7 @@ C<results> only.
 
 =item C<< $dbh->iterate($sql, [@bind_values, @transforms]) >>: values and stages in one array reference.
 
-Stages are the code references at the end of the arguments: C<< $dbh->iterate($sql, @bind_values, @stages) >>.
+Stages are at the end of the arguments, as code references or pipelines: C<< $dbh->iterate($sql, @bind_values, @stages) >>.
 
 =item **C<next> put the result in C<$_>**, as in C<< while ($it->next) { say $_->Name } >>.
 

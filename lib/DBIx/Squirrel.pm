@@ -321,9 +321,10 @@ statement handle, the statement handle goes through the stages instead.
 Runs the database handle through a pipeline of stages, and returns what
 comes out of the last one.
 
-Each stage is a code reference, called with one value, as its argument
-and in C<$_>, so it can name the value with a signature, or leave the
-signature out and use C<$_>:
+A stage is a code reference, or a pipeline, which stands for its
+stages, as L<DBIx::Squirrel::Pipeline> shows. A code reference is
+called with one value, as its argument and in C<$_>. It can name the
+value with a signature, or leave the signature out and use C<$_>:
 
     sub ($row) { $row->[1] }    # the value, named
     sub { $_->[1] }             # the same, in $_
@@ -485,20 +486,23 @@ at your line, naming the method you called.
 
 =over
 
-=item Pipeline stage #%d failed at %s line %d:
+=item Pipeline stage #%s failed at %s line %d:
 
 A stage passed to L</pipe> or L</tap>, or its end function, died. The
-message it died with follows, indented.
+message it died with follows, indented. A stage inside a pipeline given
+as a stage is named C<#2.3>, for the third stage of the pipeline given
+as stage #2.
 
 =item Expected stage #%d to be a code reference
 
-Something passed to L</pipe> or L</tap> wasn't a code reference. No
-stage runs.
+Something passed to L</pipe> or L</tap> wasn't a code reference or a
+pipeline. No stage runs.
 
-=item Expected stage #%d, made with gather, to return one or two code references
+=item Expected stage #%s, made with gather, to return one or two code references
 
 The block given to L</gather> for that stage returned something other
-than a stage, or a stage and an end function.
+than a stage (a code reference or a pipeline), or a stage and an end
+function.
 
 =item Stop used outside a pipeline
 

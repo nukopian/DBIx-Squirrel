@@ -616,9 +616,10 @@ does, and returns a `DBIx::Squirrel::Iterator` over its results. As
 with `do`, the attributes may be left out. On a statement handle, it
 returns an iterator over that statement's results.
 
-The bind values are in any form `execute` takes. The **stages** are the
-code references at the end of the arguments: each row is run through
-them, and what comes out is the result. With no stages, the result is
+The bind values are in any form `execute` takes. The **stages** are at
+the end of the arguments. Each is a code reference, or a pipeline,
+which stands for its stages. Each row is run through them, and what
+comes out is the result. With no stages, the result is
 the row. A stage can name the row with a signature, or leave it out and
 use `$_`, as here; see [Stages](#stages).
 
@@ -793,7 +794,9 @@ A class that isn't a subclass of `DBIx::Squirrel::Result` croaks:
 
 ## Pipelines
 
-A pipeline is a list of stages, each a code reference. Pipelines are how
+A pipeline is a list of stages. A stage is a code reference, or
+another pipeline, which stands for its stages; see
+[A pipeline's stages](#a-pipelines-stages). Pipelines are how
 iterators and result sets run their stages, and they can be used on
 their own, with `DBIx::Squirrel::Pipeline`, or on a handle, with
 [`pipe` and `tap`](#pipe-and-tap-on-handles). Loading a pipeline doesn't
@@ -886,10 +889,13 @@ raises, [calling a pipeline](https://github.com/nukopian/Ekorn-Pipeline/blob/mai
 my @stages = $p->stages;
 ```
 
-`stages` returns a pipeline's stages, in order, as given to `new`, or,
-in scalar context, how many there are. A pipeline made once can then
-be used wherever stages go: spliced into another pipeline, or given to
-`iterate`, `results`, `pipe`, `tap` or a Sugar statement.
+`stages` returns a pipeline's stages, in order. A pipeline given to
+`new` as a stage appears as the stages it was made of. In scalar
+context, `stages` returns how many there are.
+
+A pipeline can go wherever a stage goes: in another pipeline, or given
+to `iterate`, `results`, `pipe`, `tap` or a Sugar statement. Its stages
+run in its place.
 
 ```perl
 use DBIx::Squirrel::Stages::Flow;
@@ -900,18 +906,23 @@ my $hits = DBIx::Squirrel::Pipeline->new(
     pluck('name'),
 );
 
-my @hits    = $dbh->iterate('SELECT name, plays FROM track', $hits->stages)->all;
+my @hits    = $dbh->iterate('SELECT name, plays FROM track', $hits)->all;
 my @top_ten = $dbh->iterate('SELECT name, plays FROM track ORDER BY plays DESC',
-    $hits->stages, take(10))->all;
-my $first   = DBIx::Squirrel::Pipeline->new($hits->stages, take(1));
+    $hits, take(10))->all;
+my $first   = DBIx::Squirrel::Pipeline->new($hits, take(1));
 ```
 
-The stages run as if they were listed where they're spliced in, so
-composing pipelines this way is flat. Give `$hits->stages`, not
-`$hits`: a pipeline isn't a stage. Make a stage that counts or
-remembers with [`gather`](#gathering-stages-with-state-and-an-end), as
-a plain closure's state is shared by every pipeline it's spliced into.
-[stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#stages), in Ekorn's reference, says more.
+The stages run as if they were written out where the pipeline stands.
+They belong to that run, so a `take` inside `$hits` limits the whole
+run. Give `$hits->stages` only to a function that takes code
+references alone.
+
+Make a stage that counts or remembers with
+[`gather`](#gathering-stages-with-state-and-an-end). A plain closure is
+the same code reference wherever it goes, so its state is shared by
+every pipeline it's in.
+[A pipeline as a stage](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#a-pipeline-as-a-stage),
+in Ekorn's reference, says more.
 
 ### When a stage dies
 
@@ -925,7 +936,9 @@ Pipeline stage #2 failed at script.pl line 12:
     Illegal division by zero at script.pl line 8.
 ```
 
-An exception object is passed on as it is.
+An exception object is passed on as it is. A stage inside a pipeline
+given as a stage is named by its place in each: `#2.3` is the third
+stage of the pipeline given as stage #2.
 
 Once a stage dies, its run has ended. An iterator, whether a
 pipeline's `iterator` or one that `iterate` or `results` returns, then
@@ -1032,6 +1045,21 @@ and each call of a pipeline. It returns the stage, which is called with
 each value as any stage is, and optionally an end function. A stage
 that keeps state of any kind, even a count, should be made with
 `gather`, so that it starts afresh.
+
+The stage the block returns can be a pipeline. Its stages are made for
+the run in its place, so the block can build a pipeline for each run,
+or choose one. The block's end function, if any, is called after the
+ends of the pipeline's stages.
+
+```perl
+my $two = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY name',
+    gather {
+        my $n = 0;    # this run's
+        DBIx::Squirrel::Pipeline->new(sub { ++$n . ". $_->[0]" }, take(2));
+    },
+);
+```
 
 The end function is called once the values run out, even when there
 were none, and what it returns goes through the rest of the stages, as
@@ -1209,7 +1237,7 @@ values from `pipe`.
 
 ## Writing stages
 
-A stage of your own is a code reference, as any stage is. Ekorn's
+A stage of your own is a code reference. Ekorn's
 reference, in [Writing stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#writing-stages), and its how-to, in
 [Writing stages for others](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-stages-for-others), say how
 to write one that works alongside the canned stages: a function that
@@ -1472,10 +1500,10 @@ starting "Expected" say what was expected.
 
 | Message | Cause |
 |---|---|
-| `Expected stage #%d to be a code reference` | Something passed as a stage wasn't a code reference. No stage runs. |
+| `Expected stage #%d to be a code reference` | Something passed as a stage wasn't a code reference or a pipeline. No stage runs. |
 | `Expected a code reference` | The source given to a pipeline's `iterator`, or the block given to `gather`, wasn't a code reference. |
-| `Expected stage #%d, made with gather, to return one or two code references` | The block given to `gather` for that stage returned something other than a stage, or a stage and an end function. |
-| `Pipeline stage #%d failed at %s line %d:` | A stage, or its end function, died. The message it died with follows, indented. |
+| `Expected stage #%s, made with gather, to return one or two code references` | The block given to `gather` for that stage returned something other than a stage (a code reference or a pipeline), or a stage and an end function. |
+| `Pipeline stage #%s failed at %s line %d:` | A stage, or its end function, died. The message it died with follows, indented. A stage inside a pipeline given as a stage is named `#2.3`, for the third stage of the pipeline given as stage #2. |
 | `Stop used outside a pipeline` | `Stop` was called where no pipeline was running to catch it. |
 
 ### Canned stages
@@ -1504,7 +1532,7 @@ starting "Expected" say what was expected.
 | `Expected a database defined once (%s)` | The name was given to another database already. |
 | `Expected a database defined as %s` | `database` was given a name no database has. |
 | `Expected a database and a statement for %s` | A statement's definition didn't name its database, or have its SQL. |
-| `Expected only stages after the statement for %s` | A statement's definition had something other than code references after the statement and its attributes. |
+| `Expected only stages after the statement for %s` | A statement's definition had something other than stages (code references or pipelines) after the statement and its attributes. |
 | `Expected no function of the name in %s already (%s)` | The package has a function of that name already. |
 
 ## Differences from plain DBI
@@ -1598,7 +1626,7 @@ sigil, works as it did.
 |---|---|
 | `it` and `iterator`, aliases of `iterate`. | `iterate` only. |
 | `rs` and `resultset`, aliases of `results`. | `results` only. |
-| `$dbh->iterate($sql, [@bind_values, @transforms])`: values and stages in one array reference. | Stages are the code references at the end of the arguments: `$dbh->iterate($sql, @bind_values, @stages)`. |
+| `$dbh->iterate($sql, [@bind_values, @transforms])`: values and stages in one array reference. | Stages are at the end of the arguments, as code references or pipelines: `$dbh->iterate($sql, @bind_values, @stages)`. |
 | **`next` put the result in `$_`**, as in `while ($it->next) { say $_->Name }`. | Nothing is put in `$_`: `while (my($row) = $it->next) { say $row->name }`. |
 | **`all` in scalar context returned a reference to the results.** | `all` in scalar context returns how many there were: `my $results = [$it->all]`. |
 | **`count` fetched the rest of the results and returned how many there were in all.** | `count` returns how many have been handed out so far, as 1.x's `count_fetched` did. To count them all: `my $n = $it->all`. |

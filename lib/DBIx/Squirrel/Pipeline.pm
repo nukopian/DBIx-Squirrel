@@ -50,12 +50,14 @@ returns through them:
         return DBIx::Squirrel::Pipeline->new(@stages)->(load_bands());
     }
 
-C<stages> returns a pipeline's stages, in order, so a pipeline made once
-can be used wherever stages go, with more after them. A pipeline isn't
-a stage itself, so give its stages, not the pipeline:
+A pipeline can go wherever a stage goes, with more stages before or
+after it. Its stages run in its place, as if written out there:
 
     my $hits = DBIx::Squirrel::Pipeline->new(sub { $_->[1] >= 5000 ? $_ : () }, pluck('name'));
-    my @top  = $dbh->iterate($sql, $hits->stages, take(10))->all;
+    my @top  = $dbh->iterate($sql, $hits, take(10))->all;
+
+C<stages> returns a pipeline's stages, in order, for a function that
+takes only code references.
 
 =head1 SEE ALSO
 

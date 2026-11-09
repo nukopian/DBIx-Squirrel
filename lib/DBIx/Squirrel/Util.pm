@@ -163,8 +163,8 @@ starting C<ekorn_>.
 
     @stages = split_stages(\@args);
 
-Takes the code references off the end of a list of arguments, and
-returns them.
+Takes the stages, code references or pipelines, off the end of a list
+of arguments, and returns them.
 
 =item unwrap_values
 

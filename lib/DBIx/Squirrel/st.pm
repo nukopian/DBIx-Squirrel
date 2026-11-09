@@ -299,8 +299,8 @@ for one statement, passed to L<DBIx::Squirrel::db/prepare>.
 
 Returns a L<DBIx::Squirrel::Iterator>, an iterator over the statement's
 results, executed with C<@bind_values>, in any form L</execute> takes,
-and run through C<@stages>, the code references at the end of the
-arguments. The statement is executed when the first result is asked for.
+and run through C<@stages>, the code references or pipelines at the
+end of the arguments. The statement is executed when the first result is asked for.
 
 =head2 results
 

@@ -518,9 +518,10 @@ say join ' ', $it->reset(sub { lc })->all;      # blur cream
 
 ## Transforming rows with stages
 
-A stage is a code reference given after the bind values. Each row goes
-through every stage in turn, and what comes out of the last is the
-result. A stage gets its value as its argument and in `$_`, so write it
+Stages are given after the bind values. A stage is a code reference,
+or a pipeline, which stands for its stages; see
+[Reuse a pipeline](#reuse-a-pipeline). Each row goes through every
+stage in turn, and what comes out of the last is the result. A stage gets its value as its argument and in `$_`, so write it
 whichever way reads best:
 
 ```perl
@@ -743,11 +744,10 @@ say "@first, from $read rows";
 `take` stops the iteration once it has two, so the third row is never
 read.
 
-### Reuse a pipeline's stages
+### Reuse a pipeline
 
-Make a pipeline once, and give its stages, with `stages`, wherever
-stages go: to `iterate`, `results` or another pipeline, with more
-stages after them:
+Make a pipeline once, and give it wherever a stage goes: to `iterate`,
+`results` or another pipeline, with more stages before or after it:
 
 ```perl
 use DBIx::Squirrel::Pipeline;
@@ -760,16 +760,17 @@ my $hits = DBIx::Squirrel::Pipeline->new(
 );
 
 my $by_plays = 'SELECT name, plays FROM track ORDER BY plays DESC';
-say join ', ', $dbh->iterate($by_plays, $hits->stages)->all;
+say join ', ', $dbh->iterate($by_plays, $hits)->all;
     # Dancing Queen, Sunshine of Your Love, Girls & Boys, Parklife
-say join ', ', $dbh->iterate($by_plays, $hits->stages, take(2))->all;
+say join ', ', $dbh->iterate($by_plays, $hits, take(2))->all;
     # Dancing Queen, Sunshine of Your Love
 ```
 
-The stages run as if listed there. Give `$hits->stages`, not `$hits`:
-a pipeline isn't a stage. A stage that keeps count or remembers
-something should be made with `gather`, so it starts afresh in each
-pipeline it's given to.
+Its stages run in its place, as if written out there. For a function
+that takes only code references, give it `$hits->stages`.
+
+A stage that keeps count or remembers something should be made with
+`gather`, so it starts afresh in each run.
 
 ### Catch errors in a stage
 

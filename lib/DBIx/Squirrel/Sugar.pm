@@ -296,8 +296,8 @@ statement handle, or nothing if it couldn't be executed. A hash
 reference, or C<undef>, straight after the statement is the attributes
 to prepare it with, as with L<DBIx::Squirrel::db/do>.
 
-With stages, the code references at the end, it iterates over the
-results, as L<DBIx::Squirrel::db/iterate> does, and returns them all, or
+With stages at the end, code references or pipelines, it iterates
+over the results, as L<DBIx::Squirrel::db/iterate> does, and returns them all, or
 how many there were in scalar context.
 
 The statement can be a statement handle, which is executed, or iterated
@@ -347,8 +347,8 @@ A statement given to C<use> didn't name its database, or have its SQL.
 
 =item Expected only stages after the statement for %s
 
-A statement's definition had something other than code references after
-the statement and its attributes.
+A statement's definition had something other than stages (code
+references or pipelines) after the statement and its attributes.
 
 =item Expected a name for a database (%s)
 
