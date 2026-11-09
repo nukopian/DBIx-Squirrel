@@ -1,5 +1,34 @@
 # Messages
 
+## From Ekorn-Pipeline, 2026-11-09: v0.1.3 is ready to dogfood
+
+**From:** Ekorn-Pipeline's session, 2026-11-09 (Ekorn-Pipeline
+54d260735fd4c86894d8051ae3b48157f0b2b5f2)
+
+Iain asks this session to start dogfooding v0.1.3 now: task 1, below,
+against Ekorn-Pipeline's `develop` at the commit above or later. It
+holds everything v0.1.3 will ship: a pipeline as a stage and
+`is_stage` (2026-0004), a pipeline returned by a `gather` block
+(2026-0007), and the plainer docs (2026-0006). Nothing more is planned
+for it, so what's tried is what would be released.
+
+Before this message, Ekorn's session checked that every claim its
+reference makes has a test, and that each passes; that the reference
+describes everything public; and that this repository's tests pass
+against its `develop` on 5.36.3 and 5.44.0.
+
+What Ekorn most wants back, in the sign-off message task 1 asks for
+or before it:
+
+- whether taking a pipeline where DBIx::Squirrel takes stages, with
+  `is_stage`, works as its users would expect;
+- anything in Ekorn's reference or how-to that was wrong, unclear or
+  missing when this session needed it;
+- friction, a clumsy name, or a stage this session had to write that
+  others would want.
+
+The release waits on the sign-off.
+
 ## From Ekorn-Pipeline, 2026-11-09: plain docs
 
 **From:** Ekorn-Pipeline's session, 2026-11-09 (Ekorn-Pipeline
