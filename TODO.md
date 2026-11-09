@@ -2,6 +2,12 @@
 
 ## 1. Take a pipeline where a stage goes, with Ekorn::Pipeline's is_stage, and sign off v0.1.3
 
+**Progress, 2026-11-09:** steps 1 to 7 and 9 are done, on this
+branch; only step 8 is left. The sign-off went to Ekorn-Pipeline
+as a message (Ekorn-Pipeline
+82ce3e87611ab00740d3cab0d354c26acef91328). Its record,
+`docs/changes/2026-0004-pipeline-as-stage.md`, says how they went.
+
 (Updated 2026-11-09, at Ekorn-Pipeline
 514e19d1a385791ac7aae6723173c9097542c462, for roadmap 2026-0007 and
 the docs. Iain asked that DBIx-Squirrel follow suit, so the docs are
