@@ -68,3 +68,36 @@ how-to, the reference and MAINTAINING.
 
 ## What happened
 
+- **Outcome, 2026-11-09:** each document has had the pass, in a commit
+  of its own: the README (338ae9b), the modules' POD (63aeb8b), the
+  reference (af8f116), the how-to (9079f0f) and MAINTAINING (466142b).
+  The manuals and `README.md` are made again. The tests, `xt/howto.t`
+  and `xt/manuals.t` among them, `podchecker` and coverage pass,
+  against Ekorn-Pipeline's `develop`. Iain's reading of the PDFs is
+  what's left of Done when.
+- **How the rules were kept:** a script compared each document with
+  9e6fbd7, the commit that started the work: every code block,
+  heading and DIAGNOSTICS entry, and in the reference, the first
+  column of every table. None changed. Nothing above `__END__` in a
+  module changed. The edits were made as old and new pairs, each
+  refused unless its old text matched exactly once.
+- **Lists:** where a sentence listed three or more things, it became
+  a bullet list: what `prepare` leaves alone, the forms a statement
+  takes, DBD::Pg's options, `study_sql`'s values, what a stop does,
+  Ekorn's advice on writing stages, step 3 of a release, and the
+  tools.
+- **Fixed, as unclear or wrong:**
+  - `do`'s POD put "So is a statement taking a list" after a sentence
+    about row counts, which it didn't follow on from.
+  - `prepare_cached`, in the POD and the reference, packed what the
+    DBI does with an active handle, why that's a problem, and what
+    DBIx::Squirrel does instead into one sentence. It's three now.
+  - The reference's "A stage is called with one value" now says "a
+    stage that's a code reference", as a stage can be a pipeline
+    since 2026-0004.
+  - gather's example of a block returning a pipeline, added in
+    2026-0004, moved below the paragraph on end functions, which it
+    had cut off from what it followed.
+  - MAINTAINING's trial section said the next trial and the release
+    "are v2.0.2". That's past, so "were".
+- **Changes from the plan:** none.
