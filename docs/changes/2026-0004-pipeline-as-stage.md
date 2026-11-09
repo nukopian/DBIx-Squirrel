@@ -138,3 +138,29 @@ matching Ekorn's DIAGNOSTICS, and `cpanfile` asking for v0.1.3.
 
 ## What happened
 
+- **Steps 1 to 5, on 2026-11-09:** against Ekorn-Pipeline's `develop`
+  at 54d260735fd4c86894d8051ae3b48157f0b2b5f2, from a worktree. The
+  tests passed before any change (1,431 assertions), and pass after
+  (1,462), on 5.36.3 and 5.44.0, with `xt/howto.t` and coverage above
+  its floors. The code is 07d4685 and the docs 14fe054.
+- **Changes from the plan:**
+  - `_prepare_to_iterate`, in `lib/DBIx/Squirrel/db.pm`, uses
+    `is_stage` too, though the task didn't list it. `iterate` and
+    `results` skip the attributes when a stage comes first. Ref::Util's
+    `is_hashref` is true of a blessed hash, so a pipeline given
+    straight after the statement was taken for the attributes.
+  - Step 1's `-I` isn't enough for `xt/howto.t`, which runs each
+    example in a perl of its own. Putting the worktree first in
+    `PERL5LIB` is: `sh -c 'PERL5LIB=/tmp/ekorn-pipeline-develop/lib:$PERL5LIB yath test -L'`
+    under `perlbrew exec`.
+  - More docs needed changing than the task listed:
+    `DBIx::Squirrel::Pipeline`'s POD still said "A pipeline isn't a
+    stage itself", and the POD of st, Iterator, Sugar and Util, and the
+    reference's tables of messages and of changes from 1.x, called the
+    stages code references.
+  - The how-to's "Reuse a pipeline's stages" is now "Reuse a
+    pipeline". Nothing linked to its anchor.
+- **Found:** with Ekorn::Pipeline v0.1.2 installed,
+  `use Ekorn::Pipeline qw(is_stage)` compiles without complaint, as
+  v0.1.2 has no `import`, and `is_stage` is undefined when it's
+  called. `cpanfile` asking for v0.1.3 (step 8) keeps that from users.
