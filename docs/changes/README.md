@@ -83,7 +83,7 @@ Newest id first.
 - [Plain docs](2026-0005-plain-docs.md), roadmap 2026-0005: in
   progress.
 - [A pipeline where a stage goes](2026-0004-pipeline-as-stage.md),
-  from a task of Ekorn-Pipeline's: in progress.
+  from a task of Ekorn-Pipeline's: shipped, unreleased.
 - [Link to Ekorn::Pipeline's manuals by module name](2026-0002-ekorn-manual-links.md),
   roadmap 2026-0002: shipped, unreleased.
 - [The reference and the how-to on MetaCPAN](2026-0001-manuals-on-metacpan.md),

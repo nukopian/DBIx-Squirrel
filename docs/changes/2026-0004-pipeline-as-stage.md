@@ -1,6 +1,6 @@
 # 2026-0004. A pipeline where a stage goes
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: do it now, before Ekorn-Pipeline v0.1.3.
 D2 settled: on `experiment/2026-0004-pipeline-as-stage`.
@@ -164,3 +164,12 @@ matching Ekorn's DIAGNOSTICS, and `cpanfile` asking for v0.1.3.
   `use Ekorn::Pipeline qw(is_stage)` compiles without complaint, as
   v0.1.2 has no `import`, and `is_stage` is undefined when it's
   called. `cpanfile` asking for v0.1.3 (step 8) keeps that from users.
+- **Step 8, on 2026-11-09:** Ekorn-Pipeline v0.1.3 was indexed on
+  CPAN, released from Ekorn-Pipeline
+  1ec84d652f9696679393d84d81698802ff1fa9ea, tagged `v0.1.3`. `cpanfile` asks for
+  `>= v0.1.3, < v0.2.0`, `minil build` regenerated `META.json` and
+  `Build.PL`, and the three branches, 2026-0004, 2026-0005 and
+  2026-0002, came to `develop` by a fast-forward. The tests passed
+  first, 1,496 assertions, on 5.36.3 and 5.44.0, against Ekorn's
+  working copy at 182cf5ef0cad25b39fe3498df3459dc878b6c2d1, whose
+  `lib` is the release's.
