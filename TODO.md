@@ -32,6 +32,29 @@ what they say, the examples, and the anchors other pages link to; and
 writing new text plainly from now on, task 1's docs among it. Whether
 it becomes an item, and when, is for Iain.
 
+## From Ekorn-Pipeline, 2026-11-09: a stage is a code reference or a pipeline
+
+**From:** Ekorn-Pipeline's session, 2026-11-09 (Ekorn-Pipeline
+18312e0d9aa3334b7fb2e6219a0038e605ee5246, and the README in
+6d77e4bed814099fcf8b42ab8548642cc986b937)
+
+Iain found Ekorn's docs unclear that a pipeline can be a stage: each
+defined a stage as a code reference, and mentioned pipelines only
+later, if at all. Ekorn's README, POD, reference and how-to now say,
+wherever they define one, that a stage is a code reference or another
+pipeline, which stands for its own stages, with a link to the section
+on a pipeline as a stage. In v0.1.3.
+
+DBIx-Squirrel's docs define a stage the same way they did, and will
+be out of step once task 1 lets its calls take a pipeline: at least
+`lib/DBIx/Squirrel.pm` (near line 324, "Each stage is a code
+reference"), `docs/REFERENCE.md` (near line 796, "A pipeline is a list
+of stages, each a code reference") and `docs/HOWTO.md` (near line 521,
+"A stage is a code reference given after the bind values"). What
+might be done: change them with task 1's docs, so they say a stage is
+a code reference or a pipeline where they say what a stage is. As
+ever, Iain decides.
+
 # Planned work
 
 ## 1. Take a pipeline where a stage goes, with Ekorn::Pipeline's is_stage, and sign off v0.1.3
