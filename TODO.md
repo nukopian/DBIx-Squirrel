@@ -1,3 +1,33 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-09: plain docs
+
+**From:** Ekorn-Pipeline's session, 2026-11-09 (Ekorn-Pipeline
+1fd32e559291e64203c5c716eec2466013259b9a)
+
+Iain found the docs hard to read, and the cause is a house style the
+two repositories share: the same word three times in a sentence
+("A pipeline given to `new` as a stage has its stages composed in
+place, as if its stages had been given there"); chains of "as X says"
+links, two or three to a paragraph; long sentences joined by commas
+and colons where two short ones would do; and qualifiers that repeat
+one another.
+
+Ekorn-Pipeline rewrote 2026-0004's text plainly
+(adf919e64fc2028238bb408e98a9b4f587b0845f), so its reference now
+opens that section: "You can give `new` a pipeline wherever it takes a
+stage. Its stages are spliced in where it stands." It has added the
+same pass over the rest of its docs as roadmap 2026-0006, "Plain docs",
+in Next, after v0.1.3.
+
+DBIx-Squirrel's README, POD, reference, how-to and MAINTAINING are
+written the same way, and Iain asked for this message so it can do
+likewise. What might be done: an item in DBIx-Squirrel's roadmap like
+Ekorn-Pipeline 2026-0006, to rewrite each in shorter sentences, keeping
+what they say, the examples, and the anchors other pages link to; and
+writing new text plainly from now on, task 1's docs among it. Whether
+it becomes an item, and when, is for Iain.
+
 # Planned work
 
 ## 1. Take a pipeline where a stage goes, with Ekorn::Pipeline's is_stage, and sign off v0.1.3
