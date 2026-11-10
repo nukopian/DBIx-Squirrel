@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0011.
+Last id: 2026-0012.
 
 Items come in four groups:
 
@@ -90,7 +90,26 @@ From the same message, and Ekorn-Pipeline's reply (Ekorn-Pipeline
 ### 2026-0011. Ekorn's install_sub and is_name
 
 **Added:** 2026-11-10. **Size:** XS (1). **Depends on:**
-Ekorn-Pipeline 2026-0011
+Ekorn-Pipeline 2026-0010
 
 Take `install_sub` and `is_name` from Ekorn::Pipeline once it has them,
 and drop the copies in DBIx::Squirrel::Util. From the same message.
+Ekorn plans them with its Sugar, in its 2026-0010.
+
+### 2026-0012. A database as a sink: insert_into
+
+**Added:** 2026-11-10. **Size:** M (3). **Depends on:**
+Ekorn-Pipeline 2026-0017
+
+A sink that takes values from any source into a table:
+`$csv_lines | parse_csv | insert_into($dbh, 'track')`, or one database
+into another. It prepares the INSERT once and begins a transaction,
+executes it for each value, and commits if the run finished or rolls
+back if not, giving how many rows went in. To decide: which columns,
+how often to commit, and a count or the new rows' ids. `update_in`, or
+a sink running any statement once per value, would follow. It needs
+Ekorn's Sink type, its 2026-0017, which needs its Blocks and lifecycle
+hook; the dogfooding is planned on a branch shared with Ekorn, noted
+under its 2026-0014. Handed back as DBIx-Squirrel's own by
+Ekorn-Pipeline's message of 2026-11-10 (Ekorn-Pipeline
+2ea1544471984e694d03d4cb643a209068793d0c).
