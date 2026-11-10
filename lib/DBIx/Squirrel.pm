@@ -140,7 +140,7 @@ DBIx::Squirrel - DBI, minus the boilerplate, plus a pipeline
 
     my $dbh = DBIx::Squirrel->connect($data_source, $username, $password, \%attr);
 
-    # Placeholders in the style you like: ?, ?1, :1, $1 or :name
+    # Placeholders in the style you like: ?, ?1, :1, $1, :name or $name
     my $sth = $dbh->prepare('SELECT * FROM artist WHERE id = :id OR name = :name');
 
     # Named placeholders bound by name, as pairs or in a hash reference

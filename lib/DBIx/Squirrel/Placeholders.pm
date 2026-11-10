@@ -305,7 +305,8 @@ Returns three values:
 =over
 
 =item * a hash reference mapping each placeholder's position, from 1,
-to the placeholder as written (C<?>, C<?1>, C<:1>, C<$1> or C<:name>);
+to the placeholder as written (C<?>, C<?1>, C<:1>, C<$1>, C<:name> or
+C<$name>);
 
 =item * the statement with each placeholder rewritten as C<?>;
 

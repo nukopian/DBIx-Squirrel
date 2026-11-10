@@ -54,7 +54,7 @@ use DBIx::Squirrel;
 
 my $dbh = DBIx::Squirrel->connect($data_source, $username, $password, \%attr);
 
-# Placeholders in the style you like: ?, ?1, :1, $1 or :name
+# Placeholders in the style you like: ?, ?1, :1, $1, :name or $name
 my $sth = $dbh->prepare('SELECT * FROM artist WHERE id = :id OR name = :name');
 $sth->execute(id => 1, name => 'AC/DC');
 
