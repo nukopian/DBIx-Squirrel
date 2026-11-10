@@ -39,6 +39,11 @@ or the database drivers on Iain's Mac.
   [CLAUDE.md](../CLAUDE.md#the-roadmap) has the rules.
 - A branch for a roadmap item, when there is one, is named for its id,
   as `experiment/2026-0001-manuals-on-metacpan`.
+- `pipeline-experimental` is the exception. It pairs with
+  Ekorn-Pipeline's branch of the same name, which carries
+  Ekorn-Pipeline 2026-0014, so it takes that branch's name instead of
+  an id of ours. While it carries the work, its `TODO.md` is the one to
+  read and work from, not `develop`'s.
 
 `main` is protected on GitHub. Pushes to it need signed commits, a
 linear history (no merge commits) and CI passing on every job. It
