@@ -71,8 +71,8 @@ found.
 
 - **Outcome, 2026-11-10:** against Done when, met. Each section of the
   reference was read, its claims listed, and each matched to the test
-  that checks it. Those with none have checks in
-  `t/23-documented.t` now: 64, in 18 subtests named for the sections. All passed as they
+  that checks it. Those with none have checks in `t/23-documented.t`
+  now: 64, in 18 subtests named for the sections. All passed as they
   stood: the code does what the reference says. Every message in
   Diagnostics is raised by some test. The tests went from 1,500
   assertions to 1,582, and branch coverage from 97.3% to 97.5%, short
