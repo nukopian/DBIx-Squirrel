@@ -41,16 +41,6 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0007. Every claim in the reference, checked
-
-**Added:** 2026-11-10. **Size:** L (5)
-
-Each claim in the reference matched to the test that checks it, with
-new checks in `t/23-documented.t` where there's none. Every example in
-the reference and the README is run, and what the code does but the
-docs don't say is added, such as where a pipeline is now accepted.
-Its [record](docs/changes/2026-0007-reference-audit.md) has the plan.
-
 ### 2026-0008. A how-to that answers a newcomer's questions
 
 **Added:** 2026-11-10. **Size:** L (5). **Depends on:** 2026-0007

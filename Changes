@@ -6,6 +6,7 @@ Unreleased
     the messages for a bad stage say so. The docs are rewritten in
     plainer, shorter sentences (roadmap 2026-0005), and the manuals
     link to Ekorn::Pipeline's by module name (roadmap 2026-0002).
+    Every claim in the reference now has a test (roadmap 2026-0007).
 
     - iterate, results, and Sugar's statements and functions take a
       pipeline among their stages. Before, they took only code
@@ -25,6 +26,11 @@ Unreleased
       statement's definition says what a stage is: "Expected only code
       references or pipelines after the statement for %s", not
       "Expected only stages after the statement for %s".
+    - The reference says a pipeline can also be given to an
+      iterator's reset and a database's Sugar function, that a stage
+      of your own can be a pipeline, and that 2.0 depends on
+      Ekorn::Pipeline. Each claim it makes has a test, in
+      t/23-documented.t (roadmap 2026-0007).
     - Two of Ekorn::Pipeline's messages, which DBIx::Squirrel passes on,
       say a stage can be a pipeline, as of Ekorn::Pipeline v0.2.0:
       "Expected stage #%d to be a code reference or a pipeline", and

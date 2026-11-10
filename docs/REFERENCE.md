@@ -908,8 +908,9 @@ my @stages = $p->stages;
 context, `stages` returns how many there are.
 
 A pipeline can go wherever a stage goes: in another pipeline, or given
-to `iterate`, `results`, `pipe`, `tap` or a Sugar statement. Its stages
-run in its place.
+to `iterate`, `results`, an iterator's `reset`, `pipe`, `tap`, or a
+Sugar function, for a database or a statement. Its stages run in its
+place.
 
 ```perl
 use DBIx::Squirrel::Stages::Flow;
@@ -1262,7 +1263,8 @@ values from `pipe`.
 
 ## Writing stages
 
-A stage of your own is a code reference. Ekorn's reference, in
+A stage of your own is a code reference, or a pipeline of other
+stages. Ekorn's reference, in
 [Writing stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#writing-stages),
 and its how-to, in
 [Writing stages for others](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-stages-for-others),
@@ -1606,7 +1608,7 @@ cpanm DBIx::Squirrel@1.6.5
 | 1.x | 2.0 |
 |---|---|
 | Perl 5.10.1 or later. | Perl 5.36 or later. |
-| Hard dependencies on Compress::Bzip2, Crypt::CBC, Dotenv, JSON::Syck, YAML::Syck and others. | DBI, Ref::Util, namespace::clean, and a few core modules. |
+| Hard dependencies on Compress::Bzip2, Crypt::CBC, Dotenv, JSON::Syck, YAML::Syck and others. | DBI, Ekorn::Pipeline, Ref::Util, namespace::clean, and a few core modules. |
 | Loading it read a `.env` file in the current directory, through Dotenv. | Nothing is read. Load your environment yourself. |
 
 ### Importing and the entity helpers

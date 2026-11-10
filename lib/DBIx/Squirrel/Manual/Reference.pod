@@ -1131,8 +1131,9 @@ C<new> as a stage appears as the stages it was made of. In scalar
 context, C<stages> returns how many there are.
 
 A pipeline can go wherever a stage goes: in another pipeline, or given
-to C<iterate>, C<results>, C<pipe>, C<tap> or a Sugar statement. Its stages
-run in its place.
+to C<iterate>, C<results>, an iterator's C<reset>, C<pipe>, C<tap>, or a
+Sugar function, for a database or a statement. Its stages run in its
+place.
 
     use DBIx::Squirrel::Stages::Flow;
     use DBIx::Squirrel::Stages::Rows;
@@ -1532,7 +1533,8 @@ values from C<pipe>.
 
 =head1 Writing stages
 
-A stage of your own is a code reference. Ekorn's reference, in
+A stage of your own is a code reference, or a pipeline of other
+stages. Ekorn's reference, in
 L<Writing stages|Ekorn::Pipeline::Manual::Reference/"Writing stages">,
 and its how-to, in
 L<Writing stages for others|Ekorn::Pipeline::Manual::HowTo/"Writing stages for others">,
@@ -2091,7 +2093,7 @@ Perl 5.36 or later.
 
 =item Hard dependencies on Compress::Bzip2, Crypt::CBC, Dotenv, JSON::Syck, YAML::Syck and others.
 
-DBI, Ref::Util, namespace::clean, and a few core modules.
+DBI, Ekorn::Pipeline, Ref::Util, namespace::clean, and a few core modules.
 
 =item Loading it read a C<.env> file in the current directory, through Dotenv.
 

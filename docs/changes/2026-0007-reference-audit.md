@@ -1,6 +1,6 @@
 # 2026-0007. Every claim in the reference, checked
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: two items, this audit first, then the
 how-to (2026-0008). D2 settled: new checks in `t/23-documented.t`.
@@ -11,6 +11,8 @@ did the same for its docs (Ekorn-Pipeline
 954824dc7f7d84c17b25e0703b4b3459c0108765)
 
 **Started:** 2026-11-10
+
+**Finished:** 2026-11-10
 
 ## Background
 
@@ -66,3 +68,66 @@ each omission found is documented, and the record lists what was
 found.
 
 ## What happened
+
+- **Outcome, 2026-11-10:** against Done when, met. Each section of the
+  reference was read, its claims listed, and each matched to the test
+  that checks it. Those with none have checks in
+  `t/23-documented.t` now: 64, in 18 subtests named for the sections. All passed as they
+  stood: the code does what the reference says. Every message in
+  Diagnostics is raised by some test. The tests went from 1,500
+  assertions to 1,582, and branch coverage from 97.3% to 97.5%, short
+  of a new floor.
+- **The checks added,** by section:
+  - Connecting: `connect` croaks at the caller's line; a clone is a
+    separate connection (in memory, a new, empty database);
+    `connect_cached` croaks too; a subclass without handle classes
+    gets the DBI's warning and handles.
+  - Placeholders: a numbered placeholder bound once (`$2 + $1, $1`); a
+    named one by pairs or a hash, with or without the sigil; a name
+    the statement hasn't croaks; a Sugar statement taking a list isn't
+    cached.
+  - Preparing and binding: `$if_active` of 2 hands out the cached
+    handle unchanged; `bind` croaks at the caller on an odd number of
+    named values, and returns nothing if the DBI can't bind; the
+    select methods take a hash of named values only after the
+    attributes, and `selectall_hashref`'s after its key field.
+  - Iterators and rows: a statement isn't executed until a result is
+    asked for, and is finished when they run out; a column named as
+    one of your own methods gets no method.
+  - Pipelines: none of the pipeline, `gather`, `Stop`, Context or the
+    canned stages' modules loads the DBI; a pipeline can be given to
+    `pipe`, `tap`, `reset`, `results` and a database's function, and a
+    stop or `result_number` inside one works as in any stage.
+  - Canned stages and Context: naming a stage in the import list
+    replaces the defaults, and `:DEFAULT` keeps them; `pluck` by name
+    on an array, and `as_hash`, need an iterator; `result_original`,
+    in a result set, is the row object.
+  - Writing stages: a module of stages with
+    `@DBIx::Squirrel::Errors::INTERNAL` as its `@CARP_NOT` croaks at
+    the line that asked for the result.
+  - Sugar: a database is found by name anywhere in the program; two
+    defined with the same arguments share a handle; one defined with a
+    handle is cloned when first used; stages given to a statement's
+    function are for that call only.
+- **The examples:** each Perl block in the reference and the README
+  was compiled. Those that failed are fragments, Sugar functions
+  called without parentheses, the 1.x code, or shell commands, so
+  none is wrong. Those that say what they give were run and do: `pipe`'s
+  `(6, 10)`, `reset`'s, `bind_param`'s `2 + 2, 3`, counting with
+  `() =`, and the test in Writing stages. The README's examples run
+  against the how-to's example database.
+- **Fixed in the reference, as omissions:**
+  - Where a pipeline can go now lists an iterator's `reset` and a
+    database's function, as well as `iterate`, `results`, `pipe`,
+    `tap` and a statement's function.
+  - Writing stages said "A stage of your own is a code reference". It
+    can be a pipeline of other stages too.
+  - Upgrading listed 2.0's dependencies without Ekorn::Pipeline.
+- **Changes from the plan:** one commit, not one for each chapter, as
+  the audit changed only three sentences of the reference. The module
+  POD needed no change: it already says a stage is a code reference or
+  a pipeline.
+- **Found on the way:** Perl::Tidy splits a long call inside `dies`
+  over lines, which breaks a `__LINE__ + 1` before it. The checks set
+  `$line = __LINE__` inside the block, on the call's line, and keep
+  the call short.
