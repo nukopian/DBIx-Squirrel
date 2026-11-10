@@ -76,9 +76,11 @@ which finishes 2026-0005 too.
 
 - **The rebuild, 2026-11-10:** the how-to has the planned opening,
   Contents and chapters. Every recipe it had is kept, word for word
-  but for "Stop when you've had enough", which now names `count`, and
-  "Loop over the rows", which says a large result is never held at
-  once. Recipes moved between chapters: stopping and taking, and
+  but for four: "Loop over the rows" says a large result is never held
+  at once; "Stop when you've had enough" names `count`; "Reuse a
+  pipeline" lists `reset` among the places a pipeline goes; and "Give
+  rows methods of your own" says a column named as one of your methods
+  gets none. Recipes moved between chapters: stopping and taking, and
   gathering and ends, are chapters of their own, and "See what went
   wrong in a stage" is under Handling errors. Nothing linked to the
   how-to's anchors but its own Contents.
