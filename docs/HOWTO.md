@@ -176,11 +176,12 @@ my @styles = (
     'SELECT title FROM album WHERE year = :1',
     'SELECT title FROM album WHERE year = $1',
     'SELECT title FROM album WHERE year = :year',
+    'SELECT title FROM album WHERE year = $year',
 );
 for my $sql (@styles) {
     my $sth = $dbh->prepare($sql);
-    $sth->execute($sql =~ m( :year )x ? (year => 1994) : 1994);
-    say $sth->fetchrow_arrayref->[0];    # Parklife, five times
+    $sth->execute($sql =~ m( [:\$] year )x ? (year => 1994) : 1994);    # by name, or in order
+    say $sth->fetchrow_arrayref->[0];    # Parklife, six times
 }
 ```
 
