@@ -112,3 +112,5 @@ how-to, the reference and MAINTAINING.
   moved to the end of 2026-0008. The pass reached `develop` with
   2026-0004 and 2026-0002, by a fast-forward, at
   6dc8849ec195ef2da8d80f62ed159ebd2747c920.
+- **Done when, met, 2026-11-10:** Iain read the PDFs, with
+  2026-0008's, and said "Docs look good".

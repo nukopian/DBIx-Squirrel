@@ -1,6 +1,6 @@
 # 2026-0008. A how-to that answers a newcomer's questions
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: by task, with an opening that says who it's
 for. D2 settled: Iain reads the PDFs, 2026-0005's too, at the end.
@@ -11,6 +11,8 @@ rebuilt its how-to the same way
 **Depends on:** 2026-0007
 
 **Started:** 2026-11-10
+
+**Finished:** 2026-11-10
 
 ## Background
 
@@ -111,6 +113,14 @@ which finishes 2026-0005 too.
   defined its database with `music`'s arguments, so the two shared a
   handle, and disconnecting it cut off `music`'s open statements. Its
   database has attributes of its own now, as the recipe says why.
-- **What's left:** Iain's read of the PDFs of the README, the how-to,
-  the reference and MAINTAINING, which finishes 2026-0005 too; then
-  `Changes`, and the item ships.
+- **Also, on 2026-11-10:** the placeholder styles' recipe gained
+  `$name`, which it had left out, and so did three other lists of the
+  styles (82c7329, 6c2d7f5). The PDFs keep short sections whole and
+  code with the sentence introducing it (caa8137), after Iain saw
+  awkward page breaks.
+- **Outcome, 2026-11-10:** against Done when, met. Every topic in the
+  reference has a recipe; every example runs and prints what it says;
+  `xt/howto.t`, `xt/manuals.t` and `podchecker` pass; and Iain read
+  the PDFs of the README, the how-to, the reference and MAINTAINING,
+  saying "Docs look good". That read finishes 2026-0005 too. The item
+  ships, unreleased.

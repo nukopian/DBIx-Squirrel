@@ -41,16 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0008. A how-to that answers a newcomer's questions
-
-**Added:** 2026-11-10. **Size:** L (5). **Depends on:** 2026-0007
-
-The how-to rebuilt by task, as Ekorn-Pipeline's is, so that every
-topic has a tested recipe: an opening naming its readers, Contents,
-the examples' data, and chapters in the order a newcomer meets things.
-It keeps the plain style of 2026-0005. Its
-[record](docs/changes/2026-0008-howto-for-newcomers.md) has the
-decisions.
+Nothing yet.
 
 ## Next
 

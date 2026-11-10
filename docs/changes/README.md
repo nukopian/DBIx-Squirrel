@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [A how-to that answers a newcomer's questions](2026-0008-howto-for-newcomers.md),
-  roadmap 2026-0008: open.
+  roadmap 2026-0008: shipped, unreleased.
 - [Every claim in the reference, checked](2026-0007-reference-audit.md),
   roadmap 2026-0007: shipped, unreleased.
 - [Ekorn::Pipeline v0.2.0's two messages](2026-0006-ekorn-v0.2.0-messages.md),
