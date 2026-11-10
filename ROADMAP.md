@@ -81,8 +81,11 @@ Ekorn-Pipeline 2026-0010
 Let `use DBIx::Squirrel::Sugar` take a `pipeline` key, handed on to
 Ekorn::Pipeline::Sugar's `import_into`, so one `use` names databases,
 statements and pipelines. A statement naming a pipeline by a string
-needs the pipelines defined first, whatever order the keys come in.
-From the same message.
+needs the pipelines defined first, whatever order the keys come in,
+and Sugar qualifies the name with its caller's package before handing
+it on, as `"${package}::clean"`, as Ekorn decided (its 2026-0011 D5).
+From the same message, and Ekorn-Pipeline's reply (Ekorn-Pipeline
+6184dfeaa846c62d26bf2d310e0e6141cb75b884).
 
 ### 2026-0011. Ekorn's install_sub and is_name
 
