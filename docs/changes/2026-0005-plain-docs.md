@@ -1,8 +1,9 @@
 # 2026-0005. Plain docs
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
-**Decisions:** D1 settled: on a branch from 2026-0004's.
+**Decisions:** D1 settled: on a branch from 2026-0004's. D2 settled:
+ship before Iain's read of the PDFs, which comes at the end of 2026-0008.
 
 **Origin:** roadmap, added 2026-11-09, from a message from
 Ekorn-Pipeline's session, 2026-11-09 (Ekorn-Pipeline
@@ -11,6 +12,8 @@ Ekorn-Pipeline's session, 2026-11-09 (Ekorn-Pipeline
 **Depends on:** 2026-0004, whose branch this one starts from
 
 **Started:** 2026-11-09, on `experiment/2026-0005-plain-docs`
+
+**Finished:** 2026-11-10
 
 ## Background
 
@@ -32,6 +35,10 @@ gives the rules below, which suit these docs too.
   conflict throughout. So this one reaches `develop` after 2026-0004,
   and waits on Ekorn-Pipeline v0.1.3 too. `TODO.md` is still worked
   from 2026-0004's branch, where its last step is.
+- [x] **D2.** Ship before Iain reads the PDFs? Yes, Iain decided on
+  2026-11-10. The pass is done, and 2026-0007 and 2026-0008 go over
+  the reference and the how-to again, keeping its rules. Iain reads
+  the PDFs once, at the end of 2026-0008.
 
 ## The plan
 
@@ -101,3 +108,7 @@ how-to, the reference and MAINTAINING.
   - MAINTAINING's trial section said the next trial and the release
     "are v2.0.2". That's past, so "were".
 - **Changes from the plan:** none.
+- **Shipped, 2026-11-10,** before Iain's read of the PDFs (D2), which
+  moved to the end of 2026-0008. The pass reached `develop` with
+  2026-0004 and 2026-0002, by a fast-forward, at
+  6dc8849ec195ef2da8d80f62ed159ebd2747c920.

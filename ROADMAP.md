@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0006.
+Last id: 2026-0008.
 
 Items come in four groups:
 
@@ -41,15 +41,26 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0005. Plain docs
+### 2026-0007. Every claim in the reference, checked
 
-**Added:** 2026-11-09. **Size:** L (5). **Depends on:** 2026-0004
+**Added:** 2026-11-10. **Size:** L (5)
 
-A pass over the README, every module's POD, the reference, the
-how-to and MAINTAINING, in shorter sentences, keeping what they say,
-the examples, the DIAGNOSTICS entries and the anchors. It's on a
-branch from 2026-0004's, so it reaches `develop` after it. Its
-[record](docs/changes/2026-0005-plain-docs.md) has the rules.
+Each claim in the reference matched to the test that checks it, with
+new checks in `t/23-documented.t` where there's none. Every example in
+the reference and the README is run, and what the code does but the
+docs don't say is added, such as where a pipeline is now accepted.
+Its [record](docs/changes/2026-0007-reference-audit.md) has the plan.
+
+### 2026-0008. A how-to that answers a newcomer's questions
+
+**Added:** 2026-11-10. **Size:** L (5). **Depends on:** 2026-0007
+
+The how-to rebuilt by task, as Ekorn-Pipeline's is, so that every
+topic has a tested recipe: an opening naming its readers, Contents,
+the examples' data, and chapters in the order a newcomer meets things.
+It keeps the plain style of 2026-0005. Its
+[record](docs/changes/2026-0008-howto-for-newcomers.md) has the
+decisions.
 
 ## Next
 

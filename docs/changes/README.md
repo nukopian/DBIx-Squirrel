@@ -80,10 +80,14 @@ Steps, Done when.
 
 Newest id first.
 
+- [A how-to that answers a newcomer's questions](2026-0008-howto-for-newcomers.md),
+  roadmap 2026-0008: open.
+- [Every claim in the reference, checked](2026-0007-reference-audit.md),
+  roadmap 2026-0007: in progress.
 - [Ekorn::Pipeline v0.2.0's two messages](2026-0006-ekorn-v0.2.0-messages.md),
   from a task of Ekorn-Pipeline's: shipped, unreleased.
-- [Plain docs](2026-0005-plain-docs.md), roadmap 2026-0005: in
-  progress.
+- [Plain docs](2026-0005-plain-docs.md), roadmap 2026-0005: shipped,
+  unreleased.
 - [A pipeline where a stage goes](2026-0004-pipeline-as-stage.md),
   from a task of Ekorn-Pipeline's: shipped, unreleased.
 - [Link to Ekorn::Pipeline's manuals by module name](2026-0002-ekorn-manual-links.md),
