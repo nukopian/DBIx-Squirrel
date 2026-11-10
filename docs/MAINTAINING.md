@@ -87,6 +87,23 @@ perlbrew exec --with perl-5.36.3@dbix-squirrel-2 perlcritic lib
 for f in $(git ls-files 'lib/*.pm' 't/*.t' 'xt/*.t'); do perlbrew exec --quiet --with perl-5.36.3@dbix-squirrel-2 perltidy "$f" | diff -u "$f" -; done
 ```
 
+DBIx::Squirrel's pipeline is Ekorn::Pipeline's. CI installs Ekorn from
+CPAN, so it tests what users get. Locally, test against
+Ekorn-Pipeline's working copy too, so a change there that breaks
+DBIx::Squirrel shows up before Ekorn releases it. Its `lib` goes first
+on `PERL5LIB`, which reaches the Perls `xt/howto.t` starts, as yath's
+`-I` doesn't:
+
+```
+cd ~/Git/github.com/nukopian/DBIx-Squirrel
+git -C ~/Git/github.com/nukopian/Ekorn-Pipeline log -1 --oneline
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 sh -c 'PERL5LIB=$HOME/Git/github.com/nukopian/Ekorn-Pipeline/lib:$PERL5LIB yath test -L'
+```
+
+The first line says which Ekorn commit the run used. A failure only
+against the working copy means the two have parted: find which should
+change, and if it's Ekorn, tell it in a message in its `TODO.md`.
+
 After a change to the code, check its coverage too, as CI does.
 `scripts/coverage` runs the tests under Devel::Cover, from an empty
 `cover_db`. It fails if the coverage of `lib/` falls below any of the

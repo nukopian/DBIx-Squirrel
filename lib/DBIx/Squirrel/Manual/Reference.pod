@@ -1628,8 +1628,9 @@ from an in-memory SQLite database, in each shape it takes:
 
 B<Publishing.> Name a module of stages for its job, as
 C<DBIx::Squirrel::Stages::JSON>, in a distribution named
-C<DBIx-Squirrel-Stages-JSON>. Have it require DBIx::Squirrel v2.0.3 or
-later, the first on Ekorn::Pipeline.
+C<DBIx-Squirrel-Stages-JSON>. Have it require the DBIx::Squirrel it was
+tested with. v2.0.3 was the first on Ekorn::Pipeline, and v2.1.0 the
+first to take a pipeline as a stage.
 
 =head1 A function for each database and statement: Sugar
 

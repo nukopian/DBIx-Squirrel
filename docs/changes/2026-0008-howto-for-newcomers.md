@@ -115,7 +115,7 @@ which finishes 2026-0005 too.
   database has attributes of its own now, as the recipe says why.
 - **Also, on 2026-11-10:** the placeholder styles' recipe gained
   `$name`, which it had left out, and so did three other lists of the
-  styles (82c7329, 6c2d7f5). The PDFs keep short sections whole and
+  styles (82c7329, 48d7933). The PDFs keep short sections whole and
   code with the sentence introducing it (caa8137), after Iain saw
   awkward page breaks.
 - **Outcome, 2026-11-10:** against Done when, met. Every topic in the

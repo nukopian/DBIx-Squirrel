@@ -1341,8 +1341,9 @@ is [$p->(qw(c))],   [[1, 'c']],           'from 1 on each run';
 
 **Publishing.** Name a module of stages for its job, as
 `DBIx::Squirrel::Stages::JSON`, in a distribution named
-`DBIx-Squirrel-Stages-JSON`. Have it require DBIx::Squirrel v2.0.3 or
-later, the first on Ekorn::Pipeline.
+`DBIx-Squirrel-Stages-JSON`. Have it require the DBIx::Squirrel it was
+tested with. v2.0.3 was the first on Ekorn::Pipeline, and v2.1.0 the
+first to take a pipeline as a stage.
 
 ## A function for each database and statement: Sugar
 
