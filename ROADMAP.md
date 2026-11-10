@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0008.
+Last id: 2026-0011.
 
 Items come in four groups:
 
@@ -62,4 +62,32 @@ Split into items, each sized, when one is taken up.
 
 ## Ideas
 
-Nothing yet.
+### 2026-0009. Export Ekorn's pipeline()
+
+**Added:** 2026-11-10. **Size:** S (2). **Depends on:**
+Ekorn-Pipeline 2026-0011
+
+Add `pipeline` to the Ekorn::Pipeline names DBIx::Squirrel exports, once
+Ekorn has it, so a named pipeline can be a statement's stage, as
+`pipeline('clean')`, with a recipe and tests. From Ekorn-Pipeline's
+message of 2026-11-10 (Ekorn-Pipeline
+7679466a4edff604713af01bbf6bb6d7cc208709).
+
+### 2026-0010. A pipeline key in DBIx::Squirrel::Sugar
+
+**Added:** 2026-11-10. **Size:** M (3). **Depends on:** 2026-0009,
+Ekorn-Pipeline 2026-0010
+
+Let `use DBIx::Squirrel::Sugar` take a `pipeline` key, handed on to
+Ekorn::Pipeline::Sugar's `import_into`, so one `use` names databases,
+statements and pipelines. A statement naming a pipeline by a string
+needs the pipelines defined first, whatever order the keys come in.
+From the same message.
+
+### 2026-0011. Ekorn's install_sub and is_name
+
+**Added:** 2026-11-10. **Size:** XS (1). **Depends on:**
+Ekorn-Pipeline 2026-0011
+
+Take `install_sub` and `is_name` from Ekorn::Pipeline once it has them,
+and drop the copies in DBIx::Squirrel::Util. From the same message.
