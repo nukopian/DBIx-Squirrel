@@ -1304,10 +1304,18 @@ our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 literal, written in the code, with the values as its arguments. Never
 make the format from data: it does whatever its `%` directives say.
 
-**Where they go.** A stage that needs a database, a row or its column
-names goes under `DBIx::Squirrel::Stages::`. One that suits any values
-belongs under `Ekorn::Pipeline::Stages::`, where any function's
-stages can use it.
+**Where they go.** A stage goes where what it needs to know is. One
+that needs a database, a statement, a row's column names, or the row a
+result came from goes under `DBIx::Squirrel::Stages::`. One that would
+work on values from anywhere belongs under `Ekorn::Pipeline::Stages::`,
+where any function's stages can use it, even if it was written for
+rows. Ekorn::Pipeline can't depend on DBIx::Squirrel, so a stage that
+would `use` DBIx::Squirrel goes under `DBIx::Squirrel::Stages::`. A
+stage added under `Ekorn::Pipeline::Stages::` reaches DBIx::Squirrel's
+users only once DBIx::Squirrel adds it to the names its own modules of
+stages export. The how-to's
+[Decide where a stage belongs](HOWTO.md#decide-where-a-stage-belongs)
+says how to choose.
 
 **Testing.** A pipeline called with values tests a stage without a
 database. Run it twice, to show it starts afresh. Then run it on rows

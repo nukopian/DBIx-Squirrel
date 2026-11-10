@@ -1593,10 +1593,18 @@ C<croakf> croaks with a message made by C<sprintf>. Its format is a
 literal, written in the code, with the values as its arguments. Never
 make the format from data: it does whatever its C<%> directives say.
 
-B<Where they go.> A stage that needs a database, a row or its column
-names goes under C<DBIx::Squirrel::Stages::>. One that suits any values
-belongs under C<Ekorn::Pipeline::Stages::>, where any function's
-stages can use it.
+B<Where they go.> A stage goes where what it needs to know is. One
+that needs a database, a statement, a row's column names, or the row a
+result came from goes under C<DBIx::Squirrel::Stages::>. One that would
+work on values from anywhere belongs under C<Ekorn::Pipeline::Stages::>,
+where any function's stages can use it, even if it was written for
+rows. Ekorn::Pipeline can't depend on DBIx::Squirrel, so a stage that
+would C<use> DBIx::Squirrel goes under C<DBIx::Squirrel::Stages::>. A
+stage added under C<Ekorn::Pipeline::Stages::> reaches DBIx::Squirrel's
+users only once DBIx::Squirrel adds it to the names its own modules of
+stages export. The how-to's
+L<Decide where a stage belongs|DBIx::Squirrel::Manual::HowTo/"Decide where a stage belongs">
+says how to choose.
 
 B<Testing.> A pipeline called with values tests a stage without a
 database. Run it twice, to show it starts afresh. Then run it on rows
