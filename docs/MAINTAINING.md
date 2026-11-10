@@ -187,7 +187,8 @@ so `cpanm DBIx::Squirrel` still installs the last release. PAUSE takes
 a tarball whose name ends `-TRIAL` as a trial. That's all Minilla's
 own `minil release --trial` does. There's no tag and no GitHub
 release, and `main` doesn't move. v2.0.0 had one, uploaded on
-2026-11-05, and v2.0.1 and v2.0.2 one each, on 2026-11-06.
+2026-11-05, v2.0.1 and v2.0.2 one each, on 2026-11-06, and v2.1.0 one
+on 2026-11-10.
 
 PAUSE never takes the same file name twice. So each trial has a
 version of its own, and the release takes the version of its last
