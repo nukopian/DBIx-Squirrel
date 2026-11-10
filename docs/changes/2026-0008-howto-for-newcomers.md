@@ -1,6 +1,6 @@
 # 2026-0008. A how-to that answers a newcomer's questions
 
-**Status:** shipped, unreleased
+**Status:** shipped in v2.1.0
 
 **Decisions:** D1 settled: by task, with an opening that says who it's
 for. D2 settled: Iain reads the PDFs, 2026-0005's too, at the end.

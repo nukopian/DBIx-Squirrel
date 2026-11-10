@@ -2,6 +2,10 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+v2.1.0 2026-11-10
+
+    A pipeline goes wherever a stage goes, and the docs read plainly.
+
     A pipeline can go wherever a stage goes (roadmap 2026-0004), and
     the messages for a bad stage say so. The docs are rewritten in
     plainer, shorter sentences (roadmap 2026-0005), and the manuals

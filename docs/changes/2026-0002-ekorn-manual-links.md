@@ -1,6 +1,6 @@
 # 2026-0002. Link to Ekorn::Pipeline's manuals by module name
 
-**Status:** shipped, unreleased
+**Status:** shipped in v2.1.0
 
 **Decisions:** D1 settled: on a branch from 2026-0005's. D2 settled:
 section names from Ekorn's installed manuals. D3 settled: whole

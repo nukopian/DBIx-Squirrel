@@ -1,6 +1,6 @@
 # 2026-0007. Every claim in the reference, checked
 
-**Status:** shipped, unreleased
+**Status:** shipped in v2.1.0
 
 **Decisions:** D1 settled: two items, this audit first, then the
 how-to (2026-0008). D2 settled: new checks in `t/23-documented.t`.

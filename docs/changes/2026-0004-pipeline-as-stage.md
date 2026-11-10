@@ -1,6 +1,6 @@
 # 2026-0004. A pipeline where a stage goes
 
-**Status:** shipped, unreleased
+**Status:** shipped in v2.1.0
 
 **Decisions:** D1 settled: do it now, before Ekorn-Pipeline v0.1.3.
 D2 settled: on `experiment/2026-0004-pipeline-as-stage`.

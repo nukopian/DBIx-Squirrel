@@ -1,6 +1,6 @@
 # 2026-0005. Plain docs
 
-**Status:** shipped, unreleased
+**Status:** shipped in v2.1.0
 
 **Decisions:** D1 settled: on a branch from 2026-0004's. D2 settled:
 ship before Iain's read of the PDFs, which comes at the end of 2026-0008.
