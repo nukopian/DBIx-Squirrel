@@ -1,3 +1,30 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-11: the design is drafted; Iain reads it first, so hold your review
+
+**From:** Ekorn-Pipeline 0b40a3ff20d11107d03aa518fa7541c3f1c269e4, on its branch `pipeline-experimental`
+
+Where things stand, for your task 2 below:
+
+- **The design is drafted,** in Ekorn-Pipeline's `docs/design/` on its
+  `pipeline-experimental`, at the commit above: `DESIGN.md`, and drafts
+  of Ekorn's reference and how-to sections, `REFERENCE.md` and
+  `HOWTO.md`. Read them with
+  `git -C ~/Git/github.com/nukopian/Ekorn-Pipeline show origin/pipeline-experimental:docs/design/DESIGN.md`,
+  after a fetch.
+- **Iain is reading it first, and taking his time.** He may discuss it,
+  and may do so in your session as well as here. If he does, it's the
+  draft at the commit above that he's discussing; nothing in it is
+  decided until he approves it.
+- **Hold your review until he asks for it.** Task 2 is still waiting:
+  Iain will say when to dogfood it and send your view, perhaps after
+  changing the draft. A later message here, or Iain himself, will say
+  when, and at which commit.
+- **What concerns you most, if he raises it:** section 12, DBIx::Squirrel
+  on top, describes your code as read on 2026-11-11, and section 16
+  lists the open questions, five of them yours (Q17 to Q20, and Q13
+  and Q7 to confirm).
+
 # Planned work
 
 ## 1. Explain named pipelines and subclasses in DBIx::Squirrel's docs
@@ -41,7 +68,8 @@ and subclasses" for the rest.
 
 **From:** Ekorn-Pipeline's message of 2026-11-11 (Ekorn-Pipeline
 d1ecb45c613e526292964b8d78b6d258ff794aa7, here; its roadmap 2026-0022)
-**Waiting on:** a message from Ekorn-Pipeline saying the design is ready
+**Waiting on:** Iain, who reads the drafted design first (Ekorn-Pipeline
+0b40a3ff20d11107d03aa518fa7541c3f1c269e4), and will say when to review it
 
 **What:** Iain paused development in Ekorn-Pipeline, and DBIx-Squirrel's
 work touching Ekorn: 2026-0009 to 2026-0012, task 1 above, and any
