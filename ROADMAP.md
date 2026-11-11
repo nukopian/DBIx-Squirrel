@@ -65,27 +65,29 @@ Split into items, each sized, when one is taken up.
 ### 2026-0009. Export Ekorn's pipeline()
 
 **Added:** 2026-11-10. **Size:** S (2). **Depends on:**
-Ekorn-Pipeline 2026-0011
+Ekorn-Pipeline 2026-0021
 
-Add `pipeline` to the Ekorn::Pipeline names DBIx::Squirrel exports, once
-Ekorn has it, so a named pipeline can be a statement's stage, as
-`pipeline('clean')`, with a recipe and tests. From Ekorn-Pipeline's
-message of 2026-11-10 (Ekorn-Pipeline
-7679466a4edff604713af01bbf6bb6d7cc208709). Ekorn's `pipeline` is to
-make DBIx::Squirrel's subclass first, as its
-[record](docs/changes/2026-0009-export-pipeline.md) says.
+Give DBIx::Squirrel a `pipeline` of its own, in
+DBIx::Squirrel::Factories, making DBIx::Squirrel::Pipelines, so a
+named pipeline can be a statement's stage, as `pipeline('clean')`,
+with a recipe and tests. From Ekorn-Pipeline's message of 2026-11-10
+(Ekorn-Pipeline 7679466a4edff604713af01bbf6bb6d7cc208709). Paused until
+Ekorn moves `pipeline` to Ekorn::Pipeline::Factories, its 2026-0021,
+as its [record](docs/changes/2026-0009-export-pipeline.md) says.
 
 ### 2026-0010. A pipeline key in DBIx::Squirrel::Sugar
 
 **Added:** 2026-11-10. **Size:** M (3). **Depends on:** 2026-0009,
 Ekorn-Pipeline 2026-0010
 
-Let `use DBIx::Squirrel::Sugar` take a `pipeline` key, handed on to
-Ekorn::Pipeline::Sugar's `import_into`, so one `use` names databases,
-statements and pipelines. A statement naming a pipeline by a string
+Let `use DBIx::Squirrel::Sugar` take a `pipeline` key, defining each
+pipeline with `DBIx::Squirrel::Pipeline->named`, so one `use` names
+databases, statements and pipelines. It doesn't hand them to
+Ekorn::Pipeline::Sugar, which makes only Ekorn::Pipelines (Ekorn's
+2026-0010 D10). A statement naming a pipeline by a string
 needs the pipelines defined first, whatever order the keys come in,
-and Sugar qualifies the name with its caller's package before handing
-it on, as `"${package}::clean"`, as Ekorn decided (its 2026-0011 D5).
+and Sugar qualifies the name with its caller's package, as
+`"${package}::clean"`, as Ekorn decided (its 2026-0011 D5).
 From the same message, and Ekorn-Pipeline's reply (Ekorn-Pipeline
 6184dfeaa846c62d26bf2d310e0e6141cb75b884).
 

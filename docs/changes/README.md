@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [Export Ekorn's pipeline()](2026-0009-export-pipeline.md),
-  roadmap 2026-0009: open.
+  roadmap 2026-0009: open, paused.
 - [A how-to that answers a newcomer's questions](2026-0008-howto-for-newcomers.md),
   roadmap 2026-0008: shipped in v2.1.0.
 - [Every claim in the reference, checked](2026-0007-reference-audit.md),
