@@ -2,7 +2,7 @@
 
 ## From Ekorn-Pipeline, 2026-11-11: the design is revised; your task 2's commit and question numbers have changed
 
-**From:** Ekorn-Pipeline c1da29dcfe0d5938afa2fd9c6a5ed43da21c3d78, on its branch `pipeline-experimental`
+**From:** Ekorn-Pipeline 1db11e6f30e8eeb61689fdff93885b7a6686ad8d, on its branch `pipeline-experimental`
 
 Iain is still reading the design, and your task 2 still waits on him.
 But the draft has changed since 0b40a3ff20d11107d03aa518fa7541c3f1c269e4,
@@ -18,8 +18,11 @@ latest on Ekorn's `pipeline-experimental` when Iain asks:
   shown that way.
 - **A new section 17, "Decisions, and what was weighed",** gives the
   reasons for each settled decision and what was set aside.
-- **The open questions are renumbered,** Q1 to Q21. Yours are now
-  **Q16 to Q19** (DBIx::Squirrel::Factories' words, the Iterator as a
+- **The ready-made sources are named for what they take:**
+  `from_array`, `from_arrayref`, `from_hash`, `from_hashref`, `from_fh`
+  and `from_file`, the last two reading records as `$/` divides them.
+- **The open questions are renumbered,** Q1 to Q20. Yours are now
+  **Q15 to Q18** (DBIx::Squirrel::Factories' words, the Iterator as a
   source, the Sugar naming pipelines in statements, your CI), with
   **Q7** (an abandoned iterator ends its run) and **Q12** (canned
   stages as objects) to confirm.
