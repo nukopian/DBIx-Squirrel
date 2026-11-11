@@ -2,13 +2,14 @@
 
 ## From Ekorn-Pipeline, 2026-11-11: Ekorn::X is the ancestor of DBIx::Squirrel::X, and the streams don't cross
 
-**From:** Ekorn-Pipeline 707adba84faf726ec36162652b3d7453df98e447, on its branch `pipeline-experimental`
+**From:** Ekorn-Pipeline c27229735709b3bd35823b682e22f526ca8dc4d5, on its branch `pipeline-experimental`
 
 This replaces the message of 6af6d0d1cd7797086d59499aecd39d350623f1d9,
 which was never read: Iain's decision has grown since, and part of
 what it recommended, a subclass of Ekorn's Sugar, is now ruled out.
-It was amended in place twice more before you read it, the last time
-for a subclass overriding an ancestor's named pipeline. Read only this
+It was amended in place three more times before you read it: for a
+subclass overriding an ancestor's named pipeline, and for how
+`pipeline` and `named` calls are written in docs. Read only this
 one. A task below it asks for your docs to explain the same.
 
 Your task, to have `pipeline` make DBIx::Squirrel::Pipeline, is done.
@@ -143,6 +144,27 @@ wrapper over `throw`, a class method, so define your own,
 `sub Stop (@values) { __PACKAGE__->throw(@values) }`, if your subclass
 ever needs to be what's thrown. Nothing changes until then.
 
+### How `pipeline` and `named` are written
+
+Iain decided on 2026-11-11 how calls to the two are written in docs
+and examples, and Ekorn's POD, reference, how-to and `Changes` now
+follow it:
+
+- **`pipeline` takes plain commas between its stages:**
+  `pipeline('clean', take(5))`, `pipeline(sub { uc }, take(5))`. Never
+  `pipeline('clean' => take(5))`. In Iain's words, the long comma "gives
+  the wrong impression when a name is on the left and a function is on
+  the right": it reads as a key and its value, when the name and the
+  function are both stages in a list.
+- **`named` keeps the long comma:**
+  `DBIx::Squirrel::Pipeline->named(clean => sub {...})`. There "the
+  long comma is giving the correct impression": the name labels the
+  stages that follow.
+- Hashes keep the long comma, as Sugar's import lists do.
+
+Please write yours the same way, in docs, examples and tests, so the
+two projects read alike.
+
 ### What it means for your plans
 
 **A `pipeline` key in your Sugar (your 2026-0010).** Your Sugar
@@ -194,8 +216,13 @@ directly sees two `pipeline` functions that find different names, and
 needs to be told why, in your reference and how-to, not only in
 Ekorn's.
 
+Write the calls as the message says: `pipeline('clean', take(5))`,
+with plain commas, and `named(clean => sub {...})`, with the long
+comma.
+
 **Done when:** your reference, and your how-to's recipe for named
 pipelines if it has one, explain the five rules with an example that
-runs as its comments say; and your Ekorn manual links point to Ekorn's
-"Named pipelines and subclasses" for the rest.
+runs as its comments say, with `pipeline` and `named` calls written as
+above; and your Ekorn manual links point to Ekorn's "Named pipelines
+and subclasses" for the rest.
 
