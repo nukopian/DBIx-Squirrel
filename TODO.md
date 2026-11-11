@@ -2,12 +2,14 @@
 
 ## From Ekorn-Pipeline, 2026-11-11: Ekorn::X is the ancestor of DBIx::Squirrel::X, and the streams don't cross
 
-**From:** Ekorn-Pipeline 04a44188462f1bd77c49084a61b3f166559553da, on its branch `pipeline-experimental`
+**From:** Ekorn-Pipeline 707adba84faf726ec36162652b3d7453df98e447, on its branch `pipeline-experimental`
 
 This replaces the message of 6af6d0d1cd7797086d59499aecd39d350623f1d9,
 which was never read: Iain's decision has grown since, and part of
 what it recommended, a subclass of Ekorn's Sugar, is now ruled out.
-Read only this one.
+It was amended in place twice more before you read it, the last time
+for a subclass overriding an ancestor's named pipeline. Read only this
+one. A task below it asks for your docs to explain the same.
 
 Your task, to have `pipeline` make DBIx::Squirrel::Pipeline, is done.
 Doing it, Iain set a rule for both repositories, which decides more
@@ -56,24 +58,80 @@ things to know:
   so `use DBIx::Squirrel::Pipeline qw(is_stage)` croaks unless you list
   `is_stage`, as before. Only `pipeline` is made for the subclass.
 
-**Named pipelines are kept per class, inherited one way.** This is
-rule 2 in the code, and it's new since your test against 4eb7fa3,
-where one registry held every class's names. Now:
+**Named pipelines belong to a class, and are inherited one way, as
+methods are.** This is rule 2 in the code, and it's new since your
+test against 4eb7fa3, where one registry held every class's names, so
+that a pipeline named through DBIx::Squirrel::Pipeline could be found
+by Ekorn's own `pipeline`. In full:
 
-- `DBIx::Squirrel::Pipeline->named('clean', ...)` keeps `clean` as
-  DBIx::Squirrel::Pipeline's. Your `pipeline` finds it; Ekorn's own
-  `pipeline` never does.
-- Your `pipeline` also finds names defined through Ekorn::Pipeline,
-  as a subclass sees its parent's methods.
-- You can't define a name your class already sees, your own or
-  Ekorn's ("A pipeline named %s is already defined"). Ekorn can
-  define a name you have, and each then sees its own.
+- **Every named pipeline belongs to a class:** the class whose `named`
+  defined it. `Ekorn::Pipeline->named(...)` defines a name for
+  Ekorn::Pipeline. `DBIx::Squirrel::Pipeline->named(...)` defines one
+  for DBIx::Squirrel::Pipeline. `$p->named(...)`, called on a pipeline,
+  defines one for the pipeline's class.
+- **`pipeline` looks a name up for a class too.** Ekorn's own
+  `pipeline` looks it up for Ekorn::Pipeline. The one your users get
+  through DBIx::Squirrel::Pipeline looks it up for
+  DBIx::Squirrel::Pipeline. It looks first among that class's own
+  names, then its parent's, and so on up to Ekorn::Pipeline, and takes
+  the first it finds. It never looks down, among a subclass's names.
+  Names given to `named` among the stages after the new name are looked
+  up the same way, for the class `named` was called on.
 
-So for your users, define named pipelines through
+So, for DBIx::Squirrel::Pipeline and Ekorn::Pipeline:
+
+1. **You see Ekorn's names.** A pipeline named through Ekorn::Pipeline
+   can be used by your users' `pipeline`, as your class can call
+   Ekorn::Pipeline's methods.
+2. **Ekorn never sees yours.** A pipeline named through
+   DBIx::Squirrel::Pipeline can't be found by Ekorn's own `pipeline`,
+   which croaks "No pipeline named main::clean". Your names never
+   reach a program's plain Ekorn pipelines.
+3. **You can override one of Ekorn's names,** by defining the same
+   name for your class. From then on, your class and any subclass of
+   it get your pipeline for that name; Ekorn::Pipeline, and anything
+   looking names up for it, still get Ekorn's. Ekorn can likewise
+   define a name you already have, and each class keeps its own.
+4. **A class can't define the same name twice.** That croaks: "A
+   pipeline named main::clean is already defined". Overriding is
+   defining a name for a different class, so it isn't defining it
+   twice.
+5. **Overriding doesn't change a pipeline already made.** A name is
+   looked up when a pipeline is made, so a pipeline made before your
+   override keeps Ekorn's. Define names before using them, as a
+   program usually does at its start, and as your Sugar will at
+   compile time, so every pipeline finds the same.
+
+This example, from Ekorn's reference, runs as its comments say, with
+My::Pipeline standing for DBIx::Squirrel::Pipeline:
+
+```perl
+package My::Pipeline { use parent -norequire, 'Ekorn::Pipeline' }
+
+package main;
+BEGIN { My::Pipeline->import(qw(pipeline)) }    # here, pipeline makes My::Pipelines
+
+Ekorn::Pipeline->named(tidy => sub { lc });     # Ekorn::Pipeline's name
+My::Pipeline->named(loud => sub { uc });        # My::Pipeline's name
+
+say pipeline('tidy')->('Hi');                   # hi     (the subclass sees its ancestor's name)
+say pipeline('loud')->('Hi');                   # HI     (and its own)
+say eval { Ekorn::Pipeline::pipeline('loud') } ? 'found' : 'not found';
+                                                # not found  (the ancestor never sees the subclass's)
+
+my $made_before = pipeline('tidy');
+My::Pipeline->named(tidy => sub { ucfirst lc });    # the subclass overrides tidy
+
+say pipeline('tidy')->('hI');                   # Hi     (the subclass now gets its own)
+say Ekorn::Pipeline::pipeline('tidy')->('hI');  # hi     (the ancestor keeps its own)
+say $made_before->('hI');                       # hi     (a pipeline made earlier keeps what it found)
+```
+
+So for your users: define named pipelines through
 `DBIx::Squirrel::Pipeline->named`, and look them up with the `pipeline`
-your facade exports. A pipeline named with `Ekorn::Pipeline->named`
-works for them too, but one named through you never leaks into a
-program's plain Ekorn pipelines.
+your facade exports. Ekorn's reference has the same rules, under
+"Named pipelines and subclasses", and Ekorn's record 2026-0020 has the
+decisions, D4 and D5.
 
 **Pipes.** `Ekorn::Pipeline::Pipes` has `pipeline_class`, which `pipe`
 and `tap` ask. Your Pipes facade can override it to make your own:
@@ -111,3 +169,33 @@ with a class method, so you can wrap your own, and its operators
 chain as yours.
 
 It all only adds, so it's still a v0.2.x within your range.
+
+# Planned work
+
+## 1. Explain named pipelines and subclasses in DBIx::Squirrel's docs
+
+**From:** Ekorn-Pipeline's session, 2026-11-11 (Ekorn-Pipeline
+707adba84faf726ec36162652b3d7453df98e447, on its branch
+`pipeline-experimental`)
+**Waiting on:** your 2026-0009, which exports `pipeline`
+
+**What:** when your docs first show `pipeline` and named pipelines,
+spell out in plain English, and in the same detail as the message
+above, how names behave for DBIx::Squirrel's users: that they define
+names through `DBIx::Squirrel::Pipeline->named`; that their `pipeline`
+finds DBIx::Squirrel's names and Ekorn's, nearest first; that Ekorn's
+own `pipeline` never finds theirs; that they can override one of
+Ekorn's names, and a pipeline made before keeps what it found; and
+that a class can't define a name twice. Iain asked, on 2026-11-11, that
+both repositories spell it out, not only Ekorn's.
+
+**Why:** a user of DBIx::Squirrel who also uses Ekorn::Pipeline
+directly sees two `pipeline` functions that find different names, and
+needs to be told why, in your reference and how-to, not only in
+Ekorn's.
+
+**Done when:** your reference, and your how-to's recipe for named
+pipelines if it has one, explain the five rules with an example that
+runs as its comments say; and your Ekorn manual links point to Ekorn's
+"Named pipelines and subclasses" for the rest.
+
