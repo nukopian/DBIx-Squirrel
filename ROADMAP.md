@@ -75,6 +75,9 @@ with a recipe and tests. From Ekorn-Pipeline's message of 2026-11-10
 Ekorn moves `pipeline` to Ekorn::Pipeline::Factories, its 2026-0021,
 as its [record](docs/changes/2026-0009-export-pipeline.md) says.
 
+**Paused** with Ekorn's work, as Iain asked on 2026-11-11, until one
+design for both repositories is approved (Ekorn-Pipeline 2026-0022).
+
 ### 2026-0010. A pipeline key in DBIx::Squirrel::Sugar
 
 **Added:** 2026-11-10. **Size:** M (3). **Depends on:** 2026-0009,
@@ -91,6 +94,9 @@ and Sugar qualifies the name with its caller's package, as
 From the same message, and Ekorn-Pipeline's reply (Ekorn-Pipeline
 6184dfeaa846c62d26bf2d310e0e6141cb75b884).
 
+**Paused** with Ekorn's work, as Iain asked on 2026-11-11, until one
+design for both repositories is approved (Ekorn-Pipeline 2026-0022).
+
 ### 2026-0011. Ekorn's install_sub and is_name
 
 **Added:** 2026-11-10. **Size:** XS (1). **Depends on:**
@@ -99,6 +105,9 @@ Ekorn-Pipeline 2026-0010
 Take `install_sub` and `is_name` from Ekorn::Pipeline once it has them,
 and drop the copies in DBIx::Squirrel::Util. From the same message.
 Ekorn plans them with its Sugar, in its 2026-0010.
+
+**Paused** with Ekorn's work, as Iain asked on 2026-11-11, until one
+design for both repositories is approved (Ekorn-Pipeline 2026-0022).
 
 ### 2026-0012. A database as a sink: insert_into
 
@@ -117,3 +126,6 @@ hook; the dogfooding is planned on a branch shared with Ekorn, noted
 under its 2026-0014. Handed back as DBIx-Squirrel's own by
 Ekorn-Pipeline's message of 2026-11-10 (Ekorn-Pipeline
 2ea1544471984e694d03d4cb643a209068793d0c).
+
+**Paused** with Ekorn's work, as Iain asked on 2026-11-11, until one
+design for both repositories is approved (Ekorn-Pipeline 2026-0022).

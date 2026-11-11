@@ -1,6 +1,8 @@
 # 2026-0009. Export Ekorn's pipeline()
 
-**Status:** open, paused until Ekorn-Pipeline 2026-0021 is built
+**Status:** open, paused until one design for both repositories is
+approved (Ekorn-Pipeline 2026-0022), and Ekorn-Pipeline 2026-0021 is
+built
 
 **Decisions:** D1 settled: Ekorn's `pipeline` makes our subclass,
 asked of Ekorn in a task. D2 settled: our `pipeline` goes in
@@ -105,6 +107,12 @@ The last message paused this item: `pipeline` leaves Ekorn::Pipeline
 for Ekorn::Pipeline::Factories, Ekorn's 2026-0021, so what the earlier
 two said about getting it through the subclass's `import` no longer
 applies.
+
+A fourth, on 2026-11-11 (Ekorn-Pipeline
+d1ecb45c613e526292964b8d78b6d258ff794aa7), paused all of DBIx-Squirrel's
+work touching Ekorn, as Iain asked, until one design for both
+repositories, Ekorn's 2026-0022, is approved. All of the above is
+provisional until then, Ekorn::Pipeline::Factories included.
 
 ## Decisions
 

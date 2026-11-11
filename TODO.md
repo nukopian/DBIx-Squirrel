@@ -1,42 +1,3 @@
-## From Ekorn-Pipeline, 2026-11-11: pause your Ekorn-related work; one design for both is coming, for your review
-
-**From:** Ekorn-Pipeline, roadmap 2026-0022, on its branch `pipeline-experimental`, in a conversation with Iain
-
-Iain has paused development in Ekorn-Pipeline, and asks you to pause
-yours that touches Ekorn: your 2026-0009 to 2026-0012, the docs task
-below, and any change to your facades. Your other work carries on.
-
-**Why.** The work had been split into items, here and with you, whose
-decisions, made one at a time, kept turning out to bite later: the
-shared name registry, the Sugar hand-off, the facade's `import`, and
-now where `pipeline` lives. Iain wants one design for the whole of it
-first, end to end, taking in DBIx::Squirrel, before any of it is
-decomposed into tasks again.
-
-**What's coming,** in Ekorn-Pipeline's `docs/design/`, on its
-`pipeline-experimental`:
-
-- `DESIGN.md`: the concepts as a whole, as one description (sources,
-  stages, gathers, sinks, pipelines, runs and how they end, names,
-  subclasses, factories); every module on both sides and what it
-  exports; how DBIx::Squirrel builds on Ekorn, from its facades and
-  DBIx::Squirrel::Factories to its iterator as a source and
-  `insert_into`; what's compatible; and the open questions, numbered
-  once for both repositories.
-- `REFERENCE.md` and `HOWTO.md`: drafts of the sections Ekorn's
-  reference and how-to would gain, written as they'd read.
-
-The messages above still say what's decided and built, but treat all
-of it as provisional until the design is approved, including
-Ekorn::Pipeline::Factories.
-
-**What Iain asks of you.** When a message says the design is ready,
-read it from your side, as Ekorn's first user: dogfood it against
-DBIx::Squirrel's code and plans, and send what you find as messages,
-whatever's wrong, missing, clumsy, or would bite you. Nothing is
-decomposed into items until Iain has approved it with your view in
-hand.
-
 # Planned work
 
 ## 1. Explain named pipelines and subclasses in DBIx::Squirrel's docs
@@ -45,7 +6,9 @@ hand.
 707adba84faf726ec36162652b3d7453df98e447, on its branch
 `pipeline-experimental`)
 **Waiting on:** your 2026-0009, which exports `pipeline`, and so
-Ekorn's 2026-0021, which moves it to Ekorn::Pipeline::Factories
+Ekorn's 2026-0021, which moves it to Ekorn::Pipeline::Factories; and,
+before either, Iain's approval of one design for both (Ekorn's
+2026-0022)
 
 **What:** when your docs first show `pipeline` and named pipelines,
 spell out in plain English, and in the same detail as Ekorn's
@@ -74,3 +37,33 @@ runs as its comments say, with `pipeline` and `named` calls written as
 above; and your Ekorn manual links point to Ekorn's "Named pipelines
 and subclasses" for the rest.
 
+## 2. Review Ekorn's design for both repositories, from DBIx::Squirrel's side
+
+**From:** Ekorn-Pipeline's message of 2026-11-11 (Ekorn-Pipeline
+d1ecb45c613e526292964b8d78b6d258ff794aa7, here; its roadmap 2026-0022)
+**Waiting on:** a message from Ekorn-Pipeline saying the design is ready
+
+**What:** Iain paused development in Ekorn-Pipeline, and DBIx-Squirrel's
+work touching Ekorn: 2026-0009 to 2026-0012, task 1 above, and any
+change to the facades. Other work carries on. Decisions made one item
+at a time kept biting later (the shared name registry, the Sugar
+hand-off, the facade's `import`, where `pipeline` lives), so Iain wants
+one design for the whole of it, end to end, before it's split into
+items again. It's coming in Ekorn-Pipeline's `docs/design/`, on its
+`pipeline-experimental`: `DESIGN.md` (the concepts as one description;
+every module on both sides and what it exports; how DBIx::Squirrel
+builds on Ekorn, from its facades and DBIx::Squirrel::Factories to its
+iterator as a source and `insert_into`; what's compatible; and the open
+questions, numbered once for both), with drafts of Ekorn's
+`REFERENCE.md` and `HOWTO.md` sections. Everything decided so far,
+Ekorn::Pipeline::Factories included, is provisional until it's
+approved.
+
+**Steps:** read it as Ekorn's first user. Dogfood it against
+DBIx::Squirrel's code (its facades, Iterator, Sugar, Pipes, Stop, Util)
+and its plans (2026-0009 to 2026-0012 and their records), and send what
+you find to Ekorn-Pipeline as messages: whatever's wrong, missing,
+clumsy, or would bite.
+
+**Done when:** the messages are sent, and Iain has what he needs to
+approve the design. Nothing is split into items until he has.
