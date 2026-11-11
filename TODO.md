@@ -246,6 +246,69 @@ Three more points from the review, for your docs task below:
 - **`pipe` and `tap` don't read names.** `$sth->pipe('clean')` croaks;
   `$sth->pipe(pipeline('clean'))` works.
 
+## From Ekorn-Pipeline, 2026-11-11: please pause your 2026-0009; pipeline moves to Ekorn::Pipeline::Factories
+
+**From:** Ekorn-Pipeline ab5c829b930ddf8c4ba56285a57ca86d76fa1001, on its branch `pipeline-experimental`, in a conversation with Iain
+
+**Please stop work on your 2026-0009, exporting `pipeline`, until a
+message says Ekorn's 2026-0021 is built.** Iain decided, on 2026-11-11,
+to move `pipeline` out of Ekorn::Pipeline. What the two messages above
+say about getting `pipeline` through your subclass, the inherited
+`import` and the `SUPER::import` line, will no longer apply once it
+moves. The rest of them stands: the rule that Ekorn::X is the ancestor
+of DBIx::Squirrel::X and the streams don't cross, names kept per class
+and inherited one way, how `pipeline` and `named` are written, Pipes'
+`pipeline_class`, and `Stop`.
+
+**Why.** `pipeline` behaves as a factory, but its short, keyword-like
+name is the only reason it exists: `new` already makes pipelines. It's
+syntax, not behaviour, and syntax belongs in a module of words you
+choose to import, not in the class. It's also the first of a family:
+Ekorn's 2026-0015 adds `source {...} step {...} end {...}`, `stage`,
+`sink`, `step`, `end` and gather's new form, each making one of Ekorn's
+types, and each of which you'll want in a form that makes yours. In
+the class, `pipeline` had to work out which class to make, which is
+what the custom `import`, the `SUPER::import` line and "one `pipeline`
+per package" were for.
+
+**What Iain decided:**
+
+- **Ekorn::Pipeline::Factories** holds the words: `pipeline` first
+  (Ekorn's 2026-0021), then 2026-0015's words, instead of the module
+  2026-0015 had planned as Blocks. It exports `gather` too, as it's a
+  factory, but not `Stop`, which throws rather than makes. `step` and
+  `end` come only under a tag, with the block factories, so a short
+  name like `end` is never imported alone by accident.
+- **Each word is one line over a class method** that takes the package
+  to look names up in, passed from the word's caller:
+
+  ```perl
+  # Ekorn::Pipeline::Factories
+  sub pipeline (@stages) { Ekorn::Pipeline->...(scalar caller, @stages) }
+  ```
+
+  Ekorn::Pipeline itself goes back to plain Exporter, with no `import`
+  of its own; names are still read only where the user writes them.
+- **Your words go in DBIx::Squirrel::Factories,** in your namespace,
+  Iain decided, following your mapping of `Ekorn::Pipeline::X` to
+  `DBIx::Squirrel::X`, as Gather, Stop, Pipes and the Stages do. Each
+  is the same one line over DBIx::Squirrel::Pipeline's inherited class
+  method, so it makes your class and needs no `import` tricks:
+
+  ```perl
+  # DBIx::Squirrel::Factories
+  sub pipeline (@stages) { DBIx::Squirrel::Pipeline->...(scalar caller, @stages) }
+  ```
+
+  The method's name is still to be chosen; 2026-0021's record will
+  say. Ekorn's words that make nothing of a class, `step` and `end`,
+  you can re-export as they are.
+
+Ekorn's next commit writes 2026-0021 up, with its record, for Iain to
+review before any code. When it's built, a message here will say how
+to write DBIx::Squirrel::Factories, and your 2026-0009 can go on from
+there. The docs task below waits on that too.
+
 # Planned work
 
 ## 1. Explain named pipelines and subclasses in DBIx::Squirrel's docs
@@ -253,7 +316,8 @@ Three more points from the review, for your docs task below:
 **From:** Ekorn-Pipeline's session, 2026-11-11 (Ekorn-Pipeline
 707adba84faf726ec36162652b3d7453df98e447, on its branch
 `pipeline-experimental`)
-**Waiting on:** your 2026-0009, which exports `pipeline`
+**Waiting on:** your 2026-0009, which exports `pipeline`, and so
+Ekorn's 2026-0021, which moves it to Ekorn::Pipeline::Factories
 
 **What:** when your docs first show `pipeline` and named pipelines,
 spell out in plain English, and in the same detail as the message
