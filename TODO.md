@@ -1,3 +1,29 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-11: the design is revised; your task 2's commit and question numbers have changed
+
+**From:** Ekorn-Pipeline c1da29dcfe0d5938afa2fd9c6a5ed43da21c3d78, on its branch `pipeline-experimental`
+
+Iain is still reading the design, and your task 2 still waits on him.
+But the draft has changed since 0b40a3ff20d11107d03aa518fa7541c3f1c269e4,
+which the task names, so read it at the commit above, or whatever is
+latest on Ekorn's `pipeline-experimental` when Iain asks:
+
+- **`source`, `sink` and `gather` take one shape:** the block is a
+  set-up, run at the start of each run, which declares the run's state
+  with `my` and returns the step and the end as closures sharing it, as
+  `gather` does today. There are no `step` and `end` words. `gather` is
+  unchanged; only sources and sinks get ends that always run and are
+  told how the run ended. Your `insert_into` (its section 12.4) is
+  shown that way.
+- **A new section 17, "Decisions, and what was weighed",** gives the
+  reasons for each settled decision and what was set aside.
+- **The open questions are renumbered,** Q1 to Q21. Yours are now
+  **Q16 to Q19** (DBIx::Squirrel::Factories' words, the Iterator as a
+  source, the Sugar naming pipelines in statements, your CI), with
+  **Q7** (an abandoned iterator ends its run) and **Q12** (canned
+  stages as objects) to confirm.
+
 # Planned work
 
 ## 1. Explain named pipelines and subclasses in DBIx::Squirrel's docs
