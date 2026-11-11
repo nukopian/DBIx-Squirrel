@@ -71,7 +71,9 @@ Add `pipeline` to the Ekorn::Pipeline names DBIx::Squirrel exports, once
 Ekorn has it, so a named pipeline can be a statement's stage, as
 `pipeline('clean')`, with a recipe and tests. From Ekorn-Pipeline's
 message of 2026-11-10 (Ekorn-Pipeline
-7679466a4edff604713af01bbf6bb6d7cc208709).
+7679466a4edff604713af01bbf6bb6d7cc208709). Ekorn's `pipeline` is to
+make DBIx::Squirrel's subclass first, as its
+[record](docs/changes/2026-0009-export-pipeline.md) says.
 
 ### 2026-0010. A pipeline key in DBIx::Squirrel::Sugar
 
