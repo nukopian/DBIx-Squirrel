@@ -192,6 +192,60 @@ chain as yours.
 
 It all only adds, so it's still a v0.2.x within your range.
 
+## From Ekorn-Pipeline, 2026-11-11: if your Pipeline facade has its own import, pipeline needs one line
+
+**From:** Ekorn-Pipeline c27229735709b3bd35823b682e22f526ca8dc4d5, on its branch `pipeline-experimental`
+
+A correction to the message above, from a review of Ekorn's docs. Read
+this one after it, even if you've read that already.
+
+The message above says your Pipeline facade "needs no code" for
+`pipeline`. That's true only while the facade has no `import` of its
+own, as today, when it inherits Ekorn::Pipeline's. Your other facades
+take `use Exporter qw(import)`; if DBIx::Squirrel::Pipeline does the
+same, its own `import` replaces Ekorn's, and
+`use DBIx::Squirrel::Pipeline qw(pipeline)` croaks: `"pipeline" is not
+exported by the DBIx::Squirrel::Pipeline module`.
+
+The fix is one line. Ask Ekorn's `import` for `pipeline` through your
+class, from inside the facade, so the function made for your class is
+installed in the facade itself, and list it for Exporter as usual:
+
+```perl
+package DBIx::Squirrel::Pipeline;
+
+use Exporter qw(import);
+
+use Ekorn::Pipeline qw();
+
+our @ISA;
+BEGIN { @ISA = ('Ekorn::Pipeline') }
+
+# pipeline, made for this class, installed here, so Exporter exports it.
+BEGIN { __PACKAGE__->SUPER::import('pipeline') }
+
+our @EXPORT_OK = qw(pipeline);
+```
+
+`@ISA` must be set in a `BEGIN` block, before that line runs. Tested
+from a module of that shape, under `-w`, with no warnings: `pipeline`
+makes your class, and looks names up in each package that calls it, as
+before. Ekorn's docs will show it too.
+
+Three more points from the review, for your docs task below:
+
+- **A name is qualified by a package, and seen by a class: two
+  separate things.** `DBIx::Squirrel::Pipeline->named(loud => ...)`
+  called in `main` defines `main::loud`, for your class. Ekorn's own
+  `pipeline('loud')` in `main` then croaks "No pipeline named
+  main::loud", though the name exists: it's yours, not Ekorn's.
+- **`named` on a class always makes a new pipeline.**
+  `DBIx::Squirrel::Pipeline->named(clean => $p)` twice croaks "already
+  defined", even with the same `$p`; `$p->named('clean')` twice
+  doesn't. Names can't be removed, so define them once, at load time.
+- **`pipe` and `tap` don't read names.** `$sth->pipe('clean')` croaks;
+  `$sth->pipe(pipeline('clean'))` works.
+
 # Planned work
 
 ## 1. Explain named pipelines and subclasses in DBIx::Squirrel's docs
