@@ -1,3 +1,27 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-12: an iterator's `all`, `first` and `single`
+
+**From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
+1c10f0ce3e703936f983f0f82ffc902bbd1e4529, on its branch
+`pipeline-experimental`)
+
+As 2026-0022's D59, Ekorn's own Iterator has `all`, `first` and
+`single`, at Iain's asking: "I feel we lost the ability to pull the
+remaining items, which I think is important." `$next->all` reads the
+run to its end, giving the values still to come, as a list or, asked
+for one value, an array reference. `$next->first` gives the next
+value, or `undef`, and finishes the iterator. `$next->single` gives the
+next value, or `undef`, pulling one more to check, and warns "Expected
+only one item, but there were more" if there's another, rather than
+croak; then it finishes the iterator.
+
+Your design has your iterator's `all`, `single` and `count` give way
+to Ekorn's sinks (D50, and Ekorn's 20.2). An iterator of yours made by
+Ekorn's `iterator` now has the first three; whether yours keeps its
+own, or relies on Ekorn's, is yours to decide. Ekorn's design has it
+in 17.33.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
