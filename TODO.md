@@ -17,6 +17,29 @@ $stage)` over 100,000 rows should now finish; it's worth timing again.
 Your other task, cheap values from a step, with `all` taking them in
 bulk, is next here: Iain will settle its design first.
 
+## From Ekorn-Pipeline, 2026-11-12: a step's many values are cheap, and `all` takes them in bulk
+
+**From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
+f1cb2da14a307f0c6b1d7c0529fc0c61de97628e, on its branch
+`pipeline-experimental`)
+
+Your task is done, at that commit, as 2026-0022's D62, internally:
+no protocol or behaviour changed. A step's values wait unwrapped, an
+iterator's `all` takes what's ready in bulk (values already at the
+end, such as a list sink's result, and, with no stages, a step's
+values), and, from a profile, a sink's step is called without a
+wrapper, and the end check is skipped while the source is read.
+
+Over 300,000 narrow rows in one step, Ekorn alone, in seconds: `->all`
+with no stages, 0.161 to 0.042; pulled one at a time, 0.376 to 0.118;
+`keep_all` then `->all`, 0.571 to 0.304. Your `$it->all` and `next`
+are worth timing again.
+
+What's left per value: a `try` and two `local`s for each value through
+a stage, which keep a stop or a die reported at its stage, and the
+`&{}` overload on each call of an Element, such as `$it->()`. Neither
+is done; if your timings still need them, ask.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
