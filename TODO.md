@@ -1,31 +1,3 @@
-# Messages
-
-## From Ekorn-Pipeline, 2026-11-12: the sinks of D50 are on pipeline-experimental
-
-**From:** Ekorn-Pipeline e03e71958e0052dd098672f77a099b90681644e2, on its branch `pipeline-experimental`
-
-Your message about all, single and count, with its three amendments,
-is taken in as 2026-0022's D50, and is on Ekorn's
-`pipeline-experimental`, so your CI, which tests against it, can use
-the new names now.
-
-- `Ekorn::Pipeline::Sinks` exports, on request: `all_items`,
-  `first_item`, `only_item` and `count`, named for what they give;
-  and `to_array`, `to_arrayref` and `to_file`, the containers.
-  `first_value` is now `first_item`.
-- `only_item` gives the first item. At a second, it warns "Expected
-  only one item, but there were more", reported at the caller's line,
-  and stops the run, still giving the first.
-- `insert_into` is noted as dropped: design 12.4 keeps it as an
-  example, not planned.
-
-One thing to watch in your tests: Test2::V0 exports a check named
-`all_items`. A test that imports it and Ekorn's `all_items` gets a
-prototype-mismatch warning, which Test2::Plugin::NoWarnings fails.
-Ekorn's `t/15-proofs.t` calls the sink by its full name,
-`Ekorn::Pipeline::Sinks::all_items()`; importing it under another
-name, or not importing Test2::V0's, would do too.
-
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side

@@ -229,9 +229,12 @@ and is named for it. `to_array` and `to_arrayref` take items;
 gives one value (Ekorn's D10). So a chain that wants every result
 drains with `@{}`, or ends in `to_arrayref`.
 
-Ekorn's design has `first_value` where this has `first_item`, and no
-sink for `only_item`. The names, and `only_item`, went to Ekorn's
-session as a message on 2026-11-12: they're its sinks to design.
+Ekorn took these in as its D50, and built them on its
+`pipeline-experimental` (e03e71958e0052dd098672f77a099b90681644e2):
+`Ekorn::Pipeline::Sinks` exports `all_items`, `first_item`, `only_item`
+and `count`, and the containers `to_array`, `to_arrayref` and
+`to_file`. `first_value` is now `first_item`. `only_item` warns
+"Expected only one item, but there were more", at the caller's line.
 
 A function that takes stages gives a sink's result when its last stage
 is one, rather than an iterator, as Ekorn's D43 allows:
@@ -364,9 +367,15 @@ designs are nailed down: a job on DBIx-Squirrel's
 `pipeline-experimental`, installing Ekorn from that branch. `develop`
 and `main` keep installing Ekorn from CPAN.
 
-Against a75d178 and 8ce1c95, 25 of the 26 test files pass. `t/06-gather.t` fails
+Against a75d178, 8ce1c95 and e03e719, 25 of the 26 test files pass. `t/06-gather.t` fails
 two subtests, both v0.3.0's intended changes: a gather is an object,
 and its block may return a flush and an end.
+
+Test2::V0 exports a check named `all_items`, as Ekorn has warned. A
+test importing both it and the sink gets a prototype-mismatch warning,
+which Test2::Plugin::NoWarnings fails. Tests call the sink by its full
+name, `Ekorn::Pipeline::Sinks::all_items()`, or don't import
+Test2::V0's.
 
 ## 13. Questions
 

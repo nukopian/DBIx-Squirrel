@@ -188,3 +188,10 @@ Written when the design is approved and split into items.
   up to date with it. Against that commit, DBIx::Squirrel's tests stand
   as before: 25 of 26 files pass, and `t/06-gather.t`'s two failures
   are v0.3.0's intended changes.
+- **2026-11-12:** Ekorn-Pipeline took in the message on the sinks, with
+  its three amendments, as its D50, and built them (Ekorn-Pipeline
+  e03e71958e0052dd098672f77a099b90681644e2): `all_items`, `first_item`,
+  `only_item` and `count`, and the containers `to_array`,
+  `to_arrayref` and `to_file`; `first_value` became `first_item`.
+  It warned that Test2::V0's `all_items` clashes with the sink in a
+  test importing both. Against that commit, the tests stand as before.
