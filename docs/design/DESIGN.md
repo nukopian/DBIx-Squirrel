@@ -165,8 +165,32 @@ where the user wrote `use Ekorn::Pipeline::Operators` (Ekorn's D32).
 
 A chain ends in a sink, in the docs' examples, so it says what it
 gives. `@{}` on a chain without one drains it, but reads like a
-dereference of an array that isn't there, so the docs don't lead with
-it. And as `|` gives one value, a chain ending in `all_items` gives an
+dereference of an array that isn't there. Iain: "Looks weird but you
+should explain it in detail, and use more examples of alternatives"
+(Ekorn's D52). So it stays, the docs lead with a sink, and the
+reference and the how-to explain `@{}` in detail, as Ekorn's do:
+
+- **Each use is a run of its own,** from the first row to the last.
+  `$iterator->[0]`, `scalar @$iterator` and `$#$iterator` read every
+  row to give one row, a count or an index, and two uses run the query
+  twice.
+- **`for (@$iterator)` reads every row before the loop starts.**
+  `next`, in a `while`, gives each as it comes.
+- **In `@{ chain | all_items }`, the braces are Perl's own,**
+  dereferencing the array reference `all_items` gives.
+
+With the alternatives, by what's wanted:
+
+| Wanted | Write | Rather than |
+|---|---|---|
+| every row, as a reference | `my $rows = $it \| all_items` | `my @rows = $it \| all_items`, one element |
+| every row, as a list | `my @rows = $sth->iterate(@binds, all_items)`, or `@{ $it \| all_items }` | |
+| the first row | `$it \| first_item`, fetching one | `$it->[0]`, fetching them all |
+| how many | `$it \| count` | `scalar @$it`, keeping every row |
+| the first few | `$it \| take(5) \| all_items` | `(@$it)[0 .. 4]`, fetching them all |
+| each, as it comes | `while (my($row) = $it->next) {...}` | `for (@$it)`, fetching them all first |
+
+And as `|` gives one value, a chain ending in `all_items` gives an
 array reference, even in a list assignment:
 
 ```perl
@@ -176,6 +200,12 @@ my @top = $sth->iterate | pluck('name') | take(5) | all_items;      # one elemen
 ```
 
 The last is a quiet trap, which the reference and the how-to warn of.
+
+A chain run only for its sink's effect, written as a statement of its
+own, runs, but Perl warns "Useless use of numeric bitwise or (|) in
+void context" as it compiles the line, before any overload is called.
+Neither project can stop it. The docs keep the result:
+`my $n = $it | to_file($path)`.
 A list comes straight back without `|`, from a sink given last as an
 argument: `$sth->iterate(pluck('name'), take(5), all_items)`.
 
@@ -507,7 +537,8 @@ dropped as moot by D11, which leaves it none.
   function works; Stages say they're objects; `all`, `single` and `count` are sinks, given last;
   Sugar's definitions take names.
 - **How-to:** about a dozen examples use `DBIx::Squirrel::Pipeline`, and
-  move to Ekorn's. New recipes: a statement read through `|`, and rows
+  move to Ekorn's. `@{}` on an iterator is explained in detail, with
+  the alternatives in section 4.5, mirroring Ekorn's how-to. New recipes: a statement read through `|`, and rows
   collected as results.
 - **`Changes`:** v3.0.0's precis names what breaks and how to move,
   from section 10.

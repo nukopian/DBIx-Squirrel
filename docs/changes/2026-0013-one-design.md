@@ -251,3 +251,13 @@ Written when the design is approved and split into items.
   as `count` is there for counting: "all_items as a scalar (when I
   have a count sink) could be a reference?" It's Ekorn's rule to
   change (its D47 and D10), so it went to Ekorn-Pipeline as a message.
+- **2026-11-12:** Ekorn-Pipeline took in the message on a bare
+  `@{ chain }` as its D52 (Ekorn-Pipeline
+  0f3321facd799b7df57dd34cac81a5bcbdbb6a81). Iain: "Looks weird but you
+  should explain it in detail, and use more examples of alternatives."
+  So `@{}` stays, explained, and both projects' chains lead with a
+  sink. The design's 4.5 mirrors Ekorn's explanation and its table of
+  alternatives, for statements. Ekorn also found that a chain written
+  as a statement of its own draws Perl's "Useless use of numeric
+  bitwise or (|) in void context" at compile time, which neither
+  project can stop; checked here, and the docs keep the result.
