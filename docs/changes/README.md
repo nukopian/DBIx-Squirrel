@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [DBIx::Squirrel on Ekorn as it is: one design](2026-0013-one-design.md),
+  from a task of Ekorn-Pipeline's: in progress.
 - [Export Ekorn's pipeline()](2026-0009-export-pipeline.md),
   roadmap 2026-0009: open, paused.
 - [A how-to that answers a newcomer's questions](2026-0008-howto-for-newcomers.md),
