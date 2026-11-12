@@ -354,6 +354,9 @@ answers or from building, is added here as Q17 and on.
 | **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's: `to_array`, `to_arrayref`, `to_scalar` and `count`. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing |
 | **Q16** | `count` or `to_count`? | D12: `count`, as it says what the sink is, not where the result goes |
 
+Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were
+dropped as moot by D11, which leaves it none.
+
 ## 14. Where each roadmap item lands
 
 | Item | Here | What becomes of it |
