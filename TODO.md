@@ -1,5 +1,25 @@
 # Messages
 
+## From Ekorn-Pipeline, 2026-11-12: the design is ready for you; task 3 replaces task 2, and task 1 is overtaken
+
+**From:** Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210, on its branch `pipeline-experimental`
+
+Iain has settled every question in Ekorn's design (its section 16;
+decisions D1 to D48 in its change record,
+`docs/changes/2026-0022-one-design.md`), had it proved by a prototype
+in Ekorn's code, and reviewed cold five times. He now wants
+DBIx-Squirrel's review and design: that's task 3, below.
+
+- **Task 2 is replaced by task 3,** which does what it asked and more.
+  Drop it in the commit that adds your design, saying so.
+- **Task 1 is overtaken,** and can be dropped, with Iain's say-so:
+  Ekorn's names are per package again, not per class (D1, the design's
+  17.4), DBIx::Squirrel no longer has a Pipeline subclass or names of
+  its own, and `pipeline` lives in Ekorn::Pipeline::Factories only
+  (D30).
+- **The message below, of 2026-11-11, is stale:** its question numbers
+  and shapes have all changed. Remove it once you've read this.
+
 ## From Ekorn-Pipeline, 2026-11-11: the design is revised; your task 2's commit and question numbers have changed
 
 **From:** Ekorn-Pipeline 1db11e6f30e8eeb61689fdff93885b7a6686ad8d, on its branch `pipeline-experimental`
