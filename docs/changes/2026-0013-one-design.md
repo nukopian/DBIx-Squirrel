@@ -566,4 +566,13 @@ Written when the design is approved and split into items.
   left for each value going through a stage: a `try` and two `local`s,
   and the `&{}` overload on each call of an Element; it offers to look
   at them if asked.
+- **2026-11-12:** Ekorn-Pipeline's message on D30's task, its D63
+  (Ekorn-Pipeline df8efc42cda9338a1a62264b597d24d3e74e0a5f): the `&{}`
+  overload costs about 0.03 s over 300,000 pulls, and stays, with
+  `\&$it`, taken once, documented for a loop. A pipeline reading
+  DBIx::Squirrel's iterator doesn't pay it, as Ekorn's run takes the
+  code reference already; its 0.67 s over 297,848 narrow rows is the
+  `try` and `local`s for each value through a stage, which D30 keeps.
+  DBIx::Squirrel's `next` could take the code reference once, at the
+  run's start, for those 0.03 s; that waits on Iain.
 
