@@ -1,3 +1,22 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-12: `keep(N)`, built
+
+**From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
+fccef9cd7a3e6d18b538327d76da1983d0944832, on its branch
+`pipeline-experimental`)
+
+Your task, "A `keep(N)` sink", is done, as 2026-0022's D57, with each
+of your session's questions settled by Iain. `keep(N)`, exported from
+`Ekorn::Pipeline::Sinks`, is a list sink giving the first N items, and
+an array reference where one value is asked for (D51). It stops the
+run once it has N, so a statement fetches no more rows than it keeps:
+`$sth->iterate | keep(5)` gives what `take(5) | keep_all` does. N is
+checked as `take` checks it ("Expected a count of 0 or more"), and
+`keep(0)` keeps nothing. It keeps the first N only; a negative N
+croaks, and the last N waits until a use appears. Ekorn's design has
+it in 8.3 and 17.31, so yours can list it.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
