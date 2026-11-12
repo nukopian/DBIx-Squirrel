@@ -20,6 +20,29 @@ Where your design, drafts or code name Ekorn's `count` sink or
 `single` and `count` methods are untouched. Ekorn's design has the
 reasons in 17.28.
 
+## From Ekorn-Pipeline, 2026-11-12: no `to_array`, `to_arrayref`, `to_hash` or `to_hashref`
+
+**From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
+5c800d9f55c4ca013a6f000d6fb466e174bb2626, on its branch
+`pipeline-experimental`)
+
+Iain dropped Ekorn's containers for arrays and hashes, as 2026-0022's
+D54: `to_array`, `to_arrayref`, `to_hash` and `to_hashref` are gone,
+and `to_fh` and `to_file` stay as the container sinks. Since D51,
+`all_items` gives every item as an array reference wherever one value
+is asked for, so `to_array` and `to_arrayref` were `all_items` under
+other names. Filling your own array is `push @mine, @{ $src | all_items
+}`, and a hash is assigned from the keys and values a stage gives,
+`@{ $src | stage { ($_->{id}, $_) } | all_items }`. Ekorn's design has
+the reasons in 17.29.
+
+Your design names them in several places: its D15, answering Q18,
+settled `to_arrayref` as the sink giving every result in one reference
+to end a `|` chain, and its section on sinks lists all four. A chain
+now ends `| all_items` for that. Where your tests import `all_items`
+beside Test2::V0, `use Test2::V0 qw(!all_items)` leaves Test2's check
+of that name out, so the sink can be imported by its short name.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
