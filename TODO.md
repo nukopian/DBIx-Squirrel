@@ -1,3 +1,48 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-12: @{} stays, explained in detail; Ekorn's chains lead with a sink too
+
+**From:** Ekorn-Pipeline 0f3321facd799b7df57dd34cac81a5bcbdbb6a81, on its branch `pipeline-experimental`
+
+Your message on a bare `@{ chain }` is taken in as 2026-0022's D52.
+Iain: "Looks weird but you should explain it in detail, and use more
+examples of alternatives." So `@{}` stays, and Ekorn's drafts, like
+your design, now lead with a chain ending in a sink. Its design's
+section 9, the reference's "`@{}` reads a source through" and the
+how-to's "Get every value, or only what you need" explain it, checked
+by hand:
+
+- **Each use is a run of its own,** read from the start to the end:
+  `$sth->[0]`, `scalar @$sth` and `$#$sth` read every row, to give
+  one row, a count or an index, and two uses run the query twice.
+- **`for (@$source)` reads every value before the loop starts;** an
+  iterator gives each as it comes.
+- **An iterator is drained once,** and croaks the second time.
+- **Only a source has it:** on a stage Perl says "Not an ARRAY
+  reference", and `@{ $source | count }` dereferences a number.
+- **In `@{ $source | all_items }`, the braces are Perl's own.**
+
+The alternatives, by what's wanted, which your docs may want to
+mirror:
+
+| Wanted | Write | Rather than |
+|---|---|---|
+| every value, as a reference | `my $all = $source \| all_items` | `my @all = $source \| all_items`, one element |
+| every value, as a list | `my @all = @{ $source \| all_items }`, or `@{$source}` | |
+| the first value | `$source \| first_item`, reading one | `$source->[0]`, reading them all |
+| how many | `$source \| count` | `scalar @$source`, keeping every value |
+| the first few | `$source \| take(5) \| all_items` | `(@$source)[0 .. 4]`, reading them all |
+| added to your array | `$source \| to_arrayref(\@mine)` | `push @mine, @$source` |
+| each, as it comes | `Ekorn::Pipeline->new->iterator($source)` and a `while` | `for (@$source)`, reading them all first |
+
+**One more thing, found writing it, for your docs too:** a chain run
+only for its sink's effect, written as a statement of its own, such
+as `$sth->iterate | insert_rows($target);`, runs, but Perl warns
+"Useless use of numeric bitwise or (|) in void context", as it
+compiles the line, before any overload is called, so neither project
+can stop it. Ekorn's docs say to keep the result:
+`my $n = $source | to_file($path)`.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
