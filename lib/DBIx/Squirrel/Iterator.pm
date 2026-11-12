@@ -163,6 +163,7 @@ sub sth ($self) {
 # first row, through the iterator's stages, passing on the statement's
 # columns as the run's context.
 sub ekorn_source ($self) {
+    local $self->{read_by_pipeline} = 1;
     $self->reset;
     return $self->{run}->ekorn_source;
 }
@@ -201,6 +202,10 @@ sub _statement ($self) {
         my $sth   = $self->{sth};
         my $slice = $self->{slice};
         my @binds = @{ $self->{bind_values} };
+        # With no stages of the iterator's own, and no pipeline reading it,
+        # nothing asks which row a value came from, so a step gives the
+        # whole batch, which costs less than a row at a time.
+        my $whole = !@{ $self->{stages} } && !$self->{read_by_pipeline};
         my @buffer;
         my $batch = $BATCH_FIRST;
         my $done  = !defined $sth->execute(@binds);
@@ -243,7 +248,7 @@ sub _statement ($self) {
                 $batch  = min($batch * 2, $BATCH_LIMIT) if @$rows >= $batch;
                 @buffer = @$rows;
             }
-            return $made->(shift @buffer);
+            return $made->($whole ? splice @buffer : shift @buffer);
         };
         my $end = sub ($how) {
             @buffer = ();

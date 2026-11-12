@@ -27,7 +27,9 @@ they're Ekorn's, delegated to. D24 settled: batches grow from 2 to 64,
 as in version 1. D25 settled: `single` finishes the run, as `first`
 does. D26 settled: `all` has a fast path. D27 settled: `reset` clears
 everything the run held. D28 settled: Ekorn is asked to make a
-step's many values cheap; nothing else is needed. None open.
+step's many values cheap; nothing else is needed. D29 settled: a whole
+batch in a step, only with no stages and no pipeline reading. D30
+settled: Ekorn is asked about its `&{}` overload's cost. None open.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -313,6 +315,25 @@ its section 12.3 (Ekorn-Pipeline
   end, and its iterator's `all` take them in bulk; DBIx::Squirrel
   doesn't route rows around Ekorn, which would serve `$it->all` alone.
   Growing batches serve the second and third; the fourth holds.
+- [x] **D29.** Should a statement's source give its whole batch in a
+  step? Each value a step gives costs Ekorn something, so handing out
+  a batch at a time is quicker: over 297,848 narrow rows, `next` took
+  0.37 s, against 0.47 s a row at a time, and 0.35 s in version 2. But
+  `result_original` would then name the batch's last row, not the row
+  being worked on, as the design's 4.1 rules out. Iain decided on
+  2026-11-12, as recommended: only with no stages of the iterator's own
+  and no pipeline reading it, where nothing asks which row a value
+  came from, which serves `next` and `$it->all`. Weighed: also with
+  only a sink, 23% quicker for `iterate(keep_all)`, but a user's own
+  sink asking `result_original` would get the wrong row; and a row at a
+  time always. The design's Q31.
+- [x] **D30.** Should Ekorn be asked about what's left of each value's
+  cost, which it named: a `try` and two `local`s for each value
+  through a stage, and the `&{}` overload on each call of an Element?
+  About the `&{}` overload only, Iain decided on 2026-11-12, as
+  recommended: every pull pays it. The `try` and `local`s keep a stop
+  or a die reported at its stage, and stay. Sent as a task. The
+  design's Q32.
 
 ## The plan
 

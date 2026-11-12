@@ -113,7 +113,11 @@ given wherever Ekorn takes a source:
   read no more than they need; each fetch that fills its batch doubles
   the next, up to 64. Today's fixed batch of 100 goes. The step gives
   one row at a time, so the row the source gave last, which
-  `result_original` reads, is the row being worked on (section 5).
+  `result_original` reads, is the row being worked on (section 5),
+  but for one case (Q31, settled): with no stages of the iterator's
+  own, and no pipeline reading it, nothing asks which row a value came
+  from, and the step gives the whole batch, which costs less. That
+  serves `next` and `$it->all`.
 - **Its end finishes the statement handle,** however the run ended.
 - **Its context is the run's:** `{columns => [...], statement => $sth}`,
   and the row it gave last (section 5).
@@ -602,7 +606,7 @@ their numbers, with the decision in record 2026-0013.
 ### 13.1 Open
 
 A question that arises, from Ekorn-Pipeline's answers or from
-building, is added here, from Q31.
+building, is added here, from Q33.
 
 None, since 2026-11-12.
 
@@ -636,6 +640,8 @@ None, since 2026-11-12.
 | **Q28** | Ekorn's `single` leaves its iterator open, so a statement that warned stays active, holding a lock on SQLite | D25: DBIx::Squirrel's `single` finishes the run after Ekorn's, as `first` does |
 | **Q29** | What does `reset` clear? | D27: everything the run held: a value Ekorn's iterator holds, the batch, which starts again at 2, and Context's row and count. A fresh run started any other way does the same. A guarantee of 4.6, with a test |
 | **Q30** | Do Ekorn's protocols support a statement's buffering, or does it need more of them? | D28, from the spike: one thing more. Ekorn is asked to make a step's many values cheap, and its iterator's `all` take them in bulk, as each value costs a wrapping and a call; a lookahead that consumes nothing and a way to tell a source how many are wanted aren't needed, as growing batches serve; the behaviour relied on holds (section 4.8) |
+| **Q31** | Should a statement's source give its whole batch in a step, as each value costs Ekorn something, though `result_original` would then name the batch's last row? | D29: only with no stages of the iterator's own and no pipeline reading it, where nothing asks which row a value came from. `next` over 297,848 narrow rows then takes 0.38 s, against 0.47 s a row at a time and 0.35 s in version 2 |
+| **Q32** | Should Ekorn be asked about what's left of each value's cost: a `try` and two `local`s for each stage, and the `&{}` overload on each call of an Element? | D30: about the `&{}` overload only, which every pull pays. The `try` and `local`s keep a stop or a die reported at its stage, and stay |
 | **Q24** | Do the `select` methods take stages? | D18: yes. What the DBI gives is pushed through them: with stages, the call gives what comes out of the last stage; without, what the DBI gives |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were
