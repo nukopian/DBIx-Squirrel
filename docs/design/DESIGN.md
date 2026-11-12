@@ -4,7 +4,7 @@
 decisions in [record 2026-0013](../changes/2026-0013-one-design.md).
 It waits on Iain's approval, together with Ekorn-Pipeline's design,
 before either is split into roadmap items. Its questions are numbered
-**Q1** and on, in section 13; open ones first.
+**Q1** and on, in section 13, and all are settled.
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
 `pipeline-experimental`, reviewed here at
@@ -188,7 +188,8 @@ asks. Ekorn has been told.
 `pluck` and `as_hash` take the columns from `run_context()`. Each
 croaks where there are none, as in a pushed run, or one over a source
 that isn't a statement: "Expected an iterator, for the column names",
-as now (**Q13**).
+as now (Q13, settled). `pluck` by name on a hash row uses the row's
+own keys, as now, so it needs no columns.
 
 ## 6. Ending a run: Ekorn's sinks
 
@@ -332,9 +333,8 @@ their numbers, with the decision in record 2026-0013.
 
 ### 13.1 Open
 
-| | Question | Whose | Recommendation |
-|---|---|---|---|
-| **Q13** | `pluck` and `as_hash` with no run's columns | DBIx-Squirrel's | croak, as now, with the message unchanged; give a hash row's own keys to `pluck` by name, as now, without needing columns |
+None, since 2026-11-12. A question that arises, from Ekorn-Pipeline's
+answers or from building, is added here as Q17 and on.
 
 ### 13.2 Settled
 
@@ -350,6 +350,7 @@ their numbers, with the decision in record 2026-0013.
 | **Q8** | What does a result sink give? | D10, overtaken by D11: a `Results` over the rows collected. No result sink is made now |
 | **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's: `to_array`, `to_arrayref`, `to_scalar` and `count`. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing |
 | **Q16** | `count` or `to_count`? | D12: `count`, as it says what the sink is, not where the result goes |
+| **Q13** | `pluck` and `as_hash` with no run's columns? | D13: croak, as now, with the message unchanged; `pluck` by name on a hash row uses the row's own keys, as now, without columns |
 | **Q11** | Keep `insert_into`? | D9: not now. Roadmap 2026-0012 is dropped, and it'll be found again if a need comes |
 | **Q12** | `is_stage` took a bind value with an `as_list` method for a sink | D8, from Ekorn's D49: its role methods are renamed `ekorn_source`, `ekorn_stage`, `ekorn_sink` and `ekorn_sink_scalar`, so `is_stage` leaves any other object as a bind value. Checked at 8ce1c95. DBIx::Squirrel adds a test with such a bind value |
 

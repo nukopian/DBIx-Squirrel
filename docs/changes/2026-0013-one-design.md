@@ -11,7 +11,8 @@ locally first, CI later. D8 settled: Ekorn renamed its role methods,
 so a bind value is never taken for a stage. D9 settled: `insert_into`
 dropped for now. D10 settled, then overtaken by D11. D11 settled: `all`,
 `single` and `count` become sinks, Ekorn's. D12 settled: `count`, not
-`to_count`. One question open, in the design's section 13.1.
+`to_count`. D13 settled: `pluck` and `as_hash` croak without columns,
+as now. None open.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -121,6 +122,11 @@ its section 12.3 (Ekorn-Pipeline
 - [x] **D12.** `count` or `to_count`? `count`, Iain decided on
   2026-11-12, "as in that's what it is, not what we're putting the
   result in".
+- [x] **D13.** What do `pluck` and `as_hash` do in a run whose source
+  gives no columns, such as a pushed run? Croak, as now, with the
+  message unchanged, Iain decided on 2026-11-12, as recommended.
+  `pluck` by name on a hash row uses the row's own keys, as now, so it
+  needs no columns.
 
 ## The plan
 
