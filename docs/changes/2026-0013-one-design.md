@@ -14,8 +14,8 @@ dropped for now. D10 settled, then overtaken by D11. D11 settled: `all`,
 `to_count`. D13 settled: `pluck` and `as_hash` croak without columns,
 as now. D14 settled: the sinks are `all_items`, `first_item` and
 `only_item`. D15 settled: container sinks are another kind. D16 settled:
-DBIx::Squirrel's calls give an iterator unless a sink is last. None
-open.
+DBIx::Squirrel's calls give an iterator unless a sink is last. D17
+settled: `only_item` warns at a second item. None open.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -165,6 +165,12 @@ its section 12.3 (Ekorn-Pipeline
   many so far" goes, as counting is a stage's or a sink's job; and
   the sinks' names are Ekorn's to settle. No call of DBIx::Squirrel's
   lists or counts by its calling context.
+- [x] **D17.** What does `only_item` do at a second item? It warns, and
+  doesn't croak, Iain said on 2026-11-12: "It warns if there are more
+  than 1 items. For when you SELECT but forget LIMIT 1." It gives the
+  first item, and stops the run once it has seen the second. That
+  corrects D11 and D14, which said it croaks at a second, as `single`
+  does today.
 
 ## The plan
 

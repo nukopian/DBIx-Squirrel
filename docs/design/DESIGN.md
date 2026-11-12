@@ -213,7 +213,7 @@ The sinks are Ekorn's, as none needs a database:
 |---|---|
 | `$it->all` | `all_items`: every result, as a list |
 | (none) | `first_item`: the first result, stopping the run there |
-| `$it->single` | `only_item`: the one result, asserting it's the only one, with a croak at a second |
+| `$it->single`, which croaks at a second result | `only_item`: the one result, with a warning if there's a second, for a SELECT that forgot `LIMIT 1`; it gives the first, and stops the run there |
 | `$it->count`, after a drain | `count`, how many results there were |
 
 Each is named for what it gives, not for what the result is put in
@@ -376,7 +376,7 @@ their numbers, with the decision in record 2026-0013.
 ### 13.1 Open
 
 None, since 2026-11-12. A question that arises, from Ekorn-Pipeline's
-answers or from building, is added here as Q20 and on.
+answers or from building, is added here as Q21 and on.
 
 ### 13.2 Settled
 
@@ -398,6 +398,7 @@ answers or from building, is added here as Q20 and on.
 | **Q17** | What are the other sinks called? | D14: `all_items`, `first_item`, and `only_item`, which asserts it's the only item; named for what they are, as `count` is. `to_array`, `to_arrayref` and `to_scalar` were wrongly named for these, for their containers |
 | **Q18** | What gives every result in one reference, to end a `\|` chain? | D15: `to_arrayref`, a container sink. Container sinks, `to_array`, `to_arrayref`, `to_hash` and `to_hashref`, are another kind, valid beside those named for what they give |
 | **Q19** | What does a call give without a sink last? | D16: the rule in section 3: DBIx::Squirrel's own calls give an iterator, the Sugar's statements included; the DBI's calls give what the DBI gives |
+| **Q20** | What does `only_item` do at a second item? | D17: it warns, not croaks, and gives the first: there's a second when a SELECT forgot `LIMIT 1` |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were
 dropped as moot by D11, which leaves it none.
