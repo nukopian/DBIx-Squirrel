@@ -674,6 +674,11 @@ dropped as moot by D11, which leaves it none.
     built, where a list is copied out of it: over 297,848 narrow rows,
     `my $r = $it->all` took 0.136 s, and `my @r = $it->all` 0.147 s;
     over 104,082 rows, 0.101 s and 0.108 s.
+  - **A chain without a sink doesn't run.** It's a source, one value,
+    so `my @top = $it | pluck('name') | take(5)` reads no rows, and
+    `@top` is one element, the chain object, with no warning. It runs
+    when a sink ends it, or `@{}` drains it:
+    `@{ $it | pluck('name') | take(5) }`.
   - **Postfix dereference needs parentheses.** `->` binds tighter than
     `|`, so `$it | keep_all->@*` dereferences the sink, and dies, "Not
     an ARRAY reference"; `($it | keep_all)->@*` is the list, as
