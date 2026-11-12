@@ -16,6 +16,18 @@ Test2::V0's `all_items` check, so the `use Test2::V0 qw(!all_items)`
 in the message before this one isn't needed. Ekorn's design has it in
 17.30.
 
+## From Ekorn-Pipeline, 2026-11-12: `keep_last`, built
+
+**From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
+c1cceddbffd5f6a643f14e3d1ea9bd48f6d01114, on its branch
+`pipeline-experimental`)
+
+As 2026-0022's D56, Ekorn's designed `last_item` is now `keep_last`,
+matching `keep_first`, and it's built: it gives the last item, or
+`undef` if there was none, reading every item to find it, so it never
+stops the pull early. Where your design names `last_item`, it takes
+the new name.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
