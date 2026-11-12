@@ -195,7 +195,7 @@ as now (**Q13**).
 
 Iain is more interested in these than in `insert_into` (2026-11-12).
 They're sinks that collect rows into DBIx::Squirrel's result objects,
-so a pipeline can end in a result set, whatever its source.
+so a pipeline can end in results, whatever its source.
 
 Today, `results` makes a `DBIx::Squirrel::Results`, an iterator that
 blesses each row into a class made for the statement's columns, with
@@ -203,31 +203,40 @@ an accessor for each. A row's class comes from its columns' names. So
 the same can be done by any run whose source gives columns in its
 context, a statement or not.
 
-A first shape, for review:
+The sink's result is one of DBIx::Squirrel's own iterators, not a new
+class (Q8, settled):
 
 ```perl
 use DBIx::Squirrel::Sinks qw(to_results);
 
-my $set    = $sth->iterate(1990) | take(10) | to_results;
-my $artist = $set->first;
+my $results = $sth->iterate(1990) | take(10) | to_results;
+my $artist  = $results->next;
 say $artist->name;
+say $results->count;
 ```
 
 - **`to_results`** is a scalar sink, made with Ekorn's `sink_scalar`.
   Its set-up finds the row class for the run's columns, with
   `DBIx::Squirrel::Result->class_for`. Its step blesses each row, an
-  array, into it. Its result is a result set.
-- **A result set** holds the rows, in order. It has `all`, `first` and
-  `count`, and is a source of its rows (`ekorn_source`), giving its
-  columns as its context. So it can be read again, through any
-  pipeline, as a statement can, but from memory.
+  array, into it. Its result is a `DBIx::Squirrel::Results` over the
+  rows it collected.
+- **The results it gives** have the interface `results` gives today:
+  `next`, `all`, `single`, `count` and `reset`. They're a source too
+  (`ekorn_source`), giving their columns as their context, so they can
+  be read again, through any pipeline, as a statement's can, but from
+  memory.
 - **Its rows are `DBIx::Squirrel::Result` objects,** the same as
-  `results` hands out, with their accessors, `get_column`, and any
-  class given by `ekorn_result_class`.
+  `results` hands out, with their accessors and `get_column`.
 
-Open questions: what a result set is (Q8), what rows `to_results`
-takes (Q9), which other result sinks follow (Q10), and whether a
-result set keeps `result_original` (Q14).
+So `DBIx::Squirrel::Iterator`, and `Results` with it, take rows already
+in hand as well as a statement. That widens Iterator: the statement's
+parts of it, executing, fetching in batches and finishing the handle,
+are needed only when there's a statement. How it's split is for the
+work, once the design is approved.
+
+Open questions: what rows `to_results` takes (Q9), which other result
+sinks follow (Q10), and whether results read again keep
+`result_original` (Q14).
 
 ## 7. insert_into, dropped
 
@@ -271,8 +280,8 @@ Ekorn's (Ekorn 10).
 | Module | Today | In this design |
 |---|---|---|
 | `DBIx::Squirrel`, `::db`, `::st` | the DBI subclass and its handles; `iterate`, `results`, the `select` methods | the same. `db` and `st` take `pipe` and `tap` from `Ekorn::Pipeline::Pipes`, the parent class Ekorn offers for it (Ekorn 11.1), not from a facade |
-| `::Iterator` | rows through a pipeline of its own class | a source (section 4); its stages run by Ekorn's pipeline; `\|` and `@{}` |
-| `::Results`, `::Result` | rows as objects | unchanged, but for section 4.4 |
+| `::Iterator` | rows through a pipeline of its own class | a source (section 4); its stages run by Ekorn's pipeline; `\|` and `@{}`; rows in hand as well as a statement's (section 6) |
+| `::Results`, `::Result` | rows as objects | unchanged, but for section 4.4; `Results` is also what `to_results` gives (section 6) |
 | `::Context` | the iterator, the result's number and its row | a thin layer over `run_context()` and `ending()` (section 5) |
 | `::Stages::Rows` | `pluck`, `as_hash`, by Context | the same, by `run_context()` |
 | `::Sinks` | (new) | result sinks (section 6) |
@@ -331,11 +340,10 @@ their numbers, with the decision in record 2026-0013.
 
 | | Question | Whose | Recommendation |
 |---|---|---|---|
-| **Q8** | What is a result set: a list of rows, or an object? | DBIx-Squirrel's | an object, `DBIx::Squirrel::ResultSet`, with `all`, `first` and `count`, and `ekorn_source`, so it can be read again; `to_results` is its scalar sink. A list sink, `to_result_rows`, can follow if wanted |
 | **Q9** | What rows does `to_results` take? | DBIx-Squirrel's | arrays in the run's column order, as a statement gives them; hashes by their keys, sorted, as there's no order to take; and croak at anything else, or at an array without a run's columns |
 | **Q10** | Which other result sinks? | DBIx-Squirrel's | none at first. Candidates: `to_result` (the first row as an object, as `single`), and a sink keyed by a column, as `selectall_hashref` |
 | **Q13** | `pluck` and `as_hash` with no run's columns | DBIx-Squirrel's | croak, as now, with the message unchanged; give a hash row's own keys to `pluck` by name, as now, without needing columns |
-| **Q14** | Does a result set's `ekorn_source` keep `result_original`? | DBIx-Squirrel's | yes: its source keeps the row it gave last in its context, as a statement's does |
+| **Q14** | Do results read again, from memory, keep `result_original`? | DBIx-Squirrel's | yes: their source keeps the row it gave last in its context, as a statement's does |
 
 ### 13.2 Settled
 
@@ -348,6 +356,7 @@ their numbers, with the decision in record 2026-0013.
 | **Q5** | `insert_into` and a transaction already begun? | D5: it begins and commits only with `AutoCommit` on |
 | **Q6** | The facades? | D6: `Gather`, `Stop` and the `Stages::*` modules are plain re-exports; `Pipeline` and `Pipes` go |
 | **Q7** | CI against Ekorn's `pipeline-experimental`? | D7: yes, but locally first, and CI once the designs are nailed down |
+| **Q8** | What does a result sink give? | D10: one of DBIx::Squirrel's own iterators, a `Results` over the rows collected, with the interface `results` gives today, and readable again as a source. Iterator takes rows in hand as well as a statement. Weighed: a list of rows, which can't be read again |
 | **Q11** | Keep `insert_into`? | D9: not now. Roadmap 2026-0012 is dropped, and it'll be found again if a need comes |
 | **Q12** | `is_stage` took a bind value with an `as_list` method for a sink | D8, from Ekorn's D49: its role methods are renamed `ekorn_source`, `ekorn_stage`, `ekorn_sink` and `ekorn_sink_scalar`, so `is_stage` leaves any other object as a bind value. Checked at 8ce1c95. DBIx::Squirrel adds a test with such a bind value |
 

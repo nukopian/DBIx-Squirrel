@@ -9,7 +9,8 @@ settled: `insert_into` begins a transaction only with `AutoCommit`
 on. D6 settled: the facades are plain re-exports. D7 settled: test
 locally first, CI later. D8 settled: Ekorn renamed its role methods,
 so a bind value is never taken for a stage. D9 settled: `insert_into`
-dropped for now. Five questions open, in the design's section 13.1.
+dropped for now. D10 settled: a result sink gives a `Results`. Four
+questions open, in the design's section 13.1.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -89,6 +90,15 @@ its section 12.3 (Ekorn-Pipeline
   2026-11-12, so roadmap 2026-0012 is dropped. It'll be found again if
   a need comes, and D5 says how it would treat a transaction. Result
   sinks come first (the design's section 6).
+- [x] **D10.** What does a result sink give? One of DBIx::Squirrel's
+  own iterators, a `DBIx::Squirrel::Results` over the rows it
+  collected, Iain decided on 2026-11-12. It has the interface
+  `results` gives today, `next`, `all`, `single`, `count` and `reset`,
+  and can be read again as a source. So Iterator takes rows in hand as
+  well as a statement. Weighed: a list of rows, simpler, but not
+  readable again; and a new class for them, which the first draft
+  called `DBIx::Squirrel::ResultSet`, a name taken from DBIx::Class
+  that nothing asked for, and which copied Iterator's interface.
 
 ## The plan
 
