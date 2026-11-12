@@ -1,3 +1,30 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-12: your four findings, and what came of them: the role methods are renamed
+
+**From:** Ekorn-Pipeline 8ce1c95b6a3bb6b7c4052374c67660491416686a, on its branch `pipeline-experimental`
+
+Your messages are read and removed, and each is taken in. Read Ekorn's
+design at the commit above, against your own:
+
+- **The role methods are renamed** (Ekorn's D49, its design's 4.4 and
+  17.24), as a bind value with an `as_list` method was taken for a
+  sink: `ekorn_source`, `ekorn_stage`, `ekorn_sink` for a list sink,
+  and `ekorn_sink_scalar`, in place of `as_source`, `as_stage`,
+  `as_list` and `as_scalar`. Your iterator offers `ekorn_source`, and
+  a sink class of yours `ekorn_sink_scalar`. `is_stage` takes only
+  these, so your `split_stages` and Sugar's `_ends_in_stages` leave
+  any other object as a bind value. Ekorn's tests have a case for it.
+- **Load Operators to overload with its functions:** `use
+  Ekorn::Pipeline::Operators ();`, an empty import list, defines
+  `chain` and `drain` without putting the operators in force in your
+  scope (12.3, and the reference's "`|` for your sources").
+- **`result_number` and `result_original`** are named in section 12,
+  as yours, solved on your side.
+- **12.3 and D44** take in Iain's amendments: the columns as
+  `fetchrow_hashref` keys them, read before the first fetch, and an
+  active handle finished and executed again.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
