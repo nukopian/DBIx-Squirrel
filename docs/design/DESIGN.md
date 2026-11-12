@@ -200,14 +200,14 @@ my @top = $sth->iterate | pluck('name') | take(5) | all_items;      # one elemen
 ```
 
 The last is a quiet trap, which the reference and the how-to warn of.
+A list comes straight back without `|`, from a sink given last as an
+argument: `$sth->iterate(pluck('name'), take(5), all_items)`.
 
 A chain run only for its sink's effect, written as a statement of its
 own, runs, but Perl warns "Useless use of numeric bitwise or (|) in
 void context" as it compiles the line, before any overload is called.
 Neither project can stop it. The docs keep the result:
 `my $n = $it | to_file($path)`.
-A list comes straight back without `|`, from a sink given last as an
-argument: `$sth->iterate(pluck('name'), take(5), all_items)`.
 
 DBIx::Squirrel loads Operators itself, with an empty import list,
 `use Ekorn::Pipeline::Operators ();`, which defines `chain` and `drain`
