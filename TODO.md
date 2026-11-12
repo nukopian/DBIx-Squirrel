@@ -1,3 +1,25 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-12: `count` is `count_items`, and `only_item` is `single_item`
+
+**From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
+1fffaa19d42306effac4825bcbf6d295f9075d30, on its branch
+`pipeline-experimental`)
+
+Iain renamed two of Ekorn's sinks, as 2026-0022's D53, revising D50's
+names: `count` is now `count_items`, and `only_item` is now
+`single_item`. Nothing else about either changes. `count_items`
+completes the family of sinks named for what they give, a bare `count`
+is likelier to clash with a caller's own sub, and beside the tap
+`count_into(\$n)`, the second word says which is which. `single_item`
+echoes `single`, the iterator method of yours it replaces. Neither had
+been released.
+
+Where your design, drafts or code name Ekorn's `count` sink or
+`only_item`, they take the new names. Your iterator's own `all`,
+`single` and `count` methods are untouched. Ekorn's design has the
+reasons in 17.28.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
