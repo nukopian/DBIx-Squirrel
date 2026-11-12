@@ -4,7 +4,7 @@
 decisions in [record 2026-0013](../changes/2026-0013-one-design.md).
 It waits on Iain's approval, together with Ekorn-Pipeline's design,
 before either is split into roadmap items. Its questions are numbered
-**Q1** and on, in section 13, and all are settled.
+**Q1** and on, in section 13. All are settled but Q25.
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
 `pipeline-experimental`, reviewed here at
@@ -58,8 +58,9 @@ read from, and which `|` can start a chain with. Its stages are run
 by Ekorn's own pipeline, not DBIx::Squirrel's subclass, which goes.
 `pluck` and `as_hash` ask Ekorn for the run's columns, so they work in
 a user's own pipeline too. A run ends in one of Ekorn's sinks, such as
-`keep_all` or `count_items`, not in the iterator's `all`, `single` and
-`count`, which go. That breaks code, which v3.0.0 is for: it's
+`keep_all` or `count_items`, or in the iterator's `all`, `first` and
+`single`, which take what's left of a run, as Ekorn's iterator's do;
+its `count` goes. That breaks code, which v3.0.0 is for: it's
 DBIx::Squirrel v3.0.0, on Ekorn v0.3.0.
 
 ## 3. What DBIx::Squirrel delivers
@@ -140,9 +141,9 @@ A DBI statement handle can't have two executions going at once. So:
 Ekorn 12.3 had it croak whenever the handle is active. DBIx::Squirrel
 keeps its own rule, which Ekorn has been told.
 
-### 4.4 `next` and `reset`; `all`, `single` and `count` go
+### 4.4 `next`, `all`, `first`, `single` and `reset`; `count` goes
 
-What's left of the iterator's methods is rebuilt over the same source:
+The iterator's methods are rebuilt over the same source:
 
 - `next` pulls from the run, starting one if none is going.
 - `reset` ends the run, if one is going, and keeps the bind values and
@@ -150,8 +151,17 @@ What's left of the iterator's methods is rebuilt over the same source:
 - A new `ended` gives what Ekorn's iterator says about how the run
   ended: `done`, `stopped` or `died`.
 
-`all`, `single` and `count` go (Q15, settled). Each ended a run, so
-each becomes a sink, given last (section 6).
+- `all`, `first` and `single` take what's left of the run, as Ekorn's
+  iterator's do (Ekorn's D59 and D60; Q15, revised): `all` every
+  result still to come, as a list, or an array reference where one
+  value is asked for; `first` the next result, or `undef`, ending the
+  run; `single` the next result, or `undef`, looking one ahead and
+  warning "Expected only one item, but there were more" if there's
+  another, without consuming it. Iain: "The iterator is getting single
+  back. And all. And first." Whether they're Ekorn's, through the
+  iterator inside, or DBIx::Squirrel's own, is Q25.
+
+`count` goes (Q15). Counting is a stage's or a sink's job (section 6).
 
 An iterator that's let go ends its run, through Ekorn's iterator's
 `DESTROY` (Ekorn's D28), so its handle is finished. So
@@ -277,15 +287,17 @@ which uses the hash's own keys (Q21, settled).
 A run ends in a sink, given as its last stage, which says what the
 caller wants back (Q15, settled). The calling context no longer
 decides it: `my $n = ...` and `my @rows = ...` get what the sink gives,
-not a count or a list by Perl's rules.
+not a count or a list by Perl's rules. An iterator already running,
+part-read with `next`, ends in its own `all`, `first` or `single`
+instead, which take what's left of the run (section 4.4, D22).
 
 The sinks are Ekorn's, as none needs a database:
 
 | Today | In this design |
 |---|---|
-| `$it->all` | `keep_all`: every result, as a list |
-| (none) | `keep_first`: the first result, stopping the run there |
-| `$it->single`, which croaks at a second result | `keep_single`: the one result, with a warning if there's a second, for a SELECT that forgot `LIMIT 1`; it gives the first, and stops the run there |
+| `$it->all` | `keep_all`: every result, as a list; or `$it->all` still, for what's left |
+| (none) | `keep_first`: the first result, stopping the run there; or `$it->first` |
+| `$it->single`, which croaks at a second result | `keep_single`, or `$it->single`, without consuming the one it looks at: the one result, with a warning if there's a second, for a SELECT that forgot `LIMIT 1`; it gives the first, and stops the run there |
 | (none) | `keep_last`: the last result, reading every one to find it |
 | (none) | `keep(N)`: the first N results, as a list, stopping the run once it has them |
 | `$it->count`, after a drain | `count_items`, how many results there were |
@@ -425,7 +437,7 @@ Ekorn's (Ekorn 10).
 | Module | Today | In this design |
 |---|---|---|
 | `DBIx::Squirrel`, `::db`, `::st` | the DBI subclass and its handles; `iterate`, `results`, the `select` methods | the same. `db` and `st` take `pipe` and `tap` from `Ekorn::Pipeline::Pipes`, the parent class Ekorn offers for it (Ekorn 11.1), not from a facade |
-| `::Iterator` | rows through a pipeline of its own class; `next`, `all`, `single`, `count`, `reset` | a source (section 4); its stages run by Ekorn's pipeline; `\|` and `@{}`; `next`, `reset` and `ended`, as `all`, `single` and `count` become sinks (section 6) |
+| `::Iterator` | rows through a pipeline of its own class; `next`, `all`, `single`, `count`, `reset` | a source (section 4); its stages run by Ekorn's pipeline; `\|` and `@{}`; `next`, `all`, `first`, `single`, `reset` and `ended`, as Ekorn's iterator's (section 4.4); `count` goes |
 | `::Results`, `::Result` | rows as objects | unchanged, but for section 4.4 |
 | `::Context` | the iterator, the result's number and its row | a thin layer over `run_context()` and `ending()` (section 5) |
 | `::Stages::Rows` | `pluck`, `as_hash`, by Context | the same, by `run_context()` |
@@ -445,7 +457,10 @@ Ekorn's (Ekorn 10).
 | `DBIx::Squirrel::Pipeline->new(...)` | fails: the module is gone | `Ekorn::Pipeline->new(...)`, or `pipeline(...)` from Ekorn::Pipeline::Factories |
 | `$x isa 'DBIx::Squirrel::Pipeline'` | false | `$x isa 'Ekorn::Pipeline'` |
 | `ref $stage eq 'CODE'`, `is_coderef($stage)`, for a stage made by `take`, `gather` and the like | false: they're objects now, called as code references (Ekorn's Q12) | `is_stage($stage)` |
-| `$it->all`, `$it->single`, `$it->count` | fails: the methods are gone | a sink given last: `keep_all`, `keep_single`, `count_items` (section 6) |
+| `$it->count` | fails: the method is gone | `count_items` given last (section 6), or `count_into(\$n)` as a tap |
+| `my $n = $it->all`, for a count | an array reference | `count_items` given last |
+| `$it->single`, after `next` | the next result, not a fresh run's one | `$it->reset->single` |
+| `$it->single`, at a second result | a warning, and the first, not a croak | test for it, or keep the croak with a stage of your own |
 | `my @names = artist_names sub {...}`, a Sugar statement given stages | gives an iterator, not every result | give a sink last, `keep_all` |
 | a Sugar statement given stages in scalar context, for a count | gives an iterator | give `count_items` last |
 | `result_number` or `Context::iterator` in a user's own pipeline over an iterator | `undef` | count in a stage of their own |
@@ -502,8 +517,22 @@ their numbers, with the decision in record 2026-0013.
 
 ### 13.1 Open
 
-None, since 2026-11-12. A question that arises, from Ekorn-Pipeline's
-answers or from building, is added here as Q25 and on.
+A question that arises, from Ekorn-Pipeline's answers or from
+building, is added here, from Q25.
+
+**Q25. Are the iterator's `all`, `first` and `single` Ekorn's, or
+DBIx::Squirrel's own?** Iain's: DBIx::Squirrel's `single` might be
+specialised, using the batch fetch as a lookahead that consumes
+nothing: a batch of two rows or more says there's another, and one
+row, fewer than the 100 asked for, says there isn't. But Ekorn's
+`single` already looks ahead without consuming (Ekorn's D60). With no
+stages, its lookahead takes the second row from the batch already
+fetched, so it costs no fetch and runs no stage; with stages, rows
+aren't results, as a filter can drop one and a flatMap make several,
+so a count of rows would be wrong. **Recommended:** delegate all three
+to the Ekorn iterator inside, writing no lookahead of DBIx::Squirrel's
+own; and keep the batch size at two or more, so the batch is always
+the lookahead.
 
 ### 13.2 Settled
 
@@ -520,7 +549,7 @@ answers or from building, is added here as Q25 and on.
 | **Q11** | Keep `insert_into`? | D9: not now. Roadmap 2026-0012 is dropped, and it'll be found again if a need comes |
 | **Q12** | `is_stage` took a bind value with an `as_list` method for a sink | D8, from Ekorn's D49: its role methods are renamed `ekorn_source`, `ekorn_stage`, `ekorn_sink` and `ekorn_sink_scalar`, so `is_stage` leaves any other object as a bind value. Checked at 8ce1c95. DBIx::Squirrel adds a test with such a bind value |
 | **Q13** | `pluck` and `as_hash` with no run's columns? | D13: croak, as now, with the message unchanged; `pluck` by name on a hash row uses the row's own keys, as now, without columns |
-| **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's, named in D14. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing |
+| **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's, named in D14. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing. Revised by D22: `all`, `single` and a new `first` come back, taking what's left of a run, as Ekorn's iterator's do (its D59 and D60); `count` stays gone |
 | **Q16** | `count` or `to_count`? | D12: `count`, as it says what the sink is, not where the result goes. Ekorn named it `count_items` (its D53) |
 | **Q17** | What are the other sinks called? | D14: `all_items`, `first_item`, and `only_item`, which asserts it's the only item; named for what they are, as `count` is. `to_array`, `to_arrayref` and `to_scalar` were wrongly named for these, for their containers. Ekorn named `only_item` `single_item` (its D53), then the three `keep_all`, `keep_first` and `keep_single` (its D55), each named for what it keeps; `keep_last` joined them (its D56) |
 | **Q18** | What gives every result in one reference, to end a `\|` chain? | D15: `to_arrayref`, a container sink. Container sinks, `to_array`, `to_arrayref`, `to_hash` and `to_hashref`, are another kind, valid beside those named for what they give. Overtaken by Ekorn's D54, which drops all four: a chain ends `\| keep_all`, which gives a reference (D20) |
@@ -543,7 +572,7 @@ dropped as moot by D11, which leaves it none.
 | 2026-0010, a `pipeline` key in Sugar | 8 | becomes names in a statement's definition (Ekorn's D36) |
 | 2026-0011, Ekorn's `install_sub` and `is_name` | 8 | not needed: the Sugar keeps its own (Ekorn 10). Drop it |
 | 2026-0012, `insert_into` | 7 | dropped (Q11) |
-| (new) | 6 | runs ending in Ekorn's sinks; `all`, `single` and `count` gone |
+| (new) | 4.4, 6 | runs ending in Ekorn's sinks, or the iterator's `all`, `first` and `single`; `count` gone |
 | (new) | 4 | the iterator as a source, Context over `run_context()`, the facades gone: the v3.0.0 work |
 
 ## 15. Knock-on effects on other documents
@@ -553,7 +582,7 @@ dropped as moot by D11, which leaves it none.
 - **Reference:** `DBIx::Squirrel::Pipeline` goes, and its examples use
   `Ekorn::Pipeline->new`; the iterator's section says it's a source,
   with `ekorn_source`, `ended`, `|` and `@{}`; Context says where each
-  function works; Stages say they're objects; `all`, `single` and `count` are sinks, given last;
+  function works; Stages say they're objects; `all`, `first` and `single` take what's left of a run, and `count` goes;
   Sugar's definitions take names.
 - **How-to:** about a dozen examples use `DBIx::Squirrel::Pipeline`, and
   move to Ekorn's. `@{}` on an iterator is explained in detail, with

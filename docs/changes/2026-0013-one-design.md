@@ -21,7 +21,9 @@ settled: `only_item` warns at a second item. D18 settled: the `select`
 methods take stages. D19 settled: sinks' names clashing on import.
 D20 settled: a list sink asked for one value gives an array
 reference. D21 settled: `pluck` after a reshaping stage, warned of in
-the docs. None open.
+the docs. D22 settled: `all`, `single` and a new `first` come back
+on the iterator, as on Ekorn's; `count` stays gone. D23 open: Ekorn's
+methods, or DBIx::Squirrel's own.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -224,6 +226,30 @@ its section 12.3 (Ekorn-Pipeline
   how-to say so loudly, and show `as_hash` first, then `pluck` by
   name, which uses the hash's own keys. Detecting a reshaped row would
   need more from Ekorn, and wasn't asked for.
+- [x] **D22.** Do `all`, `single` and `first` come back as the
+  iterator's methods? Yes, Iain decided on 2026-11-12: "The iterator is
+  getting single back. And all. And first. At the Ekorn level, too."
+  Ekorn's iterator has them, as its D59 and D60: `all` gives what's
+  left of the run, a list, or an array reference where one value is
+  asked for; `first` the next value, ending the run; `single` the next
+  value, looking one ahead and warning if there's another, without
+  consuming it. DBIx::Squirrel's take the same meanings. It came of
+  asking what went with the methods: taking the rest of a run after
+  `next`, which a sink can't, as a sink over an iterator starts a fresh
+  run (D4); a call with nothing to import; and discoverability. `count`
+  isn't named, and stays gone. This revises D11, which stays as the
+  rule for a run given a sink last. For users, `all` asked for one
+  value now gives a reference, not a count; `single` gives the next
+  result, not a fresh run's, and warns at a second, rather than croak.
+- [ ] **D23.** Are they Ekorn's, through the Ekorn iterator inside
+  DBIx::Squirrel's, or its own? Iain suggested `single` be
+  specialised, using the batch fetch as a lookahead that consumes
+  nothing. Ekorn's `single` already consumes nothing (its D60), and
+  with no stages, its lookahead takes the second row from the batch
+  already fetched; with stages, a count of rows would be wrong, as a
+  filter or a flatMap changes how many results there are.
+  Recommended: delegate all three to Ekorn's, and keep the batch size
+  at two or more. The design's Q25.
 
 ## The plan
 
@@ -303,3 +329,9 @@ Written when the design is approved and split into items.
   fccef9cd7a3e6d18b538327d76da1983d0944832), a list sink giving the
   first N items, stopping the run once it has them, with N checked as
   `take` checks it, and a negative N croaking. The design lists it.
+- **2026-11-12:** Ekorn-Pipeline's two messages on its iterator's
+  `all`, `first` and `single`, its D59 (Ekorn-Pipeline
+  1c10f0ce3e703936f983f0f82ffc902bbd1e4529) and D60, a lookahead that
+  consumes nothing (Ekorn-Pipeline
+  15578ab00286da51edb502c7af7fb1f48b197617). Iain decided the same for
+  DBIx::Squirrel's iterator, D22, and D23 asks whether it delegates.
