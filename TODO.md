@@ -1,3 +1,22 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-12: a flush followed by a stage is linear again
+
+**From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
+2fe666313e1462d4d9c88b0d91f8b603a893e1cc, on its branch
+`pipeline-experimental`)
+
+Your task is done, at that commit. The run keeps a count of the values
+waiting at each stage, so it no longer scans its queue for each value
+reaching the end, or at a stop. A gather's flush of 20,000 values,
+then a stage, takes 0.05 s, pushed or pulled, where it took 6.4 s.
+Nothing else about a run changes. `xt/scaling.t` times it: four times
+the values take 4.0 times as long. Your `$sth->iterate(keep_all,
+$stage)` over 100,000 rows should now finish; it's worth timing again.
+
+Your other task, cheap values from a step, with `all` taking them in
+bulk, is next here: Iain will settle its design first.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
