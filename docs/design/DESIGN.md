@@ -4,7 +4,7 @@
 decisions in [record 2026-0013](../changes/2026-0013-one-design.md).
 It waits on Iain's approval, together with Ekorn-Pipeline's design,
 before either is split into roadmap items. Its questions are numbered
-**Q1** and on, in section 13, and all are settled.
+**Q1** and on, in section 13; open ones first.
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
 `pipeline-experimental`, reviewed here at
@@ -110,7 +110,7 @@ given wherever Ekorn takes a source:
   run's own.
 - **Its end finishes the statement handle,** however the run ended.
 - **Its context is the run's:** `{columns => [...], statement => $sth}`,
-  and the row fetched last (section 5).
+  and the row it gave last (section 5).
 
 The column names are those `fetchrow_hashref` uses, from
 `$sth->{FetchHashKeyName}`, not `$sth->{NAME}`. They're read before the
@@ -169,12 +169,32 @@ without putting the operators in force anywhere (Ekorn 12.3). So a
 user who forgot to `use` it gets Operators' own message, not
 "Undefined subroutine".
 
-### 4.6 Results
+### 4.6 What the build must keep
+
+Three things the design promises that are easy to lose in the code:
+
+- **A run's end touches only its own run.** When `next` has a run
+  going and a fresh one starts (4.3), the old run is ended first. An
+  end finishes the handle only if its own run still holds it, so an
+  old run's end, fired late as its Ekorn iterator is let go, can't
+  finish the handle under a newer run.
+- **No cycles keep an iterator alive.** The iterator holds Ekorn's
+  iterator, which holds the source's closures. Those closures hold
+  the iterator weakly, as the source does today, or `DESTROY` never
+  runs and the handle is never finished (4.4).
+- **Ends at program exit are quiet.** Ekorn runs ends during global
+  destruction, in no set order, as warnings. An end there must not
+  call `finish` on a handle whose database has gone, so that a program
+  or a test under Test2::Plugin::NoWarnings ends without warnings.
+
+Each gets a test when it's built.
+
+### 4.7 Results
 
 `DBIx::Squirrel::Results` stays a subclass of DBIx::Squirrel's own
 Iterator, handing out each row as an object of a class made for its
 columns. That's DBIx::Squirrel subclassing itself, not Ekorn, so
-nothing changes but what section 4.4 changes for every iterator.
+nothing changes but what sections 4.4 and 4.6 change for every iterator.
 
 ## 5. Context: what a stage may ask
 
@@ -184,11 +204,11 @@ a thin layer over what Ekorn gives a stage, `run_context()` and
 
 | Function | Today | In this design |
 |---|---|---|
-| `result_original` | the row the value came from, as fetched; `undef` in a flush | the same, from the run's context: the statement's source keeps the row it fetched last there. So it works in a user's own pipeline too, behind `pluck` or any stage. `undef` while `ending()` is true, as now |
+| `result_original` | the row the value came from, as fetched; `undef` in a flush | the same, from the run's context: the statement's source keeps the row it gave last there, not the last of a batch it fetched. So it works in a user's own pipeline too, behind `pluck` or any stage. `undef` while `ending()` is true, as now |
 | `result_number` | the number of the result being made, from 1 | the same, but only where DBIx::Squirrel's own iterator runs the stages. In a user's own pipeline, it's `undef`, as nothing of DBIx::Squirrel's counts what comes out |
 | `iterator` | the iterator running the stages | the same, only where DBIx::Squirrel's own iterator runs them; otherwise `undef` |
 
-Keeping the row fetched last in the context bends Ekorn's D46, that a
+Keeping the row given last in the context bends Ekorn's D46, that a
 context describes the source, not the values. The source does change
 it, and only it: the row is the source's state, read by the stages
 behind it. A stage that reshapes values doesn't change it, as D46
@@ -254,8 +274,16 @@ statements. Without a sink last, each follows the rule in section 3:
 - **`iterate` and `results`** give an iterator, as today.
 - **The Sugar's statements, given stages,** give an iterator. Today
   they give every result, or a count in scalar context.
-- **The `select` methods** are the DBI's, so they give what the DBI
-  gives, as today, stages or not.
+- **The `select` methods** are the DBI's, so without stages they give
+  what the DBI gives, as today. Given stages, what the DBI gives is
+  pushed through them, as `pipe` pushes a handle, and the call gives
+  what comes out of the last stage (Q24, settled):
+  `selectall_arrayref` pushes one value, its array reference, and
+  `selectrow_array` the row's values. As a pushed run, it has no
+  context, so `pluck` and `as_hash` croak there (Q13). What comes out
+  is as Ekorn's pushed runs give it: every value in list context, and
+  in scalar context a count, or a sink's result if one giving one
+  value is last.
 
 The rule answers the rest:
 
@@ -343,7 +371,7 @@ Ekorn's (Ekorn 10).
 | a Sugar statement given stages in scalar context, for a count | gives an iterator | give `count` last |
 | `result_number` or `Context::iterator` in a user's own pipeline over an iterator | `undef` | count in a stage of their own |
 | `my($first) = $sth->iterate->next`, then using the handle | the handle is finished once the iterator goes | keep the iterator while the handle is in use |
-| everything else: `iterate`, `results`, the `select` methods and Sugar without a sink last, `pluck`, `as_hash`, `take`, `Stop`, `gather` | unchanged | nothing |
+| everything else: `iterate`, `results`, and the `select` methods and Sugar without stages or a sink last, `pluck`, `as_hash`, `take`, `Stop`, `gather` | unchanged | nothing |
 
 The last but one is a fix rather than a break, but a program that
 relied on the handle staying active would see it.
@@ -384,8 +412,11 @@ their numbers, with the decision in record 2026-0013.
 
 ### 13.1 Open
 
-None, since 2026-11-12. A question that arises, from Ekorn-Pipeline's
-answers or from building, is added here as Q21 and on.
+| | Question | Whose | Recommendation |
+|---|---|---|---|
+| **Q21** | `pluck` after a stage that reshapes rows reads the statement's columns, as a context describes the source (Ekorn's D46), and so picks the wrong field, silently. `\|` makes that easier to write | DBIx-Squirrel's | say so loudly in the reference and the how-to, and show `as_hash` first, then `pluck` by name, which uses the hash's own keys. Detecting a reshaped row isn't possible without more from Ekorn |
+| **Q22** | The rule in section 3 says no call lists or counts by its calling context, but a list sink last, `all_items`, and a pushed run without a sink, as a `select` method with stages gives, still do: in scalar context they give a count (Ekorn's D47) | DBIx-Squirrel's to say; Ekorn's if it should change | narrow the rule to say so: a sink giving one value is what removes the calling context; a list is a list. Tell Ekorn, in case it wants a list sink in scalar context to croak |
+| **Q23** | Ekorn's sinks, imported, can clash with names in the user's package: a Sugar database or statement called `count`, and Test2::V0's `all_items` | DBIx-Squirrel's | show in a test that the Sugar's clash check catches a sink of the same name; in the docs, import sinks by name, and in tests call `all_items` by its full name |
 
 ### 13.2 Settled
 
@@ -408,6 +439,7 @@ answers or from building, is added here as Q21 and on.
 | **Q18** | What gives every result in one reference, to end a `\|` chain? | D15: `to_arrayref`, a container sink. Container sinks, `to_array`, `to_arrayref`, `to_hash` and `to_hashref`, are another kind, valid beside those named for what they give |
 | **Q19** | What does a call give without a sink last? | D16: the rule in section 3: DBIx::Squirrel's own calls give an iterator, the Sugar's statements included; the DBI's calls give what the DBI gives |
 | **Q20** | What does `only_item` do at a second item? | D17: it warns, not croaks, and gives the first: there's a second when a SELECT forgot `LIMIT 1` |
+| **Q24** | Do the `select` methods take stages? | D18: yes. What the DBI gives is pushed through them: with stages, the call gives what comes out of the last stage; without, what the DBI gives |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were
 dropped as moot by D11, which leaves it none.

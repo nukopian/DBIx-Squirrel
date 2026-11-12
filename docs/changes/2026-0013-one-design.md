@@ -15,7 +15,8 @@ dropped for now. D10 settled, then overtaken by D11. D11 settled: `all`,
 as now. D14 settled: the sinks are `all_items`, `first_item` and
 `only_item`. D15 settled: container sinks are another kind. D16 settled:
 DBIx::Squirrel's calls give an iterator unless a sink is last. D17
-settled: `only_item` warns at a second item. None open.
+settled: `only_item` warns at a second item. D18 settled: the `select`
+methods take stages. Three open, in the design's section 13.1.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -171,6 +172,14 @@ its section 12.3 (Ekorn-Pipeline
   first item, and stops the run once it has seen the second. That
   corrects D11 and D14, which said it croaks at a second, as `single`
   does today.
+- [x] **D18.** Do the `select` methods take stages? Yes, Iain decided on
+  2026-11-12: "the value or values returned by the select methods are
+  what enter the pipeline. If that's an arrayref, fine by me." So what
+  the DBI gives is pushed through the stages, as `pipe` pushes a
+  handle; "with stages, what comes out the final stage, without
+  stages, what comes from DBI." The first draft wrongly listed them
+  among the calls taking stages, which they don't today; the reference
+  says each works as the DBI's does.
 
 ## The plan
 
@@ -195,3 +204,11 @@ Written when the design is approved and split into items.
   `to_arrayref` and `to_file`; `first_value` became `first_item`.
   It warned that Test2::V0's `all_items` clashes with the sink in a
   test importing both. Against that commit, the tests stand as before.
+- **2026-11-12:** a reread of the design against the code, asked for by
+  Iain, found two mistakes in it, now fixed: the `select` methods were
+  listed as taking stages (settled since, D18), and `result_original`
+  was "the row fetched last", which with batches of 100 would be the
+  wrong row. It found three things the build must keep, now in the
+  design's 4.6: a run's end touching only its own run, no cycles
+  keeping an iterator alive, and quiet ends at program exit. And three
+  questions, Q21 to Q23.
