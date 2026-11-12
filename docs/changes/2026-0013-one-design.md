@@ -23,7 +23,8 @@ D20 settled: a list sink asked for one value gives an array
 reference. D21 settled: `pluck` after a reshaping stage, warned of in
 the docs. D22 settled: `all`, `single` and a new `first` come back
 on the iterator, as on Ekorn's; `count` stays gone. D23 settled:
-they're Ekorn's, delegated to. None open.
+they're Ekorn's, delegated to. D24 settled: batches grow from 2 to 64,
+as in version 1. None open.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -252,6 +253,21 @@ its section 12.3 (Ekorn-Pipeline
   at two or more. The design's Q25. Settled as recommended, Iain
   decided on 2026-11-12, adding that buffering rows needs more
   thought.
+- [x] **D24.** How many rows does a statement's source fetch at a
+  time? As version 1 did, Iain said on 2026-11-12: "the reason my
+  original code started with a batch of two. That was the minimum
+  required to determine if a warning was warranted. It also meant that
+  we didn't read too much. Subsequent reads increased that count
+  exponentially to a small but sensible maximum." Version 1's
+  `DBIx::Squirrel::it` started at 2 (`DEFAULT_CACHE_SIZE`), doubled
+  whenever a fetch filled its batch, and stopped at 64
+  (`CACHE_SIZE_LIMIT`); version 2 fixed it at 100, so `first`,
+  `single` and `take(1)` fetch up to 100 rows to use one or two. The
+  design takes version 1's numbers. The step still gives one row at a
+  time, so `result_original` reads the row being worked on. It came of
+  asking what more buffering needs, after D23; nothing of it needs
+  Ekorn, as a source's step is called with nothing and can't be told
+  how many its caller wants.
 
 ## The plan
 

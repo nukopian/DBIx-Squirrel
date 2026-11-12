@@ -107,8 +107,13 @@ given wherever Ekorn takes a source:
 
 - **Its set-up executes the statement,** with the iterator's bind
   values, and reads the column names before the first fetch.
-- **Its step fetches,** in batches of 100, as now, from a buffer of the
-  run's own.
+- **Its step fetches,** from a buffer of the run's own, in batches that
+  grow, as version 1's did (Q26, settled): the first is 2 rows, the
+  least that tells whether there's a second, so `first` and `single`
+  read no more than they need; each fetch that fills its batch doubles
+  the next, up to 64. Today's fixed batch of 100 goes. The step gives
+  one row at a time, so the row the source gave last, which
+  `result_original` reads, is the row being worked on (section 5).
 - **Its end finishes the statement handle,** however the run ended.
 - **Its context is the run's:** `{columns => [...], statement => $sth}`,
   and the row it gave last (section 5).
@@ -520,7 +525,7 @@ their numbers, with the decision in record 2026-0013.
 ### 13.1 Open
 
 A question that arises, from Ekorn-Pipeline's answers or from
-building, is added here, from Q25.
+building, is added here, from Q27.
 
 None, since 2026-11-12.
 
@@ -549,6 +554,7 @@ None, since 2026-11-12.
 | **Q22** | A list sink last, `all_items`, gave a count in scalar context (Ekorn's D47), so `my $rows = ... all_items` quietly gave a number | D20, from Ekorn's D51, as Iain proposed: a list sink asked for one value gives its list as an array reference, at the end of a `\|` chain too. A run with no sink still gives a count |
 | **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count_items`, or Test2::V0's `all_items` | D19: a test shows the Sugar's clash check catches a sink of the same name; the docs import sinks by name. Where a name clashes, call the sink by its full name, `Ekorn::Pipeline::Sinks::count_items()`, or through a code reference in a lexical, `my $count_items = \&Ekorn::Pipeline::Sinks::count_items;`, called as `$count_items->()`. Test2::V0's `all_items` no longer clashes, as the sink is `keep_all` (Ekorn's D55) |
 | **Q25** | Are the iterator's `all`, `first` and `single` Ekorn's, or DBIx::Squirrel's own, with `single` using the batch fetch as its lookahead? | D23: Ekorn's, through the Ekorn iterator inside. Its `single` consumes nothing (Ekorn's D60), and with no stages takes the second row from the batch already fetched; with stages, a count of rows would be wrong. The batch size stays at two or more |
+| **Q26** | How many rows does a statement's source fetch at a time? | D24: as version 1 did: 2 at first, the least that tells whether there's a second, doubling each time a fetch fills its batch, up to 64. So `first`, `single` and `take(1)` fetch 2 rows, not 100, and `single`'s lookahead (Q25) is always in the first batch. Today's fixed 100 goes |
 | **Q24** | Do the `select` methods take stages? | D18: yes. What the DBI gives is pushed through them: with stages, the call gives what comes out of the last stage; without, what the DBI gives |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were
