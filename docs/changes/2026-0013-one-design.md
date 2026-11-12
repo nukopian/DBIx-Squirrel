@@ -217,3 +217,8 @@ Written when the design is approved and split into items.
   `every_item`, which is designed as the yes/no test paired with
   `any_item`, and the clash with Test2::V0's check is "only a problem
   in test harness". That settles the test half of the design's Q23.
+- **2026-11-12:** for the design's Q22, Iain proposed that `all_items`,
+  and any list sink, give its list as a reference in scalar context,
+  as `count` is there for counting: "all_items as a scalar (when I
+  have a count sink) could be a reference?" It's Ekorn's rule to
+  change (its D47 and D10), so it went to Ekorn-Pipeline as a message.
