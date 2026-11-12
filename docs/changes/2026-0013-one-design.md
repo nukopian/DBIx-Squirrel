@@ -502,4 +502,47 @@ Written when the design is approved and split into items.
   ```
 
   Q30 waits on Iain, with these numbers.
+- **2026-11-12:** Ekorn-Pipeline's two messages: the flush followed by
+  a stage is linear again (Ekorn-Pipeline
+  2fe666313e1462d4d9c88b0d91f8b603a893e1cc), and, as its D62, a
+  step's many values are cheap and its iterator's `all` takes them in
+  bulk (Ekorn-Pipeline f1cb2da14a307f0c6b1d7c0529fc0c61de97628e),
+  internally, with no protocol changed. Against f1cb2da, the tests
+  stand as before: 26 of 27 files pass, and `t/06-gather.t`'s two
+  failures are v0.3.0's intended changes. Timed again, as before, in
+  seconds:
+
+  | Table | Case | v2 | Spike, Ekorn cbed038 | Ekorn f1cb2da |
+  |---|---|---|---|---|
+  | place_areas | `selectall_arrayref` | 0.096 | 0.095 | 0.099 |
+  | | `$it->all` | 0.108 | 0.403 | 0.150 |
+  | | `$it->all`, with a stage | 0.540 | 0.655 | 0.709 |
+  | | `next`, to the end | 0.351 | 0.542 | 0.489 |
+  | | `$it \| keep_all` | | 0.807 | 0.685 |
+  | | `iterate(keep_all)` | | | 0.546 |
+  | | `iterate(keep_all, $stage)` | | | 1.126 |
+  | places | `selectall_arrayref` | 0.078 | 0.078 | 0.079 |
+  | | `$it->all` | 0.090 | 0.186 | 0.105 |
+  | | `$it->all`, with a stage | 0.239 | 0.278 | 0.295 |
+  | | `next`, to the end | 0.168 | 0.235 | 0.208 |
+  | | `$it \| keep_all` | | 0.334 | 0.284 |
+  | | `iterate(keep_all)` | | | 0.235 |
+  | | `iterate(keep_all, $stage)` | | | 0.432 |
+  | areas | `selectall_arrayref` | 0.172 | 0.178 | 0.173 |
+  | | `$it->all` | 0.174 | 0.185 | 0.179 |
+  | | `$it->all`, with a stage | 0.204 | 0.214 | 0.217 |
+  | | `next`, to the end | 0.169 | 0.183 | 0.177 |
+  | | `$it \| keep_all` | | 0.227 | 0.207 |
+  | | `iterate(keep_all)` | | | 0.203 |
+  | | `iterate(keep_all, $stage)` | | | 0.248 |
+  | areas | the first row, 1,000 times | 5.311 | 0.264 | 0.255 |
+
+  `$it->all` over narrow rows is 1.4 times version 2's, from 3.7.
+  The rest is each value's cost: `next` is 39% slower than version 2's,
+  a stage 31%, and a sink last, `iterate(keep_all)` or `|`, five times
+  `$it->all`, as each row comes from its own step, a batch row at a
+  time, and goes through the sink's step alone. Ekorn names what's
+  left for each value going through a stage: a `try` and two `local`s,
+  and the `&{}` overload on each call of an Element; it offers to look
+  at them if asked.
 
