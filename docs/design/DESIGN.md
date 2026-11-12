@@ -188,7 +188,7 @@ With the alternatives, by what's wanted:
 | the first row | `$it \| keep_first`, fetching one | `$it->[0]`, fetching them all |
 | the last row | `$it \| keep_last`, keeping only it | `$it->[-1]`, keeping every row |
 | how many | `$it \| count_items` | `scalar @$it`, keeping every row |
-| the first few | `$it \| take(5) \| keep_all` | `(@$it)[0 .. 4]`, fetching them all |
+| the first few | `$it \| keep(5)`, fetching five | `(@$it)[0 .. 4]`, fetching them all |
 | each, as it comes | `while (my($row) = $it->next) {...}` | `for (@$it)`, fetching them all first |
 
 And as `|` gives one value, a chain ending in `keep_all` gives an
@@ -287,6 +287,7 @@ The sinks are Ekorn's, as none needs a database:
 | (none) | `keep_first`: the first result, stopping the run there |
 | `$it->single`, which croaks at a second result | `keep_single`: the one result, with a warning if there's a second, for a SELECT that forgot `LIMIT 1`; it gives the first, and stops the run there |
 | (none) | `keep_last`: the last result, reading every one to find it |
+| (none) | `keep(N)`: the first N results, as a list, stopping the run once it has them |
 | `$it->count`, after a drain | `count_items`, how many results there were |
 
 Each is named for what it gives, not for what the result is put in
@@ -295,6 +296,12 @@ and D56): `count` is `count_items`, which is less likely to clash
 with a caller's own `count`; and the sinks giving results are
 `keep_all`, `keep_first`, `keep_single` and `keep_last`, each named
 for what it keeps of what reaches it.
+
+`keep(N)` came of Iain's asking, "So we have `take` for stages,
+`keep...` for sinks" (Ekorn's D57). `$it | keep(5)` gives what
+`take(5) | keep_all` does, an array reference where one value is
+asked for, and fetches no more rows than it keeps. N is checked as
+`take` checks it; `keep(0)` keeps nothing, and a negative N croaks.
 
 There are no container sinks for arrays or hashes (Ekorn's D54, which
 overtakes Q18). `to_array` and `to_arrayref` were `keep_all` under
@@ -320,9 +327,9 @@ Ekorn took these in as its D50, and built them on its
 `Ekorn::Pipeline::Sinks` exports `all_items`, `first_item`, `only_item`
 and `count`, and the containers `to_array`, `to_arrayref` and
 `to_file`. `first_value` is now `first_item`. Since then, at
-c1cceddbffd5f6a643f14e3d1ea9bd48f6d01114, it exports `keep_all`,
-`count_items`, `keep_first`, `keep_last`, `keep_single` and `to_file`
-(Ekorn's D53 to D56). `keep_single` warns "Expected only one item, but
+fccef9cd7a3e6d18b538327d76da1983d0944832, it exports `keep`,
+`keep_all`, `count_items`, `keep_first`, `keep_last`, `keep_single`
+and `to_file` (Ekorn's D53 to D57). `keep_single` warns "Expected only one item, but
 there were more", at the caller's line.
 
 A function that takes stages gives a sink's result when its last stage

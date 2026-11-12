@@ -297,3 +297,9 @@ Written when the design is approved and split into items.
   `keep_all` doesn't clash with Test2::V0's `all_items`, so its tests
   need no `qw(!all_items)`, and the half of D19 about Test2::V0 falls
   away.
+- **2026-11-12:** Iain asked for a `keep(N)` sink, "So we have `take`
+  for stages, `keep...` for sinks", sent to Ekorn-Pipeline as a task.
+  Its message: built as its D57 (Ekorn-Pipeline
+  fccef9cd7a3e6d18b538327d76da1983d0944832), a list sink giving the
+  first N items, stopping the run once it has them, with N checked as
+  `take` checks it, and a negative N croaking. The design lists it.
