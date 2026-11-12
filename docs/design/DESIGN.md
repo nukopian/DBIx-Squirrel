@@ -152,7 +152,11 @@ The iterator's methods are rebuilt over the same source:
 
 - `next` pulls from the run, starting one if none is going.
 - `reset` ends the run, if one is going, and keeps the bind values and
-  stages given, as now.
+  stages given, as now. It clears everything the run held (Q29,
+  settled): a value Ekorn's iterator holds, the source's batch, which
+  starts again at 2 rows, the row `result_original` reads, and the
+  count `result_number` keeps. The handle is finished. A fresh run
+  started any other way, by a sink or by `|` (4.3), clears the same.
 - A new `ended` gives what Ekorn's iterator says about how the run
   ended: `done`, `stopped` or `died`.
 
@@ -162,11 +166,24 @@ The iterator's methods are rebuilt over the same source:
   value is asked for; `first` the next result, or `undef`, ending the
   run; `single` the next result, or `undef`, looking one ahead and
   warning "Expected only one item, but there were more" if there's
-  another, without consuming it. Iain: "The iterator is getting single
-  back. And all. And first." They're Ekorn's, through the Ekorn
-  iterator inside, with no lookahead of DBIx::Squirrel's own (Q25,
-  settled). So `next` pulls through that iterator too, even with no
-  stages, so that a value `single` looked at comes out first.
+  another. Iain: "The iterator is getting single back. And all. And
+  first." They're Ekorn's, through the Ekorn iterator inside, with no
+  lookahead of DBIx::Squirrel's own (Q25, settled), and `next` pulls
+  through that iterator too, even with no stages.
+- **`single` then finishes the run, as `first` does** (Q28, settled),
+  so the handle is finished, and a SELECT that forgot `LIMIT 1` holds
+  no lock, as an active statement does on SQLite. Ekorn's own
+  `single` keeps its iterator open, holding the value it looked at
+  (Ekorn's D60); DBIx::Squirrel's calls it, then finishes the Ekorn
+  iterator, which drops that value.
+- **`all` has a fast path** (Q27, settled). With no stages, it tells
+  its source to give every row left in one step: what's in the batch,
+  and the rest with one `fetchall_arrayref`, as today's `all` does.
+  Ekorn's protocol allows it, as a source's step returns "the next
+  value or values", so `all` is still Ekorn's: it collects them, the
+  next pull finds none, and the run ends `done`, its end told so. With
+  stages, rows go one at a time, so `result_original` reads the row
+  being worked on; with none, nothing reads it.
 
 `count` goes (Q15). Counting is a stage's or a sink's job (section 6).
 
@@ -235,7 +252,7 @@ user who forgot to `use` it gets Operators' own message, not
 
 ### 4.6 What the build must keep
 
-Three things the design promises that are easy to lose in the code:
+Four things the design promises that are easy to lose in the code:
 
 - **A run's end touches only its own run.** When `next` has a run
   going and a fresh one starts (4.3), the old run is ended first. An
@@ -250,6 +267,10 @@ Three things the design promises that are easy to lose in the code:
   destruction, in no set order, as warnings. An end there must not
   call `finish` on a handle whose database has gone, so that a program
   or a test under Test2::Plugin::NoWarnings ends without warnings.
+- **A fresh run starts clean** (Q29). `reset`, or any fresh run,
+  leaves nothing of the run before: no value held by Ekorn's iterator,
+  no rows in the batch, a batch of 2 again, and no row or count for
+  Context.
 
 Each gets a test when it's built.
 
@@ -304,7 +325,7 @@ The sinks are Ekorn's, as none needs a database:
 |---|---|
 | `$it->all` | `keep_all`: every result, as a list; or `$it->all` still, for what's left |
 | (none) | `keep_first`: the first result, stopping the run there; or `$it->first` |
-| `$it->single`, which croaks at a second result | `keep_single`, or `$it->single`, without consuming the one it looks at: the one result, with a warning if there's a second, for a SELECT that forgot `LIMIT 1`; it gives the first, and stops the run there |
+| `$it->single`, which croaks at a second result | `keep_single`, or `$it->single`: the one result, with a warning if there's a second, for a SELECT that forgot `LIMIT 1`; it gives the first, and stops the run there |
 | (none) | `keep_last`: the last result, reading every one to find it |
 | (none) | `keep(N)`: the first N results, as a list, stopping the run once it has them |
 | `$it->count`, after a drain | `count_items`, how many results there were |
@@ -525,7 +546,7 @@ their numbers, with the decision in record 2026-0013.
 ### 13.1 Open
 
 A question that arises, from Ekorn-Pipeline's answers or from
-building, is added here, from Q27.
+building, is added here, from Q30.
 
 None, since 2026-11-12.
 
@@ -555,6 +576,9 @@ None, since 2026-11-12.
 | **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count_items`, or Test2::V0's `all_items` | D19: a test shows the Sugar's clash check catches a sink of the same name; the docs import sinks by name. Where a name clashes, call the sink by its full name, `Ekorn::Pipeline::Sinks::count_items()`, or through a code reference in a lexical, `my $count_items = \&Ekorn::Pipeline::Sinks::count_items;`, called as `$count_items->()`. Test2::V0's `all_items` no longer clashes, as the sink is `keep_all` (Ekorn's D55) |
 | **Q25** | Are the iterator's `all`, `first` and `single` Ekorn's, or DBIx::Squirrel's own, with `single` using the batch fetch as its lookahead? | D23: Ekorn's, through the Ekorn iterator inside. Its `single` consumes nothing (Ekorn's D60), and with no stages takes the second row from the batch already fetched; with stages, a count of rows would be wrong. The batch size stays at two or more |
 | **Q26** | How many rows does a statement's source fetch at a time? | D24: as version 1 did: 2 at first, the least that tells whether there's a second, doubling each time a fetch fills its batch, up to 64. So `first`, `single` and `take(1)` fetch 2 rows, not 100, and `single`'s lookahead (Q25) is always in the first batch. Today's fixed 100 goes |
+| **Q27** | `all` delegated to Ekorn pulls one row per step, losing today's one fetch of the rest | D26: a fast path, as Iain wanted. With no stages, `all` has its source give every row left in one step, which Ekorn's protocol allows, so Ekorn's `all` still collects them and the run ends `done` |
+| **Q28** | Ekorn's `single` leaves its iterator open, so a statement that warned stays active, holding a lock on SQLite | D25: DBIx::Squirrel's `single` finishes the run after Ekorn's, as `first` does |
+| **Q29** | What does `reset` clear? | D27: everything the run held: a value Ekorn's iterator holds, the batch, which starts again at 2, and Context's row and count. A fresh run started any other way does the same. A guarantee of 4.6, with a test |
 | **Q24** | Do the `select` methods take stages? | D18: yes. What the DBI gives is pushed through them: with stages, the call gives what comes out of the last stage; without, what the DBI gives |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were

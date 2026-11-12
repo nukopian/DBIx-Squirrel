@@ -24,7 +24,9 @@ reference. D21 settled: `pluck` after a reshaping stage, warned of in
 the docs. D22 settled: `all`, `single` and a new `first` come back
 on the iterator, as on Ekorn's; `count` stays gone. D23 settled:
 they're Ekorn's, delegated to. D24 settled: batches grow from 2 to 64,
-as in version 1. None open.
+as in version 1. D25 settled: `single` finishes the run, as `first`
+does. D26 settled: `all` has a fast path. D27 settled: `reset` clears
+everything the run held. None open.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -268,6 +270,28 @@ its section 12.3 (Ekorn-Pipeline
   asking what more buffering needs, after D23; nothing of it needs
   Ekorn, as a source's step is called with nothing and can't be told
   how many its caller wants.
+- [x] **D25.** Ekorn's `single` keeps its iterator open after warning,
+  holding the value it looked at (its D60), so a statement that
+  forgot `LIMIT 1` would stay active, holding a lock on SQLite. Iain
+  decided on 2026-11-12: "single should behave like first and finish
+  the statement." DBIx::Squirrel's `single` calls Ekorn's, then
+  finishes the run. The design's Q28; Ekorn-Pipeline is told.
+- [x] **D26.** Delegated to Ekorn (D23), `all` pulls a row per step,
+  where today it fetches the rest at once. Iain decided on 2026-11-12:
+  "I'm happy with a fast path. I don't think I'd considered it in the
+  original code." With no stages, `all` has its source give every row
+  left in one step, the batch and the rest from one
+  `fetchall_arrayref`, which Ekorn's protocol allows, as a source's
+  step returns "the next value or values"; Ekorn's `all` collects them,
+  and the run ends `done`. With stages, rows go one at a time, so
+  `result_original` stays right. Nothing is asked of Ekorn. The
+  design's Q27.
+- [x] **D27.** What does `reset` clear? Everything the run held, Iain
+  decided on 2026-11-12: "Yes, a reset should clear any cruft away."
+  A value Ekorn's iterator holds, the batch, which starts at 2 again,
+  and Context's row and count; the handle is finished. A fresh run
+  started any other way does the same. It's a fourth guarantee in the
+  design's 4.6, with a test. The design's Q29.
 
 ## The plan
 
