@@ -4,7 +4,7 @@
 decisions in [record 2026-0013](../changes/2026-0013-one-design.md).
 It waits on Iain's approval, together with Ekorn-Pipeline's design,
 before either is split into roadmap items. Its questions are numbered
-**Q1** and on, in section 13. All are settled but Q30.
+**Q1** and on, in section 13, and all are settled.
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
 `pipeline-experimental`, reviewed here at
@@ -286,7 +286,7 @@ nothing changes but what sections 4.4 and 4.6 change for every iterator.
 Q24 to Q29 settle a statement's buffering with Ekorn's protocols as
 they are. That holds for each decision, but it hasn't been shown for
 them together, and four things may still need more of Ekorn (Q30,
-open):
+settled below):
 
 1. **Sinks have no fast path.** Q27's fast path is `$it->all`'s.
    `$sth->iterate(keep_all)`, `$it | keep_all` and `count_items` pull
@@ -315,6 +315,27 @@ Ekorn's working copy, with 4.6's tests, and `$it->all` timed against
 `$it | keep_all` over a large result. Ask Ekorn for a protocol for 1
 only if the timing shows the gap matters, and for 2 or 3 when a use
 needs them.
+
+**Settled** (Q30, D28; Iain, 2026-11-12), from the spike, whose code
+and timings are in record 2026-0013:
+
+1. **Confirmed, and wider than sinks.** On 297,848 narrow rows,
+   `$it | keep_all` takes 0.81 s, and even `$it->all`, whose source
+   gives every row in one step, takes 0.40 s, where version 2's took
+   0.11 s: Ekorn wraps each value a step gives in an entry of its own,
+   and its iterator's `all` collects them a call at a time. Ekorn is
+   asked to make a step's many values cheap where nothing stands
+   between the source and the end, and its iterator's `all` take them
+   in bulk, which serves `$it->all`, a sink given last and `|` alike,
+   and any source. DBIx::Squirrel doesn't route rows around Ekorn
+   instead, which would serve `$it->all` alone. Ekorn's cost for each
+   pull, which makes `next` 54% slower on narrow rows, is Ekorn's to
+   profile, and isn't a protocol.
+2. **Not needed.** With batches that start at 2 rows, `first` and
+   `single` fetch 2, and the first row of wide rows is 20 times
+   quicker than with version 2's batch of 100.
+3. **Not needed,** for the same reason.
+4. **Holds,** as `t/24-iterator-source.t` and Ekorn's own tests show.
 
 ## 5. Context: what a stage may ask
 
@@ -581,15 +602,9 @@ their numbers, with the decision in record 2026-0013.
 ### 13.1 Open
 
 A question that arises, from Ekorn-Pipeline's answers or from
-building, is added here, from Q30.
+building, is added here, from Q31.
 
-**Q30. Do Ekorn's protocols support a statement's buffering, or
-does it need more of them?** Section 4.8 sets out what may: a fast
-path for sinks, a lookahead that consumes nothing, and a way to tell a
-source how many are wanted, and the behaviour Q25 to Q29 rest on.
-**Recommended:** a spike, built against Ekorn's working copy, with
-`$it->all` timed against `$it | keep_all`; ask Ekorn for more only
-where it shows a need.
+None, since 2026-11-12.
 
 ### 13.2 Settled
 
@@ -620,6 +635,7 @@ where it shows a need.
 | **Q27** | `all` delegated to Ekorn pulls one row per step, losing today's one fetch of the rest | D26: a fast path, as Iain wanted. With no stages, `all` has its source give every row left in one step, which Ekorn's protocol allows, so Ekorn's `all` still collects them and the run ends `done` |
 | **Q28** | Ekorn's `single` leaves its iterator open, so a statement that warned stays active, holding a lock on SQLite | D25: DBIx::Squirrel's `single` finishes the run after Ekorn's, as `first` does |
 | **Q29** | What does `reset` clear? | D27: everything the run held: a value Ekorn's iterator holds, the batch, which starts again at 2, and Context's row and count. A fresh run started any other way does the same. A guarantee of 4.6, with a test |
+| **Q30** | Do Ekorn's protocols support a statement's buffering, or does it need more of them? | D28, from the spike: one thing more. Ekorn is asked to make a step's many values cheap, and its iterator's `all` take them in bulk, as each value costs a wrapping and a call; a lookahead that consumes nothing and a way to tell a source how many are wanted aren't needed, as growing batches serve; the behaviour relied on holds (section 4.8) |
 | **Q24** | Do the `select` methods take stages? | D18: yes. What the DBI gives is pushed through them: with stages, the call gives what comes out of the last stage; without, what the DBI gives |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were
