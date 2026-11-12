@@ -18,7 +18,8 @@ DBIx::Squirrel's calls give an iterator unless a sink is last. D17
 settled: `only_item` warns at a second item. D18 settled: the `select`
 methods take stages. D19 settled: sinks' names clashing on import.
 D20 settled: a list sink asked for one value gives an array
-reference. One open, in the design's section 13.1.
+reference. D21 settled: `pluck` after a reshaping stage, warned of in
+the docs. None open.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -201,6 +202,13 @@ its section 12.3 (Ekorn-Pipeline
   reference. Checked against that commit. A run with no sink still
   gives a count (Ekorn's D17), which for DBIx::Squirrel is only a
   `select` method given stages and no sink, in scalar context.
+- [x] **D21.** `pluck` after a stage that reshapes rows reads the
+  statement's columns, as a context describes the source (Ekorn's
+  D46), and so picks the wrong field, silently. Settled as
+  recommended, Iain decided on 2026-11-12: the reference and the
+  how-to say so loudly, and show `as_hash` first, then `pluck` by
+  name, which uses the hash's own keys. Detecting a reshaped row would
+  need more from Ekorn, and wasn't asked for.
 
 ## The plan
 

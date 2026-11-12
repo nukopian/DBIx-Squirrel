@@ -4,7 +4,7 @@
 decisions in [record 2026-0013](../changes/2026-0013-one-design.md).
 It waits on Iain's approval, together with Ekorn-Pipeline's design,
 before either is split into roadmap items. Its questions are numbered
-**Q1** and on, in section 13; open ones first.
+**Q1** and on, in section 13, and all are settled.
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
 `pipeline-experimental`, reviewed here at
@@ -220,6 +220,11 @@ that isn't a statement: "Expected an iterator, for the column names",
 as now (Q13, settled). `pluck` by name on a hash row uses the row's
 own keys, as now, so it needs no columns.
 
+The columns are the statement's, so `pluck` after a stage that
+reshapes rows picks the wrong field, silently. The reference and the
+how-to say so loudly, and show `as_hash` first, then `pluck` by name,
+which uses the hash's own keys (Q21, settled).
+
 ## 6. Ending a run: Ekorn's sinks
 
 A run ends in a sink, given as its last stage, which says what the
@@ -431,9 +436,8 @@ their numbers, with the decision in record 2026-0013.
 
 ### 13.1 Open
 
-| | Question | Whose | Recommendation |
-|---|---|---|---|
-| **Q21** | `pluck` after a stage that reshapes rows reads the statement's columns, as a context describes the source (Ekorn's D46), and so picks the wrong field, silently. `\|` makes that easier to write | DBIx-Squirrel's | say so loudly in the reference and the how-to, and show `as_hash` first, then `pluck` by name, which uses the hash's own keys. Detecting a reshaped row isn't possible without more from Ekorn |
+None, since 2026-11-12. A question that arises, from Ekorn-Pipeline's
+answers or from building, is added here as Q25 and on.
 
 ### 13.2 Settled
 
@@ -456,6 +460,7 @@ their numbers, with the decision in record 2026-0013.
 | **Q18** | What gives every result in one reference, to end a `\|` chain? | D15: `to_arrayref`, a container sink. Container sinks, `to_array`, `to_arrayref`, `to_hash` and `to_hashref`, are another kind, valid beside those named for what they give |
 | **Q19** | What does a call give without a sink last? | D16: the rule in section 3: DBIx::Squirrel's own calls give an iterator, the Sugar's statements included; the DBI's calls give what the DBI gives |
 | **Q20** | What does `only_item` do at a second item? | D17: it warns, not croaks, and gives the first: there's a second when a SELECT forgot `LIMIT 1` |
+| **Q21** | `pluck` after a stage that reshapes rows reads the statement's columns, as a context describes the source (Ekorn's D46), and so picks the wrong field, silently | D21: the reference and the how-to say so loudly, and show `as_hash` first, then `pluck` by name, which uses the hash's own keys |
 | **Q22** | A list sink last, `all_items`, gave a count in scalar context (Ekorn's D47), so `my $rows = ... all_items` quietly gave a number | D20, from Ekorn's D51, as Iain proposed: a list sink asked for one value gives its list as an array reference, at the end of a `\|` chain too. A run with no sink still gives a count |
 | **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count`, or Test2::V0's `all_items` | D19: a test shows the Sugar's clash check catches a sink of the same name; the docs import sinks by name. Where a name clashes, call the sink by its full name, `Ekorn::Pipeline::Sinks::count()`, or through a code reference in a lexical, `my $count = \&Ekorn::Pipeline::Sinks::count;`, called as `$count->()` |
 | **Q24** | Do the `select` methods take stages? | D18: yes. What the DBI gives is pushed through them: with stages, the call gives what comes out of the last stage; without, what the DBI gives |
