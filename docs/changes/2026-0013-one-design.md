@@ -12,7 +12,8 @@ so a bind value is never taken for a stage. D9 settled: `insert_into`
 dropped for now. D10 settled, then overtaken by D11. D11 settled: `all`,
 `single` and `count` become sinks, Ekorn's. D12 settled: `count`, not
 `to_count`. D13 settled: `pluck` and `as_hash` croak without columns,
-as now. None open.
+as now. D14 settled: the sinks are `all_items`, `first_item` and
+`only_item`. One open, in the design's section 13.1.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -127,6 +128,17 @@ its section 12.3 (Ekorn-Pipeline
   message unchanged, Iain decided on 2026-11-12, as recommended.
   `pluck` by name on a hash row uses the row's own keys, as now, so it
   needs no columns.
+- [x] **D14.** What are the sinks called? `all_items`, `first_item`,
+  and `only_item`, "that asserts it's the only item", Iain decided on
+  2026-11-12. He said `to_scalar`, `to_array` and `to_arrayref` were
+  wrongly named: by D12's rule, a sink is named for what it is, not
+  for what the result is put in. `to_array` and `to_arrayref` were
+  Ekorn's names, taken over unasked, and `to_scalar` was made up to
+  match. Ekorn's design has `to_array`, `first_value` and `count` for
+  the same jobs, so the names, and `only_item`, go to its session as a
+  message. A list sink can't end a `|` chain (Ekorn's D10), so the
+  name of the sink giving every result in one reference is left open
+  (the design's Q18).
 
 ## The plan
 

@@ -4,7 +4,7 @@
 decisions in [record 2026-0013](../changes/2026-0013-one-design.md).
 It waits on Iain's approval, together with Ekorn-Pipeline's design,
 before either is split into roadmap items. Its questions are numbered
-**Q1** and on, in section 13, and all are settled.
+**Q1** and on, in section 13; open ones first.
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
 `pipeline-experimental`, reviewed here at
@@ -58,7 +58,7 @@ read from, and which `|` can start a chain with. Its stages are run
 by Ekorn's own pipeline, not DBIx::Squirrel's subclass, which goes.
 `pluck` and `as_hash` ask Ekorn for the run's columns, so they work in
 a user's own pipeline too. A run ends in one of Ekorn's sinks, such as
-`to_array` or `count`, not in the iterator's `all`, `single` and
+`all_items` or `count`, not in the iterator's `all`, `single` and
 `count`, which go. That breaks code, which v3.0.0 is for: it's
 DBIx::Squirrel v3.0.0, on Ekorn v0.3.0.
 
@@ -202,25 +202,31 @@ The sinks are Ekorn's, as none needs a database:
 
 | Today | In this design |
 |---|---|
-| `$it->all` | `to_array`, every result as a list; or `to_arrayref`, as a reference |
-| `$it->single` | `to_scalar`: the one result, `undef` if there are none, and a croak at a second |
+| `$it->all` | `all_items`: every result, as a list |
+| (none) | `first_item`: the first result, stopping the run there |
+| `$it->single` | `only_item`: the one result, asserting it's the only one, with a croak at a second |
 | `$it->count`, after a drain | `count`, how many results there were |
 
-`to_array`, `to_arrayref` and `count` are in Ekorn's design (Ekorn
-8.3). `to_scalar` isn't: it was asked of Ekorn's session, with Iain's
-view of what it gives, on 2026-11-12. `count` keeps its name, as it
-says what the sink is, not where the result goes (Q16, settled). The
-names can be fine-tuned later, as Iain said: what's settled is that
-they're sinks.
+Each is named for what it is, not for what the result is put in (Q16
+and Q17, settled). Ekorn's design has `to_array`, `first_value` and
+`count` for the same jobs (Ekorn 8.3), and no sink for `only_item`.
+The names, and `only_item`, went to Ekorn's session as a message on
+2026-11-12: they're its sinks to design.
+
+`all_items` gives a list, and Ekorn's `|` can end only in a sink that
+gives one value (Ekorn's D10). So a chain that wants every result
+drains with `@{}`, or ends in a sink giving them in one reference,
+which Ekorn's design calls `to_arrayref`. That sink's name is open
+(Q18).
 
 A function that takes stages gives a sink's result when its last stage
 is one, rather than an iterator, as Ekorn's D43 allows:
 
 ```perl
-use Ekorn::Pipeline::Sinks qw(to_array to_scalar count);
+use Ekorn::Pipeline::Sinks qw(all_items only_item count);
 
-my @rows   = $dbh->iterate('SELECT * FROM artist', to_array);
-my $artist = $dbh->results('SELECT * FROM artist WHERE id = ?', 1, to_scalar);
+my @rows   = $dbh->iterate('SELECT * FROM artist', all_items);
+my $artist = $dbh->results('SELECT * FROM artist WHERE id = ?', 1, only_item);
 my $n      = $sth->iterate(1990, count);
 my @top    = @{ $sth->iterate | pluck('name') | take(5) };
 ```
@@ -294,7 +300,7 @@ Ekorn's (Ekorn 10).
 | `DBIx::Squirrel::Pipeline->new(...)` | fails: the module is gone | `Ekorn::Pipeline->new(...)`, or `pipeline(...)` from Ekorn::Pipeline::Factories |
 | `$x isa 'DBIx::Squirrel::Pipeline'` | false | `$x isa 'Ekorn::Pipeline'` |
 | `ref $stage eq 'CODE'`, `is_coderef($stage)`, for a stage made by `take`, `gather` and the like | false: they're objects now, called as code references (Ekorn's Q12) | `is_stage($stage)` |
-| `$it->all`, `$it->single`, `$it->count` | fails: the methods are gone | a sink given last: `to_array`, `to_scalar`, `count` (section 6) |
+| `$it->all`, `$it->single`, `$it->count` | fails: the methods are gone | a sink given last: `all_items`, `only_item`, `count` (section 6) |
 | `my $n = $sth->iterate(...)`-style calls that rely on context to count or list | the sink last says what comes back | give a sink |
 | `result_number` or `Context::iterator` in a user's own pipeline over an iterator | `undef` | count in a stage of their own |
 | `my($first) = $sth->iterate->next`, then using the handle | the handle is finished once the iterator goes | keep the iterator while the handle is in use |
@@ -333,8 +339,9 @@ their numbers, with the decision in record 2026-0013.
 
 ### 13.1 Open
 
-None, since 2026-11-12. A question that arises, from Ekorn-Pipeline's
-answers or from building, is added here as Q17 and on.
+| | Question | Whose | Recommendation |
+|---|---|---|---|
+| **Q18** | What's the sink giving every result in one reference called, for the end of a `\|` chain? | Iain's, then Ekorn's to design | Iain to name it, as he named the others; it goes to Ekorn as a message |
 
 ### 13.2 Settled
 
@@ -351,8 +358,9 @@ answers or from building, is added here as Q17 and on.
 | **Q11** | Keep `insert_into`? | D9: not now. Roadmap 2026-0012 is dropped, and it'll be found again if a need comes |
 | **Q12** | `is_stage` took a bind value with an `as_list` method for a sink | D8, from Ekorn's D49: its role methods are renamed `ekorn_source`, `ekorn_stage`, `ekorn_sink` and `ekorn_sink_scalar`, so `is_stage` leaves any other object as a bind value. Checked at 8ce1c95. DBIx::Squirrel adds a test with such a bind value |
 | **Q13** | `pluck` and `as_hash` with no run's columns? | D13: croak, as now, with the message unchanged; `pluck` by name on a hash row uses the row's own keys, as now, without columns |
-| **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's: `to_array`, `to_arrayref`, `to_scalar` and `count`. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing |
+| **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's, named in D14. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing |
 | **Q16** | `count` or `to_count`? | D12: `count`, as it says what the sink is, not where the result goes |
+| **Q17** | What are the other sinks called? | D14: `all_items`, `first_item`, and `only_item`, which asserts it's the only item; named for what they are, as `count` is. `to_array`, `to_arrayref` and `to_scalar` were wrongly named, for their containers |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were
 dropped as moot by D11, which leaves it none.
