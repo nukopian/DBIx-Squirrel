@@ -11,9 +11,10 @@ locally first, CI later. D8 settled: Ekorn renamed its role methods,
 so a bind value is never taken for a stage. D9 settled: `insert_into`
 dropped for now. D10 settled, then overtaken by D11. D11 settled: `all`,
 `single` and `count` become sinks, Ekorn's. D12 settled: `count`, not
-`to_count`. D13 settled: `pluck` and `as_hash` croak without columns,
+`to_count`, which Ekorn named `count_items`. D13 settled: `pluck` and `as_hash` croak without columns,
 as now. D14 settled: the sinks are `all_items`, `first_item` and
-`only_item`. D15 settled: container sinks are another kind. D16 settled:
+`only_item`, which Ekorn named `single_item`. D15 settled, then
+overtaken: Ekorn has no containers for arrays or hashes. D16 settled:
 DBIx::Squirrel's calls give an iterator unless a sink is last. D17
 settled: `only_item` warns at a second item. D18 settled: the `select`
 methods take stages. D19 settled: sinks' names clashing on import.
@@ -128,7 +129,9 @@ its section 12.3 (Ekorn-Pipeline
   Iain said: what's settled is that they're sinks.
 - [x] **D12.** `count` or `to_count`? `count`, Iain decided on
   2026-11-12, "as in that's what it is, not what we're putting the
-  result in".
+  result in". Ekorn named it `count_items` on 2026-11-12, as its D53,
+  which completes the family named for what they give, and is less
+  likely to clash with a caller's own `count`.
 - [x] **D13.** What do `pluck` and `as_hash` do in a run whose source
   gives no columns, such as a pushed run? Croak, as now, with the
   message unchanged, Iain decided on 2026-11-12, as recommended.
@@ -144,7 +147,8 @@ its section 12.3 (Ekorn-Pipeline
   the same jobs, so the names, and `only_item`, go to its session as a
   message. A list sink can't end a `|` chain (Ekorn's D10), so the
   name of the sink giving every result in one reference is left open
-  (the design's Q18).
+  (the design's Q18). Ekorn named `only_item` `single_item` on
+  2026-11-12, as its D53, echoing `single`, the method it replaces.
 - [x] **D15.** What gives every result in one reference, to end a `|`
   chain? `to_arrayref`, Iain decided on 2026-11-12, as a container
   sink: "I think to_array is still *a* valid sink, but it's another
@@ -155,6 +159,12 @@ its section 12.3 (Ekorn-Pipeline
   `to_array` and `to_arrayref` for items, `to_hash` and `to_hashref`
   for pairs, each filling a container given or a new one. D14's rule
   holds for each kind, and Ekorn's container sinks keep their names.
+  Overtaken the same day by Ekorn's D54, which drops `to_array`,
+  `to_arrayref`, `to_hash` and `to_hashref`: since D20, `all_items`
+  gives every result as an array reference wherever one value is asked
+  for, so a `|` chain ends in it, and Perl fills a container of the
+  caller's own beside the call. Ekorn's container sinks are `to_file`,
+  and `to_fh` as designed.
 - [x] **D16.** What does a call give without a sink last? Iain agreed
   on 2026-11-12 to a rule, so the questions about sinks would answer
   themselves ("If we get this right, answers to questions might be
@@ -261,3 +271,13 @@ Written when the design is approved and split into items.
   as a statement of its own draws Perl's "Useless use of numeric
   bitwise or (|) in void context" at compile time, which neither
   project can stop; checked here, and the docs keep the result.
+- **2026-11-12:** Ekorn-Pipeline's two messages. Iain renamed two of
+  its sinks, as its D53 (Ekorn-Pipeline
+  1fffaa19d42306effac4825bcbf6d295f9075d30): `count` is `count_items`,
+  and `only_item` is `single_item`. And he dropped its containers for
+  arrays and hashes, as its D54 (Ekorn-Pipeline
+  5c800d9f55c4ca013a6f000d6fb466e174bb2626), which overtakes D15. The
+  design takes both in, and its tests are to import `all_items` beside
+  Test2::V0 as Ekorn's do, with `use Test2::V0 qw(!all_items)`. None of
+  DBIx::Squirrel's code or tests used the sinks, so nothing else
+  changes.

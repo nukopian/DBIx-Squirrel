@@ -58,7 +58,7 @@ read from, and which `|` can start a chain with. Its stages are run
 by Ekorn's own pipeline, not DBIx::Squirrel's subclass, which goes.
 `pluck` and `as_hash` ask Ekorn for the run's columns, so they work in
 a user's own pipeline too. A run ends in one of Ekorn's sinks, such as
-`all_items` or `count`, not in the iterator's `all`, `single` and
+`all_items` or `count_items`, not in the iterator's `all`, `single` and
 `count`, which go. That breaks code, which v3.0.0 is for: it's
 DBIx::Squirrel v3.0.0, on Ekorn v0.3.0.
 
@@ -93,7 +93,7 @@ knows which package made which:
 use Ekorn::Pipeline::Operators;
 
 my $top = $sth->iterate(1990) | pluck('name') | take(5) | all_items;
-my $n   = $sth->iterate | stage { $_->[1] } | count;
+my $n   = $sth->iterate | stage { $_->[1] } | count_items;
 ```
 
 ## 4. A statement as a source
@@ -186,7 +186,7 @@ With the alternatives, by what's wanted:
 | every row, as a reference | `my $rows = $it \| all_items` | `my @rows = $it \| all_items`, one element |
 | every row, as a list | `my @rows = $sth->iterate(@binds, all_items)`, or `@{ $it \| all_items }` | |
 | the first row | `$it \| first_item`, fetching one | `$it->[0]`, fetching them all |
-| how many | `$it \| count` | `scalar @$it`, keeping every row |
+| how many | `$it \| count_items` | `scalar @$it`, keeping every row |
 | the first few | `$it \| take(5) \| all_items` | `(@$it)[0 .. 4]`, fetching them all |
 | each, as it comes | `while (my($row) = $it->next) {...}` | `for (@$it)`, fetching them all first |
 
@@ -284,43 +284,54 @@ The sinks are Ekorn's, as none needs a database:
 |---|---|
 | `$it->all` | `all_items`: every result, as a list |
 | (none) | `first_item`: the first result, stopping the run there |
-| `$it->single`, which croaks at a second result | `only_item`: the one result, with a warning if there's a second, for a SELECT that forgot `LIMIT 1`; it gives the first, and stops the run there |
-| `$it->count`, after a drain | `count`, how many results there were |
+| `$it->single`, which croaks at a second result | `single_item`: the one result, with a warning if there's a second, for a SELECT that forgot `LIMIT 1`; it gives the first, and stops the run there |
+| `$it->count`, after a drain | `count_items`, how many results there were |
 
 Each is named for what it gives, not for what the result is put in
-(Q16 and Q17, settled).
+(Q16 and Q17, settled). Ekorn named the last two `count_items` and
+`single_item` (Ekorn's D53): the first completes the family named for
+what they give, and is less likely to clash with a caller's own
+`count`; the second echoes `single`, the method it replaces.
 
-Container sinks are another kind, and valid too (Q18, settled): each
-puts the items into a container, yours if you give one, or a new one,
-and is named for it. `to_array` and `to_arrayref` take items;
-`to_hash` and `to_hashref` take pairs. Ekorn's design has all four
-(Ekorn 8.3).
+There are no container sinks for arrays or hashes (Ekorn's D54, which
+overtakes Q18). `to_array` and `to_arrayref` were `all_items` under
+other names, as it gives an array reference wherever one value is
+asked for, and Perl fills a container of your own beside the call:
+
+```perl
+push @mine, @{ $it | all_items };
+my %by_id = @{ $it | stage { ($_->[0], $_) } | all_items };
+```
+
+Ekorn's container sinks are `to_file`, and `to_fh` as designed.
 
 `all_items` gives a list in list context, and in scalar context the
 same list as an array reference (Q22, settled, from Ekorn's D51). So
 `my $rows = ... all_items` is the rows, never a count of them, and a
 `|` chain, which asks for one value, can end in `all_items` too.
-`to_arrayref` keeps its job, filling an array you hand it. An empty
-result is then true, so testing for no rows takes `@$rows`, or
-`count`.
+An empty result is then true, so testing for no rows takes `@$rows`,
+or `count_items`.
 
 Ekorn took these in as its D50, and built them on its
 `pipeline-experimental` (e03e71958e0052dd098672f77a099b90681644e2):
 `Ekorn::Pipeline::Sinks` exports `all_items`, `first_item`, `only_item`
 and `count`, and the containers `to_array`, `to_arrayref` and
-`to_file`. `first_value` is now `first_item`. `only_item` warns
-"Expected only one item, but there were more", at the caller's line.
+`to_file`. `first_value` is now `first_item`. Since then, at
+5c800d9f55c4ca013a6f000d6fb466e174bb2626, it exports `all_items`,
+`count_items`, `first_item`, `single_item` and `to_file` (Ekorn's D53
+and D54). `single_item` warns "Expected only one item, but there were
+more", at the caller's line.
 
 A function that takes stages gives a sink's result when its last stage
 is one, rather than an iterator, as Ekorn's D43 allows:
 
 ```perl
-use Ekorn::Pipeline::Sinks qw(all_items only_item count);
+use Ekorn::Pipeline::Sinks qw(all_items single_item count_items);
 
 my @rows   = $dbh->iterate('SELECT * FROM artist', all_items);
-my $artist = $dbh->results('SELECT * FROM artist WHERE id = ?', 1, only_item);
-my $n      = $sth->iterate(1990, count);
-my @top   = $sth->iterate(pluck('name'), take(5), all_items);
+my $artist = $dbh->results('SELECT * FROM artist WHERE id = ?', 1, single_item);
+my $n      = $sth->iterate(1990, count_items);
+my @top    = $sth->iterate(pluck('name'), take(5), all_items);
 my $names  = $sth->iterate | pluck('name') | take(5) | all_items;
 ```
 
@@ -345,14 +356,14 @@ statements. Without a sink last, each follows the rule in section 3:
 
 The rule answers the rest:
 
-- **`only_item` with no rows** gives what Ekorn's sinks of one value
+- **`single_item` with no rows** gives what Ekorn's sinks of one value
   give, `undef`. A caller wanting nothing for no rows uses
   `all_items`.
 - **Users get the sinks from Ekorn,** as any user of Ekorn does.
   DBIx::Squirrel may re-export them (Ekorn's D31), and needs no module
   of its own for them.
 - **The iterator's "how many so far"** goes with its `count` method.
-  Counting is a stage's or a sink's job: `count`, or
+  Counting is a stage's or a sink's job: `count_items`, or
   `result_number` while DBIx::Squirrel's iterator runs the stages.
 - **The sinks' names** are Ekorn's to settle, as the sinks are its.
 
@@ -424,9 +435,9 @@ Ekorn's (Ekorn 10).
 | `DBIx::Squirrel::Pipeline->new(...)` | fails: the module is gone | `Ekorn::Pipeline->new(...)`, or `pipeline(...)` from Ekorn::Pipeline::Factories |
 | `$x isa 'DBIx::Squirrel::Pipeline'` | false | `$x isa 'Ekorn::Pipeline'` |
 | `ref $stage eq 'CODE'`, `is_coderef($stage)`, for a stage made by `take`, `gather` and the like | false: they're objects now, called as code references (Ekorn's Q12) | `is_stage($stage)` |
-| `$it->all`, `$it->single`, `$it->count` | fails: the methods are gone | a sink given last: `all_items`, `only_item`, `count` (section 6) |
+| `$it->all`, `$it->single`, `$it->count` | fails: the methods are gone | a sink given last: `all_items`, `single_item`, `count_items` (section 6) |
 | `my @names = artist_names sub {...}`, a Sugar statement given stages | gives an iterator, not every result | give a sink last, `all_items` |
-| a Sugar statement given stages in scalar context, for a count | gives an iterator | give `count` last |
+| a Sugar statement given stages in scalar context, for a count | gives an iterator | give `count_items` last |
 | `result_number` or `Context::iterator` in a user's own pipeline over an iterator | `undef` | count in a stage of their own |
 | `my($first) = $sth->iterate->next`, then using the handle | the handle is finished once the iterator goes | keep the iterator while the handle is in use |
 | everything else: `iterate`, `results`, and the `select` methods and Sugar without stages or a sink last, `pluck`, `as_hash`, `take`, `Stop`, `gather` | unchanged | nothing |
@@ -459,21 +470,21 @@ and its block may return a flush and an end.
 
 Test2::V0 exports a check named `all_items`, as Ekorn has warned. A
 test importing both it and the sink gets a prototype-mismatch warning,
-which Test2::Plugin::NoWarnings fails. Tests call the sink by its full
-name, `Ekorn::Pipeline::Sinks::all_items()`, or don't import
-Test2::V0's. Iain kept the name over `every_item`, as the clash is
+which Test2::Plugin::NoWarnings fails. Tests leave Test2::V0's out,
+`use Test2::V0 qw(!all_items)`, and import the sink by its short
+name, as Ekorn's do (Ekorn's D54). Iain kept the name over `every_item`, as the clash is
 "only a problem in test harness" (Ekorn's D50).
 
 The same goes for any clash between a sink and a name in the user's
-package, such as a Sugar statement called `count` (Q23, settled). The
+package, such as a Sugar statement called `count_items` (Q23, settled). The
 Sugar's clash check catches it, with a test to show it. And a user can
 call the sink by its full name, or keep it in a lexical:
 
 ```perl
-my $n = $sth->iterate(1990, Ekorn::Pipeline::Sinks::count());
+my $n = $sth->iterate(1990, Ekorn::Pipeline::Sinks::count_items());
 
-my $count = \&Ekorn::Pipeline::Sinks::count;
-my $m     = $sth->iterate(1991, $count->());
+my $count_items = \&Ekorn::Pipeline::Sinks::count_items;
+my $m           = $sth->iterate(1991, $count_items->());
 ```
 
 ## 13. Questions
@@ -502,14 +513,14 @@ answers or from building, is added here as Q25 and on.
 | **Q12** | `is_stage` took a bind value with an `as_list` method for a sink | D8, from Ekorn's D49: its role methods are renamed `ekorn_source`, `ekorn_stage`, `ekorn_sink` and `ekorn_sink_scalar`, so `is_stage` leaves any other object as a bind value. Checked at 8ce1c95. DBIx::Squirrel adds a test with such a bind value |
 | **Q13** | `pluck` and `as_hash` with no run's columns? | D13: croak, as now, with the message unchanged; `pluck` by name on a hash row uses the row's own keys, as now, without columns |
 | **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's, named in D14. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing |
-| **Q16** | `count` or `to_count`? | D12: `count`, as it says what the sink is, not where the result goes |
-| **Q17** | What are the other sinks called? | D14: `all_items`, `first_item`, and `only_item`, which asserts it's the only item; named for what they are, as `count` is. `to_array`, `to_arrayref` and `to_scalar` were wrongly named for these, for their containers |
-| **Q18** | What gives every result in one reference, to end a `\|` chain? | D15: `to_arrayref`, a container sink. Container sinks, `to_array`, `to_arrayref`, `to_hash` and `to_hashref`, are another kind, valid beside those named for what they give |
+| **Q16** | `count` or `to_count`? | D12: `count`, as it says what the sink is, not where the result goes. Ekorn named it `count_items` (its D53) |
+| **Q17** | What are the other sinks called? | D14: `all_items`, `first_item`, and `only_item`, which asserts it's the only item; named for what they are, as `count` is. `to_array`, `to_arrayref` and `to_scalar` were wrongly named for these, for their containers. Ekorn named `only_item` `single_item` (its D53) |
+| **Q18** | What gives every result in one reference, to end a `\|` chain? | D15: `to_arrayref`, a container sink. Container sinks, `to_array`, `to_arrayref`, `to_hash` and `to_hashref`, are another kind, valid beside those named for what they give. Overtaken by Ekorn's D54, which drops all four: a chain ends `\| all_items`, which gives a reference (D20) |
 | **Q19** | What does a call give without a sink last? | D16: the rule in section 3: DBIx::Squirrel's own calls give an iterator, the Sugar's statements included; the DBI's calls give what the DBI gives |
-| **Q20** | What does `only_item` do at a second item? | D17: it warns, not croaks, and gives the first: there's a second when a SELECT forgot `LIMIT 1` |
+| **Q20** | What does `only_item` do at a second item? | D17: it warns, not croaks, and gives the first: there's a second when a SELECT forgot `LIMIT 1`. It's `single_item` now (Ekorn's D53) |
 | **Q21** | `pluck` after a stage that reshapes rows reads the statement's columns, as a context describes the source (Ekorn's D46), and so picks the wrong field, silently | D21: the reference and the how-to say so loudly, and show `as_hash` first, then `pluck` by name, which uses the hash's own keys |
 | **Q22** | A list sink last, `all_items`, gave a count in scalar context (Ekorn's D47), so `my $rows = ... all_items` quietly gave a number | D20, from Ekorn's D51, as Iain proposed: a list sink asked for one value gives its list as an array reference, at the end of a `\|` chain too. A run with no sink still gives a count |
-| **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count`, or Test2::V0's `all_items` | D19: a test shows the Sugar's clash check catches a sink of the same name; the docs import sinks by name. Where a name clashes, call the sink by its full name, `Ekorn::Pipeline::Sinks::count()`, or through a code reference in a lexical, `my $count = \&Ekorn::Pipeline::Sinks::count;`, called as `$count->()` |
+| **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count_items`, or Test2::V0's `all_items` | D19: a test shows the Sugar's clash check catches a sink of the same name; the docs import sinks by name. Where a name clashes, call the sink by its full name, `Ekorn::Pipeline::Sinks::count_items()`, or through a code reference in a lexical, `my $count_items = \&Ekorn::Pipeline::Sinks::count_items;`, called as `$count_items->()`. Tests leave Test2::V0's `all_items` out, `use Test2::V0 qw(!all_items)` |
 | **Q24** | Do the `select` methods take stages? | D18: yes. What the DBI gives is pushed through them: with stages, the call gives what comes out of the last stage; without, what the DBI gives |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were
