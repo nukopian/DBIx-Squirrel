@@ -1412,7 +1412,7 @@ and one more, name C<:DEFAULT> too:
 
 B<Exported by default:> C<take($n)>, C<drop($n)>
 
-B<On request:> C<take_while { ... }>, C<drop_while { ... }>
+B<On request:> C<take_first>, C<take_last>, C<take_single>, C<take_while { ... }>, C<drop_while { ... }>
 
 =item C<DBIx::Squirrel::Stages::Rows>
 
@@ -1441,6 +1441,18 @@ Passes on the first C<$n> values, then stops the pipeline, so no more rows are f
 =item C<drop($n)>
 
 Drops the first C<$n> values, and passes on the rest.
+
+=item C<take_first>
+
+Passes on the first value, then stops the pipeline: C<take(1)>.
+
+=item C<take_last>
+
+Passes on the last value, once there are no more, reading every one to find it; nothing if there were none.
+
+=item C<take_single>
+
+Passes on the one value. At a second, it warns and stops the pipeline, so only the first goes on: for a SELECT that forgot C<LIMIT 1>.
 
 =item C<take_while { ... }>
 
@@ -1927,6 +1939,10 @@ C<batch> was given something other than a whole number above 0.
 
 C<take_while>, C<drop_while>, C<collect> or C<peek> was given something other than a block or code reference.
 
+=item C<Expected only one item, but there were more>
+
+A warning: C<take_single> was given a second value, and stopped the pipeline, passing on only the first.
+
 =item C<Expected a column, by name or position>
 
 C<pluck> was given no column, or an empty name.
@@ -2374,7 +2390,7 @@ Makes a stage afresh for each run, with a function called at the end.
 
 =item C<DBIx::Squirrel::Stages::Flow>
 
-Canned stages taking or dropping values: C<take>, C<drop>, C<take_while>, C<drop_while>.
+Canned stages taking or dropping values: C<take>, C<drop>, C<take_first>, C<take_last>, C<take_single>, C<take_while>, C<drop_while>.
 
 =item C<DBIx::Squirrel::Stages::Rows>
 

@@ -1190,7 +1190,7 @@ use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while);
 
 | Module | Exported by default | On request |
 |---|---|---|
-| `DBIx::Squirrel::Stages::Flow` | `take($n)`, `drop($n)` | `take_while { ... }`, `drop_while { ... }` |
+| `DBIx::Squirrel::Stages::Flow` | `take($n)`, `drop($n)` | `take_first`, `take_last`, `take_single`, `take_while { ... }`, `drop_while { ... }` |
 | `DBIx::Squirrel::Stages::Rows` | `pluck($column)`, `as_hash` | |
 | `DBIx::Squirrel::Stages::Batch` | `batch($n)`, `collect`, `collect { ... }` | |
 | `DBIx::Squirrel::Stages::Taps` | `peek { ... }`, `count_into(\$n)` | `dump_to($fh)` |
@@ -1201,6 +1201,9 @@ What each stage does:
 |---|---|
 | `take($n)` | Passes on the first `$n` values, then stops the pipeline, so no more rows are fetched. |
 | `drop($n)` | Drops the first `$n` values, and passes on the rest. |
+| `take_first` | Passes on the first value, then stops the pipeline: `take(1)`. |
+| `take_last` | Passes on the last value, once there are no more, reading every one to find it; nothing if there were none. |
+| `take_single` | Passes on the one value. At a second, it warns and stops the pipeline, so only the first goes on: for a SELECT that forgot `LIMIT 1`. |
 | `take_while { ... }` | Passes on values while the block is true of them. At the first it's false of, it stops the pipeline, and doesn't pass that value on. |
 | `drop_while { ... }` | Drops values while the block is true of them, then passes on the rest, from the first it's false of. |
 | `pluck($column)` | Gives one column of each row, by its name, in any case, or its position, from 0, whether the row is an array, a hash or a row object. |
@@ -1556,6 +1559,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected a count of 0 or more` | `take` or `drop` was given something other than a whole number. |
 | `Expected a batch size of 1 or more` | `batch` was given something other than a whole number above 0. |
 | `Expected a code reference` | `take_while`, `drop_while`, `collect` or `peek` was given something other than a block or code reference. |
+| `Expected only one item, but there were more` | A warning: `take_single` was given a second value, and stopped the pipeline, passing on only the first. |
 | `Expected a column, by name or position` | `pluck` was given no column, or an empty name. |
 | `Expected a column of the row (%s)` | A row hasn't got the column `pluck` was given. |
 | `Expected an iterator, for the column names` | `as_hash`, or `pluck` with a name for an array row or a position for a hash row, ran where no iterator was running it. |
@@ -1733,7 +1737,7 @@ distributions of their own.
 | `DBIx::Squirrel::Pipes` | The `pipe` and `tap` methods of both handle classes. |
 | `DBIx::Squirrel::Stop` | Ends a pipeline early. |
 | `DBIx::Squirrel::Gather` | Makes a stage afresh for each run, with a function called at the end. |
-| `DBIx::Squirrel::Stages::Flow` | Canned stages taking or dropping values: `take`, `drop`, `take_while`, `drop_while`. |
+| `DBIx::Squirrel::Stages::Flow` | Canned stages taking or dropping values: `take`, `drop`, `take_first`, `take_last`, `take_single`, `take_while`, `drop_while`. |
 | `DBIx::Squirrel::Stages::Rows` | Canned stages reshaping rows: `pluck`, `as_hash`. |
 | `DBIx::Squirrel::Stages::Batch` | Canned stages gathering values: `batch`, `collect`. |
 | `DBIx::Squirrel::Stages::Taps` | Canned stages run for their side effects: `peek`, `count_into`, `dump_to`. |

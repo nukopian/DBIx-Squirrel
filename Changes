@@ -2,6 +2,15 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    DBIx::Squirrel::Stages::Flow passes on three more of Ekorn's stages.
+
+    - take_first, take_last and take_single, from
+      DBIx::Squirrel::Stages::Flow on request: each passes on what the
+      sink of the same name, keep_first, keep_last or keep_single,
+      would give, so the stages after it go on. take_single warns at a
+      second value, for a SELECT that forgot LIMIT 1. They're
+      Ekorn::Pipeline's, which must have them.
+
 v2.1.0 2026-11-10
 
     A pipeline goes wherever a stage goes, and the docs read plainly.

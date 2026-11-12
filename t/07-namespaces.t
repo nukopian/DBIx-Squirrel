@@ -132,8 +132,11 @@ subtest 'the facades follow Ekorn::Pipeline' => sub {
         'Gather'        => [[qw(gather)]],
         'Stop'          => [[qw(Stop)]],
         'Stages::Batch' => [[qw(batch collect)], []],
-        'Stages::Flow'  => [[qw(take drop)], [qw(take_while drop_while)]],
-        'Stages::Taps'  => [[qw(peek count_into)], [qw(dump_to)]],
+        'Stages::Flow'  => [
+            [qw(take drop)],
+            [qw(take_first take_last take_single take_while drop_while)]
+        ],
+        'Stages::Taps' => [[qw(peek count_into)], [qw(dump_to)]],
     );
     for my $name (sort keys %exports) {
         my($ours,    $theirs) = ("DBIx::Squirrel::$name", "Ekorn::Pipeline::$name");

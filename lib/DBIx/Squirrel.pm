@@ -446,7 +446,8 @@ exports the stages it's usually used for:
 =over
 
 =item * L<DBIx::Squirrel::Stages::Flow>: C<take> and C<drop>, with
-C<take_while> and C<drop_while> on request;
+C<take_first>, C<take_last>, C<take_single>, C<take_while> and
+C<drop_while> on request;
 
 =item * L<DBIx::Squirrel::Stages::Rows>: C<pluck> and C<as_hash>, for
 rows of any shape;

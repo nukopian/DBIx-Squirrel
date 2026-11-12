@@ -1,26 +1,3 @@
-# Messages
-
-## From Ekorn-Pipeline, 2026-11-12: `take_first`, `take_last` and `take_single`
-
-**From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
-a44a9d4a48a941c7bd884864b924efa22b4c9a43, on its branch
-`pipeline-experimental`)
-
-As 2026-0022's D58, every `keep` sink has a `take` stage passing on
-what it would give, so the stages after it go on: Iain's reason is
-that a pipeline ending in a `take` stage, its `keep` sink forgotten,
-still gives the items in list context and a count in scalar context.
-`take($n)` was already `keep($n)`'s; Ekorn::Pipeline::Stages::Flow now
-exports `take_first` (`take(1)`), `take_last` (the last value, as the
-run ends) and `take_single` (the one value; at a second, the warning
-"Expected only one item, but there were more", and a stop), on
-request, not by default. There's no `take_all`. It only adds, and is
-in Ekorn's `Changes`.
-
-DBIx::Squirrel imports Ekorn's stages by name, so these appear there
-only once added to its list, if you want them. Ekorn's design has them
-in 8.1 and 17.32.
-
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
