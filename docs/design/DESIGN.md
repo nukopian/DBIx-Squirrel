@@ -57,20 +57,20 @@ A statement's iterator becomes a source, which Ekorn's pipelines can
 read from, and which `|` can start a chain with. Its stages are run
 by Ekorn's own pipeline, not DBIx::Squirrel's subclass, which goes.
 `pluck` and `as_hash` ask Ekorn for the run's columns, so they work in
-a user's own pipeline too. New sinks collect rows into DBIx::Squirrel's
-result objects. Everything else a user writes today keeps working,
-except code that names `DBIx::Squirrel::Pipeline`, or checks that a
-stage is a code reference. It's DBIx::Squirrel v3.0.0, on Ekorn
-v0.3.0.
+a user's own pipeline too. A run ends in one of Ekorn's sinks, such as
+`to_array` or `count`, not in the iterator's `all`, `single` and
+`count`, which go. That breaks code, which v3.0.0 is for: it's
+DBIx::Squirrel v3.0.0, on Ekorn v0.3.0.
 
 ## 3. What DBIx::Squirrel delivers
 
-Three kinds of part, each keeping one of Ekorn's protocols:
+Two kinds of part, each keeping one of Ekorn's protocols:
 
 - **Sources:** a statement's rows (section 4).
 - **Stages that need a database's knowledge:** `pluck` and `as_hash`
   (section 5).
-- **Sinks:** rows collected as result objects (section 6).
+
+It makes no sinks of its own: a run ends in Ekorn's (section 6).
 
 And functions that take stages, as any user of Ekorn writes them:
 `iterate`, `results`, the `select` methods, `pipe` and `tap`, and its
@@ -131,19 +131,18 @@ A DBI statement handle can't have two executions going at once. So:
 Ekorn 12.3 had it croak whenever the handle is active. DBIx::Squirrel
 keeps its own rule, which Ekorn has been told.
 
-### 4.4 `next`, `all`, `single`, `reset` and `count`
+### 4.4 `next` and `reset`; `all`, `single` and `count` go
 
-They're rebuilt over the same source, so each is one run, or part of
-one:
+What's left of the iterator's methods is rebuilt over the same source:
 
 - `next` pulls from the run, starting one if none is going.
-- `all` drains the run, and `single` starts a fresh one and croaks at
-  a second result, as now.
 - `reset` ends the run, if one is going, and keeps the bind values and
   stages given, as now.
-- `count` counts the results handed out.
 - A new `ended` gives what Ekorn's iterator says about how the run
   ended: `done`, `stopped` or `died`.
+
+`all`, `single` and `count` go (Q15, settled). Each ended a run, so
+each becomes a sink, given last (section 6).
 
 An iterator that's let go ends its run, through Ekorn's iterator's
 `DESTROY` (Ekorn's D28), so its handle is finished. So
@@ -191,52 +190,46 @@ croaks where there are none, as in a pushed run, or one over a source
 that isn't a statement: "Expected an iterator, for the column names",
 as now (**Q13**).
 
-## 6. Result sinks
+## 6. Ending a run: Ekorn's sinks
 
-Iain is more interested in these than in `insert_into` (2026-11-12).
-They're sinks that collect rows into DBIx::Squirrel's result objects,
-so a pipeline can end in results, whatever its source.
+A run ends in a sink, given as its last stage, which says what the
+caller wants back (Q15, settled). The calling context no longer
+decides it: `my $n = ...` and `my @rows = ...` get what the sink gives,
+not a count or a list by Perl's rules.
 
-Today, `results` makes a `DBIx::Squirrel::Results`, an iterator that
-blesses each row into a class made for the statement's columns, with
-an accessor for each. A row's class comes from its columns' names. So
-the same can be done by any run whose source gives columns in its
-context, a statement or not.
+The sinks are Ekorn's, as none needs a database:
 
-The sink's result is one of DBIx::Squirrel's own iterators, not a new
-class (Q8, settled):
+| Today | In this design |
+|---|---|
+| `$it->all` | `to_array`, every result as a list; or `to_arrayref`, as a reference |
+| `$it->single` | `to_scalar`: the one result, `undef` if there are none, and a croak at a second |
+| `$it->count`, after a drain | `count`, how many results there were |
+
+`to_array`, `to_arrayref` and `count` are in Ekorn's design (Ekorn
+8.3). `to_scalar` isn't: it was asked of Ekorn's session, with Iain's
+view of what it gives, on 2026-11-12. `count` keeps its name, as it
+says what the sink is, not where the result goes (Q16, settled). The
+names can be fine-tuned later, as Iain said: what's settled is that
+they're sinks.
+
+A function that takes stages gives a sink's result when its last stage
+is one, rather than an iterator, as Ekorn's D43 allows:
 
 ```perl
-use DBIx::Squirrel::Sinks qw(to_results);
+use Ekorn::Pipeline::Sinks qw(to_array to_scalar count);
 
-my $results = $sth->iterate(1990) | take(10) | to_results;
-my $artist  = $results->next;
-say $artist->name;
-say $results->count;
+my @rows   = $dbh->iterate('SELECT * FROM artist', to_array);
+my $artist = $dbh->results('SELECT * FROM artist WHERE id = ?', 1, to_scalar);
+my $n      = $sth->iterate(1990, count);
+my @top    = @{ $sth->iterate | pluck('name') | take(5) };
 ```
 
-- **`to_results`** is a scalar sink, made with Ekorn's `sink_scalar`.
-  Its set-up finds the row class for the run's columns, with
-  `DBIx::Squirrel::Result->class_for`. Its step blesses each row, an
-  array, into it. Its result is a `DBIx::Squirrel::Results` over the
-  rows it collected.
-- **The results it gives** have the interface `results` gives today:
-  `next`, `all`, `single`, `count` and `reset`. They're a source too
-  (`ekorn_source`), giving their columns as their context, so they can
-  be read again, through any pipeline, as a statement's can, but from
-  memory.
-- **Its rows are `DBIx::Squirrel::Result` objects,** the same as
-  `results` hands out, with their accessors and `get_column`.
+That's `iterate`, `results`, the `select` methods and the Sugar's
+statements. Without a sink last, each gives what it gives today.
 
-So `DBIx::Squirrel::Iterator`, and `Results` with it, take rows already
-in hand as well as a statement. That widens Iterator: the statement's
-parts of it, executing, fetching in batches and finishing the handle,
-are needed only when there's a statement. How it's split is for the
-work, once the design is approved.
-
-Open questions: what rows `to_results` takes (Q9), which other result
-sinks follow (Q10), and whether results read again keep
-`result_original` (Q14).
+Rows become `DBIx::Squirrel::Result` objects at the source, from
+`results`, so there's no result sink of DBIx::Squirrel's own: `results`
+and a sink do what one would.
 
 ## 7. insert_into, dropped
 
@@ -280,11 +273,10 @@ Ekorn's (Ekorn 10).
 | Module | Today | In this design |
 |---|---|---|
 | `DBIx::Squirrel`, `::db`, `::st` | the DBI subclass and its handles; `iterate`, `results`, the `select` methods | the same. `db` and `st` take `pipe` and `tap` from `Ekorn::Pipeline::Pipes`, the parent class Ekorn offers for it (Ekorn 11.1), not from a facade |
-| `::Iterator` | rows through a pipeline of its own class | a source (section 4); its stages run by Ekorn's pipeline; `\|` and `@{}`; rows in hand as well as a statement's (section 6) |
-| `::Results`, `::Result` | rows as objects | unchanged, but for section 4.4; `Results` is also what `to_results` gives (section 6) |
+| `::Iterator` | rows through a pipeline of its own class; `next`, `all`, `single`, `count`, `reset` | a source (section 4); its stages run by Ekorn's pipeline; `\|` and `@{}`; `next`, `reset` and `ended`, as `all`, `single` and `count` become sinks (section 6) |
+| `::Results`, `::Result` | rows as objects | unchanged, but for section 4.4 |
 | `::Context` | the iterator, the result's number and its row | a thin layer over `run_context()` and `ending()` (section 5) |
 | `::Stages::Rows` | `pluck`, `as_hash`, by Context | the same, by `run_context()` |
-| `::Sinks` | (new) | result sinks (section 6) |
 | `::Pipeline` | a subclass of Ekorn's, with no code | goes (Q1, settled) |
 | `::Pipes` | a subclass of Ekorn's Pipes | goes: `db` and `st` use Ekorn's directly |
 | `::Stop` | a subclass of Ekorn's Stop, re-exporting `Stop` | a plain re-export of Ekorn's `Stop` (Q6, settled) |
@@ -301,9 +293,11 @@ Ekorn's (Ekorn 10).
 | `DBIx::Squirrel::Pipeline->new(...)` | fails: the module is gone | `Ekorn::Pipeline->new(...)`, or `pipeline(...)` from Ekorn::Pipeline::Factories |
 | `$x isa 'DBIx::Squirrel::Pipeline'` | false | `$x isa 'Ekorn::Pipeline'` |
 | `ref $stage eq 'CODE'`, `is_coderef($stage)`, for a stage made by `take`, `gather` and the like | false: they're objects now, called as code references (Ekorn's Q12) | `is_stage($stage)` |
+| `$it->all`, `$it->single`, `$it->count` | fails: the methods are gone | a sink given last: `to_array`, `to_scalar`, `count` (section 6) |
+| `my $n = $sth->iterate(...)`-style calls that rely on context to count or list | the sink last says what comes back | give a sink |
 | `result_number` or `Context::iterator` in a user's own pipeline over an iterator | `undef` | count in a stage of their own |
 | `my($first) = $sth->iterate->next`, then using the handle | the handle is finished once the iterator goes | keep the iterator while the handle is in use |
-| everything else: `iterate`, `results`, the `select` methods, Sugar, `pluck`, `as_hash`, `take`, `Stop`, `gather` | unchanged | nothing |
+| everything else: `iterate`, `results`, the `select` methods and Sugar without a sink last, `pluck`, `as_hash`, `take`, `Stop`, `gather` | unchanged | nothing |
 
 The last but one is a fix rather than a break, but a program that
 relied on the handle staying active would see it.
@@ -340,10 +334,7 @@ their numbers, with the decision in record 2026-0013.
 
 | | Question | Whose | Recommendation |
 |---|---|---|---|
-| **Q9** | What rows does `to_results` take? | DBIx-Squirrel's | arrays in the run's column order, as a statement gives them; hashes by their keys, sorted, as there's no order to take; and croak at anything else, or at an array without a run's columns |
-| **Q10** | Which other result sinks? | DBIx-Squirrel's | none at first. Candidates: `to_result` (the first row as an object, as `single`), and a sink keyed by a column, as `selectall_hashref` |
 | **Q13** | `pluck` and `as_hash` with no run's columns | DBIx-Squirrel's | croak, as now, with the message unchanged; give a hash row's own keys to `pluck` by name, as now, without needing columns |
-| **Q14** | Do results read again, from memory, keep `result_original`? | DBIx-Squirrel's | yes: their source keeps the row it gave last in its context, as a statement's does |
 
 ### 13.2 Settled
 
@@ -356,7 +347,9 @@ their numbers, with the decision in record 2026-0013.
 | **Q5** | `insert_into` and a transaction already begun? | D5: it begins and commits only with `AutoCommit` on |
 | **Q6** | The facades? | D6: `Gather`, `Stop` and the `Stages::*` modules are plain re-exports; `Pipeline` and `Pipes` go |
 | **Q7** | CI against Ekorn's `pipeline-experimental`? | D7: yes, but locally first, and CI once the designs are nailed down |
-| **Q8** | What does a result sink give? | D10: one of DBIx::Squirrel's own iterators, a `Results` over the rows collected, with the interface `results` gives today, and readable again as a source. Iterator takes rows in hand as well as a statement. Weighed: a list of rows, which can't be read again |
+| **Q8** | What does a result sink give? | D10, overtaken by D11: a `Results` over the rows collected. No result sink is made now |
+| **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's: `to_array`, `to_arrayref`, `to_scalar` and `count`. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing |
+| **Q16** | `count` or `to_count`? | D12: `count`, as it says what the sink is, not where the result goes |
 | **Q11** | Keep `insert_into`? | D9: not now. Roadmap 2026-0012 is dropped, and it'll be found again if a need comes |
 | **Q12** | `is_stage` took a bind value with an `as_list` method for a sink | D8, from Ekorn's D49: its role methods are renamed `ekorn_source`, `ekorn_stage`, `ekorn_sink` and `ekorn_sink_scalar`, so `is_stage` leaves any other object as a bind value. Checked at 8ce1c95. DBIx::Squirrel adds a test with such a bind value |
 
@@ -369,7 +362,7 @@ their numbers, with the decision in record 2026-0013.
 | 2026-0010, a `pipeline` key in Sugar | 8 | becomes names in a statement's definition (Ekorn's D36) |
 | 2026-0011, Ekorn's `install_sub` and `is_name` | 8 | not needed: the Sugar keeps its own (Ekorn 10). Drop it |
 | 2026-0012, `insert_into` | 7 | dropped (Q11) |
-| (new) | 6 | result sinks |
+| (new) | 6 | runs ending in Ekorn's sinks; `all`, `single` and `count` gone |
 | (new) | 4 | the iterator as a source, Context over `run_context()`, the facades gone: the v3.0.0 work |
 
 ## 15. Knock-on effects on other documents
@@ -379,7 +372,7 @@ their numbers, with the decision in record 2026-0013.
 - **Reference:** `DBIx::Squirrel::Pipeline` goes, and its examples use
   `Ekorn::Pipeline->new`; the iterator's section says it's a source,
   with `ekorn_source`, `ended`, `|` and `@{}`; Context says where each
-  function works; Stages say they're objects; result sinks are new;
+  function works; Stages say they're objects; `all`, `single` and `count` are sinks, given last;
   Sugar's definitions take names.
 - **How-to:** about a dozen examples use `DBIx::Squirrel::Pipeline`, and
   move to Ekorn's. New recipes: a statement read through `|`, and rows

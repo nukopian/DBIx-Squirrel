@@ -9,8 +9,9 @@ settled: `insert_into` begins a transaction only with `AutoCommit`
 on. D6 settled: the facades are plain re-exports. D7 settled: test
 locally first, CI later. D8 settled: Ekorn renamed its role methods,
 so a bind value is never taken for a stage. D9 settled: `insert_into`
-dropped for now. D10 settled: a result sink gives a `Results`. Four
-questions open, in the design's section 13.1.
+dropped for now. D10 settled, then overtaken by D11. D11 settled: `all`,
+`single` and `count` become sinks, Ekorn's. D12 settled: `count`, not
+`to_count`. One question open, in the design's section 13.1.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -99,6 +100,27 @@ its section 12.3 (Ekorn-Pipeline
   readable again; and a new class for them, which the first draft
   called `DBIx::Squirrel::ResultSet`, a name taken from DBIx::Class
   that nothing asked for, and which copied Iterator's interface.
+  Overtaken by D11 the same day: there's no result sink of
+  DBIx::Squirrel's own.
+- [x] **D11.** Should the iterator's `all`, `single` and `count` stay
+  methods, or be sinks? Sinks, Iain decided on 2026-11-12: "So we
+  break things. v3.0.0 is where we get to do that." A sink given last
+  says what comes back, which removes the calling-context problems of
+  a call that lists or counts by Perl's rules. The sinks are Ekorn's,
+  as none needs a database: `to_array`, `to_arrayref`, `count`, and
+  `to_scalar`, which gives the one result, `undef` for none, and
+  croaks at a second, as `single` does, and was asked of Ekorn's
+  session. `next` and `reset` stay; a call ending in a sink gives its
+  result, as Ekorn's D43 allows. Rows become `Result` objects at the
+  source, from `results`, so no result sink of DBIx::Squirrel's own is
+  needed, and the design's Q9, Q10 and Q14, about one, are dropped as
+  moot. Weighed: the methods kept as shorthands over the sinks, which
+  keeps two ways to do one thing; and `all` as a sink of ours, whose
+  name clashes with List::Util's. The names can be fine-tuned later,
+  Iain said: what's settled is that they're sinks.
+- [x] **D12.** `count` or `to_count`? `count`, Iain decided on
+  2026-11-12, "as in that's what it is, not what we're putting the
+  result in".
 
 ## The plan
 
