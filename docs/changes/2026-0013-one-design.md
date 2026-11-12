@@ -575,4 +575,11 @@ Written when the design is approved and split into items.
   `try` and `local`s for each value through a stage, which D30 keeps.
   DBIx::Squirrel's `next` could take the code reference once, at the
   run's start, for those 0.03 s; that waits on Iain.
+- **2026-11-12:** Iain chose that `next` takes the run's code
+  reference once, at the run's start, as Ekorn's D63 suggests, rather
+  than pay the `&{}` overload on each call. The iterator holds the run,
+  so the code reference never outlives it, and `_finish` drops both.
+  Timed three times each, `next` to the end: over `place_areas`, 0.369
+  s to 0.334 s; over `places`, 0.176 s to 0.162 s; version 2 took
+  0.351 s and 0.168 s.
 

@@ -45,7 +45,7 @@ sub new ($class, $sth, @args) {
 sub next ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     _executed($self);
     return if $self->{done};
-    my @result = DBIx::Squirrel::Context::within($self, $self->{run});
+    my @result = DBIx::Squirrel::Context::within($self, $self->{pull});
     unless (@result) {
         _finish($self);
         return;
@@ -144,6 +144,10 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
         push @counted, sub ($result) { $counter->{produced}++; $result };
     }
     $self->{run} = Ekorn::Pipeline->new(@counted)->iterator(_statement($self));
+    # The run's code reference, taken once, as Ekorn's iterator suggests
+    # for a loop, so next doesn't pay its &{} overload on each call. It
+    # doesn't keep the run, which the iterator holds.
+    $self->{pull} = \&{ $self->{run} };
     return $self;
 }
 
@@ -177,6 +181,7 @@ sub _executed ($self) {
 # End the run, if one is going, and finish the statement. What the run
 # held goes with it: its batch, and anything its Ekorn iterator holds.
 sub _finish ($self) {
+    delete $self->{pull};
     my $run = delete $self->{run};
     $run->finish if $run;
     $self->{done} = 1;
