@@ -13,7 +13,7 @@ dropped for now. D10 settled, then overtaken by D11. D11 settled: `all`,
 `single` and `count` become sinks, Ekorn's. D12 settled: `count`, not
 `to_count`. D13 settled: `pluck` and `as_hash` croak without columns,
 as now. D14 settled: the sinks are `all_items`, `first_item` and
-`only_item`. One open, in the design's section 13.1.
+`only_item`. D15 settled: container sinks are another kind. None open.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -139,6 +139,16 @@ its section 12.3 (Ekorn-Pipeline
   message. A list sink can't end a `|` chain (Ekorn's D10), so the
   name of the sink giving every result in one reference is left open
   (the design's Q18).
+- [x] **D15.** What gives every result in one reference, to end a `|`
+  chain? `to_arrayref`, Iain decided on 2026-11-12, as a container
+  sink: "I think to_array is still *a* valid sink, but it's another
+  sink. The same way I think to_hash and to_hashref might also be
+  valid sinks for pairwise lists." So there are two kinds: sinks named
+  for what they give, `all_items`, `first_item`, `only_item` and
+  `count`; and container sinks, named for where the items go,
+  `to_array` and `to_arrayref` for items, `to_hash` and `to_hashref`
+  for pairs, each filling a container given or a new one. D14's rule
+  holds for each kind, and Ekorn's container sinks keep their names.
 
 ## The plan
 

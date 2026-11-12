@@ -4,7 +4,7 @@
 decisions in [record 2026-0013](../changes/2026-0013-one-design.md).
 It waits on Iain's approval, together with Ekorn-Pipeline's design,
 before either is split into roadmap items. Its questions are numbered
-**Q1** and on, in section 13; open ones first.
+**Q1** and on, in section 13, and all are settled.
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
 `pipeline-experimental`, reviewed here at
@@ -207,17 +207,22 @@ The sinks are Ekorn's, as none needs a database:
 | `$it->single` | `only_item`: the one result, asserting it's the only one, with a croak at a second |
 | `$it->count`, after a drain | `count`, how many results there were |
 
-Each is named for what it is, not for what the result is put in (Q16
-and Q17, settled). Ekorn's design has `to_array`, `first_value` and
-`count` for the same jobs (Ekorn 8.3), and no sink for `only_item`.
-The names, and `only_item`, went to Ekorn's session as a message on
-2026-11-12: they're its sinks to design.
+Each is named for what it gives, not for what the result is put in
+(Q16 and Q17, settled).
+
+Container sinks are another kind, and valid too (Q18, settled): each
+puts the items into a container, yours if you give one, or a new one,
+and is named for it. `to_array` and `to_arrayref` take items;
+`to_hash` and `to_hashref` take pairs. Ekorn's design has all four
+(Ekorn 8.3).
 
 `all_items` gives a list, and Ekorn's `|` can end only in a sink that
 gives one value (Ekorn's D10). So a chain that wants every result
-drains with `@{}`, or ends in a sink giving them in one reference,
-which Ekorn's design calls `to_arrayref`. That sink's name is open
-(Q18).
+drains with `@{}`, or ends in `to_arrayref`.
+
+Ekorn's design has `first_value` where this has `first_item`, and no
+sink for `only_item`. The names, and `only_item`, went to Ekorn's
+session as a message on 2026-11-12: they're its sinks to design.
 
 A function that takes stages gives a sink's result when its last stage
 is one, rather than an iterator, as Ekorn's D43 allows:
@@ -339,9 +344,8 @@ their numbers, with the decision in record 2026-0013.
 
 ### 13.1 Open
 
-| | Question | Whose | Recommendation |
-|---|---|---|---|
-| **Q18** | What's the sink giving every result in one reference called, for the end of a `\|` chain? | Iain's, then Ekorn's to design | Iain to name it, as he named the others; it goes to Ekorn as a message |
+None, since 2026-11-12. A question that arises, from Ekorn-Pipeline's
+answers or from building, is added here as Q19 and on.
 
 ### 13.2 Settled
 
@@ -360,7 +364,8 @@ their numbers, with the decision in record 2026-0013.
 | **Q13** | `pluck` and `as_hash` with no run's columns? | D13: croak, as now, with the message unchanged; `pluck` by name on a hash row uses the row's own keys, as now, without columns |
 | **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's, named in D14. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing |
 | **Q16** | `count` or `to_count`? | D12: `count`, as it says what the sink is, not where the result goes |
-| **Q17** | What are the other sinks called? | D14: `all_items`, `first_item`, and `only_item`, which asserts it's the only item; named for what they are, as `count` is. `to_array`, `to_arrayref` and `to_scalar` were wrongly named, for their containers |
+| **Q17** | What are the other sinks called? | D14: `all_items`, `first_item`, and `only_item`, which asserts it's the only item; named for what they are, as `count` is. `to_array`, `to_arrayref` and `to_scalar` were wrongly named for these, for their containers |
+| **Q18** | What gives every result in one reference, to end a `\|` chain? | D15: `to_arrayref`, a container sink. Container sinks, `to_array`, `to_arrayref`, `to_hash` and `to_hashref`, are another kind, valid beside those named for what they give |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were
 dropped as moot by D11, which leaves it none.
