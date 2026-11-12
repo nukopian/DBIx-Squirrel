@@ -8,8 +8,8 @@ settled: v3.0.0. D3 settled: keep `result_number` and
 settled: `insert_into` begins a transaction only with `AutoCommit`
 on. D6 settled: the facades are plain re-exports. D7 settled: test
 locally first, CI later. D8 settled: Ekorn renamed its role methods,
-so a bind value is never taken for a stage. Six questions open, in the
-design's section 13.1.
+so a bind value is never taken for a stage. D9 settled: `insert_into`
+dropped for now. Five questions open, in the design's section 13.1.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -85,6 +85,10 @@ its section 12.3 (Ekorn-Pipeline
   8ce1c95b6a3bb6b7c4052374c67660491416686a). Checked against that
   commit: the bind value stays one, and the query gives its row.
   DBIx::Squirrel adds a test of it when the work is built.
+- [x] **D9.** Keep `insert_into`? Not for now, Iain decided on
+  2026-11-12, so roadmap 2026-0012 is dropped. It'll be found again if
+  a need comes, and D5 says how it would treat a transaction. Result
+  sinks come first (the design's section 6).
 
 ## The plan
 

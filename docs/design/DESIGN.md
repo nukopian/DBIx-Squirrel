@@ -23,7 +23,7 @@ in its design as messages, not from this document.
 4. [A statement as a source](#4-a-statement-as-a-source)
 5. [Context: what a stage may ask](#5-context-what-a-stage-may-ask)
 6. [Result sinks](#6-result-sinks)
-7. [insert_into](#7-insert_into)
+7. [insert_into, dropped](#7-insert_into-dropped)
 8. [Its Sugar](#8-its-sugar)
 9. [The modules](#9-the-modules)
 10. [What changes for users, and how they move](#10-what-changes-for-users-and-how-they-move)
@@ -70,8 +70,7 @@ Three kinds of part, each keeping one of Ekorn's protocols:
 - **Sources:** a statement's rows (section 4).
 - **Stages that need a database's knowledge:** `pluck` and `as_hash`
   (section 5).
-- **Sinks:** rows collected as result objects (section 6), and,
-  perhaps, `insert_into` (section 7).
+- **Sinks:** rows collected as result objects (section 6).
 
 And functions that take stages, as any user of Ekorn writes them:
 `iterate`, `results`, the `select` methods, `pipe` and `tap`, and its
@@ -230,14 +229,14 @@ Open questions: what a result set is (Q8), what rows `to_results`
 takes (Q9), which other result sinks follow (Q10), and whether a
 result set keeps `result_original` (Q14).
 
-## 7. insert_into
+## 7. insert_into, dropped
 
-Iain isn't bothered about keeping it (2026-11-12). If it's kept, it's
-as Ekorn 12.4 has it, a scalar sink, with one change (Q5, settled): it begins and commits a transaction only when `AutoCommit`
-is on. With `AutoCommit` off, or in a transaction the user began, it
-leaves the transaction to the user, and neither commits nor rolls back.
-
-Whether it's kept at all is **Q11**.
+Iain dropped it for now (Q11, settled), with roadmap 2026-0012. It
+will be found again if a need comes. If it is, it's as Ekorn 12.4 has
+it, a scalar sink, with one change (Q5, settled): it begins and
+commits a transaction only when `AutoCommit` is on. With `AutoCommit`
+off, or in a transaction the user began, it leaves the transaction to
+the user, and neither commits nor rolls back.
 
 ## 8. Its Sugar
 
@@ -276,7 +275,7 @@ Ekorn's (Ekorn 10).
 | `::Results`, `::Result` | rows as objects | unchanged, but for section 4.4 |
 | `::Context` | the iterator, the result's number and its row | a thin layer over `run_context()` and `ending()` (section 5) |
 | `::Stages::Rows` | `pluck`, `as_hash`, by Context | the same, by `run_context()` |
-| `::Sinks` | (new) | result sinks (section 6); `insert_into`, if kept (section 7) |
+| `::Sinks` | (new) | result sinks (section 6) |
 | `::Pipeline` | a subclass of Ekorn's, with no code | goes (Q1, settled) |
 | `::Pipes` | a subclass of Ekorn's Pipes | goes: `db` and `st` use Ekorn's directly |
 | `::Stop` | a subclass of Ekorn's Stop, re-exporting `Stop` | a plain re-export of Ekorn's `Stop` (Q6, settled) |
@@ -335,7 +334,6 @@ their numbers, with the decision in record 2026-0013.
 | **Q8** | What is a result set: a list of rows, or an object? | DBIx-Squirrel's | an object, `DBIx::Squirrel::ResultSet`, with `all`, `first` and `count`, and `ekorn_source`, so it can be read again; `to_results` is its scalar sink. A list sink, `to_result_rows`, can follow if wanted |
 | **Q9** | What rows does `to_results` take? | DBIx-Squirrel's | arrays in the run's column order, as a statement gives them; hashes by their keys, sorted, as there's no order to take; and croak at anything else, or at an array without a run's columns |
 | **Q10** | Which other result sinks? | DBIx-Squirrel's | none at first. Candidates: `to_result` (the first row as an object, as `single`), and a sink keyed by a column, as `selectall_hashref` |
-| **Q11** | Keep `insert_into`? | Iain's | not now: drop roadmap 2026-0012, and find it again if a need comes |
 | **Q13** | `pluck` and `as_hash` with no run's columns | DBIx-Squirrel's | croak, as now, with the message unchanged; give a hash row's own keys to `pluck` by name, as now, without needing columns |
 | **Q14** | Does a result set's `ekorn_source` keep `result_original`? | DBIx-Squirrel's | yes: its source keeps the row it gave last in its context, as a statement's does |
 
@@ -350,6 +348,7 @@ their numbers, with the decision in record 2026-0013.
 | **Q5** | `insert_into` and a transaction already begun? | D5: it begins and commits only with `AutoCommit` on |
 | **Q6** | The facades? | D6: `Gather`, `Stop` and the `Stages::*` modules are plain re-exports; `Pipeline` and `Pipes` go |
 | **Q7** | CI against Ekorn's `pipeline-experimental`? | D7: yes, but locally first, and CI once the designs are nailed down |
+| **Q11** | Keep `insert_into`? | D9: not now. Roadmap 2026-0012 is dropped, and it'll be found again if a need comes |
 | **Q12** | `is_stage` took a bind value with an `as_list` method for a sink | D8, from Ekorn's D49: its role methods are renamed `ekorn_source`, `ekorn_stage`, `ekorn_sink` and `ekorn_sink_scalar`, so `is_stage` leaves any other object as a bind value. Checked at 8ce1c95. DBIx::Squirrel adds a test with such a bind value |
 
 ## 14. Where each roadmap item lands
@@ -360,7 +359,7 @@ their numbers, with the decision in record 2026-0013.
 | 2026-0009, export `pipeline` | 9 | not needed: users import `pipeline` from Ekorn::Pipeline::Factories. Drop it |
 | 2026-0010, a `pipeline` key in Sugar | 8 | becomes names in a statement's definition (Ekorn's D36) |
 | 2026-0011, Ekorn's `install_sub` and `is_name` | 8 | not needed: the Sugar keeps its own (Ekorn 10). Drop it |
-| 2026-0012, `insert_into` | 7 | Q11 |
+| 2026-0012, `insert_into` | 7 | dropped (Q11) |
 | (new) | 6 | result sinks |
 | (new) | 4 | the iterator as a source, Context over `run_context()`, the facades gone: the v3.0.0 work |
 
