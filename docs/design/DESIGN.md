@@ -4,7 +4,7 @@
 decisions in [record 2026-0013](../changes/2026-0013-one-design.md).
 It waits on Iain's approval, together with Ekorn-Pipeline's design,
 before either is split into roadmap items. Its questions are numbered
-**Q1** and on, in section 13, and all are settled.
+**Q1** and on, in section 13. All are settled but Q30.
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
 `pipeline-experimental`, reviewed here at
@@ -281,6 +281,41 @@ Iterator, handing out each row as an object of a class made for its
 columns. That's DBIx::Squirrel subclassing itself, not Ekorn, so
 nothing changes but what sections 4.4 and 4.6 change for every iterator.
 
+### 4.8 What buffering may still need of Ekorn
+
+Q24 to Q29 settle a statement's buffering with Ekorn's protocols as
+they are. That holds for each decision, but it hasn't been shown for
+them together, and four things may still need more of Ekorn (Q30,
+open):
+
+1. **Sinks have no fast path.** Q27's fast path is `$it->all`'s.
+   `$sth->iterate(keep_all)`, `$it | keep_all` and `count_items` pull
+   a row per step, so the way the docs lead with would be slower than
+   the method. For its source to give every row at once there, it
+   would need to know that nothing but a list sink follows it, which
+   no protocol tells it.
+2. **A lookahead that consumes nothing is only the iterator's.**
+   Ekorn's iterator's `single` holds the value it looked at (Ekorn's
+   D60), but `keep_single` and `take_single` in a pipeline pull the
+   second value through the stages. A source can't say "there's more"
+   without giving the value. Growing batches (Q26) make it cheap for a
+   statement, but it's a gap in the protocol.
+3. **A source can't be told how many its caller wants.** Its step is
+   called with nothing. Growing batches cover it for now; `take(N)`
+   and `keep(N)` could use it.
+4. **Q25 to Q29 rest on Ekorn's behaviour, untested together:** that
+   `finish` drops the value Ekorn's iterator holds; that a step
+   returning many values works with its `all`; and that `ended` then
+   says `done`.
+
+**Recommended:** prove it with a spike before the design is split
+into items: the statement's source with growing batches, `single`
+finishing, `all`'s fast path and `reset` clearing, built against
+Ekorn's working copy, with 4.6's tests, and `$it->all` timed against
+`$it | keep_all` over a large result. Ask Ekorn for a protocol for 1
+only if the timing shows the gap matters, and for 2 or 3 when a use
+needs them.
+
 ## 5. Context: what a stage may ask
 
 `DBIx::Squirrel::Context` exports three functions today. Each becomes
@@ -548,7 +583,13 @@ their numbers, with the decision in record 2026-0013.
 A question that arises, from Ekorn-Pipeline's answers or from
 building, is added here, from Q30.
 
-None, since 2026-11-12.
+**Q30. Do Ekorn's protocols support a statement's buffering, or
+does it need more of them?** Section 4.8 sets out what may: a fast
+path for sinks, a lookahead that consumes nothing, and a way to tell a
+source how many are wanted, and the behaviour Q25 to Q29 rest on.
+**Recommended:** a spike, built against Ekorn's working copy, with
+`$it->all` timed against `$it | keep_all`; ask Ekorn for more only
+where it shows a need.
 
 ### 13.2 Settled
 

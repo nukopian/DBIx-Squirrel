@@ -26,7 +26,8 @@ on the iterator, as on Ekorn's; `count` stays gone. D23 settled:
 they're Ekorn's, delegated to. D24 settled: batches grow from 2 to 64,
 as in version 1. D25 settled: `single` finishes the run, as `first`
 does. D26 settled: `all` has a fast path. D27 settled: `reset` clears
-everything the run held. None open.
+everything the run held. D28 open: whether Ekorn's protocols support
+the buffering, or it needs more of them.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -292,6 +293,18 @@ its section 12.3 (Ekorn-Pipeline
   and Context's row and count; the handle is finished. A fresh run
   started any other way does the same. It's a fourth guarantee in the
   design's 4.6, with a test. The design's Q29.
+- [ ] **D28.** Do Ekorn's protocols support a statement's buffering,
+  or does it need more of them? D24 to D27 each said nothing was
+  asked of Ekorn, true of each alone, but not shown for them
+  together. Iain asked on 2026-11-12 whether it was said that more
+  might be needed, and it wasn't. Four things may need more: a fast
+  path for sinks, as `$it | keep_all` pulls a row per step where
+  `$it->all` doesn't; a lookahead that consumes nothing, only the
+  iterator's today; a way to tell a source how many are wanted; and
+  the untested behaviour D23 to D27 rest on. Recommended: a spike
+  against Ekorn's working copy, timing `$it->all` against
+  `$it | keep_all`, asking Ekorn for more only where it shows a need.
+  The design's 4.8 and Q30; Ekorn-Pipeline is told.
 
 ## The plan
 
