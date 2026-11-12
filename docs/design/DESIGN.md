@@ -4,7 +4,7 @@
 decisions in [record 2026-0013](../changes/2026-0013-one-design.md).
 It waits on Iain's approval, together with Ekorn-Pipeline's design,
 before either is split into roadmap items. Its questions are numbered
-**Q1** and on, in section 13. All are settled but Q25.
+**Q1** and on, in section 13, and all are settled.
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
 `pipeline-experimental`, reviewed here at
@@ -158,8 +158,10 @@ The iterator's methods are rebuilt over the same source:
   run; `single` the next result, or `undef`, looking one ahead and
   warning "Expected only one item, but there were more" if there's
   another, without consuming it. Iain: "The iterator is getting single
-  back. And all. And first." Whether they're Ekorn's, through the
-  iterator inside, or DBIx::Squirrel's own, is Q25.
+  back. And all. And first." They're Ekorn's, through the Ekorn
+  iterator inside, with no lookahead of DBIx::Squirrel's own (Q25,
+  settled). So `next` pulls through that iterator too, even with no
+  stages, so that a value `single` looked at comes out first.
 
 `count` goes (Q15). Counting is a stage's or a sink's job (section 6).
 
@@ -520,19 +522,7 @@ their numbers, with the decision in record 2026-0013.
 A question that arises, from Ekorn-Pipeline's answers or from
 building, is added here, from Q25.
 
-**Q25. Are the iterator's `all`, `first` and `single` Ekorn's, or
-DBIx::Squirrel's own?** Iain's: DBIx::Squirrel's `single` might be
-specialised, using the batch fetch as a lookahead that consumes
-nothing: a batch of two rows or more says there's another, and one
-row, fewer than the 100 asked for, says there isn't. But Ekorn's
-`single` already looks ahead without consuming (Ekorn's D60). With no
-stages, its lookahead takes the second row from the batch already
-fetched, so it costs no fetch and runs no stage; with stages, rows
-aren't results, as a filter can drop one and a flatMap make several,
-so a count of rows would be wrong. **Recommended:** delegate all three
-to the Ekorn iterator inside, writing no lookahead of DBIx::Squirrel's
-own; and keep the batch size at two or more, so the batch is always
-the lookahead.
+None, since 2026-11-12.
 
 ### 13.2 Settled
 
@@ -558,6 +548,7 @@ the lookahead.
 | **Q21** | `pluck` after a stage that reshapes rows reads the statement's columns, as a context describes the source (Ekorn's D46), and so picks the wrong field, silently | D21: the reference and the how-to say so loudly, and show `as_hash` first, then `pluck` by name, which uses the hash's own keys |
 | **Q22** | A list sink last, `all_items`, gave a count in scalar context (Ekorn's D47), so `my $rows = ... all_items` quietly gave a number | D20, from Ekorn's D51, as Iain proposed: a list sink asked for one value gives its list as an array reference, at the end of a `\|` chain too. A run with no sink still gives a count |
 | **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count_items`, or Test2::V0's `all_items` | D19: a test shows the Sugar's clash check catches a sink of the same name; the docs import sinks by name. Where a name clashes, call the sink by its full name, `Ekorn::Pipeline::Sinks::count_items()`, or through a code reference in a lexical, `my $count_items = \&Ekorn::Pipeline::Sinks::count_items;`, called as `$count_items->()`. Test2::V0's `all_items` no longer clashes, as the sink is `keep_all` (Ekorn's D55) |
+| **Q25** | Are the iterator's `all`, `first` and `single` Ekorn's, or DBIx::Squirrel's own, with `single` using the batch fetch as its lookahead? | D23: Ekorn's, through the Ekorn iterator inside. Its `single` consumes nothing (Ekorn's D60), and with no stages takes the second row from the batch already fetched; with stages, a count of rows would be wrong. The batch size stays at two or more |
 | **Q24** | Do the `select` methods take stages? | D18: yes. What the DBI gives is pushed through them: with stages, the call gives what comes out of the last stage; without, what the DBI gives |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were

@@ -22,8 +22,8 @@ methods take stages. D19 settled: sinks' names clashing on import.
 D20 settled: a list sink asked for one value gives an array
 reference. D21 settled: `pluck` after a reshaping stage, warned of in
 the docs. D22 settled: `all`, `single` and a new `first` come back
-on the iterator, as on Ekorn's; `count` stays gone. D23 open: Ekorn's
-methods, or DBIx::Squirrel's own.
+on the iterator, as on Ekorn's; `count` stays gone. D23 settled:
+they're Ekorn's, delegated to. None open.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -241,7 +241,7 @@ its section 12.3 (Ekorn-Pipeline
   rule for a run given a sink last. For users, `all` asked for one
   value now gives a reference, not a count; `single` gives the next
   result, not a fresh run's, and warns at a second, rather than croak.
-- [ ] **D23.** Are they Ekorn's, through the Ekorn iterator inside
+- [x] **D23.** Are they Ekorn's, through the Ekorn iterator inside
   DBIx::Squirrel's, or its own? Iain suggested `single` be
   specialised, using the batch fetch as a lookahead that consumes
   nothing. Ekorn's `single` already consumes nothing (its D60), and
@@ -249,7 +249,9 @@ its section 12.3 (Ekorn-Pipeline
   already fetched; with stages, a count of rows would be wrong, as a
   filter or a flatMap changes how many results there are.
   Recommended: delegate all three to Ekorn's, and keep the batch size
-  at two or more. The design's Q25.
+  at two or more. The design's Q25. Settled as recommended, Iain
+  decided on 2026-11-12, adding that buffering rows needs more
+  thought.
 
 ## The plan
 
