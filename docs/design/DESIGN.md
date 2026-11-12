@@ -64,6 +64,15 @@ DBIx::Squirrel v3.0.0, on Ekorn v0.3.0.
 
 ## 3. What DBIx::Squirrel delivers
 
+One rule decides what every call gives back (Q19, settled):
+
+> **A statement is a source. DBIx::Squirrel's own calls give the
+> source, an iterator, and only a sink given last turns it into a
+> result. The DBI's own calls give what the DBI gives.**
+
+So no call of DBIx::Squirrel's lists or counts by its calling context.
+Sections 4 and 6 follow from it.
+
 Two kinds of part, each keeping one of Ekorn's protocols:
 
 - **Sources:** a statement's rows (section 4).
@@ -237,7 +246,26 @@ my @top    = @{ $sth->iterate | pluck('name') | take(5) };
 ```
 
 That's `iterate`, `results`, the `select` methods and the Sugar's
-statements. Without a sink last, each gives what it gives today.
+statements. Without a sink last, each follows the rule in section 3:
+
+- **`iterate` and `results`** give an iterator, as today.
+- **The Sugar's statements, given stages,** give an iterator. Today
+  they give every result, or a count in scalar context.
+- **The `select` methods** are the DBI's, so they give what the DBI
+  gives, as today, stages or not.
+
+The rule answers the rest:
+
+- **`only_item` with no rows** gives what Ekorn's sinks of one value
+  give, `undef`. A caller wanting nothing for no rows uses
+  `all_items`.
+- **Users get the sinks from Ekorn,** as any user of Ekorn does.
+  DBIx::Squirrel may re-export them (Ekorn's D31), and needs no module
+  of its own for them.
+- **The iterator's "how many so far"** goes with its `count` method.
+  Counting is a stage's or a sink's job: `count`, or
+  `result_number` while DBIx::Squirrel's iterator runs the stages.
+- **The sinks' names** are Ekorn's to settle, as the sinks are its.
 
 Rows become `DBIx::Squirrel::Result` objects at the source, from
 `results`, so there's no result sink of DBIx::Squirrel's own: `results`
@@ -275,7 +303,9 @@ before it's used.
 
 When a statement is called, its arguments are bind values, then
 stages, as now. A string there is a bind value, never a name (Ekorn's
-principle 5).
+principle 5). Given stages, it gives an iterator, or a sink's result
+if the last stage is one (section 6). Given none, it gives its handle,
+executed, as now.
 
 The Sugar keeps its own `install_sub` and `is_name`, rather than call
 Ekorn's (Ekorn 10).
@@ -306,7 +336,8 @@ Ekorn's (Ekorn 10).
 | `$x isa 'DBIx::Squirrel::Pipeline'` | false | `$x isa 'Ekorn::Pipeline'` |
 | `ref $stage eq 'CODE'`, `is_coderef($stage)`, for a stage made by `take`, `gather` and the like | false: they're objects now, called as code references (Ekorn's Q12) | `is_stage($stage)` |
 | `$it->all`, `$it->single`, `$it->count` | fails: the methods are gone | a sink given last: `all_items`, `only_item`, `count` (section 6) |
-| `my $n = $sth->iterate(...)`-style calls that rely on context to count or list | the sink last says what comes back | give a sink |
+| `my @names = artist_names sub {...}`, a Sugar statement given stages | gives an iterator, not every result | give a sink last, `all_items`, or drain it with `@{}` |
+| a Sugar statement given stages in scalar context, for a count | gives an iterator | give `count` last |
 | `result_number` or `Context::iterator` in a user's own pipeline over an iterator | `undef` | count in a stage of their own |
 | `my($first) = $sth->iterate->next`, then using the handle | the handle is finished once the iterator goes | keep the iterator while the handle is in use |
 | everything else: `iterate`, `results`, the `select` methods and Sugar without a sink last, `pluck`, `as_hash`, `take`, `Stop`, `gather` | unchanged | nothing |
@@ -345,7 +376,7 @@ their numbers, with the decision in record 2026-0013.
 ### 13.1 Open
 
 None, since 2026-11-12. A question that arises, from Ekorn-Pipeline's
-answers or from building, is added here as Q19 and on.
+answers or from building, is added here as Q20 and on.
 
 ### 13.2 Settled
 
@@ -365,6 +396,7 @@ answers or from building, is added here as Q19 and on.
 | **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's, named in D14. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing |
 | **Q16** | `count` or `to_count`? | D12: `count`, as it says what the sink is, not where the result goes |
 | **Q17** | What are the other sinks called? | D14: `all_items`, `first_item`, and `only_item`, which asserts it's the only item; named for what they are, as `count` is. `to_array`, `to_arrayref` and `to_scalar` were wrongly named for these, for their containers |
+| **Q19** | What does a call give without a sink last? | D16: the rule in section 3: DBIx::Squirrel's own calls give an iterator, the Sugar's statements included; the DBI's calls give what the DBI gives |
 | **Q18** | What gives every result in one reference, to end a `\|` chain? | D15: `to_arrayref`, a container sink. Container sinks, `to_array`, `to_arrayref`, `to_hash` and `to_hashref`, are another kind, valid beside those named for what they give |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were

@@ -13,7 +13,9 @@ dropped for now. D10 settled, then overtaken by D11. D11 settled: `all`,
 `single` and `count` become sinks, Ekorn's. D12 settled: `count`, not
 `to_count`. D13 settled: `pluck` and `as_hash` croak without columns,
 as now. D14 settled: the sinks are `all_items`, `first_item` and
-`only_item`. D15 settled: container sinks are another kind. None open.
+`only_item`. D15 settled: container sinks are another kind. D16 settled:
+DBIx::Squirrel's calls give an iterator unless a sink is last. None
+open.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -149,6 +151,20 @@ its section 12.3 (Ekorn-Pipeline
   `to_array` and `to_arrayref` for items, `to_hash` and `to_hashref`
   for pairs, each filling a container given or a new one. D14's rule
   holds for each kind, and Ekorn's container sinks keep their names.
+- [x] **D16.** What does a call give without a sink last? Iain agreed
+  on 2026-11-12 to a rule, so the questions about sinks would answer
+  themselves ("If we get this right, answers to questions might be
+  self-evident"): **a statement is a source; DBIx::Squirrel's own
+  calls give the source, an iterator, and only a sink given last turns
+  it into a result; the DBI's own calls give what the DBI gives.** He
+  had first asked to "leave it as the iterator", for now. From it:
+  the Sugar's statements, given stages, give an iterator, not every
+  result or a count by context; the `select` methods, being the DBI's,
+  are unchanged; `only_item` with no rows gives Ekorn's `undef`; users
+  get the sinks from Ekorn, re-exported or not; the iterator's "how
+  many so far" goes, as counting is a stage's or a sink's job; and
+  the sinks' names are Ekorn's to settle. No call of DBIx::Squirrel's
+  lists or counts by its calling context.
 
 ## The plan
 
