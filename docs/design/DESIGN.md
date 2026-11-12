@@ -668,7 +668,16 @@ dropped as moot by D11, which leaves it none.
   one element, the reference. Each says so where it first shows `|`,
   not in a note later, with the three forms that work, as in section
   4.5: `my $rows = ... | keep_all`, `my @rows = @{ ... | keep_all }`,
-  and the sink given last as an argument, with no `|`.
+  and the sink given last as an argument, with no `|`. Two things go
+  with it:
+  - **The reference is also the cheaper form.** It's the array the sink
+    built, where a list is copied out of it: over 297,848 narrow rows,
+    `my $r = $it->all` took 0.136 s, and `my @r = $it->all` 0.147 s;
+    over 104,082 rows, 0.101 s and 0.108 s.
+  - **Postfix dereference needs parentheses.** `->` binds tighter than
+    `|`, so `$it | keep_all->@*` dereferences the sink, and dies, "Not
+    an ARRAY reference"; `($it | keep_all)->@*` is the list, as
+    `@{ $it | keep_all }` is.
 - **README:** the synopsis gains a `|` chain; Acknowledgements say what
   Claude did in this work.
 - **Reference:** `DBIx::Squirrel::Pipeline` goes, and its examples use
