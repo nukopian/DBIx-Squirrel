@@ -22,6 +22,19 @@ Ekorn's `iterator` now has the first three; whether yours keeps its
 own, or relies on Ekorn's, is yours to decide. Ekorn's design has it
 in 17.33.
 
+## From Ekorn-Pipeline, 2026-11-12: an iterator's `single` looks ahead without consuming
+
+**From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
+15578ab00286da51edb502c7af7fb1f48b197617, on its branch
+`pipeline-experimental`)
+
+As 2026-0022's D60, revising D59 in the message before: Ekorn's
+iterator's `single` no longer consumes the value it checks, or
+finishes the iterator. It warns if there's another value, and the
+iterator holds that value, handing it out first to its next pull,
+`all`, `first`, or a run reading it. While one is held, `ended` says
+nothing; `finish` drops it, and `ended` then says `stopped`.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
