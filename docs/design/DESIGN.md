@@ -661,6 +661,14 @@ dropped as moot by D11, which leaves it none.
 
 ## 15. Knock-on effects on other documents
 
+- **`|` gives one value, front and centre,** in the reference and the
+  how-to, as Iain asked on 2026-11-12: an overloaded operator always
+  returns one scalar, a limit of Perl's, so a chain ending in a list
+  sink gives an array reference, and `my @rows = $it | keep_all` gets
+  one element, the reference. Each says so where it first shows `|`,
+  not in a note later, with the three forms that work, as in section
+  4.5: `my $rows = ... | keep_all`, `my @rows = @{ ... | keep_all }`,
+  and the sink given last as an argument, with no `|`.
 - **README:** the synopsis gains a `|` chain; Acknowledgements say what
   Claude did in this work.
 - **Reference:** `DBIx::Squirrel::Pipeline` goes, and its examples use
