@@ -8,7 +8,8 @@ before either is split into roadmap items. Its questions are numbered
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
 `pipeline-experimental`, reviewed here at
-a75d178e4becfd1c3b6c57194bf6c111dabb8b98. Its sections are written
+a75d178e4becfd1c3b6c57194bf6c111dabb8b98, and brought up to date with
+8ce1c95b6a3bb6b7c4052374c67660491416686a, which took in what was found. Its sections are written
 "Ekorn 12.3" below; its decisions "Ekorn's D44".
 
 **For:** Iain, and Ekorn-Pipeline's session, which gets what's found
@@ -89,11 +90,11 @@ my $n   = $sth->iterate | stage { $_->[1] } | count;
 
 ## 4. A statement as a source
 
-### 4.1 The iterator offers `as_source`
+### 4.1 The iterator offers `ekorn_source`
 
 `DBIx::Squirrel::Iterator` is what users hold, from `$sth->iterate`
-and the like. It offers `as_source` (Ekorn's D44), so it can be given
-wherever Ekorn takes a source:
+and the like. It offers `ekorn_source` (Ekorn's D44 and D49), so it can be
+given wherever Ekorn takes a source:
 
 - **Its set-up executes the statement,** with the iterator's bind
   values, and reads the column names before the first fetch.
@@ -113,7 +114,7 @@ new handle, for the bind values given; the context names that handle.
 
 An iterator given stages, `$sth->iterate(@binds, @stages)`, runs them
 with `Ekorn::Pipeline->new(@stages)->iterator($statement_source)`. Its
-`as_source` hands on that iterator's. An iterator used as a source
+`ekorn_source` hands on that iterator's. An iterator used as a source
 passes on the context of the run inside it (Ekorn 4.4), so a stage
 the user adds after it still sees the statement's columns.
 
@@ -121,7 +122,7 @@ the user adds after it still sees the statement's columns.
 
 A DBI statement handle can't have two executions going at once. So:
 
-- **`as_source` starts a fresh run,** from the first row, even after
+- **`ekorn_source` starts a fresh run,** from the first row, even after
   `next` (Q4, settled). It finishes the handle first if it's active,
   as `reset` does today.
 - **It croaks if another of DBIx::Squirrel's iterators is part-way
@@ -155,10 +156,11 @@ The iterator overloads `|` with `Ekorn::Pipeline::Operators::chain`
 and `@{}` with `drain` (Ekorn's D14 and D23). They're in force only
 where the user wrote `use Ekorn::Pipeline::Operators` (Ekorn's D32).
 
-DBIx::Squirrel loads Operators itself, so a user who forgot to gets
-Operators' own message, not "Undefined subroutine". Loading it
-switches nothing on outside the scopes that use it. Ekorn has been
-told of this.
+DBIx::Squirrel loads Operators itself, with an empty import list,
+`use Ekorn::Pipeline::Operators ();`, which defines `chain` and `drain`
+without putting the operators in force anywhere (Ekorn 12.3). So a
+user who forgot to `use` it gets Operators' own message, not
+"Undefined subroutine".
 
 ### 4.6 Results
 
@@ -217,7 +219,7 @@ say $artist->name;
   `DBIx::Squirrel::Result->class_for`. Its step blesses each row, an
   array, into it. Its result is a result set.
 - **A result set** holds the rows, in order. It has `all`, `first` and
-  `count`, and is a source of its rows (`as_source`), giving its
+  `count`, and is a source of its rows (`ekorn_source`), giving its
   columns as its context. So it can be read again, through any
   pipeline, as a statement can, but from memory.
 - **Its rows are `DBIx::Squirrel::Result` objects,** the same as
@@ -280,7 +282,7 @@ Ekorn's (Ekorn 10).
 | `::Stop` | a subclass of Ekorn's Stop, re-exporting `Stop` | a plain re-export of Ekorn's `Stop` (Q6, settled) |
 | `::Gather`, `::Stages::Flow`, `::Batch`, `::Taps` | re-exports of Ekorn's functions | unchanged: plain re-exports (Ekorn's D31) |
 | `::Errors` | `croakf`, with Ekorn's `@INTERNAL` in its `@CARP_NOT` | unchanged |
-| `::Util` | `split_stages` and other helpers | unchanged, but for **Q12** |
+| `::Util` | `split_stages` and other helpers | unchanged; a test that an object bind value stays one (Q12) |
 | `::Sugar` | databases, statements | names in definitions (section 8) |
 | `::Placeholders` | placeholder rewriting | unchanged |
 
@@ -317,7 +319,7 @@ designs are nailed down: a job on DBIx-Squirrel's
 `pipeline-experimental`, installing Ekorn from that branch. `develop`
 and `main` keep installing Ekorn from CPAN.
 
-Against a75d178, 25 of the 26 test files pass. `t/06-gather.t` fails
+Against a75d178 and 8ce1c95, 25 of the 26 test files pass. `t/06-gather.t` fails
 two subtests, both v0.3.0's intended changes: a gather is an object,
 and its block may return a flush and an end.
 
@@ -330,13 +332,12 @@ their numbers, with the decision in record 2026-0013.
 
 | | Question | Whose | Recommendation |
 |---|---|---|---|
-| **Q8** | What is a result set: a list of rows, or an object? | DBIx-Squirrel's | an object, `DBIx::Squirrel::ResultSet`, with `all`, `first` and `count`, and `as_source`, so it can be read again; `to_results` is its scalar sink. A list sink, `to_result_rows`, can follow if wanted |
+| **Q8** | What is a result set: a list of rows, or an object? | DBIx-Squirrel's | an object, `DBIx::Squirrel::ResultSet`, with `all`, `first` and `count`, and `ekorn_source`, so it can be read again; `to_results` is its scalar sink. A list sink, `to_result_rows`, can follow if wanted |
 | **Q9** | What rows does `to_results` take? | DBIx-Squirrel's | arrays in the run's column order, as a statement gives them; hashes by their keys, sorted, as there's no order to take; and croak at anything else, or at an array without a run's columns |
 | **Q10** | Which other result sinks? | DBIx-Squirrel's | none at first. Candidates: `to_result` (the first row as an object, as `single`), and a sink keyed by a column, as `selectall_hashref` |
 | **Q11** | Keep `insert_into`? | Iain's | not now: drop roadmap 2026-0012, and find it again if a need comes |
-| **Q12** | `split_stages` and Sugar find stages with `is_stage`, which at a75d178 takes a bind value with an `as_list` method for a sink | Ekorn's to fix; DBIx-Squirrel's to test | wait for Ekorn's answer, sent 2026-11-12; then add a test with such a bind value |
 | **Q13** | `pluck` and `as_hash` with no run's columns | DBIx-Squirrel's | croak, as now, with the message unchanged; give a hash row's own keys to `pluck` by name, as now, without needing columns |
-| **Q14** | Does a result set's `as_source` keep `result_original`? | DBIx-Squirrel's | yes: its source keeps the row it gave last in its context, as a statement's does |
+| **Q14** | Does a result set's `ekorn_source` keep `result_original`? | DBIx-Squirrel's | yes: its source keeps the row it gave last in its context, as a statement's does |
 
 ### 13.2 Settled
 
@@ -349,6 +350,7 @@ their numbers, with the decision in record 2026-0013.
 | **Q5** | `insert_into` and a transaction already begun? | D5: it begins and commits only with `AutoCommit` on |
 | **Q6** | The facades? | D6: `Gather`, `Stop` and the `Stages::*` modules are plain re-exports; `Pipeline` and `Pipes` go |
 | **Q7** | CI against Ekorn's `pipeline-experimental`? | D7: yes, but locally first, and CI once the designs are nailed down |
+| **Q12** | `is_stage` took a bind value with an `as_list` method for a sink | D8, from Ekorn's D49: its role methods are renamed `ekorn_source`, `ekorn_stage`, `ekorn_sink` and `ekorn_sink_scalar`, so `is_stage` leaves any other object as a bind value. Checked at 8ce1c95. DBIx::Squirrel adds a test with such a bind value |
 
 ## 14. Where each roadmap item lands
 
@@ -368,7 +370,7 @@ their numbers, with the decision in record 2026-0013.
   Claude did in this work.
 - **Reference:** `DBIx::Squirrel::Pipeline` goes, and its examples use
   `Ekorn::Pipeline->new`; the iterator's section says it's a source,
-  with `as_source`, `ended`, `|` and `@{}`; Context says where each
+  with `ekorn_source`, `ended`, `|` and `@{}`; Context says where each
   function works; Stages say they're objects; result sinks are new;
   Sugar's definitions take names.
 - **How-to:** about a dozen examples use `DBIx::Squirrel::Pipeline`, and

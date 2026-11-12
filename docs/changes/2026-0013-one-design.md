@@ -4,11 +4,12 @@
 
 **Decisions:** D1 settled: `DBIx::Squirrel::Pipeline` goes. D2
 settled: v3.0.0. D3 settled: keep `result_number` and
-`result_original`. D4 settled: a fresh run from `as_source`. D5
+`result_original`. D4 settled: a fresh run from `ekorn_source`. D5
 settled: `insert_into` begins a transaction only with `AutoCommit`
 on. D6 settled: the facades are plain re-exports. D7 settled: test
-locally first, CI later. Seven questions open, in the design's
-section 13.1.
+locally first, CI later. D8 settled: Ekorn renamed its role methods,
+so a bind value is never taken for a stage. Six questions open, in the
+design's section 13.1.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -77,6 +78,13 @@ its section 12.3 (Ekorn-Pipeline
   decided on 2026-11-12, but he'd rather nail things down locally
   first: tested against Ekorn's working copy, and CI once the two
   designs are settled.
+- [x] **D8.** `is_stage` took a bind value with an `as_list` method for
+  a sink. Ekorn-Pipeline settled it on 2026-11-12, its D49, by renaming
+  its role methods `ekorn_source`, `ekorn_stage`, `ekorn_sink` and
+  `ekorn_sink_scalar` (Ekorn-Pipeline
+  8ce1c95b6a3bb6b7c4052374c67660491416686a). Checked against that
+  commit: the bind value stays one, and the query gives its row.
+  DBIx::Squirrel adds a test of it when the work is built.
 
 ## The plan
 
@@ -86,3 +94,11 @@ Written when the design is approved and split into items.
 
 - **2026-11-12:** the review's findings sent to Ekorn-Pipeline, and the
   design drafted, with its open questions, for Iain.
+- **2026-11-12:** Ekorn-Pipeline took in all four findings (its message,
+  Ekorn-Pipeline 8ce1c95b6a3bb6b7c4052374c67660491416686a): the role
+  methods renamed, Operators loaded with an empty import list to
+  overload with its functions, `result_number` and `result_original`
+  named as DBIx::Squirrel's, and 12.3 corrected. The design is brought
+  up to date with it. Against that commit, DBIx::Squirrel's tests stand
+  as before: 25 of 26 files pass, and `t/06-gather.t`'s two failures
+  are v0.3.0's intended changes.
