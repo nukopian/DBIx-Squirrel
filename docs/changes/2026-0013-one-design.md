@@ -390,3 +390,108 @@ Written when the design is approved and split into items.
   consumes nothing (Ekorn-Pipeline
   15578ab00286da51edb502c7af7fb1f48b197617). Iain decided the same for
   DBIx::Squirrel's iterator, D22, and D23 asks whether it delegates.
+- **2026-11-12:** the spike of TODO task 4, against Ekorn-Pipeline
+  cbed0387a9aa462fbecf294b9029887560a4dc8e (its D61, `single`
+  finishing). `DBIx::Squirrel::Iterator` is rebuilt as the design's
+  section 4 has it: the statement's source is made with Ekorn's
+  `source`, its batches grow from 2 to 64 and are the run's own, its
+  stages are run by `Ekorn::Pipeline`, and `all`, `first` and `single`
+  delegate to Ekorn's iterator, with `all`'s fast path and `reset`
+  clearing. `t/24-iterator-source.t` tests it, with 4.6's four
+  guarantees; the tests D22 and D25 change are changed. All 27 test
+  files pass but `t/06-gather.t`'s two known failures, and coverage
+  meets its floors (branches 97.0%, the floor).
+
+  What it found:
+
+  - **4.6's first guarantee holds by the structure,** not a check: the
+    iterator ends a run before it starts another, and Ekorn calls
+    nothing of a run that has ended. A token checked in the step and the
+    end, built first, could never be false, and went.
+  - **The batch is the run's,** not the iterator's: the step held it
+    through the iterator, weakly, so a pipeline reading the iterator
+    after it was let go would have read nothing.
+  - **The stage counting results for `result_number` isn't put after a
+    sink,** whose result is the run's.
+  - **The Sugar keeps giving every result, or a count by context,**
+    from `all`, until section 6's work makes it give an iterator.
+  - **A regression in Ekorn,** sent to it as a task: a flush giving n
+    values, followed by a stage, takes time in n squared, pushed or
+    pulled, as each value reaching the end scans every value waiting
+    (`grep { $_->[0] < @stages } @todo` in `$end_if_ended`,
+    `lib/Ekorn/Pipeline.pm` line 508). 20,000 values took 6.5 s, where
+    v0.2.0 takes 0.03 s.
+
+  **Timing,** for Q30: Iain's OSM gazetteer
+  (`jdc-lab/local/osm/gazetteer.sqlite`), opened read-only, three
+  tables: `place_areas`, 297,848 narrow rows; `places`, 104,082 rows,
+  polygons of 1.6 KB on average; `areas`, 21,826 wide rows, polygons
+  of 24 KB. Each case in a process of its own, warmed once, then the
+  mean of three reads, in seconds; "before" is the commit before the
+  spike, 1fb24bd. A first run with every case in one process, under
+  Benchmark, slowed `selectall_arrayref` itself by half in the
+  spike's process, so it isn't used.
+
+  | Table | Case | Before | Spike |
+  |---|---|---|---|
+  | place_areas | `selectall_arrayref` | 0.096 | 0.095 |
+  | | `$it->all` | 0.108 | 0.403 |
+  | | `$it->all`, with a stage | 0.540 | 0.655 |
+  | | `next`, to the end | 0.351 | 0.542 |
+  | | `$it \| keep_all` | | 0.807 |
+  | places | `selectall_arrayref` | 0.078 | 0.078 |
+  | | `$it->all` | 0.090 | 0.186 |
+  | | `$it->all`, with a stage | 0.239 | 0.278 |
+  | | `next`, to the end | 0.168 | 0.235 |
+  | | `$it \| keep_all` | | 0.334 |
+  | areas | `selectall_arrayref` | 0.172 | 0.178 |
+  | | `$it->all` | 0.174 | 0.185 |
+  | | `$it->all`, with a stage | 0.204 | 0.214 |
+  | | `next`, to the end | 0.169 | 0.183 |
+  | | `$it \| keep_all` | | 0.227 |
+  | areas | the first row, 1,000 times | 5.311 | 0.264 |
+
+  So: the growing batch makes the first row of wide rows 20 times
+  quicker. Fetching dominates wide rows, and there the spike costs 5 to
+  8%. On narrow rows, Ekorn's cost for each value shows: `next` is 54%
+  slower, and `$it->all` 3.7 times slower than before, though its
+  source gives every row in one step, as Ekorn's run wraps each value
+  it's given (`push @todo, map { [0, $_] } reverse @values`, line 544)
+  and its iterator's `all` collects them one call at a time.
+  `$it | keep_all` is twice as slow as `$it->all`. `$it` here is
+  `$sth->iterate`, and `|` is `Ekorn::Pipeline->new(keep_all)->iterator($it)`.
+
+  The script, run as `perl -Ilib one.pl TABLE CASE 3` with Ekorn's
+  working copy first on `PERL5LIB`:
+
+  ```perl
+  use v5.36;
+  use Time::HiRes qw(time);
+  use DBD::SQLite;
+  use DBIx::Squirrel;
+  my($table, $case, $times) = @ARGV;
+  my $dbh = DBIx::Squirrel->connect(
+      'dbi:SQLite:dbname=/Users/icampbell/Git/github.com/nukopian/jdc-lab/local/osm/gazetteer.sqlite', '', '',
+      {RaiseError => 1, sqlite_open_flags => DBD::SQLite::OPEN_READONLY()},
+  );
+  my $sql = "SELECT * FROM $table";
+  my $sth = $dbh->prepare($sql);
+  my $keep_all = DBIx::Squirrel::Iterator->can('first')
+      && do { require Ekorn::Pipeline::Sinks; \&Ekorn::Pipeline::Sinks::keep_all };
+  my %code = (
+      selectall => sub { my $r = $dbh->selectall_arrayref($sql) },
+      all       => sub { my @r = $sth->iterate->all },
+      stage     => sub { my @r = $sth->iterate(sub { $_[0] })->all },
+      next      => sub { my $it = $sth->iterate; 1 while my($r) = $it->next },
+      chain     => sub { my @r = Ekorn::Pipeline->new($keep_all->())->iterator($sth->iterate)->all },
+      first     => sub { for (1 .. 1000) { my $it = $sth->iterate; my($r) = $it->next; $it->sth->finish } },
+      first_m   => sub { for (1 .. 1000) { my $r = $sth->iterate->first } },
+  );
+  $code{$case}->();    # warm the page cache
+  my $t = time;
+  $code{$case}->() for 1 .. $times;
+  printf "%.3f\n", (time - $t) / $times;
+  ```
+
+  Q30 waits on Iain, with these numbers.
+

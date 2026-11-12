@@ -845,9 +845,12 @@ as here. See L<Stages|/"Stages">.
 
 The statement isn't executed until the first result is asked for. It's
 finished when the results run out, or when the iterator is ended early,
-by a L<stop|/"Stopping a pipeline"> or by C<single>.
+by a L<stop|/"Stopping a pipeline">, or by C<first> or C<single>.
 
-Rows are fetched 100 at a time, with the DBI's C<fetchall_arrayref>.
+Rows are fetched with the DBI's C<fetchall_arrayref>, 2 at first, the
+least that tells whether there's a second, then twice as many each
+time a fetch fills its batch, up to 64. So reading one row fetches no
+more than two.
 Without stages, C<all> takes what's left of the batch and fetches the
 rest at once. That's nearly as quick as the DBI's own
 C<selectall_arrayref>. With stages, each row goes through them in turn,
@@ -871,19 +874,19 @@ Returns the next result, or an empty list when there are no more.
 
 =item C<all>
 
-Returns the results not yet handed out. In scalar context, it returns how many there were. Without stages, it fetches the rest at once.
+Returns the results still to come, reading to the end: as a list, or, asked for one value, an array reference of them. Without stages, it fetches the rest at once.
+
+=item C<first>
+
+Returns the next result, or C<undef> if there's none, and finishes the statement.
 
 =item C<single>
 
-Executes the statement again, and returns its one result, or nothing if it has none. It croaks if there's more than one: C<Expected one result, not more>.
+Returns the next result, or C<undef> if there's none, and finishes the statement. If there's another, it warns: C<Expected only one item, but there were more>.
 
 =item C<reset>
 
 Executes the statement again, ready to iterate from its first row, and returns the iterator. If the statement is still active, it's finished first. A statement taking a L<list|/"Lists"> is prepared again, on a new handle, if a list has a different number of values.
-
-=item C<count>
-
-Returns the number of results handed out so far.
 
 =item C<column_names>
 
@@ -1879,9 +1882,9 @@ The handle of a statement taking a list was executed or bound with a list of ano
 
 C<< DBIx::Squirrel::Iterator->new >> wasn't given a C<DBIx::Squirrel::st>.
 
-=item C<Expected one result, not more>
+=item C<Expected only one item, but there were more>
 
-C<single> found a second result.
+A warning: C<single> found a second result, and returned the first.
 
 =item C<Expected the statement handle's other iterator to be finished>
 

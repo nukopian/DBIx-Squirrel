@@ -517,33 +517,42 @@ while (my($row) = $it->next) {
 ```
 
 Read `next` in list context, as here, so a result that is `undef` isn't
-taken for the end. Rows are fetched 100 at a time, so a large result is
-never held all at once.
+taken for the end. Rows are fetched a few at a time, 2 at first and
+up to 64, so a large result is never held all at once, and reading
+one row fetches no more than two.
 
 ### Stop when you've had enough
 
-`count` says how many results have been handed out. Leaving early
-never reads the rest:
+Leaving early never reads the rest:
 
 ```perl
 my $it = $dbh->iterate('SELECT name FROM track ORDER BY plays DESC');
+my $n  = 0;
 while (my($row) = $it->next) {
     say $row->[0];    # Dancing Queen, Sunshine of Your Love
-    last if $it->count == 2;
+    last if ++$n == 2;
 }
 ```
 
-### Get every result at once, or count them
+`first` takes the next result, and finishes the statement:
+
+```perl
+my $top = $dbh->iterate('SELECT name FROM track ORDER BY plays DESC', sub { $_->[0] })->first;
+say $top;    # Dancing Queen
+```
+
+### Get every result at once
 
 ```perl
 my @names = $dbh->iterate('SELECT name FROM artist', sub { $_->[0] })->all;
-my $count = $dbh->iterate('SELECT name FROM artist')->all;    # scalar context
+my $names = $dbh->iterate('SELECT name FROM artist', sub { $_->[0] })->all;    # a reference
 
-say "@names";    # Abba Blur Cream
-say $count;      # 3
+say "@names";            # Abba Blur Cream
+say scalar @$names;      # 3
 ```
 
-Without stages, `all` fetches the rest of the rows at once. That's
+`all` gives the results still to come, so after `next` it gives the
+rest. Without stages, `all` fetches the rest of the rows at once. That's
 nearly as quick as the DBI's own `selectall_arrayref`. Stages cost a
 little for each row. So for a large result, when every row is wanted
 and only needs changing, `map` over `all` is quicker:
@@ -555,8 +564,10 @@ say "@fast";    # Abba Blur Cream
 
 ### Get exactly one result
 
-`single` returns the one result, or nothing. It croaks if there's more
-than one:
+`single` returns the one result, or `undef` if there's none, and
+finishes the statement. If there's more than one, it warns "Expected
+only one item, but there were more", and returns the first: the
+statement may have lost its `LIMIT 1`.
 
 ```perl
 my $total = $dbh->iterate('SELECT SUM(plays) FROM track', sub { $_->[0] })->single;

@@ -144,8 +144,8 @@ sub _run ($name, @args) {
     my $dbh = database($name);
     return $dbh unless @args;
     my $statement = shift @args;
-    return _execute($statement, @args)           if $statement isa 'DBI::st';
-    return $dbh->iterate($statement, @args)->all if _ends_in_stages(\@args);
+    return _execute($statement, @args)            if $statement isa 'DBI::st';
+    return _all($dbh->iterate($statement, @args)) if _ends_in_stages(\@args);
     my $attrs = shift_attrs(\@args);
 
     my $sth = DBIx::Squirrel::db::_prepare_as(    ## no critic (Subroutines::ProtectPrivateSubs)
@@ -154,11 +154,18 @@ sub _run ($name, @args) {
     return _execute($sth, @args);
 }
 
+# Return every result of an iterator, or, in scalar context, how many
+# there were, as a Sugar statement given stages does.
+sub _all ($iterator) {
+    my @all = $iterator->all;
+    return wantarray ? @all : scalar @all;
+}
+
 # Execute a statement handle with the bind values given, and return it,
 # or nothing if it couldn't be executed; or, with stages after the bind
 # values, return the results.
 sub _execute ($sth, @args) {
-    return $sth->iterate(@args)->all if _ends_in_stages(\@args);
+    return _all($sth->iterate(@args)) if _ends_in_stages(\@args);
     defined $sth->execute(@args) or return;
     return $sth;
 }

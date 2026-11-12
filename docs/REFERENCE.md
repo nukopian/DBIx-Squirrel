@@ -643,9 +643,12 @@ while (my($name) = $it->next) {
 
 The statement isn't executed until the first result is asked for. It's
 finished when the results run out, or when the iterator is ended early,
-by a [stop](#stopping-a-pipeline) or by `single`.
+by a [stop](#stopping-a-pipeline), or by `first` or `single`.
 
-Rows are fetched 100 at a time, with the DBI's `fetchall_arrayref`.
+Rows are fetched with the DBI's `fetchall_arrayref`, 2 at first, the
+least that tells whether there's a second, then twice as many each
+time a fetch fills its batch, up to 64. So reading one row fetches no
+more than two.
 Without stages, `all` takes what's left of the batch and fetches the
 rest at once. That's nearly as quick as the DBI's own
 `selectall_arrayref`. With stages, each row goes through them in turn,
@@ -666,10 +669,10 @@ may stop early, or should go with the statement, as in
 | Method | What it does |
 |---|---|
 | `next` | Returns the next result, or an empty list when there are no more. |
-| `all` | Returns the results not yet handed out. In scalar context, it returns how many there were. Without stages, it fetches the rest at once. |
-| `single` | Executes the statement again, and returns its one result, or nothing if it has none. It croaks if there's more than one: `Expected one result, not more`. |
+| `all` | Returns the results still to come, reading to the end: as a list, or, asked for one value, an array reference of them. Without stages, it fetches the rest at once. |
+| `first` | Returns the next result, or `undef` if there's none, and finishes the statement. |
+| `single` | Returns the next result, or `undef` if there's none, and finishes the statement. If there's another, it warns: `Expected only one item, but there were more`. |
 | `reset` | Executes the statement again, ready to iterate from its first row, and returns the iterator. If the statement is still active, it's finished first. A statement taking a [list](#lists) is prepared again, on a new handle, if a list has a different number of values. |
-| `count` | Returns the number of results handed out so far. |
 | `column_names` | Returns the names of the statement's columns, as `fetchrow_hashref` would key them, following `FetchHashKeyName`. They're read when the statement is executed, as DBD::mysql gives none once the last row is fetched. |
 | `sth` | Returns the statement handle. It changes when `reset` prepares a statement taking a list again. |
 
@@ -1537,7 +1540,7 @@ caller's line. Those starting "Expected" say what was expected.
 | Message | Cause |
 |---|---|
 | `Expected a statement handle` | `DBIx::Squirrel::Iterator->new` wasn't given a `DBIx::Squirrel::st`. |
-| `Expected one result, not more` | `single` found a second result. |
+| `Expected only one item, but there were more` | A warning: `single` found a second result, and returned the first. |
 | `Expected the statement handle's other iterator to be finished` | Another iterator over the same statement handle has results left. |
 | `Expected ekorn_result_class to be a subclass of DBIx::Squirrel::Result (%s)` | `ekorn_result_class` named a class that isn't one. |
 | `Expected a column of the row (%s)` | `get_column` was given a name or position the row doesn't have. |

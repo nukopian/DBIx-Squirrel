@@ -91,8 +91,8 @@ subtest 'from an iterator' => sub {
     is [$it->next], [],                'then none';
 
     my $all = $dbh->iterate($names, sub { $_->[0] }, collect);
-    is $all->single, [qw(Abba Blur Cream)], 'every row, as one result';
-    is $all->single, [qw(Abba Blur Cream)], 'and again';
+    is $all->single,        [qw(Abba Blur Cream)], 'every row, as one result';
+    is $all->reset->single, [qw(Abba Blur Cream)], 'and again, reset';
 };
 
 done_testing;
