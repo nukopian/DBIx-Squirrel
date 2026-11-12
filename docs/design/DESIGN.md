@@ -406,6 +406,18 @@ name, `Ekorn::Pipeline::Sinks::all_items()`, or don't import
 Test2::V0's. Iain kept the name over `every_item`, as the clash is
 "only a problem in test harness" (Ekorn's D50).
 
+The same goes for any clash between a sink and a name in the user's
+package, such as a Sugar statement called `count` (Q23, settled). The
+Sugar's clash check catches it, with a test to show it. And a user can
+call the sink by its full name, or keep it in a lexical:
+
+```perl
+my $n = $sth->iterate(1990, Ekorn::Pipeline::Sinks::count());
+
+my $count = \&Ekorn::Pipeline::Sinks::count;
+my $m     = $sth->iterate(1991, $count->());
+```
+
 ## 13. Questions
 
 Each says whose it is, and recommends an answer. Settled ones keep
@@ -417,7 +429,6 @@ their numbers, with the decision in record 2026-0013.
 |---|---|---|---|
 | **Q21** | `pluck` after a stage that reshapes rows reads the statement's columns, as a context describes the source (Ekorn's D46), and so picks the wrong field, silently. `\|` makes that easier to write | DBIx-Squirrel's | say so loudly in the reference and the how-to, and show `as_hash` first, then `pluck` by name, which uses the hash's own keys. Detecting a reshaped row isn't possible without more from Ekorn |
 | **Q22** | The rule in section 3 says no call lists or counts by its calling context, but a list sink last, `all_items`, and a pushed run without a sink, as a `select` method with stages gives, still do: in scalar context they give a count (Ekorn's D47) | Ekorn's, as the sinks are its; waiting on its answer | Iain's proposal, sent to Ekorn on 2026-11-12: a list sink in scalar context gives its list as a reference, as `count` is there for counting. `my $rows = ... all_items` is then the rows, as an array reference, and `all_items` can end a `\|` chain |
-| **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count`. Test2::V0's `all_items` is settled: tests call the sink by its full name (Ekorn's D50) | DBIx-Squirrel's | show in a test that the Sugar's clash check catches a sink of the same name; in the docs, import sinks by name |
 
 ### 13.2 Settled
 
@@ -440,6 +451,7 @@ their numbers, with the decision in record 2026-0013.
 | **Q18** | What gives every result in one reference, to end a `\|` chain? | D15: `to_arrayref`, a container sink. Container sinks, `to_array`, `to_arrayref`, `to_hash` and `to_hashref`, are another kind, valid beside those named for what they give |
 | **Q19** | What does a call give without a sink last? | D16: the rule in section 3: DBIx::Squirrel's own calls give an iterator, the Sugar's statements included; the DBI's calls give what the DBI gives |
 | **Q20** | What does `only_item` do at a second item? | D17: it warns, not croaks, and gives the first: there's a second when a SELECT forgot `LIMIT 1` |
+| **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count`, or Test2::V0's `all_items` | D19: a test shows the Sugar's clash check catches a sink of the same name; the docs import sinks by name. Where a name clashes, call the sink by its full name, `Ekorn::Pipeline::Sinks::count()`, or through a code reference in a lexical, `my $count = \&Ekorn::Pipeline::Sinks::count;`, called as `$count->()` |
 | **Q24** | Do the `select` methods take stages? | D18: yes. What the DBI gives is pushed through them: with stages, the call gives what comes out of the last stage; without, what the DBI gives |
 
 Q9, Q10 and Q14, about a result sink of DBIx::Squirrel's own, were

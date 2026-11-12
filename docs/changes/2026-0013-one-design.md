@@ -16,7 +16,8 @@ as now. D14 settled: the sinks are `all_items`, `first_item` and
 `only_item`. D15 settled: container sinks are another kind. D16 settled:
 DBIx::Squirrel's calls give an iterator unless a sink is last. D17
 settled: `only_item` warns at a second item. D18 settled: the `select`
-methods take stages. Three open, in the design's section 13.1.
+methods take stages. D19 settled: sinks' names clashing on import.
+Two open, in the design's section 13.1, Q22 waiting on Ekorn.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -180,6 +181,15 @@ its section 12.3 (Ekorn-Pipeline
   stages, what comes from DBI." The first draft wrongly listed them
   among the calls taking stages, which they don't today; the reference
   says each works as the DBI's does.
+- [x] **D19.** What about Ekorn's sinks, imported, clashing with names
+  in the user's package, such as a Sugar statement called `count`?
+  Settled as recommended, Iain decided on 2026-11-12: a test shows the
+  Sugar's clash check catches a sink of the same name, and the docs
+  import sinks by name. He added that a clash can be avoided by calling
+  the sink by its full name, `Ekorn::Pipeline::Sinks::count()`, "or use
+  a lexically scoped code ref", `my $count =
+  \&Ekorn::Pipeline::Sinks::count`, called as `$count->()`. Test2::V0's
+  `all_items` is the same case (Ekorn's D50).
 
 ## The plan
 
