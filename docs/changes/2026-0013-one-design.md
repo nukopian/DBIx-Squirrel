@@ -582,4 +582,7 @@ Written when the design is approved and split into items.
   Timed three times each, `next` to the end: over `place_areas`, 0.369
   s to 0.334 s; over `places`, 0.176 s to 0.162 s; version 2 took
   0.351 s and 0.168 s.
+- **2026-11-12:** Iain has read the design, and likes it. He's
+  reviewing Ekorn-Pipeline's design, the bigger, and both are approved
+  together, before either is split into items.
 

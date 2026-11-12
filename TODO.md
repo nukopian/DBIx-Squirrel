@@ -5,7 +5,8 @@
 **From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
 43e2b0629fd89ef6fd990b9765b74d099b1f5210, on its branch
 `pipeline-experimental`)
-**Waiting on:** nothing
+**Waiting on:** Iain's review of Ekorn-Pipeline's design; he has read
+and likes this repository's (2026-11-12)
 
 **Why:** DBIx::Squirrel is tied to Ekorn::Pipeline at the design level:
 a Pipeline subclass with no code of its own, facades over Ekorn's
