@@ -11,10 +11,11 @@ locally first, CI later. D8 settled: Ekorn renamed its role methods,
 so a bind value is never taken for a stage. D9 settled: `insert_into`
 dropped for now. D10 settled, then overtaken by D11. D11 settled: `all`,
 `single` and `count` become sinks, Ekorn's. D12 settled: `count`, not
-`to_count`, which Ekorn named `count_items`. D13 settled: `pluck` and `as_hash` croak without columns,
-as now. D14 settled: the sinks are `all_items`, `first_item` and
-`only_item`, which Ekorn named `single_item`. D15 settled, then
-overtaken: Ekorn has no containers for arrays or hashes. D16 settled:
+`to_count`, which Ekorn named `count_items`. D13 settled: `pluck`
+and `as_hash` croak without columns, as now. D14 settled: the sinks
+are `all_items`, `first_item` and `only_item`; Ekorn has since named
+them `keep_all`, `keep_first` and `keep_single`, and added
+`keep_last`. D15 settled, then overtaken: Ekorn has no containers for arrays or hashes. D16 settled:
 DBIx::Squirrel's calls give an iterator unless a sink is last. D17
 settled: `only_item` warns at a second item. D18 settled: the `select`
 methods take stages. D19 settled: sinks' names clashing on import.
@@ -149,6 +150,10 @@ its section 12.3 (Ekorn-Pipeline
   name of the sink giving every result in one reference is left open
   (the design's Q18). Ekorn named `only_item` `single_item` on
   2026-11-12, as its D53, echoing `single`, the method it replaces.
+  Later the same day, as its D55, Iain renamed the three `keep_all`,
+  `keep_first` and `keep_single`, each named for what it keeps of what
+  reaches it, and Ekorn's designed `last_item` became `keep_last`,
+  built, as its D56.
 - [x] **D15.** What gives every result in one reference, to end a `|`
   chain? `to_arrayref`, Iain decided on 2026-11-12, as a container
   sink: "I think to_array is still *a* valid sink, but it's another
@@ -281,3 +286,14 @@ Written when the design is approved and split into items.
   Test2::V0 as Ekorn's do, with `use Test2::V0 qw(!all_items)`. None of
   DBIx::Squirrel's code or tests used the sinks, so nothing else
   changes.
+- **2026-11-12:** Ekorn-Pipeline's next two messages. Iain renamed
+  three of its sinks, as its D55 (Ekorn-Pipeline
+  2078ed2348b385b93087a656d30420a7f3651c2e): `all_items` is `keep_all`,
+  `first_item` `keep_first`, and `single_item` `keep_single`;
+  `count_items` keeps its name. And its `last_item` became `keep_last`,
+  built, as its D56 (Ekorn-Pipeline
+  c1cceddbffd5f6a643f14e3d1ea9bd48f6d01114): the last item, or `undef`
+  for none, reading every item to find it. The design takes both in.
+  `keep_all` doesn't clash with Test2::V0's `all_items`, so its tests
+  need no `qw(!all_items)`, and the half of D19 about Test2::V0 falls
+  away.
