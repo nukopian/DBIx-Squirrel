@@ -92,7 +92,7 @@ knows which package made which:
 ```perl
 use Ekorn::Pipeline::Operators;
 
-my @top = @{ $sth->iterate(1990) | pluck('name') | take(5) };
+my $top = $sth->iterate(1990) | pluck('name') | take(5) | all_items;
 my $n   = $sth->iterate | stage { $_->[1] } | count;
 ```
 
@@ -162,6 +162,22 @@ An iterator that's let go ends its run, through Ekorn's iterator's
 The iterator overloads `|` with `Ekorn::Pipeline::Operators::chain`
 and `@{}` with `drain` (Ekorn's D14 and D23). They're in force only
 where the user wrote `use Ekorn::Pipeline::Operators` (Ekorn's D32).
+
+A chain ends in a sink, in the docs' examples, so it says what it
+gives. `@{}` on a chain without one drains it, but reads like a
+dereference of an array that isn't there, so the docs don't lead with
+it. And as `|` gives one value, a chain ending in `all_items` gives an
+array reference, even in a list assignment:
+
+```perl
+my $top = $sth->iterate | pluck('name') | take(5) | all_items;      # the names, as a reference
+my @top = @{ $sth->iterate | pluck('name') | take(5) | all_items };  # the names
+my @top = $sth->iterate | pluck('name') | take(5) | all_items;      # one element: the reference
+```
+
+The last is a quiet trap, which the reference and the how-to warn of.
+A list comes straight back without `|`, from a sink given last as an
+argument: `$sth->iterate(pluck('name'), take(5), all_items)`.
 
 DBIx::Squirrel loads Operators itself, with an empty import list,
 `use Ekorn::Pipeline::Operators ();`, which defines `chain` and `drain`
@@ -274,7 +290,8 @@ use Ekorn::Pipeline::Sinks qw(all_items only_item count);
 my @rows   = $dbh->iterate('SELECT * FROM artist', all_items);
 my $artist = $dbh->results('SELECT * FROM artist WHERE id = ?', 1, only_item);
 my $n      = $sth->iterate(1990, count);
-my @top    = @{ $sth->iterate | pluck('name') | take(5) };
+my @top   = $sth->iterate(pluck('name'), take(5), all_items);
+my $names  = $sth->iterate | pluck('name') | take(5) | all_items;
 ```
 
 That's `iterate`, `results`, the `select` methods and the Sugar's
@@ -378,7 +395,7 @@ Ekorn's (Ekorn 10).
 | `$x isa 'DBIx::Squirrel::Pipeline'` | false | `$x isa 'Ekorn::Pipeline'` |
 | `ref $stage eq 'CODE'`, `is_coderef($stage)`, for a stage made by `take`, `gather` and the like | false: they're objects now, called as code references (Ekorn's Q12) | `is_stage($stage)` |
 | `$it->all`, `$it->single`, `$it->count` | fails: the methods are gone | a sink given last: `all_items`, `only_item`, `count` (section 6) |
-| `my @names = artist_names sub {...}`, a Sugar statement given stages | gives an iterator, not every result | give a sink last, `all_items`, or drain it with `@{}` |
+| `my @names = artist_names sub {...}`, a Sugar statement given stages | gives an iterator, not every result | give a sink last, `all_items` |
 | a Sugar statement given stages in scalar context, for a count | gives an iterator | give `count` last |
 | `result_number` or `Context::iterator` in a user's own pipeline over an iterator | `undef` | count in a stage of their own |
 | `my($first) = $sth->iterate->next`, then using the handle | the handle is finished once the iterator goes | keep the iterator while the handle is in use |
