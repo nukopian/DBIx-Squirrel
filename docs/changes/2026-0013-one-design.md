@@ -17,7 +17,8 @@ as now. D14 settled: the sinks are `all_items`, `first_item` and
 DBIx::Squirrel's calls give an iterator unless a sink is last. D17
 settled: `only_item` warns at a second item. D18 settled: the `select`
 methods take stages. D19 settled: sinks' names clashing on import.
-Two open, in the design's section 13.1, Q22 waiting on Ekorn.
+D20 settled: a list sink asked for one value gives an array
+reference. One open, in the design's section 13.1.
 
 **Origin:** a TODO task from Ekorn-Pipeline's session, 2026-11-12
 (Ekorn-Pipeline 43e2b0629fd89ef6fd990b9765b74d099b1f5210)
@@ -190,6 +191,16 @@ its section 12.3 (Ekorn-Pipeline
   a lexically scoped code ref", `my $count =
   \&Ekorn::Pipeline::Sinks::count`, called as `$count->()`. Test2::V0's
   `all_items` is the same case (Ekorn's D50).
+- [x] **D20.** A list sink last gave a count in scalar context, so
+  `my $rows = ... all_items` quietly gave a number. Iain proposed on
+  2026-11-12 that it give its list as a reference, as `count` is there
+  for counting, and Ekorn adopted it as its D51 ("quite nice, too", in
+  his words), built at Ekorn-Pipeline
+  89dfd3a2ab792c595dd4246788db3940d7fde4ef: a list sink asked for one
+  value, in scalar context or at the end of a `|` chain, gives an array
+  reference. Checked against that commit. A run with no sink still
+  gives a count (Ekorn's D17), which for DBIx::Squirrel is only a
+  `select` method given stages and no sink, in scalar context.
 
 ## The plan
 

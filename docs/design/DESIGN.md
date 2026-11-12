@@ -245,9 +245,13 @@ and is named for it. `to_array` and `to_arrayref` take items;
 `to_hash` and `to_hashref` take pairs. Ekorn's design has all four
 (Ekorn 8.3).
 
-`all_items` gives a list, and Ekorn's `|` can end only in a sink that
-gives one value (Ekorn's D10). So a chain that wants every result
-drains with `@{}`, or ends in `to_arrayref`.
+`all_items` gives a list in list context, and in scalar context the
+same list as an array reference (Q22, settled, from Ekorn's D51). So
+`my $rows = ... all_items` is the rows, never a count of them, and a
+`|` chain, which asks for one value, can end in `all_items` too.
+`to_arrayref` keeps its job, filling an array you hand it. An empty
+result is then true, so testing for no rows takes `@$rows`, or
+`count`.
 
 Ekorn took these in as its D50, and built them on its
 `pipeline-experimental` (e03e71958e0052dd098672f77a099b90681644e2):
@@ -281,9 +285,11 @@ statements. Without a sink last, each follows the rule in section 3:
   `selectall_arrayref` pushes one value, its array reference, and
   `selectrow_array` the row's values. As a pushed run, it has no
   context, so `pluck` and `as_hash` croak there (Q13). What comes out
-  is as Ekorn's pushed runs give it: every value in list context, and
-  in scalar context a count, or a sink's result if one giving one
-  value is last.
+  is as Ekorn's pushed runs give it: every value in list context; in
+  scalar context, a sink's result if a sink is last, a list sink's as
+  an array reference, or, with no sink, a count (Ekorn's D17). That
+  last is the one place a call of DBIx::Squirrel's still counts by its
+  calling context.
 
 The rule answers the rest:
 
@@ -428,7 +434,6 @@ their numbers, with the decision in record 2026-0013.
 | | Question | Whose | Recommendation |
 |---|---|---|---|
 | **Q21** | `pluck` after a stage that reshapes rows reads the statement's columns, as a context describes the source (Ekorn's D46), and so picks the wrong field, silently. `\|` makes that easier to write | DBIx-Squirrel's | say so loudly in the reference and the how-to, and show `as_hash` first, then `pluck` by name, which uses the hash's own keys. Detecting a reshaped row isn't possible without more from Ekorn |
-| **Q22** | The rule in section 3 says no call lists or counts by its calling context, but a list sink last, `all_items`, and a pushed run without a sink, as a `select` method with stages gives, still do: in scalar context they give a count (Ekorn's D47) | Ekorn's, as the sinks are its; waiting on its answer | Iain's proposal, sent to Ekorn on 2026-11-12: a list sink in scalar context gives its list as a reference, as `count` is there for counting. `my $rows = ... all_items` is then the rows, as an array reference, and `all_items` can end a `\|` chain |
 
 ### 13.2 Settled
 
@@ -451,6 +456,7 @@ their numbers, with the decision in record 2026-0013.
 | **Q18** | What gives every result in one reference, to end a `\|` chain? | D15: `to_arrayref`, a container sink. Container sinks, `to_array`, `to_arrayref`, `to_hash` and `to_hashref`, are another kind, valid beside those named for what they give |
 | **Q19** | What does a call give without a sink last? | D16: the rule in section 3: DBIx::Squirrel's own calls give an iterator, the Sugar's statements included; the DBI's calls give what the DBI gives |
 | **Q20** | What does `only_item` do at a second item? | D17: it warns, not croaks, and gives the first: there's a second when a SELECT forgot `LIMIT 1` |
+| **Q22** | A list sink last, `all_items`, gave a count in scalar context (Ekorn's D47), so `my $rows = ... all_items` quietly gave a number | D20, from Ekorn's D51, as Iain proposed: a list sink asked for one value gives its list as an array reference, at the end of a `\|` chain too. A run with no sink still gives a count |
 | **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count`, or Test2::V0's `all_items` | D19: a test shows the Sugar's clash check catches a sink of the same name; the docs import sinks by name. Where a name clashes, call the sink by its full name, `Ekorn::Pipeline::Sinks::count()`, or through a code reference in a lexical, `my $count = \&Ekorn::Pipeline::Sinks::count;`, called as `$count->()` |
 | **Q24** | Do the `select` methods take stages? | D18: yes. What the DBI gives is pushed through them: with stages, the call gives what comes out of the last stage; without, what the DBI gives |
 

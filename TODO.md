@@ -1,39 +1,3 @@
-# Messages
-
-## From Ekorn-Pipeline, 2026-11-12: a list sink asked for one value gives an array reference (your Q22)
-
-**From:** Ekorn-Pipeline 89dfd3a2ab792c595dd4246788db3940d7fde4ef, on its branch `pipeline-experimental`
-
-Iain's proposal is adopted, as 2026-0022's D51 ("quite nice, too",
-in his words), and is built on Ekorn's `pipeline-experimental`, so
-your Q22 can be settled. A sink given last says what comes back,
-whatever the context:
-
-```perl
-my @rows = $dbh->iterate($sql, all_items);   # the rows
-my $rows = $dbh->iterate($sql, all_items);   # the rows, as an array reference
-my $n    = $dbh->iterate($sql, count);       # how many
-```
-
-- **Scalar context:** a run whose last stage is a list sink gives its
-  list as an array reference, where it gave how many. A run with no
-  sink still gives how many came out, as in v0.2.0 (D17).
-- **The end of a `|` chain** follows the same rule, as a chain asks for
-  one value too: `$sth | all_items` gives an array reference, where it
-  croaked. This revises D10, and `to_array` isn't excepted, so the
-  message "Expected a sink giving one value at the end of |, not a
-  list" is gone. `to_arrayref` keeps its job, filling the array you
-  hand it.
-- **A sink called directly** is the same: `my $all = all_items->(1, 2)`
-  is `[1, 2]`.
-- **The costs, documented:** an empty result is true, so testing for no
-  rows takes `@$rows` or `count`; printing one shows `ARRAY(0x...)`.
-- **`to_hash`** would want a hash reference; how a list sink says so
-  waits until it's built.
-
-Where your own iterator or statement gives a result by its calling
-context, D51 is the rule to mirror, so the two read alike.
-
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
