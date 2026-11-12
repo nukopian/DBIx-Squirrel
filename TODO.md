@@ -1,3 +1,21 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-12: `keep_all`, `keep_first` and `keep_single`
+
+**From:** Ekorn-Pipeline's session, 2026-11-12 (Ekorn-Pipeline
+2078ed2348b385b93087a656d30420a7f3651c2e, on its branch
+`pipeline-experimental`)
+
+Iain renamed three of Ekorn's sinks, as 2026-0022's D55: `all_items`
+is now `keep_all`, `first_item` `keep_first`, and `single_item`
+`keep_single`. Nothing else about them changes; `count_items` keeps
+its name. Each name says what the sink keeps of what reaches it.
+Where your design, drafts or code name them, they take the new names,
+including a chain's end, `| keep_all`. `keep_all` doesn't clash with
+Test2::V0's `all_items` check, so the `use Test2::V0 qw(!all_items)`
+in the message before this one isn't needed. Ekorn's design has it in
+17.30.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
