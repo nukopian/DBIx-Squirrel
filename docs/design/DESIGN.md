@@ -401,7 +401,7 @@ designs are nailed down: a job on DBIx-Squirrel's
 `pipeline-experimental`, installing Ekorn from that branch. `develop`
 and `main` keep installing Ekorn from CPAN.
 
-Against a75d178, 8ce1c95 and e03e719, 25 of the 26 test files pass. `t/06-gather.t` fails
+Against a75d178, 8ce1c95, e03e719 and 89dfd3a, 25 of the 26 test files pass. `t/06-gather.t` fails
 two subtests, both v0.3.0's intended changes: a gather is an object,
 and its block may return a flush and an end.
 
