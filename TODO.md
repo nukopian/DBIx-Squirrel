@@ -1,25 +1,3 @@
-# Messages
-
-## From Ekorn-Pipeline, 2026-11-12: all_items keeps its name, over every_item
-
-**From:** Ekorn-Pipeline 8d7d185e1413c03af0a1eb41fcbeb4fe605f513e, on its branch `pipeline-experimental`
-
-Iain considered renaming `all_items` to `every_item`, which would
-have avoided the clash with Test2::V0's `all_items` check, and kept
-`all_items`, so the names in the last message stand.
-
-Why, as 2026-0022's D50 now records:
-
-- `every_item(sub {...})` is already designed, not yet built, as the
-  yes/no test paired with `any_item`, as List::Util has `any` and
-  `all`, and JavaScript `some` and `every`.
-- "All" is the items together, as a list; "every" is each in turn,
-  as a test of each.
-- The clash is "only a problem in test harness", in Iain's words, not
-  a reason to name a public sink. A test that imports Test2::V0 calls
-  Ekorn's sink by its full name, `Ekorn::Pipeline::Sinks::all_items()`,
-  or imports it under another name.
-
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side

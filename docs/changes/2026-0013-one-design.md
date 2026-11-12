@@ -212,3 +212,8 @@ Written when the design is approved and split into items.
   design's 4.6: a run's end touching only its own run, no cycles
   keeping an iterator alive, and quiet ends at program exit. And three
   questions, Q21 to Q23.
+- **2026-11-12:** Ekorn-Pipeline's message (Ekorn-Pipeline
+  8d7d185e1413c03af0a1eb41fcbeb4fe605f513e): Iain kept `all_items` over
+  `every_item`, which is designed as the yes/no test paired with
+  `any_item`, and the clash with Test2::V0's check is "only a problem
+  in test harness". That settles the test half of the design's Q23.

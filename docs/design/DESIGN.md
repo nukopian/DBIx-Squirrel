@@ -403,7 +403,8 @@ Test2::V0 exports a check named `all_items`, as Ekorn has warned. A
 test importing both it and the sink gets a prototype-mismatch warning,
 which Test2::Plugin::NoWarnings fails. Tests call the sink by its full
 name, `Ekorn::Pipeline::Sinks::all_items()`, or don't import
-Test2::V0's.
+Test2::V0's. Iain kept the name over `every_item`, as the clash is
+"only a problem in test harness" (Ekorn's D50).
 
 ## 13. Questions
 
@@ -416,7 +417,7 @@ their numbers, with the decision in record 2026-0013.
 |---|---|---|---|
 | **Q21** | `pluck` after a stage that reshapes rows reads the statement's columns, as a context describes the source (Ekorn's D46), and so picks the wrong field, silently. `\|` makes that easier to write | DBIx-Squirrel's | say so loudly in the reference and the how-to, and show `as_hash` first, then `pluck` by name, which uses the hash's own keys. Detecting a reshaped row isn't possible without more from Ekorn |
 | **Q22** | The rule in section 3 says no call lists or counts by its calling context, but a list sink last, `all_items`, and a pushed run without a sink, as a `select` method with stages gives, still do: in scalar context they give a count (Ekorn's D47) | DBIx-Squirrel's to say; Ekorn's if it should change | narrow the rule to say so: a sink giving one value is what removes the calling context; a list is a list. Tell Ekorn, in case it wants a list sink in scalar context to croak |
-| **Q23** | Ekorn's sinks, imported, can clash with names in the user's package: a Sugar database or statement called `count`, and Test2::V0's `all_items` | DBIx-Squirrel's | show in a test that the Sugar's clash check catches a sink of the same name; in the docs, import sinks by name, and in tests call `all_items` by its full name |
+| **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count`. Test2::V0's `all_items` is settled: tests call the sink by its full name (Ekorn's D50) | DBIx-Squirrel's | show in a test that the Sugar's clash check catches a sink of the same name; in the docs, import sinks by name |
 
 ### 13.2 Settled
 
