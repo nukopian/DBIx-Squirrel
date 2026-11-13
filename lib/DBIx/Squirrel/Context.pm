@@ -16,20 +16,20 @@ our @EXPORT_OK = qw(iterator result_number result_original);
 our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
 # The iterator running the stages, set by the iterator while they run,
-# as it counts its results. The row a value came from is the run's, in
-# the context a statement's source gives it, so it's there in any run
-# reading a statement.
-my %context;
+# as it counts its results; a package variable, so the iterator's next
+# can localise it itself, without a call for each row. The row a value
+# came from is the run's, in the context a statement's source gives it,
+# so it's there in any run reading a statement.
+our $ITERATOR;
 
 # The iterator running the stage.
 sub iterator : prototype() () {
-    return $context{iterator};
+    return $ITERATOR;
 }
 
 # The number of the result being made, from 1.
 sub result_number : prototype() () {
-    my $iterator = $context{iterator};
-    return $iterator && $iterator->{produced} + 1;
+    return $ITERATOR && $ITERATOR->{produced} + 1;
 }
 
 # The row the result is being made from, as it was fetched; undef for a
@@ -52,7 +52,7 @@ sub statement_context : prototype() () {
 # For DBIx::Squirrel's iterators: run code with the iterator given as the
 # one running, and return what it returns.
 sub within ($iterator, $code) {
-    local $context{iterator} = $iterator;
+    local $ITERATOR = $iterator;
     return $code->();
 }
 

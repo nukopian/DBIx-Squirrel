@@ -1,6 +1,6 @@
 # 2026-0022. Trim DBIx::Squirrel's cost per row
 
-**Status:** in progress
+**Status:** shipped, unreleased, on `pipeline-experimental`
 
 **Decisions:** None open.
 
@@ -11,6 +11,8 @@ profile and trim DBIx::Squirrel's cost per row, with NYTProf against
 the gazetteer is sound. Wouldn't mind you picking it up now."
 
 **Started:** 2026-11-13
+
+**Finished:** 2026-11-13
 
 ## Background
 
@@ -44,3 +46,43 @@ is measured to help, the tests pass against Ekorn's working copy and
 coverage meets its floors, and the guide's table is current.
 
 ## What happened
+
+- **2026-11-13, profiled:** with Devel::NYTProf, each case run alone
+  over `place_areas`. `next` to the end spent 1.45 s of profiled time
+  in `next`, of which about 1.05 s was DBIx::Squirrel's own: `next`
+  0.60 s, Context's `within`, called for each row, 0.39 s, and
+  `_executed`, called for each row, 0.06 s; Ekorn's pull 0.40 s. With
+  a stage, Ekorn's step loop took 1.5 of 2.0 s, and DBIx::Squirrel's
+  source step, its `$made` and its counting stage about 0.45 s.
+- **Kept: `next` localises the Context itself.** Context's iterator is
+  a package variable, `$DBIx::Squirrel::Context::ITERATOR`, in place
+  of a lexical hash, so `next` localises it, and checks whether the
+  statement has run, without a call of `within` and `_executed` for
+  each row. `within` stays, for `all`, `first` and `single`, called
+  once each. `next` to the end: 0.334 s to 0.278 s.
+- **Kept: the source's step gives a row at a time directly,** while
+  the batch has rows and stages or a pipeline read it, without a call
+  of `$made` and a list copy for each row. With a stage: 0.668 s to
+  0.625 s; `keep_all` given last: 0.557 s to 0.527 s. That made the
+  step's check for an empty batch always true, a branch no test could
+  reach, so it went, which kept branch coverage above its floor.
+- **Tried and reverted:** the counting stage without a signature:
+  0.625 s to 0.624 s, no measurable gain.
+- **Outcome,** against Ekorn's working copy at
+  be205aecafe1a9d1f9ba64310e9177417cbf50cc, best of three, in seconds, before (Ekorn 297f137, the user
+  guide's table) and after:
+
+  | Case | place_areas, before | after | areas, before | after |
+  |---|---|---|---|---|
+  | `next` to the end | 0.334 | 0.276 | 0.171 | 0.167 |
+  | `iterate($stage)->all` | 0.665 | 0.637 | 0.193 | 0.193 |
+  | `iterate(keep_all)` | 0.570 | 0.533 | 0.234 | 0.223 |
+  | `iterate->all`, no stages | 0.152 | 0.156 | 0.198 | 0.196 |
+
+  `next` to the end is 17% quicker; a stage or a sink 4 to 6%. Every
+  test passes, against SQLite, MySQL 8.4 and PostgreSQL 18, and
+  coverage meets its floors. The user guide's table follows.
+- **What's left is Ekorn's:** with a stage, its step loop is about
+  three quarters of a row's profiled time, and DBIx::Squirrel's about
+  a tenth. Nothing more of DBIx::Squirrel's is worth trimming without
+  changing what it does.

@@ -41,15 +41,8 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0022. Trim DBIx::Squirrel's cost per row
-
-**Added:** 2026-11-13. **Size:** M (3)
-
-Profile reading rows, with Devel::NYTProf against the OSM gazetteer,
-and trim what DBIx::Squirrel spends on each row around Ekorn's pull:
-Ekorn's fast paths gained its iterators 2 to 4%, so most of a row's
-cost looks to be DBIx::Squirrel's own. Its
-[record](docs/changes/2026-0022-cost-per-row.md) has the plan.
+Nothing, between 2026-0022, shipped on `pipeline-experimental`, and
+2026-0019, which waits for Ekorn::Pipeline v0.3.0 on CPAN.
 
 ## Next
 

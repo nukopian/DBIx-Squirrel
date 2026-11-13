@@ -64,6 +64,8 @@ Unreleased
       statement: through |, or in a pipeline of your own, as well as
       in an iterator's own stages. result_number and iterator are
       undef there, as only an iterator's own stages are counted.
+    - next is about 17% quicker, and a stage or a sink 4 to 6%, as
+      less is done around each row (roadmap 2026-0022).
     - single gives the next result, or undef, and finishes the
       statement. At a second result, it warns "Expected only one item,
       but there were more", and gives the first, rather than croak. It

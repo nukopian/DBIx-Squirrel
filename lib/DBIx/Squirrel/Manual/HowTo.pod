@@ -2048,46 +2048,46 @@ in SQLite, the best of three runs, in seconds:
 
 =item the DBI's C<fetchrow_arrayref>, in a loop
 
-0.076
+0.079
 
 =item the DBI's C<selectall_arrayref>
 
-0.103
+0.107
 
 =item DBIx::Squirrel's C<selectall_arrayref>
 
-0.102
+0.107
 
 =item C<< iterate(...)->all >>
 
-0.152
+0.156
 
 =item C<map> over C<< iterate(...)->all >>
 
-0.174
+0.169
 
 =item C<next>, in a loop
 
-0.334
+0.276
 
 =item C<iterate(..., keep_all)>
 
-0.570
+0.533
 
 =item C<< iterate(..., $stage)->all >>
 
-0.665
+0.637
 
 =back
 
 On wide rows, 21,826 of them averaging 24 KB, fetching the data costs
 far more than anything around it, and every one of those ways takes
-between 0.12 and 0.24 seconds.
+between 0.13 and 0.23 seconds.
 
 So: the select methods cost nothing over the DBI's. C<all> with no
 stages takes about one and a half times as long as
-C<selectall_arrayref>. A stage costs around
-two microseconds a row; over a hundred thousand rows, that's a fifth
+C<selectall_arrayref>. A stage costs under
+two microseconds a row; over a hundred thousand rows, that's a sixth
 of a second, and on most queries it's lost in the time the database
 takes. When every row of a big result is wanted, and only needs
 changing, C<map> over C<all> is quickest. Use stages when you might not

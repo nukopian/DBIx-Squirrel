@@ -51,10 +51,14 @@ sub new ($class, $sth, @args) {
 
 # Return the next result, or nothing when there are no more, executing the
 # statement first if it hasn't been.
+#
+# It's called for each row, so it does what Context's within and
+# _executed do itself, without a call to each.
 sub next ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    _executed($self);
-    return if $self->{done};
-    my @result = DBIx::Squirrel::Context::within($self, $self->{pull});
+    $self->reset unless $self->{executed};
+    return       if $self->{done};
+    local $DBIx::Squirrel::Context::ITERATOR = $self;
+    my @result = $self->{pull}->();
     unless (@result) {
         _finish($self);
         return;
@@ -271,6 +275,14 @@ sub _statement ($self) {
             return @rows;
         };
         my $step = sub () {
+            # A row at a time from the batch, as stages or a pipeline read
+            # it: the commonest case, so it's done here, without a call
+            # of $made for each row.
+            if (@buffer && !$whole) {
+                my $next = shift @buffer;
+                $next = $row->($next) if $row;
+                return $context->{row} = $next;
+            }
             return if $done;
             if ($self && $self->{all_at_once}) {
                 my @rows = splice @buffer;
@@ -279,15 +291,15 @@ sub _statement ($self) {
                 $done = 1;
                 return $made->(@rows);
             }
-            unless (@buffer) {
-                my $rows = $fetch->($batch);
-                unless ($rows && @$rows) {
-                    $done = 1;
-                    return;
-                }
-                $batch  = min($batch * 2, $BATCH_LIMIT) if @$rows >= $batch;
-                @buffer = @$rows;
+            # The batch is used up here, as a whole batch is given at once,
+            # and a row at a time is given above while any are left.
+            my $rows = $fetch->($batch);
+            unless ($rows && @$rows) {
+                $done = 1;
+                return;
             }
+            $batch  = min($batch * 2, $BATCH_LIMIT) if @$rows >= $batch;
+            @buffer = @$rows;
             return $made->($whole ? splice @buffer : shift @buffer);
         };
         my $end = sub ($how) {
