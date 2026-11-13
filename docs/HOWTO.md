@@ -1991,21 +1991,22 @@ in SQLite, the best of three runs, in seconds:
 
 | How the rows are read | Seconds |
 |---|---|
-| the DBI's `fetchrow_arrayref`, in a loop | 0.079 |
-| the DBI's `selectall_arrayref` | 0.109 |
-| DBIx::Squirrel's `selectall_arrayref` | 0.107 |
-| `iterate(...)->all` | 0.155 |
-| `map` over `iterate(...)->all` | 0.172 |
-| `next`, in a loop | 0.346 |
-| `iterate(..., keep_all)` | 0.556 |
-| `iterate(..., $stage)->all` | 0.683 |
+| the DBI's `fetchrow_arrayref`, in a loop | 0.076 |
+| the DBI's `selectall_arrayref` | 0.103 |
+| DBIx::Squirrel's `selectall_arrayref` | 0.102 |
+| `iterate(...)->all` | 0.152 |
+| `map` over `iterate(...)->all` | 0.174 |
+| `next`, in a loop | 0.334 |
+| `iterate(..., keep_all)` | 0.570 |
+| `iterate(..., $stage)->all` | 0.665 |
 
 On wide rows, 21,826 of them averaging 24 KB, fetching the data costs
 far more than anything around it, and every one of those ways takes
-between 0.12 and 0.23 seconds.
+between 0.12 and 0.24 seconds.
 
 So: the select methods cost nothing over the DBI's. `all` with no
-stages is about 1.4 times `selectall_arrayref`. A stage costs around
+stages takes about one and a half times as long as
+`selectall_arrayref`. A stage costs around
 two microseconds a row; over a hundred thousand rows, that's a fifth
 of a second, and on most queries it's lost in the time the database
 takes. When every row of a big result is wanted, and only needs

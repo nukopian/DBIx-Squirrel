@@ -133,3 +133,24 @@ answers to the questions a potential user has.
 - **What's left:** Ekorn's fast paths, its 2026-0028, are being built
   as this is written; once they land, the speed table is timed again,
   before the release, under 2026-0019.
+- **2026-11-13, timed again, as planned,** once Ekorn's fast paths
+  landed (its 2026-0028, Ekorn-Pipeline
+  297f1379f7fc96d59ca1659e392372cf9d97b90c), in the same way, and the
+  guide's table follows. The change is small, 2 to 4% where it shows,
+  as DBIx::Squirrel's rows are pulled, which takes Ekorn's full path:
+
+  | Case | place_areas | areas |
+  |---|---|---|
+  | DBI `fetchrow_arrayref` loop | 0.076 | 0.125 |
+  | DBI `selectall_arrayref` | 0.103 | 0.182 |
+  | DBIx::Squirrel `selectall_arrayref` | 0.102 | 0.183 |
+  | `iterate->all` | 0.152 | 0.198 |
+  | `map` over `all` | 0.174 | 0.199 |
+  | `next` to the end | 0.334 | 0.171 |
+  | `iterate(keep_all)` | 0.570 | 0.234 |
+  | `iterate($stage)->all` | 0.665 | 0.193 |
+  | the first row, 1,000 times, DBI | 0.009 | 0.124 |
+  | the first row, 1,000 times, `first` | 0.067 | 0.358 |
+
+  Ekorn expected its full path 10 to 20% faster; it's told what was
+  measured here.
