@@ -594,4 +594,15 @@ Written when the design is approved and split into items.
   the protocols; this record's entries keep the words of their day.
   The iterator asks `is_sink` only whether a stage is a sink, so its
   code doesn't change, and against 1b3990a the tests stand as before.
+- **2026-11-13:** Ekorn-Pipeline's six messages, on its D65 to D70:
+  `is_sink` keeps `one` and `many`; six designed sinks set aside, and
+  four designed sources dropped, none built; `from_array` in place of
+  `from_arrayref`, with no hash sources, DBIx::Squirrel free to add its
+  own; `from_file` and `to_file` take I/O layers; and `generator {...}`
+  with `yield`. Nothing in this design, its code or its tests uses what
+  went, so nothing changes here.
+- **2026-11-13:** Iain approved both designs, this one and
+  Ekorn-Pipeline's: "I'm happy with both designs". Task 3 is done.
+  Next, the design is split into roadmap items, and this record's plan
+  is written.
 

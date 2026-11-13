@@ -1,11 +1,9 @@
 # DBIx::Squirrel on Ekorn as it is: the design
 
-**Status:** a draft for review, from task 3 in `TODO.md`, with its
-decisions in [record 2026-0013](../changes/2026-0013-one-design.md).
-It waits on Iain's approval, together with Ekorn-Pipeline's design,
-before either is split into roadmap items. Iain has read it, and likes
-it (2026-11-12); his approval waits on his review of Ekorn-Pipeline's
-design, the bigger one. Its questions are numbered
+**Status:** approved by Iain on 2026-11-13, together with
+Ekorn-Pipeline's design, from task 3 in `TODO.md`, with its decisions
+in [record 2026-0013](../changes/2026-0013-one-design.md). Next, it's
+split into roadmap items. Its questions are numbered
 **Q1** and on, in section 13, and all are settled.
 
 **Read with:** Ekorn-Pipeline's design, `docs/design/DESIGN.md` on its
