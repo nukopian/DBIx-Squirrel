@@ -1101,7 +1101,7 @@ and one more, name C<:DEFAULT> too:
 
 B<Exported by default:> C<take($n)>, C<drop($n)>
 
-B<On request:> C<take_first>, C<take_last>, C<take_single>, C<take_while { ... }>, C<drop_while { ... }>
+B<On request:> C<take_first>, C<take_last>, C<take_single>, C<take_while { ... }>, C<drop_while { ... }>, C<take_if { ... }>, C<drop_if { ... }>
 
 =item C<DBIx::Squirrel::Stages::Rows>
 
@@ -1304,9 +1304,17 @@ Passes on values while the block is true of them. At the first it's false of, it
 
 Drops values while the block is true of them, then passes on the rest, from the first it's false of.
 
+=item C<take_if { ... }>
+
+Passes on each value the block is true of, testing every one, as C<grep> does; it never stops the run.
+
+=item C<drop_if { ... }>
+
+Passes on each value the block is false of, testing every one.
+
 =back
 
-    use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while take_last);
+    use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while take_last take_if);
 
     my @page = $dbh->iterate('SELECT name FROM track ORDER BY id', sub { $_->[0] }, drop(2), take(2))->all;
     say join ', ', @page;    # Girls & Boys, Parklife
@@ -1316,6 +1324,9 @@ Drops values while the block is true of them, then passes on the rest, from the 
 
     my @newest = $dbh->iterate('SELECT title FROM album ORDER BY year', take_last, sub { $_->[0] })->all;
     say "@newest";    # The Great Escape
+
+    my @popular = $dbh->iterate('SELECT name, plays FROM track ORDER BY id', take_if { $_->[1] > 6000 }, sub { $_->[0] })->all;
+    say join ', ', @popular;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
 
 In SQL, C<LIMIT> and C<OFFSET> page results in the database, which is
 quicker. C<take> and C<drop> are for when a stage in Perl decides which
@@ -2410,7 +2421,7 @@ Something passed as a stage to a pipeline, C<pipe> or C<tap> wasn't one. No stag
 
 =item C<Expected a code reference>
 
-The block given to C<gather>, C<take_while>, C<drop_while>, C<collect> or C<peek>, or the source given to a pipeline's C<iterator>, wasn't a code reference.
+The block given to C<gather>, C<take_while>, C<drop_while>, C<take_if>, C<drop_if>, C<collect> or C<peek>, or the source given to a pipeline's C<iterator>, wasn't a code reference.
 
 =item C<Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end>
 
@@ -2986,7 +2997,7 @@ Exports Ekorn::Pipeline's C<gather>, which makes a stage afresh for each run.
 
 =item C<DBIx::Squirrel::Stages::Flow>
 
-Canned stages taking or dropping values: C<take>, C<drop>, C<take_first>, C<take_last>, C<take_single>, C<take_while>, C<drop_while>.
+Canned stages taking or dropping values: C<take>, C<drop>, C<take_first>, C<take_last>, C<take_single>, C<take_while>, C<drop_while>, C<take_if>, C<drop_if>.
 
 =item C<DBIx::Squirrel::Stages::Rows>
 

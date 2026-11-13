@@ -786,8 +786,12 @@ my @hits = $dbh->iterate(
 say join ', ', @hits;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
 ```
 
-That's a filter in Perl. When the database can do it, in a `WHERE`, let
-it: it's quicker, and fewer rows cross the wire. A stage is for what
+That's a filter in Perl, and `take_if`, from
+DBIx::Squirrel::Stages::Flow, says the same in a word:
+`take_if { $_->[1] >= 6000 }` passes on each row its block is true of,
+and `drop_if` each it's false of
+([chapter 6](#keep-or-drop-rows-by-a-test)). When the database can do
+it, in a `WHERE`, let it: it's quicker, and fewer rows cross the wire. A stage is for what
 SQL can't say, or can't say well: a regular expression, a lookup in a
 hash, a call to some other code.
 
@@ -970,6 +974,29 @@ say for @page;
 # Knowing Me, Knowing You
 # Girls & Boys
 ```
+
+### Keep or drop rows by a test
+
+`take_if` passes on each value its block is true of, and `drop_if`
+each it's false of. They test every value, as Perl's `grep` does, and
+never stop the run, unlike `take_while`, which stops at the first value
+its test fails:
+
+```perl
+use DBIx::Squirrel::Stages::Flow qw(take_if drop_if take_while);
+
+my @popular = $dbh->iterate('SELECT name, plays FROM track ORDER BY id', take_if { $_->[1] > 6000 }, sub { $_->[0] })->all;
+say join ', ', @popular;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
+
+my @quiet = $dbh->iterate('SELECT name, plays FROM track ORDER BY id', drop_if { $_->[1] > 6000 }, sub { $_->[0] })->all;
+say join ', ', @quiet;    # Knowing Me, Knowing You, Parklife, Country House
+
+my @until = $dbh->iterate('SELECT name, plays FROM track ORDER BY id', take_while { $_->[1] > 6000 }, sub { $_->[0] })->all;
+say join ', ', @until;    # Dancing Queen
+```
+
+The last stops at Knowing Me, Knowing You, the first track that fails
+its test, so the tracks after it are never fetched.
 
 ### Take while a test holds, or skip until it fails
 

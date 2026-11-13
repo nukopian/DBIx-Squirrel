@@ -132,7 +132,9 @@ subtest 'the facades follow Ekorn::Pipeline' => sub {
         'Stages::Batch' => [[qw(batch collect)], []],
         'Stages::Flow'  => [
             [qw(take drop)],
-            [qw(take_first take_last take_single take_while drop_while)],
+            [
+                qw(take_first take_last take_single take_while drop_while take_if drop_if)
+            ],
         ],
         'Stages::Taps' => [[qw(peek count_into)], [qw(dump_to)]],
     );

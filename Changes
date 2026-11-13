@@ -83,6 +83,9 @@ Unreleased
       would give, so the stages after it go on. take_single warns at a
       second value, for a SELECT that forgot LIMIT 1. They're
       Ekorn::Pipeline's, which must have them.
+    - take_if and drop_if, from DBIx::Squirrel::Stages::Flow on
+      request: each passes on the values its block is true, or false,
+      of, testing every one, as grep does. They're Ekorn::Pipeline's.
     - A gather's block returns the stage, and optionally a flush and an
       end, as Ekorn::Pipeline v0.3.0 has them. The flush is what was
       called the end function. The end, new, is called once the run has

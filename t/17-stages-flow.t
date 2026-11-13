@@ -6,7 +6,7 @@ use DBIx::Squirrel;
 use Ekorn::Pipeline              qw();
 use DBIx::Squirrel::Stages::Flow qw(
     :DEFAULT   take_first take_last take_single
-    take_while drop_while);
+    take_while drop_while take_if   drop_if);
 use DBIx::Squirrel::Sugar qw(database statement);
 
 my $class = 'Ekorn::Pipeline';
@@ -31,19 +31,22 @@ subtest 'what is exported' => sub {
         use DBIx::Squirrel::Stages::Flow;
         ::ok __PACKAGE__->can($_), "$_ by default" for qw(take drop);
         ::ok !__PACKAGE__->can($_), "not $_"
-            for qw(take_first take_last take_single take_while drop_while);
+            for qw(take_first take_last take_single take_while drop_while take_if
+                drop_if);
     }
 
     package All {         ## no critic (Modules::ProhibitMultiplePackages)
         use DBIx::Squirrel::Stages::Flow qw(:all);
         ::ok __PACKAGE__->can($_), "$_ with :all"
-            for qw(take drop take_first take_last take_single take_while drop_while);
+            for qw(take drop take_first take_last take_single take_while drop_while
+            take_if drop_if);
     }
 
     package None {        ## no critic (Modules::ProhibitMultiplePackages)
         use DBIx::Squirrel::Stages::Flow ();
         ::ok !__PACKAGE__->can($_), "not $_ with ()"
-            for qw(take drop take_first take_last take_single take_while drop_while);
+            for qw(take drop take_first take_last take_single take_while drop_while
+            take_if drop_if);
     }
 };
 
@@ -141,6 +144,26 @@ subtest 'drop_while' => sub {
     is [$p->(1, 4, 1)],   [4, 1],       'starting afresh on each run';
 };
 
+subtest 'take_if and drop_if' => sub {
+    my @seen;
+    my $p = $class->new(take_if { push @seen, $_; $_ % 2 });
+    is [$p->(1 .. 5)], [1, 3, 5], 'take_if, each value its block is true of';
+    is \@seen,         [1 .. 5],  'testing every one, stopping at none';
+    is [$class->new(drop_if { $_ % 2 })->(1 .. 5)], [2, 4],
+        "drop_if, each it's false of";
+
+    my $dbh
+        = DBIx::Squirrel->connect('dbi:SQLite:dbname=:memory:', {RaiseError => 1});
+    $dbh->do('CREATE TABLE n (id INTEGER)');
+    $dbh->do('INSERT INTO n VALUES (?)', $_) for 1 .. 6;
+    is [
+        $dbh->iterate(
+            'SELECT id FROM n ORDER BY id', take_if { $_->[0] > 4 }, sub { $_->[0] }
+        )->all
+        ],
+        [5, 6], 'over rows';
+};
+
 subtest 'counts are checked when the stage is made' => sub {
     for my $bad (-1, 1.5, 'x', '', undef) {
         my $shown = $bad // 'undef';
@@ -152,7 +175,7 @@ subtest 'counts are checked when the stage is made' => sub {
         }
     }
     # Past the prototype, as nothing else can give them anything but code
-    for my $fn (\&take_while, \&drop_while) {
+    for my $fn (\&take_while, \&drop_while, \&take_if, \&drop_if) {
         my $line = __LINE__ + 1;
         is dies { $fn->('x') },
             "Expected a code reference at ${\ __FILE__ } line $line.\n",

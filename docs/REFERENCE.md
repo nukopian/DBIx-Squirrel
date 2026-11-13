@@ -890,7 +890,7 @@ use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while);
 
 | Module | Exported by default | On request |
 |---|---|---|
-| `DBIx::Squirrel::Stages::Flow` | `take($n)`, `drop($n)` | `take_first`, `take_last`, `take_single`, `take_while { ... }`, `drop_while { ... }` |
+| `DBIx::Squirrel::Stages::Flow` | `take($n)`, `drop($n)` | `take_first`, `take_last`, `take_single`, `take_while { ... }`, `drop_while { ... }`, `take_if { ... }`, `drop_if { ... }` |
 | `DBIx::Squirrel::Stages::Rows` | `pluck($column)`, `as_hash` | |
 | `DBIx::Squirrel::Stages::Batch` | `batch($n)`, `collect`, `collect { ... }` | |
 | `DBIx::Squirrel::Stages::Taps` | `peek { ... }`, `count_into(\$n)` | `dump_to($fh)` |
@@ -1039,9 +1039,11 @@ their place or by a test:
 | `take_single` | Passes on the one value. At a second, it warns, `Expected only one item, but there were more`, and stops the run, so only the first goes on. |
 | `take_while { ... }` | Passes on values while the block is true of them. At the first it's false of, it stops the run, and doesn't pass that value on. |
 | `drop_while { ... }` | Drops values while the block is true of them, then passes on the rest, from the first it's false of. |
+| `take_if { ... }` | Passes on each value the block is true of, testing every one, as `grep` does; it never stops the run. |
+| `drop_if { ... }` | Passes on each value the block is false of, testing every one. |
 
 ```perl
-use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while take_last);
+use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while take_last take_if);
 
 my @page = $dbh->iterate('SELECT name FROM track ORDER BY id', sub { $_->[0] }, drop(2), take(2))->all;
 say join ', ', @page;    # Girls & Boys, Parklife
@@ -1051,6 +1053,9 @@ say join ', ', @hits;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
 
 my @newest = $dbh->iterate('SELECT title FROM album ORDER BY year', take_last, sub { $_->[0] })->all;
 say "@newest";    # The Great Escape
+
+my @popular = $dbh->iterate('SELECT name, plays FROM track ORDER BY id', take_if { $_->[1] > 6000 }, sub { $_->[0] })->all;
+say join ', ', @popular;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
 ```
 
 In SQL, `LIMIT` and `OFFSET` page results in the database, which is
@@ -2014,7 +2019,7 @@ line. Those starting "Expected" say what was expected.
 | Message | Cause |
 |---|---|
 | `Expected stage #%d to be a code reference or a pipeline` | Something passed as a stage to a pipeline, `pipe` or `tap` wasn't one. No stage runs. |
-| `Expected a code reference` | The block given to `gather`, `take_while`, `drop_while`, `collect` or `peek`, or the source given to a pipeline's `iterator`, wasn't a code reference. |
+| `Expected a code reference` | The block given to `gather`, `take_while`, `drop_while`, `take_if`, `drop_if`, `collect` or `peek`, or the source given to a pipeline's `iterator`, wasn't a code reference. |
 | `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end` | The block given to `gather` for that stage returned something else. |
 | `Pipeline stage #%s failed at %s line %d:` | A stage, or its flush, died. The message it died with follows, indented. See [When a stage dies](#when-a-stage-dies). |
 | `Pipeline end of stage #%s failed at %s line %d:` | A stage's end died, in a run that hadn't died already. |
@@ -2233,7 +2238,7 @@ distributions of their own.
 | `DBIx::Squirrel::Result` | The base class of row objects. |
 | `DBIx::Squirrel::Stop` | Exports Ekorn::Pipeline's `Stop`, which ends a pipeline early. |
 | `DBIx::Squirrel::Gather` | Exports Ekorn::Pipeline's `gather`, which makes a stage afresh for each run. |
-| `DBIx::Squirrel::Stages::Flow` | Canned stages taking or dropping values: `take`, `drop`, `take_first`, `take_last`, `take_single`, `take_while`, `drop_while`. |
+| `DBIx::Squirrel::Stages::Flow` | Canned stages taking or dropping values: `take`, `drop`, `take_first`, `take_last`, `take_single`, `take_while`, `drop_while`, `take_if`, `drop_if`. |
 | `DBIx::Squirrel::Stages::Rows` | Canned stages reshaping rows: `pluck`, `as_hash`. |
 | `DBIx::Squirrel::Stages::Batch` | Canned stages gathering values: `batch`, `collect`. |
 | `DBIx::Squirrel::Stages::Taps` | Canned stages run for their side effects: `peek`, `count_into`, `dump_to`. |
