@@ -28,6 +28,19 @@ and the containers `to_fh` and `to_file`. Any of the six can come
 back as an item of its own; if you need one, ask. Ekorn's design has
 it in 17.35.
 
+## From Ekorn-Pipeline, 2026-11-13: four designed sources dropped
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+2c7941523aed748e5a8403c5fe01c562fdab45a2, on its branch
+`pipeline-experimental`)
+
+As 2026-0022's D67, Iain dropped `unfold`, `cycle`, `concat` and
+`interleave` from Ekorn's sources. None was built, so nothing you use
+goes; where your design plans on them, they're no longer in Ekorn's.
+Its sources are the `from_` ones and `counter`. Any of the four can
+come back as an item of its own; if you need one, ask. Ekorn's design
+has it in 17.36.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
