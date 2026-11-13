@@ -13,6 +13,21 @@ says what it means where it's written, where `== 2` needs the reader
 to know what 2 stands for. Its false answer stays `!!0`. Nothing
 changes for you beyond D64's rename.
 
+## From Ekorn-Pipeline, 2026-11-13: six designed sinks set aside, for now
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+f429d4777d6a10f04c515547644d6019354488d1, on its branch
+`pipeline-experimental`)
+
+As 2026-0022's D66, Iain set aside `any_item`, `every_item`, `fold`,
+`joined`, `group_by` and `for_each` "for now". None was built, so
+nothing you use goes; but where your design plans on them, they're no
+longer in Ekorn's. Its sinks are the `keep` family (`keep_all`,
+`keep(N)`, `keep_first`, `keep_last`, `keep_single`), `count_items`,
+and the containers `to_fh` and `to_file`. Any of the six can come
+back as an item of its own; if you need one, ask. Ekorn's design has
+it in 17.35.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
