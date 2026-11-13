@@ -11,13 +11,22 @@ Unreleased
     Pipeline and Pipes modules are gone, and a Sugar statement's
     definition can name Ekorn's named pipelines.
     DBIx::Squirrel::Stages::Flow passes on three more of Ekorn's
-    stages, and a gather has a flush and an end. This is work towards
-    v3.0.0, on the pipeline-experimental branch (roadmap 2026-0014 to
-    2026-0018), and breaks code that uses count, relies on single
-    croaking, takes a gather for a code reference, reads a Sugar
-    statement given stages as a list or a count, or uses
-    DBIx::Squirrel::Pipeline.
+    stages, and a gather has a flush and an end.
+    DBIx::Squirrel::Tooling exports every stage, sink and word a caller
+    uses, from one module (roadmap 2026-0025). This is work towards
+    v3.0.0 (roadmap 2026-0014 to 2026-0018), and breaks code that uses
+    count, relies on single croaking, takes a gather for a code
+    reference, reads a Sugar statement given stages as a list or a
+    count, or uses DBIx::Squirrel::Pipeline.
 
+    - DBIx::Squirrel::Tooling, new: everything a caller uses to do
+      work, from one module, by Ekorn::Pipeline::Tooling's tags, :core,
+      :flow, :batch, :taps, :stages, :sources, :sinks, :words and :all,
+      with :rows (pluck, as_hash) and :context (iterator,
+      result_number, result_original) besides, :stages including
+      :rows. It exports nothing by default. Where DBIx::Squirrel and
+      Ekorn::Pipeline both export a name, it's DBIx::Squirrel's, which
+      today is the same sub (roadmap 2026-0025).
     - An iterator is a source, which a pipeline of Ekorn::Pipeline's can
       read, passing on the statement's columns as the run's context. Its
       stages are run by Ekorn::Pipeline.
