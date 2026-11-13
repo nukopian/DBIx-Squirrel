@@ -1656,7 +1656,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected stage #%d to be a code reference or a pipeline` | Something passed as a stage wasn't a code reference or a pipeline. No stage runs. |
 | `Expected a code reference` | The source given to a pipeline's `iterator`, or the block given to `gather`, wasn't a code reference. |
 | `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end` | The block given to `gather` for that stage returned something else. |
-| `Pipeline stage #%s failed at %s line %d:` | A stage, or its flush, died. The message it died with follows, indented. A stage inside a pipeline given as a stage is named `#2.3`, for the third stage of the pipeline given as stage #2. A stage of a named pipeline is named by its name and its place there too: `#2.1.2 (main::fussy#2)`, for the second stage of `fussy`, named in a statement's definition as its second stage. |
+| `Pipeline stage #%s failed at %s line %d:` | A stage, or its flush, died. The message it died with follows, indented. A stage inside a pipeline given as a stage is named `#2.3`, for the third stage of the pipeline given as stage #2. A stage of a named pipeline is named by its name and its place there too: `#2.2 (main::fussy#2)`, for the second stage of `fussy`, named in a statement's definition as its second stage. |
 | `Stop used outside a pipeline` | `Stop` was called where no pipeline was running to catch it. |
 
 ### Canned stages

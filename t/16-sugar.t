@@ -371,7 +371,7 @@ subtest "a named pipeline's stage that dies is named" => sub {
     );
     my $line = __LINE__ + 1;
     is dies { fussy_names(keep_all) },
-        "Pipeline stage #2.1.2 (main::fussy#2) failed at ${\ __FILE__ } line $line:\n"
+        "Pipeline stage #2.2 (main::fussy#2) failed at ${\ __FILE__ } line $line:\n"
         . "    no names today\n",
         'by its place, and by its name and its place there';
 };
