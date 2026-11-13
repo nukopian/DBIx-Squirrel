@@ -29,7 +29,7 @@ sub result_number : prototype() () {
 }
 
 # The row the result is being made from, as it was fetched; undef for a
-# result an end function is making, which comes from every row.
+# result a flush is making, which comes from every row.
 sub result_original : prototype() () {
     my $iterator = $context{iterator};
     return $iterator && !Ekorn::Pipeline::ending()
@@ -87,9 +87,9 @@ number of the first value the end returns.
 =head2 result_original
 
 The row the result is being made from, as it was fetched, before any
-stage changed it. In an end function of a stage made with
+stage changed it. In a flush of a stage made with
 L<DBIx::Squirrel::Gather>, and the stages after it, it's C<undef>. What
-an end gives comes from every row, not one.
+a flush gives comes from every row, not one.
 
 =head2 within
 

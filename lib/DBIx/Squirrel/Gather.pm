@@ -49,17 +49,19 @@ stay, so code written with it keeps working.
 C<gather> makes a stage afresh at the start of each run of a pipeline:
 each execution of an iterator or result set, and each call of a Sugar
 statement or of a pipeline itself. Its block returns the stage, which
-can be a pipeline, and optionally an end function. The end is called
-once the values have run out, and what it returns goes through the
-rest of the stages.
+can be a pipeline, and optionally a flush and an end. The flush is
+called once the values have run out, and what it returns goes through
+the rest of the stages. The end is called once the run has ended, and
+told how: C<done>, C<stopped> or C<died>.
 
-The stage it makes is an Ekorn::Pipeline::Gather, which is what a
-pipeline looks for. So check for that class, not this one.
+The stage it makes is an Ekorn::Pipeline::Gather, an object that can
+go wherever a stage can. To test for one, test for that class, not
+this one.
 
-Inside an end function, and the stages it sends values to,
+Inside a flush, and the stages it sends values to,
 L<DBIx::Squirrel::Context/result_number> is the number of the result
 being made, as in any stage. L<DBIx::Squirrel::Context/result_original>
-is C<undef>, as what an end gives comes from many rows, not one.
+is C<undef>, as what a flush gives comes from many rows, not one.
 
 To keep C<gather> out of your namespace:
 

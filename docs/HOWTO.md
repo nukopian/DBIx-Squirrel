@@ -925,7 +925,7 @@ still gives a value: here, an empty string, or an empty array.
 `batch` and `collect` are made with `gather`, from
 DBIx::Squirrel::Gather. Its block is called each time the statement
 runs, so what it declares starts afresh. It returns the stage, and
-optionally an end function, called when the rows run out:
+optionally a flush, called when the rows run out:
 
 ```perl
 use DBIx::Squirrel::Gather;
@@ -935,8 +935,8 @@ sub and_count () {
     return gather {
         my $count = 0;    # fresh on each run
         my $stage = sub ($value) { $count++; return $value };
-        my $end   = sub () { "($count)" };
-        return ($stage, $end);
+        my $flush = sub () { "($count)" };
+        return ($stage, $flush);
     };
 }
 
@@ -1468,10 +1468,10 @@ Two things settle the cases in between:
   modules of stages export Ekorn's by name, from a list of their own.
   Until then, use it from its own module.
 
-Either way, a stage is built from the same parts: `gather` for state
-and an end, `Stop` to end early, and `croakf` to report mistakes at
-the caller's line. Under `Ekorn::Pipeline::Stages::`, take them from
-Ekorn::Pipeline's own modules, so the stage needs nothing of
+Either way, a stage is built from the same parts: `gather` for state,
+a flush and an end, `Stop` to end early, and `croakf` to report
+mistakes at the caller's line. Under `Ekorn::Pipeline::Stages::`, take
+them from Ekorn::Pipeline's own modules, so the stage needs nothing of
 DBIx::Squirrel.
 
 ### Write a function that makes a stage

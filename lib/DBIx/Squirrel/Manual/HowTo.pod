@@ -878,7 +878,7 @@ still gives a value: here, an empty string, or an empty array.
 C<batch> and C<collect> are made with C<gather>, from
 DBIx::Squirrel::Gather. Its block is called each time the statement
 runs, so what it declares starts afresh. It returns the stage, and
-optionally an end function, called when the rows run out:
+optionally a flush, called when the rows run out:
 
     use DBIx::Squirrel::Gather;
 
@@ -887,8 +887,8 @@ optionally an end function, called when the rows run out:
         return gather {
             my $count = 0;    # fresh on each run
             my $stage = sub ($value) { $count++; return $value };
-            my $end   = sub () { "($count)" };
-            return ($stage, $end);
+            my $flush = sub () { "($count)" };
+            return ($stage, $flush);
         };
     }
 
@@ -1375,10 +1375,10 @@ Until then, use it from its own module.
 
 =back
 
-Either way, a stage is built from the same parts: C<gather> for state
-and an end, C<Stop> to end early, and C<croakf> to report mistakes at
-the caller's line. Under C<Ekorn::Pipeline::Stages::>, take them from
-Ekorn::Pipeline's own modules, so the stage needs nothing of
+Either way, a stage is built from the same parts: C<gather> for state,
+a flush and an end, C<Stop> to end early, and C<croakf> to report
+mistakes at the caller's line. Under C<Ekorn::Pipeline::Stages::>, take
+them from Ekorn::Pipeline's own modules, so the stage needs nothing of
 DBIx::Squirrel.
 
 =head2 Write a function that makes a stage

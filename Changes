@@ -3,10 +3,11 @@ Revision history for DBIx-Squirrel
 Unreleased
 
     An iterator is a source for Ekorn::Pipeline, reading only as many
-    rows as it needs, and DBIx::Squirrel::Stages::Flow passes on three
-    more of Ekorn's stages. This is work towards v3.0.0, on the
-    pipeline-experimental branch (roadmap 2026-0013), and breaks code
-    that uses count, or relies on single croaking.
+    rows as it needs, DBIx::Squirrel::Stages::Flow passes on three more
+    of Ekorn's stages, and a gather has a flush and an end. This is
+    work towards v3.0.0, on the pipeline-experimental branch (roadmap
+    2026-0014), and breaks code that uses count, relies on single
+    croaking, or takes a gather for a code reference.
 
     - An iterator is a source, which a pipeline of Ekorn::Pipeline's can
       read, passing on the statement's columns as the run's context. Its
@@ -28,6 +29,15 @@ Unreleased
       would give, so the stages after it go on. take_single warns at a
       second value, for a SELECT that forgot LIMIT 1. They're
       Ekorn::Pipeline's, which must have them.
+    - A gather's block returns the stage, and optionally a flush and an
+      end, as Ekorn::Pipeline v0.3.0 has them. The flush is what was
+      called the end function. The end, new, is called once the run has
+      ended, told how: done, stopped or died. A block returning
+      anything else croaks "Expected stage #%s, made with gather, to
+      return a code reference or a pipeline, and optionally a flush and
+      an end".
+    - A stage made with gather is an object that can go wherever a
+      stage can, and no longer a code reference.
 
 v2.1.0 2026-11-10
 

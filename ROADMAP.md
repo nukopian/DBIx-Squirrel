@@ -107,7 +107,9 @@ design's section 8 has it (Ekorn's D36). It replaces 2026-0010, a
 `pipeline` key of the Sugar's own. Why: names are Ekorn's, so the Sugar
 uses them rather than defining pipelines itself. Done when: a
 definition's names resolve, a string given when a statement is called
-stays a bind value, and the docs show it.
+stays a bind value, and the docs show it, the reference's entry for
+"Pipeline stage #%s failed" with the name of a named pipeline (Ekorn's
+2026-0013).
 
 ### 2026-0019. DBIx::Squirrel v3.0.0
 

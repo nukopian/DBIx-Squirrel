@@ -963,7 +963,7 @@ Once a stage dies, its run has ended. An iterator then returns nothing
 more, whether it's a pipeline's `iterator` or one that `iterate` or
 `results` returns. `next` returns an empty list on every call after,
 and `all` returns nothing. No more values are taken from its source,
-and no end function is called. A statement's handle is finished, so no
+and no flush is called. A statement's handle is finished, so no
 more rows are fetched. `reset` runs the statement again, from the
 start. To pass over a value a stage can't handle, the stage catches
 its own error and returns nothing for it, as
@@ -981,7 +981,7 @@ A stage can end a pipeline early and quietly by calling `Stop`:
 An iterator that's stopped finishes its statement. Stages after the
 one that stopped, made with
 [`gather`](#gathering-stages-with-state-and-an-end), still have their
-end functions called.
+flushes called.
 
 ```perl
 use DBIx::Squirrel::Stop;
@@ -1037,7 +1037,7 @@ sub ($row) {
 A stage can't tell when the last value has gone by. And whatever a
 closure keeps stays there from one run of the pipeline to the next.
 `gather` makes a stage that has both: state of its own on each run,
-and an end function, called once the values run out.
+and a flush, called once the values run out.
 
 ```perl
 use DBIx::Squirrel::Gather;
@@ -1050,8 +1050,8 @@ sub batches_of ($size) {
             push @batch, $row;
             return @batch == $size ? [splice @batch] : ();
         };
-        my $end = sub () { @batch ? [@batch] : () };
-        return ($stage, $end);
+        my $flush = sub () { @batch ? [@batch] : () };
+        return ($stage, $flush);
     };
 }
 
@@ -1066,23 +1066,29 @@ The block given to `gather` is called at the start of each run, so
 whatever it declares is fresh each time. A run is each execution of an
 iterator or result set, including after `reset`, each call of a Sugar
 statement, and each call of a pipeline. The block returns the stage,
-which is called with each value as any stage is, and optionally an end
-function. Make any stage that keeps state, even a count, with
+which is called with each value as any stage is, and optionally a
+flush and an end. Make any stage that keeps state, even a count, with
 `gather`, so that it starts afresh.
 
-The end function is called once the values run out, even when there
-were none. What it returns goes through the rest of the stages, as
-what a stage returns does. After a [stop](#stopping-a-pipeline), only
-the ends of the stages after the one that stopped are called. Ekorn's
-reference gives the order the ends are called in, in
-[End functions](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#end-functions).
+The flush is called once the values run out, even when there were
+none. What it returns goes through the rest of the stages, as what a
+stage returns does. After a [stop](#stopping-a-pipeline), only the
+flushes of the stages after the one that stopped are called.
+
+The end is called once the run has ended, however it ended, and is
+told how: `done`, `stopped` or `died`. An iterator's run is `done`
+once its rows run out, and `stopped` when `first` or `single` finishes
+it. What the end returns is dropped. For an end without a flush,
+return `undef` in the flush's place. Ekorn's reference gives the
+order flushes and ends are called in, in
+[Flushes and ends](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#flushes-and-ends).
 It also says what the block must return, in
 [gather](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#gather).
 
 The stage the block returns can be a pipeline. Its stages are made for
 the run in its place, so the block can build a pipeline for each run,
-or choose one. The block's end function, if any, is called after the
-ends of the pipeline's stages.
+or choose one. The block's flush and end, if any, are called after
+those of the pipeline's stages.
 
 ```perl
 my $two = $dbh->iterate(
@@ -1094,9 +1100,9 @@ my $two = $dbh->iterate(
 );
 ```
 
-A stage made with `gather` is an `Ekorn::Pipeline::Gather`, which is a
-code reference, so it can be given wherever a stage can. `gather` is
-exported by default. To keep it out of your namespace:
+A stage made with `gather` is an `Ekorn::Pipeline::Gather`, an object
+that can go wherever a stage can. `gather` is exported by default. To
+keep it out of your namespace:
 
 ```perl
 use DBIx::Squirrel::Gather ();
@@ -1121,8 +1127,8 @@ my $it = $dbh->iterate(
 | Function | Returns |
 |---|---|
 | `iterator` | The iterator running the stage. Its `sth` is the statement handle, and the statement handle's `Database` is the database handle. |
-| `result_number` | The number of the result being made, from 1. It counts results, not rows. While a stage drops rows, the number stays the same. Each value a stage returns in place of one row is a result of its own. In an end function, it's the number of the first value the end returns. |
-| `result_original` | The row the result is being made from, as it was fetched, before any stage changed it. For a result set, it's the row object. In an [end function](#gathering-stages-with-state-and-an-end), and the stages after it, it's `undef`. What an end gives comes from every row, not one. |
+| `result_number` | The number of the result being made, from 1. It counts results, not rows. While a stage drops rows, the number stays the same. Each value a stage returns in place of one row is a result of its own. In a flush, it's the number of the first value the flush returns. |
+| `result_original` | The row the result is being made from, as it was fetched, before any stage changed it. For a result set, it's the row object. In a [flush](#gathering-stages-with-state-and-an-end), and the stages after it, it's `undef`. What a flush gives comes from every row, not one. |
 
 ## pipe and tap on handles
 
@@ -1551,8 +1557,8 @@ caller's line. Those starting "Expected" say what was expected.
 |---|---|
 | `Expected stage #%d to be a code reference or a pipeline` | Something passed as a stage wasn't a code reference or a pipeline. No stage runs. |
 | `Expected a code reference` | The source given to a pipeline's `iterator`, or the block given to `gather`, wasn't a code reference. |
-| `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally an end function` | The block given to `gather` for that stage returned something else. |
-| `Pipeline stage #%s failed at %s line %d:` | A stage, or its end function, died. The message it died with follows, indented. A stage inside a pipeline given as a stage is named `#2.3`, for the third stage of the pipeline given as stage #2. |
+| `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end` | The block given to `gather` for that stage returned something else. |
+| `Pipeline stage #%s failed at %s line %d:` | A stage, or its flush, died. The message it died with follows, indented. A stage inside a pipeline given as a stage is named `#2.3`, for the third stage of the pipeline given as stage #2. |
 | `Stop used outside a pipeline` | `Stop` was called where no pipeline was running to catch it. |
 
 ### Canned stages

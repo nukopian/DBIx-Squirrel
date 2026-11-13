@@ -431,9 +431,10 @@ L<DBIx::Squirrel::Stop> says more, including what a stop carries.
     };
 
 Returns a stage that a pipeline makes afresh for each run, by calling
-the block. The block returns the stage, and optionally an end function.
-The end is called once the values run out, and what it returns goes
-through the rest of the stages. Make a stage this way if it gathers
+the block. The block returns the stage, and optionally a flush and an
+end. The flush is called once the values run out, and what it returns
+goes through the rest of the stages. The end is called once the run
+has ended, and told how. Make a stage this way if it gathers
 values, to give them in batches or as one, or keeps state of any kind.
 L<DBIx::Squirrel::Gather> exports C<gather> by default, and says more,
 including what happens after a stop.
@@ -490,7 +491,7 @@ method you called.
 
 =item Pipeline stage #%s failed at %s line %d:
 
-A stage passed to L</pipe> or L</tap>, or its end function, died. The
+A stage passed to L</pipe> or L</tap>, or its flush, died. The
 message it died with follows, indented. A stage inside a pipeline given
 as a stage is named C<#2.3>, for the third stage of the pipeline given
 as stage #2.
@@ -500,7 +501,7 @@ as stage #2.
 Something passed to L</pipe> or L</tap> wasn't a code reference or a
 pipeline. No stage runs.
 
-=item Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally an end function
+=item Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end
 
 The block given to L</gather> for that stage returned something else.
 

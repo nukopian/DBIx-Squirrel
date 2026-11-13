@@ -18,7 +18,7 @@ my %sections = (
         {'the-pipeline' => 'The pipeline', 'pipe-and-tap' => 'pipe and tap'},
     'HOWTO.md'                           => {'stop-early' => 'Stop early'},
     'Ekorn::Pipeline::Manual::Reference' => {
-        'end-functions'                   => 'End functions',
+        'flushes-and-ends'                => 'Flushes and ends',
         'pipe-and-tap-ekornpipelinepipes' => 'pipe and tap: Ekorn::Pipeline::Pipes',
     },
 );
@@ -119,8 +119,8 @@ subtest 'links to Ekorn::Pipeline, by module name' => sub {
         'to its reference';
     is body("[its how-to]($EKORN/blob/main/docs/HOWTO.md)\n"),
         "L<its how-to|Ekorn::Pipeline::Manual::HowTo>\n\n", 'to its how-to';
-    is body("[ends]($EKORN/blob/main/docs/REFERENCE.md#end-functions)\n"),
-        qq{L<ends|Ekorn::Pipeline::Manual::Reference/"End functions">\n\n},
+    is body("[ends]($EKORN/blob/main/docs/REFERENCE.md#flushes-and-ends)\n"),
+        qq{L<ends|Ekorn::Pipeline::Manual::Reference/"Flushes and ends">\n\n},
         'to a section, by its name';
     is body(
         "[pipe]($EKORN/blob/main/docs/REFERENCE.md#pipe-and-tap-ekornpipelinepipes)\n"),
