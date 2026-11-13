@@ -27,3 +27,31 @@ Protocols and names are settled; a change to one comes to you as a
 message. Your items 2026-0014 to 2026-0019 build against
 `pipeline-experimental` as it stands.
 
+
+# Planned work
+
+## Follow Ekorn's reworded gather message
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+33b7e189c2665bf21e4f3f5c7e671639e0424051, on its branch
+`pipeline-experimental`)
+**Waiting on:** nothing
+
+Ekorn's message for a gather's block that returns the wrong things
+now ends "and optionally a flush and an end", where it ended "and
+optionally an end function" (Ekorn 2026-0014's D1, as Iain decided):
+what v0.2.0 called the end function is the flush, and an end, told
+how the run ended, may follow it. It's part of v0.3.0.
+
+Your copies, on `pipeline-experimental`:
+
+- `t/06-gather.t` line 183, the expected message;
+- `lib/DBIx/Squirrel.pm` lines 434 and 503, and
+  `lib/DBIx/Squirrel/Gather.pm` line 52;
+- `docs/REFERENCE.md` line 1554 and `docs/HOWTO.md` line 928, with the
+  manuals made from them again;
+- `Changes` line 60 (a past entry, which you may leave).
+
+Done when `git grep "optionally an end function"` finds only history
+you mean to keep, and the tests pass against Ekorn's
+`pipeline-experimental`.
