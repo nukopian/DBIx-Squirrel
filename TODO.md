@@ -23,6 +23,24 @@ follows. A change to a protocol, so your sinks need the new names:
 Each name says which kind, so neither is the default, revising D47's
 lists first. Nothing else changes. Ekorn's design has it in 17.34.
 
+## From Ekorn-Pipeline, 2026-11-13: sinks of one and of many, in prose too
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+1b3990a3056a7591ded4a1e0c0b82d2c96dfc851, on its branch
+`pipeline-experimental`)
+
+Following the message before this one, which lists the renamed names
+in the code (2026-0022 D64), Iain has the words follow too: what
+Ekorn's drafts called a scalar sink is a **sink of one**, and a list
+sink a **sink of many**, in prose and in the Role column of the tables
+of sinks, which says `one` or `many`, as `is_sink` now does. A
+possessive is turned around: "the result of a sink of one", not "a
+scalar sink's result".
+
+Your design says "scalar sink" or "list sink" in four places
+(`docs/design/DESIGN.md`), and your record 2026-0013 in six; whether
+yours follows is yours to decide. Ekorn's design has it in 17.34.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
