@@ -183,10 +183,10 @@ sub sth ($self) {
 # An iterator is a source: each run reads the statement afresh, from its
 # first row, through the iterator's stages, passing on the statement's
 # columns as the run's context.
-sub ekorn_source ($self) {
+sub EKORN_SOURCE ($self) {
     local $self->{read_by_pipeline} = 1;
     $self->reset;
-    return $self->{run}->ekorn_source;
+    return $self->{run}->EKORN_SOURCE;
 }
 
 # For the calls taking stages: return the iterator; or, if its last stage
@@ -491,7 +491,7 @@ them through L<DBIx::Squirrel::Context/iterator>.
 Returns the statement handle. It changes if L</reset> prepares a
 statement taking a list again.
 
-=head2 ekorn_source
+=head2 EKORN_SOURCE
 
 An iterator is a source, as L<Ekorn::Pipeline> takes one: a run
 reading it executes the statement again, from its first row, through
@@ -520,7 +520,7 @@ array reference, even in a list assignment:
     my @names = @{ $it | keep_all };  # the names
 
 B<Each use is a run of its own,> from the first row, through the
-iterator's stages, as L</ekorn_source> says. So C<< $it->[0] >>,
+iterator's stages, as L</EKORN_SOURCE> says. So C<< $it->[0] >>,
 C<scalar @$it> and C<$#$it> read every row to give one row, a count
 or an index, and two uses run the statement twice. C<for (@$it)>
 reads every row before the loop starts, where L</next>, in a C<while>,
