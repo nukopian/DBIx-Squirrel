@@ -46,6 +46,8 @@ Unreleased
       the last stage is one of Ekorn::Pipeline::Sinks' sinks:
       keep_all a list, or an array reference for one value;
       count_items, keep_first, keep_last and keep_single their value.
+      result_number counts in the stages before the sink, as it does
+      for all.
     - A Sugar statement, or a database's function, given stages gives
       an iterator, or, with a sink last, the sink's result, in place of
       every result, or how many in scalar context.

@@ -915,8 +915,9 @@ or result set's own stages, and the stages of a chain made with `|`, or
 of a pipeline of yours, reading one, as it's read from the
 [run's context](#the-runs-context). `result_number` and `iterator`
 work only in an iterator's or result set's own stages, run by its
-`next`, `all`, `first` or `single`. Elsewhere, and outside a stage,
-they return `undef`.
+`next`, `all`, `first` or `single`, or by a sink given last to the
+call that made it. Elsewhere, and outside a stage, they return
+`undef`.
 
 ```perl
 my @chart = $dbh->iterate(

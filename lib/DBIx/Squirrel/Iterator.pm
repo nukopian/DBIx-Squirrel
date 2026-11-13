@@ -148,13 +148,14 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     @$self{keys %fresh} = values %fresh;
     # The source's set-up executes the statement, as the run starts. The
     # stages, if any, are followed by one counting the results, for
-    # DBIx::Squirrel::Context, unless the last is a sink, whose result is
-    # the run's.
+    # DBIx::Squirrel::Context: before the last, if it's a sink, whose
+    # result is the run's, so its results are counted too.
     my @counted = @{ $self->{stages} };
-    if (@counted && !Ekorn::Pipeline::is_sink($counted[-1])) {
+    if (@counted) {
         my $counter = $self;
         weaken $counter;
-        push @counted, sub ($result) { $counter->{produced}++; $result };
+        my $at = Ekorn::Pipeline::is_sink($counted[-1]) ? $#counted : @counted;
+        splice @counted, $at, 0, sub ($result) { $counter->{produced}++; $result };
     }
     $self->{run} = Ekorn::Pipeline->new(@counted)->iterator(_statement($self));
     # The run's code reference, taken once, as Ekorn's iterator suggests

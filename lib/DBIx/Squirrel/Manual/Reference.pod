@@ -1197,8 +1197,9 @@ or result set's own stages, and the stages of a chain made with C<|>, or
 of a pipeline of yours, reading one, as it's read from the
 L<run's context|/"The run's context">. C<result_number> and C<iterator>
 work only in an iterator's or result set's own stages, run by its
-C<next>, C<all>, C<first> or C<single>. Elsewhere, and outside a stage,
-they return C<undef>.
+C<next>, C<all>, C<first> or C<single>, or by a sink given last to the
+call that made it. Elsewhere, and outside a stage, they return
+C<undef>.
 
     my @chart = $dbh->iterate(
         'SELECT name, plays FROM track ORDER BY plays DESC',

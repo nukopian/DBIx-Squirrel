@@ -175,7 +175,8 @@ subtest ':all, its parts working together on a statement' => sub {
                 $sql,
                 drop_if { $_->[2] < 1000 },
                 stage { result_number() . ' ' . result_original()->[1] },
-            )->all;
+                keep_all,
+            );
         }
 
 
@@ -193,7 +194,7 @@ subtest ':all, its parts working together on a statement' => sub {
     }
     is [Tooling::All::numbered($dbh, $sql)],
         ['1 Waterloo', '2 Parklife', '3 Badge'],
-        'stages and the context';
+        'stages, the context and a sink';
     is Tooling::All::until_badge($dbh, $sql), 2, 'Stop';
     is Tooling::All::pairs($dbh, $sql),       2, 'batch';
 };

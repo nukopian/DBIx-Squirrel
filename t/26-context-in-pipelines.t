@@ -7,8 +7,8 @@ use DBIx::Squirrel::Context      qw(iterator result_number result_original);
 use DBIx::Squirrel::Stages::Rows qw(as_hash  pluck);
 use Ekorn::Pipeline              qw();
 use Ekorn::Pipeline::Operators;
-use Ekorn::Pipeline::Sinks         qw(keep_all);
-use Ekorn::Pipeline::Sources       qw(from_array);
+use Ekorn::Pipeline::Sinks   qw(keep_all keep_first keep_last count_items);
+use Ekorn::Pipeline::Sources qw(from_array);
 use Ekorn::Pipeline::Stages::Batch qw(collect);
 
 # What a stage may ask, wherever a statement is read: through | and in
@@ -64,6 +64,31 @@ subtest "result_number and iterator are only the iterator's" => sub {
     my $it = $dbh->iterate($sql, $asked);
     is [$it->all], [map { [$_, exact_ref($it)] } 1 .. 3],
         "as before, in the iterator's own stages";
+};
+
+subtest 'result_number and iterator, with a sink given last' => sub {
+    my $numbered = sub { result_number . " $_->[1]" };
+    is [$dbh->iterate($sql, $numbered, keep_all)],
+        ['1 Abba', '2 Blur', '3 Cream'],
+        'keep_all, counting as all does';
+    is [$dbh->results($sql, sub { result_number . ' ' . $_->name }, keep_all)],
+        ['1 Abba', '2 Blur', '3 Cream'], 'and for a result set';
+    is $dbh->iterate($sql, $numbered, keep_first), '1 Abba',  'keep_first';
+    is $dbh->iterate($sql, $numbered, keep_last),  '3 Cream', 'keep_last';
+    is [$dbh->iterate($sql, sub { $_->[0] == 2 ? () : $_ }, $numbered, keep_all)
+        ],
+        ['1 Abba', '2 Cream'], 'counting results, not rows';
+    my @counted;
+    is $dbh->iterate(
+        $sql, sub { push @counted, result_number; $_ },
+        count_items,
+        ),
+        3,
+        'count_items';
+    is \@counted, [1, 2, 3], 'its stages counting too';
+    isa_ok $dbh->iterate($sql, sub { iterator }, keep_first),
+        ['DBIx::Squirrel::Iterator'],
+        'iterator, the one running the stages';
 };
 
 subtest "pluck after a reshaping stage reads the statement's columns" => sub {
