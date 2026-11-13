@@ -1349,7 +1349,7 @@ A stage of your own is a code reference, or a pipeline of other
 stages. Ekorn's reference, in
 [Writing stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#writing-stages),
 and its how-to, in
-[Writing stages for others](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-stages-for-others),
+[Building parts for others](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#10-building-parts-for-others),
 say how to write one that works alongside the canned stages:
 
 - a function that makes it, checking its options once;

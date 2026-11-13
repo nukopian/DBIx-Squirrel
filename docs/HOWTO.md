@@ -37,8 +37,8 @@ The recipes are for three kinds of reader:
 - [Handling errors](#handling-errors)
 - [Moving from 1.x](#moving-from-1x)
 - [Pipelines without a database](#pipelines-without-a-database)
-- [Writing a function that takes stages](#writing-a-function-that-takes-stages)
-- [Writing stages for others](#writing-stages-for-others)
+- [Functions that take stages](#writing-a-function-that-takes-stages)
+- [Building parts for others](#writing-stages-for-others)
 
 ## The examples' database
 
@@ -1482,16 +1482,16 @@ DBIx::Squirrel::Context's functions return `undef`.
 
 A pipeline's `iterator` pulls values from a source of your own, such as
 a file or a paged API. Ekorn::Pipeline's how-to has the recipes, in
-[Pulling values one at a time](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#pulling-values-one-at-a-time).
+[Pull results one at a time](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#pull-results-one-at-a-time).
 It has more on functions that take stages, in
-[Writing a function that takes stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-a-function-that-takes-stages).
+[Functions that take stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#9-functions-that-take-stages).
 
 ## Writing stages for others
 
 A stage for others is made by a function, so it can check its options
 once, when it's made. These recipes build a small module of stages,
 `My::Stages`. Ekorn::Pipeline's how-to has more, in
-[Writing stages for others](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#writing-stages-for-others).
+[Building parts for others](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#10-building-parts-for-others).
 
 ### Decide where a stage belongs
 

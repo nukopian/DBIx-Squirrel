@@ -107,11 +107,11 @@ L<Pipelines without a database|/"Pipelines without a database">
 
 =item *
 
-L<Writing a function that takes stages|/"Writing a function that takes stages">
+L<Functions that take stages|/"Writing a function that takes stages">
 
 =item *
 
-L<Writing stages for others|/"Writing stages for others">
+L<Building parts for others|/"Writing stages for others">
 
 =back
 
@@ -1367,16 +1367,16 @@ DBIx::Squirrel::Context's functions return C<undef>.
 
 A pipeline's C<iterator> pulls values from a source of your own, such as
 a file or a paged API. Ekorn::Pipeline's how-to has the recipes, in
-L<Pulling values one at a time|Ekorn::Pipeline::Manual::HowTo/"Pulling values one at a time">.
+L<Pull results one at a time|Ekorn::Pipeline::Manual::HowTo/"Pull results one at a time">.
 It has more on functions that take stages, in
-L<Writing a function that takes stages|Ekorn::Pipeline::Manual::HowTo/"Writing a function that takes stages">.
+L<Functions that take stages|Ekorn::Pipeline::Manual::HowTo/"9. Functions that take stages">.
 
 =head1 Writing stages for others
 
 A stage for others is made by a function, so it can check its options
 once, when it's made. These recipes build a small module of stages,
 C<My::Stages>. Ekorn::Pipeline's how-to has more, in
-L<Writing stages for others|Ekorn::Pipeline::Manual::HowTo/"Writing stages for others">.
+L<Building parts for others|Ekorn::Pipeline::Manual::HowTo/"10. Building parts for others">.
 
 =head2 Decide where a stage belongs
 

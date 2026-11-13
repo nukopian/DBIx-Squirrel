@@ -1403,7 +1403,7 @@ The number of the result being made, from 1. It counts results, not rows. While 
 
 =item C<result_original>
 
-The row the result is being made from, as it was fetched, before any stage changed it. For a result set, it's the row object. In a L<flush|/"Gathering: stages with state, and an end">, and the stages after it, it's C<undef>. What a flush gives comes from every row, not one. It's there wherever a statement is read, through C<\|> or a pipeline of yours.
+The row the result is being made from, as it was fetched, before any stage changed it. For a result set, it's the row object. In a L<flush|/"Gathering: stages with state, and an end">, and the stages after it, it's C<undef>. What a flush gives comes from every row, not one. It's there wherever a statement is read, through C<|> or a pipeline of yours.
 
 =back
 
@@ -1620,7 +1620,7 @@ A stage of your own is a code reference, or a pipeline of other
 stages. Ekorn's reference, in
 L<Writing stages|Ekorn::Pipeline::Manual::Reference/"Writing stages">,
 and its how-to, in
-L<Writing stages for others|Ekorn::Pipeline::Manual::HowTo/"Writing stages for others">,
+L<Building parts for others|Ekorn::Pipeline::Manual::HowTo/"10. Building parts for others">,
 say how to write one that works alongside the canned stages:
 
 =over 4
