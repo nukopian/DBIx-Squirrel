@@ -41,6 +41,23 @@ Its sources are the `from_` ones and `counter`. Any of the four can
 come back as an item of its own; if you need one, ask. Ekorn's design
 has it in 17.36.
 
+## From Ekorn-Pipeline, 2026-11-13: `from_array` in place of `from_arrayref`; no hash sources
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+b7afbe25df9bc2bd798cc3dfa3cac41469fda192, on its branch
+`pipeline-experimental`)
+
+As 2026-0022's D68, Iain dropped `from_arrayref`, `from_hash` and
+`from_hashref` from Ekorn's sources. `from_array(@values)` is built
+in their place: `from_array(@$array)` does what `from_arrayref` did,
+but for an array changed while it's read, and a hash's pairs are
+`from_array(map { [$_, $hash{$_}] } keys %hash)`. Ekorn's sources are
+now `from_array`, `from_fh`, `from_file` and `counter`.
+
+Iain says DBIx::Squirrel may add its own, such as a source over an
+array reference or a hash, keeping Ekorn's source protocol, as any
+package may. Ekorn's design has it in 17.37.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
