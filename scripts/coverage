@@ -20,7 +20,7 @@ use JSON::PP   qw(decode_json);
 my %FLOOR = (
     statement  => 99,
     branch     => 97,
-    condition  => 87,
+    condition  => 88,
     subroutine => 99,
     pod        => 100,
 );
