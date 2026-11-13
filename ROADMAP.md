@@ -53,18 +53,6 @@ each example's output is compared with its comments, and a mismatch
 fails, naming the example's line. Done first, so the guide of
 2026-0021 is written against it, as Iain decided on 2026-11-13.
 
-### 2026-0021. The how-to as a user guide
-
-**Added:** 2026-11-13. **Size:** L (5). **Split from:** 2026-0019.
-**Depends on:** 2026-0020
-
-The how-to rewritten as a user guide, as Iain asked: around the
-package's concepts and layers, from the DBI at the bottom to the Sugar
-at the top, in plain English, with recipes that work, comparisons
-where the features have an advantage, and Ekorn::Pipeline's features
-as they apply to rows. Its [record](docs/changes/2026-0021-user-guide.md)
-has the decisions and the plan.
-
 ## Next
 
 ### 2026-0019. DBIx::Squirrel v3.0.0

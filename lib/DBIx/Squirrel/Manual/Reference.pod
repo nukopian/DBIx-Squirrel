@@ -21,8 +21,8 @@ so everything the DBI does still works. Where the two do the same
 thing, they give the same result.
 
 This reference describes every feature, with examples.
-L<The how-to|DBIx::Squirrel::Manual::HowTo> shows how to do common tasks, one recipe at a
-time. Each module's own POD says the same things more briefly. Where
+L<The user guide|DBIx::Squirrel::Manual::HowTo> is a tour of the package, a layer at a
+time, with recipes. Each module's own POD says the same things more briefly. Where
 the two differ, the POD is the authority.
 
 This is version 2, a rewrite of DBIx::Squirrel 1.x for Perl 5.36 or
@@ -1082,7 +1082,7 @@ knows nothing of DBIx::Squirrel.
 
 Ekorn::Pipeline's L<reference|Ekorn::Pipeline::Manual::Reference>
 describes the pipeline in full, and its
-L<how-to|Ekorn::Pipeline::Manual::HowTo>
+L<user guide|Ekorn::Pipeline::Manual::HowTo>
 has recipes for any values. This chapter keeps to what DBIx::Squirrel's
 iterators, result sets and handles do with it, and to what's
 DBIx::Squirrel's own. It links there for the rest.
@@ -1619,7 +1619,7 @@ values from C<pipe>.
 A stage of your own is a code reference, or a pipeline of other
 stages. Ekorn's reference, in
 L<Writing stages|Ekorn::Pipeline::Manual::Reference/"Writing stages">,
-and its how-to, in
+and its user guide, in
 L<Building parts for others|Ekorn::Pipeline::Manual::HowTo/"10. Building parts for others">,
 say how to write one that works alongside the canned stages:
 
@@ -1685,7 +1685,7 @@ rows. Ekorn::Pipeline can't depend on DBIx::Squirrel, so a stage that
 would C<use> DBIx::Squirrel goes under C<DBIx::Squirrel::Stages::>. A
 stage added under C<Ekorn::Pipeline::Stages::> reaches DBIx::Squirrel's
 users only once DBIx::Squirrel adds it to the names its own modules of
-stages export. The how-to's
+stages export. The user guide's
 L<Decide where a stage belongs|DBIx::Squirrel::Manual::HowTo/"Decide where a stage belongs">
 says how to choose.
 

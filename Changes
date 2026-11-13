@@ -54,6 +54,11 @@ Unreleased
       before. Its message for anything else is now "Expected only
       code references, pipelines or their names after the statement
       for %s".
+    - The how-to is rewritten as a user guide, DBIx::Squirrel's
+      layers from the DBI up, with recipes that print what their
+      comments say, comparisons with the alternatives, and answers to
+      the questions people ask first, speed included (roadmap
+      2026-0021).
     - pluck, as_hash and result_original work in any run reading a
       statement: through |, or in a pipeline of your own, as well as
       in an iterator's own stages. result_number and iterator are

@@ -523,8 +523,8 @@ L<DBIx::Squirrel::Stages::Flow>, L<DBIx::Squirrel::Stages::Rows>,
 L<DBIx::Squirrel::Stages::Batch>, L<DBIx::Squirrel::Stages::Taps>
 
 L<DBIx::Squirrel::Manual::Reference> describes every feature in detail,
-with examples. L<DBIx::Squirrel::Manual::HowTo> shows how to do common
-tasks.
+with examples. L<DBIx::Squirrel::Manual::HowTo>, the user guide, is a
+tour of the package, a layer at a time, with recipes.
 
 =head1 AUTHOR
 

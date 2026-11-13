@@ -167,8 +167,9 @@ statement's stages are declared beside its SQL.
 
 [The reference](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AReference) describes every
 feature in detail, with examples.
-[The how-to](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AHowTo) shows how to do common
-tasks, one recipe at a time. Each module's POD, starting with
+[The user guide](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AHowTo) is a tour of the
+package, a layer at a time, from the DBI underneath to the shortcuts on
+top, with recipes that work. Each module's POD, starting with
 [DBIx::Squirrel](https://metacpan.org/pod/DBIx%3A%3ASquirrel), says the same more briefly.
 
 ## Installing

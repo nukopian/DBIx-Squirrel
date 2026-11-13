@@ -12,8 +12,8 @@ so everything the DBI does still works. Where the two do the same
 thing, they give the same result.
 
 This reference describes every feature, with examples.
-[The how-to](HOWTO.md) shows how to do common tasks, one recipe at a
-time. Each module's own POD says the same things more briefly. Where
+[The user guide](HOWTO.md) is a tour of the package, a layer at a
+time, with recipes. Each module's own POD says the same things more briefly. Where
 the two differ, the POD is the authority.
 
 This is version 2, a rewrite of DBIx::Squirrel 1.x for Perl 5.36 or
@@ -871,7 +871,7 @@ knows nothing of DBIx::Squirrel.
 
 Ekorn::Pipeline's [reference](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md)
 describes the pipeline in full, and its
-[how-to](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md)
+[user guide](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md)
 has recipes for any values. This chapter keeps to what DBIx::Squirrel's
 iterators, result sets and handles do with it, and to what's
 DBIx::Squirrel's own. It links there for the rest.
@@ -1348,7 +1348,7 @@ values from `pipe`.
 A stage of your own is a code reference, or a pipeline of other
 stages. Ekorn's reference, in
 [Writing stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#writing-stages),
-and its how-to, in
+and its user guide, in
 [Building parts for others](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#10-building-parts-for-others),
 say how to write one that works alongside the canned stages:
 
@@ -1395,7 +1395,7 @@ rows. Ekorn::Pipeline can't depend on DBIx::Squirrel, so a stage that
 would `use` DBIx::Squirrel goes under `DBIx::Squirrel::Stages::`. A
 stage added under `Ekorn::Pipeline::Stages::` reaches DBIx::Squirrel's
 users only once DBIx::Squirrel adds it to the names its own modules of
-stages export. The how-to's
+stages export. The user guide's
 [Decide where a stage belongs](HOWTO.md#decide-where-a-stage-belongs)
 says how to choose.
 
