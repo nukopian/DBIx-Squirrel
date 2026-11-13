@@ -57,9 +57,8 @@ What: the release on Ekorn::Pipeline v0.3.0, as the design's sections
 10, 11 and 15 have it: the README rewritten, with `|` giving one value
 explained where it's first shown, the how-to being 2026-0021's and the
 reference, with its table of what changes for users, 2026-0023's;
-`Changes`' precis; the `cpanfile`'s range, `>= v0.3.0, < v0.4.0`; CI;
-and the PDFs, rebuilt and read once the docs have settled, before the
-tag, as none were rebuilt while they changed on `pipeline-experimental`.
+`Changes`' precis; the `cpanfile`'s range, `>= v0.3.0, < v0.4.0`; and
+CI.
 Why: it breaks code, which a major version is for. Done when: v3.0.0 is on CPAN.
 
 ## Later

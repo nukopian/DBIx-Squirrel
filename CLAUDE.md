@@ -39,6 +39,13 @@ result: plain DBI is the baseline, as Perl is for scalar.
   tests, the edge cases of placeholder rewriting, tests comparing
   results with plain DBI, and keeping the POD, README and `Changes` up to
   date with the code.
+- **The PDFs are made when Iain asks, not after every docs change,**
+  as he decided on 2026-11-13, in place of his usual rule of
+  rebuilding them and reading the changed pages each time. Check a
+  docs change as text: run its examples, read the diff, and run
+  `xt/examples.t` and `xt/manuals.t`. When he asks, build them with
+  `scripts/readme-pdf.sh`, as MAINTAINING.md says, and read the pages
+  he names, as text with `pdftotext` unless layout matters.
 - **Commit messages:** Claude drafts them when asked, for Iain's commits
   as well as its own.
 
