@@ -5,12 +5,11 @@ use Test2::Plugin::NoWarnings;
 use DBIx::Squirrel;
 use DBIx::Squirrel::Context qw(result_number result_original);
 use DBIx::Squirrel::Gather;
-use DBIx::Squirrel::Pipeline;
 use DBIx::Squirrel::Stop;
 use DBIx::Squirrel::Sugar qw(database statement);
 use Ekorn::Pipeline       qw(is_stage);
 
-my $class = 'DBIx::Squirrel::Pipeline';
+my $class = 'Ekorn::Pipeline';
 
 # Return every value an iterator hands out.
 sub drain ($next) {

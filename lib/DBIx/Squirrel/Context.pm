@@ -122,7 +122,7 @@ stages run. It's not for use elsewhere.
 
 =head1 SEE ALSO
 
-L<DBIx::Squirrel::Iterator>, L<DBIx::Squirrel::Pipeline>
+L<DBIx::Squirrel::Iterator>, L<Ekorn::Pipeline>
 
 =head1 AUTHOR
 

@@ -9,7 +9,7 @@ use DBIx::Squirrel::Gather ();
 use DBIx::Squirrel::Iterator;
 use DBIx::Squirrel::Result;
 use DBIx::Squirrel::Results;
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline qw();
 use DBIx::Squirrel::Placeholders;
 use DBIx::Squirrel::Stages::Batch ();
 use DBIx::Squirrel::Stages::Flow  ();
@@ -45,7 +45,6 @@ my %imported = (
             iterator_going split_stages weaken
         ),
     ],
-    'DBIx::Squirrel::Pipeline'     => [qw(croak croakf is_coderef is_ref)],
     'DBIx::Squirrel::Placeholders' =>
         [qw(any croakf is_arrayref is_hashref is_plain_ref max uniq)],
     'DBIx::Squirrel::Result' =>
@@ -98,17 +97,15 @@ subtest 'what the packages need is kept' => sub {
     ok +DBIx::Squirrel::Sugar->can('database'), 'and keeps database';
     ok +DBIx::Squirrel::Util->can('import'),    'Util can export';
 
-    my $p = DBIx::Squirrel::Pipeline->new(sub { $_ * 2 });
-    is [$p->(1, 2)], [2, 4], 'a pipeline can be called';
-    is '' . dies { DBIx::Squirrel::Stop->throw },
+    is '' . dies { DBIx::Squirrel::Stop::Stop() },
         "Stop used outside a pipeline\n",
         'a stop explains itself as a string';
 };
 
 subtest 'both handle classes inherit pipe and tap' => sub {
     for my $class (qw(DBIx::Squirrel::db DBIx::Squirrel::st)) {
-        isa_ok $class, ['DBIx::Squirrel::Pipes'], $class;
-        ref_is $class->can($_), DBIx::Squirrel::Pipes->can($_), "$class can $_"
+        isa_ok $class, ['Ekorn::Pipeline::Pipes'], $class;
+        ref_is $class->can($_), Ekorn::Pipeline::Pipes->can($_), "$class can $_"
             for qw(pipe tap);
     }
 };
@@ -135,7 +132,7 @@ subtest 'the facades follow Ekorn::Pipeline' => sub {
         'Stages::Batch' => [[qw(batch collect)], []],
         'Stages::Flow'  => [
             [qw(take drop)],
-            [qw(take_first take_last take_single take_while drop_while)]
+            [qw(take_first take_last take_single take_while drop_while)],
         ],
         'Stages::Taps' => [[qw(peek count_into)], [qw(dump_to)]],
     );
@@ -160,16 +157,12 @@ subtest 'the facades follow Ekorn::Pipeline' => sub {
                 "$ours\'s $function is $theirs\'s";
         }
     }
-    ref_is +DBIx::Squirrel::Pipeline->can('stages'),
-        Ekorn::Pipeline->can('stages'),
-        "Pipeline's stages is Ekorn's";
-    isa_ok 'DBIx::Squirrel::Pipeline', ['Ekorn::Pipeline'],        'Pipeline';
-    isa_ok 'DBIx::Squirrel::Pipes',    ['Ekorn::Pipeline::Pipes'], 'Pipes';
-    isa_ok 'DBIx::Squirrel::Stop',     ['Ekorn::Pipeline::Stop'],  'Stop';
-
-    my $p = DBIx::Squirrel::Pipeline->new(sub { $_ * 2 });
-    isa_ok $p, ['DBIx::Squirrel::Pipeline'], 'a pipeline made with it';
-    is [$p->(1, 2)], [2, 4], 'which can be called';
+    for my $gone (qw(Pipeline Pipes)) {
+        my $file = "DBIx/Squirrel/$gone.pm";
+        ok dies { require $file }, "DBIx::Squirrel::$gone is gone";
+    }
+    ok !DBIx::Squirrel::Stop->isa('Ekorn::Pipeline::Stop'),
+        'and Stop is no subclass of Ekorn\'s';
 };
 
 done_testing;

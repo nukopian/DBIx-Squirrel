@@ -21,12 +21,12 @@ our @EXPORT_OK = qw(at_caller croakf failed in_method);
 # takes this list as its @CARP_NOT.
 our @INTERNAL = (
     qw(
-        DBI                           DBI::db                  DBI::st
-        DBD::_::common                DBD::_::db               DBD::_::st
-        DBIx::Squirrel                DBIx::Squirrel::db       DBIx::Squirrel::st
-        DBIx::Squirrel::Context       DBIx::Squirrel::Errors   DBIx::Squirrel::Gather
-        DBIx::Squirrel::Iterator      DBIx::Squirrel::Pipeline DBIx::Squirrel::Pipes
-        DBIx::Squirrel::Placeholders  DBIx::Squirrel::Result   DBIx::Squirrel::Results
+        DBI                           DBI::db                DBI::st
+        DBD::_::common                DBD::_::db             DBD::_::st
+        DBIx::Squirrel                DBIx::Squirrel::db     DBIx::Squirrel::st
+        DBIx::Squirrel::Context       DBIx::Squirrel::Errors DBIx::Squirrel::Gather
+        DBIx::Squirrel::Iterator      DBIx::Squirrel::Placeholders
+        DBIx::Squirrel::Result        DBIx::Squirrel::Results DBIx::Squirrel::Stop
         DBIx::Squirrel::Sugar         DBIx::Squirrel::Util
         DBIx::Squirrel::Stages::Batch DBIx::Squirrel::Stages::Flow
         DBIx::Squirrel::Stages::Rows  DBIx::Squirrel::Stages::Taps

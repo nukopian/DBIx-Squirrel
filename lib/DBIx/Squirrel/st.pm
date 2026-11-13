@@ -12,12 +12,12 @@ use DBIx::Squirrel::Placeholders qw(
     is_numbered key_of place_values values_for values_taken
 );
 use DBIx::Squirrel::Results qw();
-use DBIx::Squirrel::Pipes   qw();
+use Ekorn::Pipeline::Pipes  qw();
 use DBIx::Squirrel::Util    qw(unwrap_values);
 
 use namespace::clean;
 
-our @ISA = ('DBI::st', 'DBIx::Squirrel::Pipes');
+our @ISA = ('DBI::st', 'Ekorn::Pipeline::Pipes');
 
 # Croak at the line that called DBIx::Squirrel.
 our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
@@ -184,7 +184,7 @@ A statement handle prepared on a DBIx::Squirrel database handle is
 blessed into this class. It's a subclass of the DBI's C<DBI::st>, so it
 does everything a DBI statement handle does. It also inherits
 L<DBIx::Squirrel/pipe> and L<DBIx::Squirrel/tap> from
-L<DBIx::Squirrel::Pipes>.
+L<Ekorn::Pipeline::Pipes>.
 
 =head2 Lists
 

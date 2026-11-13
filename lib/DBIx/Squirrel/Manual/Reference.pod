@@ -1054,7 +1054,7 @@ A pipeline is a list of stages. A stage is a code reference, or
 another pipeline, which stands for its stages. See
 L<A pipeline's stages|/"A pipeline's stages">. Iterators and result sets
 run their stages with a pipeline. You can also use one on its own,
-with C<DBIx::Squirrel::Pipeline>, or on a handle, with
+with C<Ekorn::Pipeline>, or on a handle, with
 L<C<pipe> and C<tap>|/"pipe and tap on handles">. A function of your own
 can take stages from its caller, as C<iterate> does, and run what it
 returns through them. Loading a pipeline doesn't load the DBI, so that
@@ -1062,21 +1062,23 @@ works in code that has nothing to do with a database.
 
 The pipeline is L<Ekorn::Pipeline|Ekorn::Pipeline>'s.
 It began here, and is now a distribution of its own, so that any
-function can take stages from its caller. DBIx::Squirrel keeps its own
-names for the modules: C<DBIx::Squirrel::Pipeline>,
-C<DBIx::Squirrel::Stop>, C<DBIx::Squirrel::Gather>, and the stages in
-C<DBIx::Squirrel::Stages::Flow>, C<Batch> and C<Taps>. They're here to
-stay. Each is a subclass of Ekorn's, or exports Ekorn's functions from
-a list of DBIx::Squirrel's own. So a function added to Ekorn::Pipeline
-reaches DBIx::Squirrel only once it's added to that list, and
-documented here. Stages that need DBIx::Squirrel, such as those in
-C<DBIx::Squirrel::Stages::Rows>, are its own.
+function can take stages from its caller. DBIx::Squirrel uses it as it
+is: a pipeline is made with C<< Ekorn::Pipeline->new >>, and the handles'
+C<pipe> and C<tap> are Ekorn::Pipeline::Pipes'. DBIx::Squirrel keeps its
+own names for the modules of functions: C<DBIx::Squirrel::Stop>,
+C<DBIx::Squirrel::Gather>, and the stages in
+C<DBIx::Squirrel::Stages::Flow>, C<Batch> and C<Taps>. Each exports
+Ekorn's functions from a list of DBIx::Squirrel's own. So a function
+added to Ekorn::Pipeline reaches DBIx::Squirrel's modules only once
+it's added to that list, and documented here. Stages that need
+DBIx::Squirrel, such as those in C<DBIx::Squirrel::Stages::Rows>, are its
+own.
 
-The names are DBIx::Squirrel's, but the objects are Ekorn's. A stop
-from C<Stop()> is an C<Ekorn::Pipeline::Stop>, and a stage made with
-C<gather> is an C<Ekorn::Pipeline::Gather>. That's what C<ref> and C<isa>
-see. It's deliberate. DBIx::Squirrel's classes inherit from Ekorn's,
-never the reverse, so Ekorn::Pipeline knows nothing of DBIx::Squirrel.
+The objects are Ekorn's. A stop from C<Stop()> is an
+C<Ekorn::Pipeline::Stop>, and a stage made with C<gather> is an
+C<Ekorn::Pipeline::Gather>. That's what C<ref> and C<isa> see.
+DBIx::Squirrel subclasses none of Ekorn's classes, so Ekorn::Pipeline
+knows nothing of DBIx::Squirrel.
 
 Ekorn::Pipeline's L<reference|Ekorn::Pipeline::Manual::Reference>
 describes the pipeline in full, and its
@@ -1126,9 +1128,9 @@ stage run for its side effects should still return what the next stage
 needs. L<How values go through stages|Ekorn::Pipeline::Manual::Reference/"How values go through stages">
 has the details.
 
-    use DBIx::Squirrel::Pipeline;
+    use Ekorn::Pipeline;
 
-    my $p = DBIx::Squirrel::Pipeline->new(
+    my $p = Ekorn::Pipeline->new(
         sub { $_->{active} ? $_ : () },          # filter
         sub ($row) { @{ $row->{tags} } },        # flatMap
         sub { uc },                              # map
@@ -1136,7 +1138,7 @@ has the details.
 
 =head2 Running a pipeline
 
-    my $p = DBIx::Squirrel::Pipeline->new(@stages);
+    my $p = Ekorn::Pipeline->new(@stages);
 
     my @results = $p->(@values);           # push: values in, a list out
 
@@ -1170,7 +1172,7 @@ place.
     use DBIx::Squirrel::Stages::Flow;
     use DBIx::Squirrel::Stages::Rows;
 
-    my $hits = DBIx::Squirrel::Pipeline->new(
+    my $hits = Ekorn::Pipeline->new(
         sub { $_->[1] >= 5000 ? $_ : () },    # 5,000 plays or more
         pluck('name'),
     );
@@ -1178,7 +1180,7 @@ place.
     my @hits    = $dbh->iterate('SELECT name, plays FROM track', $hits)->all;
     my @top_ten = $dbh->iterate('SELECT name, plays FROM track ORDER BY plays DESC',
         $hits, take(10))->all;
-    my $first   = DBIx::Squirrel::Pipeline->new($hits, take(1));
+    my $first   = Ekorn::Pipeline->new($hits, take(1));
 
 The stages run as if they were written out where the pipeline stands.
 They belong to that run, so a C<take> inside C<$hits> limits the whole
@@ -1260,7 +1262,7 @@ flushes called.
         sub ($row) { $row->[0] == $wanted ? Stop($row) : () },
     )->single;
 
-C<Stop> is exported by default. C<< DBIx::Squirrel::Stop->throw(@values) >>
+C<Stop> is exported by default. C<< Ekorn::Pipeline::Stop->throw(@values) >>
 does the same without importing it. To keep C<Stop> out of your
 namespace:
 
@@ -1349,7 +1351,7 @@ those of the pipeline's stages.
         'SELECT name FROM artist ORDER BY name',
         gather {
             my $n = 0;    # this run's
-            DBIx::Squirrel::Pipeline->new(sub { ++$n . ". $_->[0]" }, take(2));
+            Ekorn::Pipeline->new(sub { ++$n . ". $_->[0]" }, take(2));
         },
     );
 
@@ -1681,7 +1683,7 @@ from an in-memory SQLite database, in each shape it takes:
 
     use Test2::V0;
     use DBIx::Squirrel::Gather;
-    use DBIx::Squirrel::Pipeline;
+    use Ekorn::Pipeline;
 
     # Each value, numbered from 1 on each run
     sub numbered () {
@@ -1691,7 +1693,7 @@ from an in-memory SQLite database, in each shape it takes:
         };
     }
 
-    my $p = DBIx::Squirrel::Pipeline->new(numbered);
+    my $p = Ekorn::Pipeline->new(numbered);
     is [$p->(qw(a b))], [[1, 'a'], [2, 'b']], 'numbered';
     is [$p->(qw(c))],   [[1, 'c']],           'from 1 on each run';
 
@@ -2436,14 +2438,6 @@ An iterator handing out rows as objects.
 
 The base class of row objects.
 
-=item C<DBIx::Squirrel::Pipeline>
-
-Runs values through a list of stages.
-
-=item C<DBIx::Squirrel::Pipes>
-
-The C<pipe> and C<tap> methods of both handle classes.
-
 =item C<DBIx::Squirrel::Stop>
 
 Ends a pipeline early.
@@ -2490,9 +2484,10 @@ Helpers the modules share. Internal.
 
 =back
 
-C<DBIx::Squirrel::Pipeline>, C<Pipes>, C<Stop> and C<Gather>, and the
-stages in C<DBIx::Squirrel::Stages::Flow>, C<Batch> and C<Taps>, are
-DBIx::Squirrel's names for L<Ekorn::Pipeline|/"Pipelines">'s modules.
+C<DBIx::Squirrel::Stop> and C<Gather>, and the stages in
+C<DBIx::Squirrel::Stages::Flow>, C<Batch> and C<Taps>, are DBIx::Squirrel's
+names for L<Ekorn::Pipeline|/"Pipelines">'s functions. Pipelines, and
+the handles' C<pipe> and C<tap>, are Ekorn::Pipeline's own.
 
 =head1 SEE ALSO
 

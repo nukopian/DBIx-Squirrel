@@ -310,7 +310,7 @@ it needs a new connection, so it croaks on failure too.
 =head1 HANDLE METHODS
 
 Database and statement handles both have these methods, inherited from
-L<DBIx::Squirrel::Pipes>. The examples use a database handle. On a
+L<Ekorn::Pipeline::Pipes>. The examples use a database handle. On a
 statement handle, the statement handle goes through the stages instead.
 
 =head2 pipe
@@ -322,7 +322,7 @@ Runs the database handle through a pipeline of stages, and returns what
 comes out of the last one.
 
 A stage is a code reference, or a pipeline, which stands for its
-stages, as L<DBIx::Squirrel::Pipeline> shows. A code reference is
+stages, as L<Ekorn::Pipeline> shows. A code reference is
 called with one value, as its argument and in C<$_>. It can name the
 value with a signature, or leave the signature out and use C<$_>:
 
@@ -355,7 +355,7 @@ stage by its position, from C<#1>:
     Pipeline stage #2 failed at script.pl line 12:
         ...
 
-L<DBIx::Squirrel::Pipeline> says more about stages.
+L<Ekorn::Pipeline> says more about stages.
 
 =head2 tap
 
@@ -394,13 +394,13 @@ dies, C<tap> croaks at the line that called it, as L</pipe> does.
     Stop();
     Stop(@values);
 
-    DBIx::Squirrel::Stop->throw(@values);
+    Ekorn::Pipeline::Stop->throw(@values);
 
 Called from a stage of a pipeline, ends the pipeline quietly. The rest
 of that stage doesn't run. The values already out of the pipeline are
 kept, C<@values> go on through the stages after it, and nothing else is
 processed. L<DBIx::Squirrel::Stop> exports C<Stop> by default.
-C<< DBIx::Squirrel::Stop->throw >> does the same without importing it.
+C<< Ekorn::Pipeline::Stop->throw >> does the same without importing it.
 
 Stop works by throwing an exception, which the pipeline catches. So a
 stage that catches errors itself, with C<eval> or C<try>, should throw
@@ -516,8 +516,7 @@ L</Stop> was called where no pipeline was running to catch it.
 L<DBI>, L<DBIx::Squirrel::db>, L<DBIx::Squirrel::st>,
 L<DBIx::Squirrel::Iterator>, L<DBIx::Squirrel::Results>,
 L<DBIx::Squirrel::Result>, L<DBIx::Squirrel::Context>,
-L<DBIx::Squirrel::Sugar>,
-L<DBIx::Squirrel::Pipes>, L<DBIx::Squirrel::Pipeline>,
+L<DBIx::Squirrel::Sugar>, L<Ekorn::Pipeline>, L<Ekorn::Pipeline::Pipes>,
 L<DBIx::Squirrel::Stop>, L<DBIx::Squirrel::Gather>,
 L<DBIx::Squirrel::Stages::Flow>, L<DBIx::Squirrel::Stages::Rows>,
 L<DBIx::Squirrel::Stages::Batch>, L<DBIx::Squirrel::Stages::Taps>

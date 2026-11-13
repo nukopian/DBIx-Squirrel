@@ -3,13 +3,13 @@ use Test2::V0;
 use Test2::Plugin::NoWarnings;
 
 use DBIx::Squirrel;
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline              qw();
 use DBIx::Squirrel::Stages::Flow qw(
     :DEFAULT   take_first take_last take_single
     take_while drop_while);
 use DBIx::Squirrel::Sugar qw(database statement);
 
-my $class = 'DBIx::Squirrel::Pipeline';
+my $class = 'Ekorn::Pipeline';
 
 # Return every value an iterator hands out.
 sub drain ($next) {

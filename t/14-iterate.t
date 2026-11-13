@@ -5,7 +5,7 @@ use Test2::Plugin::NoWarnings;
 use DBI;
 use DBIx::Squirrel;
 use DBIx::Squirrel::Gather;
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline qw();
 use DBIx::Squirrel::Stop;
 use DBIx::Squirrel::Context qw(iterator result_number result_original);
 use experimental            qw(builtin);
@@ -396,10 +396,10 @@ subtest 'once a stage dies, the iterator has ended' => sub {
 };
 
 subtest "a pipeline's stages, wherever stages go" => sub {
-    my $even = DBIx::Squirrel::Pipeline->new(sub ($row) {
+    my $even = Ekorn::Pipeline->new(sub ($row) {
         $row->[0] % 2 ? () : $row;
     });
-    my $named = DBIx::Squirrel::Pipeline->new(sub ($row) {
+    my $named = Ekorn::Pipeline->new(sub ($row) {
         $row->[1];
     });
     my @spliced = ($even->stages, $named->stages);
@@ -411,12 +411,12 @@ subtest "a pipeline's stages, wherever stages go" => sub {
         $dbh->results($all, sub ($row) { [$row->id, $row->name] }, @spliced)->all
         ],
         [qw(Blur Dido Faust Hole Japan)], 'and into results';
-    my $both = DBIx::Squirrel::Pipeline->new(@spliced, sub { lc });
+    my $both = Ekorn::Pipeline->new(@spliced, sub { lc });
     is [$dbh->iterate($all, $both->stages)->all],
         [qw(blur dido faust hole japan)],
         'from a pipeline made of pipelines';
 
-    my $counted = DBIx::Squirrel::Pipeline->new(gather {
+    my $counted = Ekorn::Pipeline->new(gather {
         my $n = 0;
         (sub { ++$n; () }, sub { $n });
     });

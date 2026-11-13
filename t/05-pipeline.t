@@ -3,14 +3,14 @@ use Test2::V0;
 use Test2::Plugin::NoWarnings;
 
 use DBI;
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline qw();
 use DBIx::Squirrel::Stop;
 
 package My::Stop {
-    our @ISA = 'DBIx::Squirrel::Stop';
+    our @ISA = 'Ekorn::Pipeline::Stop';
 }
 
-my $class = 'DBIx::Squirrel::Pipeline';
+my $class = 'Ekorn::Pipeline';
 
 # Return every value an iterator hands out.
 sub drain ($next) {

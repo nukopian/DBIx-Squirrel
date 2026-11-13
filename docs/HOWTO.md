@@ -781,11 +781,11 @@ Make a pipeline once, and give it wherever a stage goes: to `iterate`,
 pipeline, with more stages before or after it:
 
 ```perl
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline;
 use DBIx::Squirrel::Stages::Flow;
 use DBIx::Squirrel::Stages::Rows;
 
-my $hits = DBIx::Squirrel::Pipeline->new(
+my $hits = Ekorn::Pipeline->new(
     sub { $_->[1] >= 5000 ? $_ : () },    # 5,000 plays or more
     pluck('name'),
 );
@@ -967,14 +967,14 @@ one, and whatever the pipeline's stages keep starts afresh:
 
 ```perl
 use DBIx::Squirrel::Gather;
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline;
 use DBIx::Squirrel::Stages::Flow;
 
 my $it = $dbh->iterate(
     'SELECT name FROM artist ORDER BY name',
     gather {
         my $n = 0;    # this run's
-        DBIx::Squirrel::Pipeline->new(sub { ++$n . ". $_->[0]" }, take(2));
+        Ekorn::Pipeline->new(sub { ++$n . ". $_->[0]" }, take(2));
     },
 );
 say join ', ', $it->all;           # 1. Abba, 2. Blur
@@ -1116,12 +1116,12 @@ call of its function, as any stage can. One made as the program runs
 needs a statement defined then too:
 
 ```perl
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline;
 use DBIx::Squirrel::Stages::Flow;
 use DBIx::Squirrel::Stages::Rows;
 use DBIx::Squirrel::Sugar qw(statement);
 
-my $hits = DBIx::Squirrel::Pipeline->new(
+my $hits = Ekorn::Pipeline->new(
     sub { $_->[1] >= 5000 ? $_ : () },    # 5,000 plays or more
     pluck('name'),
 );
@@ -1273,9 +1273,9 @@ A stage inside a pipeline given as a stage is named by its place in
 each: `#2.2` is the second stage of the pipeline given as stage #2:
 
 ```perl
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline;
 
-my $checked = DBIx::Squirrel::Pipeline->new(sub { $_ }, sub { die "no names today\n" });
+my $checked = Ekorn::Pipeline->new(sub { $_ }, sub { die "no names today\n" });
 eval { $dbh->iterate('SELECT name FROM artist', sub { $_ }, $checked)->next };
 print $@;    # Pipeline stage #2.2 failed at ... line ...:
              #     no names today
@@ -1410,9 +1410,9 @@ A pipeline is called with values, and returns what comes out of its
 last stage:
 
 ```perl
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline;
 
-my $evens_squared = DBIx::Squirrel::Pipeline->new(
+my $evens_squared = Ekorn::Pipeline->new(
     sub { $_ % 2 ? () : $_ },
     sub { $_ * $_ },
 );
@@ -1430,7 +1430,7 @@ load the DBI. So this works in code that has nothing to do with a
 database:
 
 ```perl
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline;
 use DBIx::Squirrel::Stages::Rows;
 
 # The bands, as hashes, through whatever stages the caller gives
@@ -1440,7 +1440,7 @@ sub bands (@stages) {
         {name => 'Blur',  formed => 1988},
         {name => 'Cream', formed => 1966},
     );
-    return DBIx::Squirrel::Pipeline->new(@stages)->(@bands);
+    return Ekorn::Pipeline->new(@stages)->(@bands);
 }
 
 my @older = bands(sub { $_->{formed} < 1980 ? $_ : () }, pluck('name'));
@@ -1569,11 +1569,11 @@ wherever a stage goes, and works on each shape of row that the stages
 in it do:
 
 ```perl
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline;
 use DBIx::Squirrel::Stages::Rows;
 
 sub loud_names () {
-    return DBIx::Squirrel::Pipeline->new(pluck('name'), sub { uc });
+    return Ekorn::Pipeline->new(pluck('name'), sub { uc });
 }
 
 say join ' ', $dbh->iterate('SELECT id, name FROM artist ORDER BY id', loud_names)->all;
@@ -1591,10 +1591,10 @@ SQLite database, in each shape it takes:
 <!-- not run -->
 ```perl
 use Test2::V0;
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline;
 use My::Stages;
 
-my $p = DBIx::Squirrel::Pipeline->new(My::Stages::numbered_from(1));
+my $p = Ekorn::Pipeline->new(My::Stages::numbered_from(1));
 is [$p->(qw(a b))], ['1. a', '2. b'], 'numbered';
 is [$p->(qw(c))],   ['1. c'],         'from 1 on each run';
 

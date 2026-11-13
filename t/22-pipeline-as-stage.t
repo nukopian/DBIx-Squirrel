@@ -4,7 +4,7 @@ use Test2::Plugin::NoWarnings;
 
 use DBIx::Squirrel;
 use DBIx::Squirrel::Gather;
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline qw();
 use DBIx::Squirrel::Stages::Flow;
 use DBIx::Squirrel::Stages::Rows;
 
@@ -17,7 +17,7 @@ use DBIx::Squirrel::Sugar database => {
     ],
 };
 
-my $class = 'DBIx::Squirrel::Pipeline';
+my $class = 'Ekorn::Pipeline';
 
 # An object standing for a number, as a bind value.
 package My::Three {
@@ -30,7 +30,7 @@ my $names;
 
 
 BEGIN {
-    $names = DBIx::Squirrel::Pipeline->new(pluck('name'), sub { uc });
+    $names = Ekorn::Pipeline->new(pluck('name'), sub { uc });
 }
 
 # Statements taking a pipeline among their stages.

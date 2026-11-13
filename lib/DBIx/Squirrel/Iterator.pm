@@ -351,7 +351,7 @@ DBIx::Squirrel::Iterator - an iterator over a statement's results
 
 An iterator executes a statement and hands out its rows one at a time.
 Each row is run through a pipeline of stages, as
-L<DBIx::Squirrel::Pipeline> runs them. A stage can change a row, drop
+L<Ekorn::Pipeline> runs them. A stage can change a row, drop
 it, return several values in its place, or stop the iteration with
 L<DBIx::Squirrel::Stop>. A result is whatever comes out of the stages.
 With no stages, it's the row. A stage can ask about the result it's
@@ -553,7 +553,7 @@ before executing this one.
 =head1 SEE ALSO
 
 L<DBIx::Squirrel>, L<DBIx::Squirrel::Context>,
-L<DBIx::Squirrel::Pipeline>, L<Ekorn::Pipeline::Operators>
+L<Ekorn::Pipeline>, L<Ekorn::Pipeline::Operators>
 
 =head1 AUTHOR
 

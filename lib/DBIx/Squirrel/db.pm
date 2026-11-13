@@ -13,14 +13,14 @@ use DBIx::Squirrel::Errors       qw(at_caller croakf failed in_method);
 use DBIx::Squirrel::Placeholders qw(
     expand_lists key_of study_sql values_for values_taken
 );
-use DBIx::Squirrel::Pipes qw();
-use DBIx::Squirrel::Util  qw(
+use Ekorn::Pipeline::Pipes qw();
+use DBIx::Squirrel::Util   qw(
     canonical iterator_going shift_attrs split_attrs split_stages unwrap_values
 );
 
 use namespace::clean;
 
-our @ISA = ('DBI::db', 'DBIx::Squirrel::Pipes');
+our @ISA = ('DBI::db', 'Ekorn::Pipeline::Pipes');
 
 # Croak at the line that called DBIx::Squirrel.
 our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
@@ -300,9 +300,10 @@ sub _select ($self, $method, $statement, $before, @args) {
     );
     my $attrs  = @args && is_stage($args[0]) ? undef : shift_attrs(\@args);
     my @stages = split_stages(\@args);
-    return _select_through($self, $method, $statement, $before, $attrs, \@stages,
-        @args)
-        if @stages;
+    return _select_through(
+        $self, $method, $statement, $before, $attrs, \@stages,
+        @args,
+    ) if @stages;
     return in_method $self, $method, sub {
         my $sth
             = $statement isa 'DBI::st'
@@ -329,9 +330,10 @@ sub _select ($self, $method, $statement, $before, @args) {
 # from selectrow_array. What comes out is what a pipeline called with
 # values gives: every value, or, where one is asked for, a sink's result,
 # or how many.
-sub _select_through ($self, $method, $statement, $before, $attrs, $stages,
-    @args)
-{
+sub _select_through (
+    $self, $method, $statement, $before, $attrs, $stages,
+    @args,
+) {
     my @got = _select($self, $method, $statement, $before, $attrs, @args);
     return Ekorn::Pipeline->new(@$stages)->(@got);
 }
@@ -474,7 +476,7 @@ DBIx::Squirrel::db - DBIx::Squirrel's database handle class
 A database handle from L<DBIx::Squirrel/connect> is blessed into this
 class. It's a subclass of the DBI's C<DBI::db>, so it does everything a
 DBI database handle does. It also inherits L<DBIx::Squirrel/pipe> and
-L<DBIx::Squirrel/tap> from L<DBIx::Squirrel::Pipes>.
+L<DBIx::Squirrel/tap> from L<Ekorn::Pipeline::Pipes>.
 
 =head1 METHODS
 

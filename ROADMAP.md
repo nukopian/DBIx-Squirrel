@@ -41,22 +41,10 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing, between 2026-0016, shipped on `pipeline-experimental`, and
-2026-0017.
+Nothing, between 2026-0017, shipped on `pipeline-experimental`, and
+2026-0018.
 
 ## Next
-
-### 2026-0017. The facades go
-
-**Added:** 2026-11-13. **Size:** S (2). **Split from:** 2026-0013
-
-What: DBIx::Squirrel::Pipeline and DBIx::Squirrel::Pipes go; `db` and
-`st` take `pipe` and `tap` from Ekorn::Pipeline::Pipes; Stop, Gather and
-the `Stages::` modules stay as plain re-exports of Ekorn's functions
-(D1, D6), as the design's section 9 has it. Why: DBIx::Squirrel uses
-Ekorn as it is, subclassing and wrapping nothing of it. Done when: the
-modules are gone or plain, their tests and docs follow, and nothing
-checks a pipeline `isa` DBIx::Squirrel::Pipeline.
 
 ### 2026-0018. Pipelines named in the Sugar's definitions
 

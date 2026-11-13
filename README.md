@@ -137,8 +137,9 @@ them.
 
 The pipeline is [Ekorn::Pipeline](https://github.com/nukopian/Ekorn-Pipeline).
 It began here, and is now a distribution of its own, so that any
-function can take stages from its caller. DBIx::Squirrel keeps its own
-names for the modules. The stages that need a database, such as
+function can take stages from its caller. DBIx::Squirrel uses it as it
+is, and keeps its own names for its modules of functions, such as
+`DBIx::Squirrel::Stop`. The stages that need a database, such as
 `pluck`, are DBIx::Squirrel's own.
 
 ### 5. Have rows as objects.

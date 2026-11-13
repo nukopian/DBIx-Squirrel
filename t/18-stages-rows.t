@@ -6,10 +6,10 @@ use DBI;
 use Ref::Util qw(is_blessed_ref);
 
 use DBIx::Squirrel;
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline qw();
 use DBIx::Squirrel::Stages::Rows;
 
-my $class = 'DBIx::Squirrel::Pipeline';
+my $class = 'Ekorn::Pipeline';
 
 my @source = (
     'dbi:SQLite:dbname=:memory:', '', '',

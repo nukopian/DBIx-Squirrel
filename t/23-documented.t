@@ -8,7 +8,7 @@ use Test2::Plugin::NoWarnings;
 use DBI;
 use DBIx::Squirrel;
 use DBIx::Squirrel::Context qw(result_number result_original);
-use DBIx::Squirrel::Pipeline;
+use Ekorn::Pipeline         qw();
 use DBIx::Squirrel::Stages::Rows;
 use DBIx::Squirrel::Stop;
 use DBIx::Squirrel::Sugar qw(database statement);
@@ -191,7 +191,7 @@ subtest 'Row objects' => sub {
 subtest 'Pipelines' => sub {
     my @inc = map { "-I$_" } grep { !ref } @INC;
     for my $module (qw(
-        Pipeline     Gather Stop Context Stages::Flow Stages::Batch
+        Gather       Stop Context Stages::Flow Stages::Batch
         Stages::Taps Stages::Rows))
     {
         my $code = qq{use DBIx::Squirrel::$module; print \$INC{'DBI.pm'} ? 1 : 0};
@@ -205,27 +205,27 @@ subtest 'Pipelines' => sub {
 
 subtest "A pipeline's stages" => sub {
     my $dbh   = music();
-    my $count = DBIx::Squirrel::Pipeline->new(
+    my $count = Ekorn::Pipeline->new(
         sub ($dbh) { $dbh->selectrow_array('SELECT COUNT(*) FROM artist') },
         sub { $_ * 10 },
     );
     is [$dbh->pipe($count)], [30], 'a pipeline can be given to pipe';
     my $seen;
-    my $note = DBIx::Squirrel::Pipeline->new(sub ($dbh) {
+    my $note = Ekorn::Pipeline->new(sub ($dbh) {
         $seen = ref $dbh;
         ();
     });
     ref_is $dbh->tap($note), $dbh, 'and to tap';
     is $seen, 'DBIx::Squirrel::db', 'whose stages see the handle';
 
-    my $names = DBIx::Squirrel::Pipeline->new(sub { $_->[1] }, sub { uc });
+    my $names = Ekorn::Pipeline->new(sub { $_->[1] }, sub { uc });
     my $all   = 'SELECT id, name FROM artist ORDER BY id';
     my $it    = $dbh->iterate($all);
     is [$it->reset($names)->all], [qw(ABBA BLUR CREAM)], 'and to reset';
     is [$dbh->results($all, $names)->all], [qw(ABBA BLUR CREAM)],
         'and to results, straight after the statement';
 
-    my $until_blur = DBIx::Squirrel::Pipeline->new(
+    my $until_blur = Ekorn::Pipeline->new(
         sub { Stop() if $_->[1] eq 'Blur'; $_ },
         sub { result_number . ". $_->[1]" },
     );
@@ -257,13 +257,13 @@ subtest 'Canned stages' => sub {
         ':DEFAULT keeps them, with the one named';
 
     my $expected = 'Expected an iterator, for the column names';
-    like dies { DBIx::Squirrel::Pipeline->new(pluck('name'))->([1, 'Abba']) },
+    like dies { Ekorn::Pipeline->new(pluck('name'))->([1, 'Abba']) },
         qr( \Q$expected\E )x, 'pluck by name, on an array, needs an iterator';
-    like dies { DBIx::Squirrel::Pipeline->new(as_hash)->([1, 'Abba']) },
+    like dies { Ekorn::Pipeline->new(as_hash)->([1, 'Abba']) },
         qr( \Q$expected\E )x, 'and so does as_hash';
-    is [DBIx::Squirrel::Pipeline->new(pluck(1))->([1, 'Abba'])], ['Abba'],
+    is [Ekorn::Pipeline->new(pluck(1))->([1, 'Abba'])], ['Abba'],
         'pluck by position needs none';
-    is [DBIx::Squirrel::Pipeline->new(pluck('name'))->({name => 'Abba'})],
+    is [Ekorn::Pipeline->new(pluck('name'))->({name => 'Abba'})],
         ['Abba'],
         'nor does pluck by name, on a hash';
 };

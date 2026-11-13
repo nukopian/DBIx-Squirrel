@@ -7,12 +7,14 @@ Unreleased
     ended. Its stages' Context, pluck and as_hash work wherever a
     statement is read. A call taking stages gives a sink's result when
     a sink is last, and otherwise an iterator, the Sugar's statements
-    included. DBIx::Squirrel::Stages::Flow passes on three more of
-    Ekorn's stages, and a gather has a flush and an end. This is work
-    towards v3.0.0, on the pipeline-experimental branch (roadmap
-    2026-0014 to 2026-0016), and breaks code that uses count, relies on
-    single croaking, takes a gather for a code reference, or reads a
-    Sugar statement given stages as a list or a count.
+    included. DBIx::Squirrel uses Ekorn::Pipeline as it is, so its own
+    Pipeline and Pipes modules are gone. DBIx::Squirrel::Stages::Flow
+    passes on three more of Ekorn's stages, and a gather has a flush
+    and an end. This is work towards v3.0.0, on the
+    pipeline-experimental branch (roadmap 2026-0014 to 2026-0017), and
+    breaks code that uses count, relies on single croaking, takes a
+    gather for a code reference, reads a Sugar statement given stages
+    as a list or a count, or uses DBIx::Squirrel::Pipeline.
 
     - An iterator is a source, which a pipeline of Ekorn::Pipeline's can
       read, passing on the statement's columns as the run's context. Its
@@ -37,6 +39,12 @@ Unreleased
     - The select methods take stages after the bind values, and push
       what the DBI gives through them: every value that comes out, or,
       for one value, a sink's result, or how many.
+    - DBIx::Squirrel::Pipeline is gone: make a pipeline with
+      Ekorn::Pipeline->new. DBIx::Squirrel::Pipes is gone: the handles
+      take pipe and tap from Ekorn::Pipeline::Pipes.
+    - DBIx::Squirrel::Stop still exports Stop, but is no longer a
+      class: throw with Ekorn::Pipeline::Stop->throw, and subclass
+      Ekorn::Pipeline::Stop.
     - pluck, as_hash and result_original work in any run reading a
       statement: through |, or in a pipeline of your own, as well as
       in an iterator's own stages. result_number and iterator are

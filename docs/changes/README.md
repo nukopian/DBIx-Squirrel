@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [The facades go](2026-0017-facades-go.md),
+  roadmap 2026-0017: shipped, unreleased.
 - [Runs that end in a sink](2026-0016-runs-ending-in-a-sink.md),
   roadmap 2026-0016: shipped, unreleased.
 - [Context over Ekorn's run](2026-0015-context-over-run.md),
