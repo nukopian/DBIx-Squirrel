@@ -1,3 +1,18 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-13: `is_sink` keeps `one` and `many`
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+190fd01f05751172f9012519170693a1d412772c, on its branch
+`pipeline-experimental`)
+
+Considered and kept, as 2026-0022's D65: Iain wondered whether
+`is_sink` should give 1 and 2 in place of `one` and `many`. It keeps
+the strings: both are true either way, but `is_sink($x) eq 'many'`
+says what it means where it's written, where `== 2` needs the reader
+to know what 2 stands for. Its false answer stays `!!0`. Nothing
+changes for you beyond D64's rename.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
