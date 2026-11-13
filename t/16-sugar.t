@@ -3,6 +3,7 @@ use Test2::V0;
 use Test2::Plugin::NoWarnings;
 
 use DBIx::Squirrel;
+use Ekorn::Pipeline        qw();
 use Ekorn::Pipeline::Sinks qw(count_items keep_all);
 use Sub::Util              qw();
 
@@ -90,8 +91,10 @@ subtest 'through stages' => sub {
         2, 'and count_items for how many';
     is [music $sql, {ekorn_slice => {}}, sub ($row) { $row->{name} }, keep_all],
         [qw(Abba Blur Cream)], 'with attributes';
-    is [music 'SELECT name FROM artist WHERE id > ?', 1, sub { $_->[0] },
-        keep_all],
+    is [
+        music 'SELECT name FROM artist WHERE id > ?', 1, sub { $_->[0] },
+        keep_all,
+        ],
         [qw(Blur Cream)], 'and bind values';
 };
 
@@ -309,15 +312,68 @@ subtest 'mistakes' => sub {
     like dies { statement(nowhere => undef, 'SELECT 1') },
         qr( \A \QExpected a database and a statement for nowhere\E )x,
         'a statement on no database';
-    like dies { statement(odd => music => 'SELECT 1', 'x') },
-        qr( \A \QExpected only code references or pipelines after the statement for odd\E )x,
-        'anything but code references or pipelines after it';
+    like dies { statement(odd => music => 'SELECT 1', ['x']) },
+        qr( \A \QExpected only code references, pipelines or their names after the statement for odd\E )x,
+        'anything but code references, pipelines or names after it';
+    like dies { statement(odder => music => 'SELECT 1', 'no good') },
+        qr( \A \QExpected only code references, pipelines or their names after the statement for odder\E )x,
+        'a string that is not a name';
     like dies { statement(music => music => 'SELECT 1') },
         qr( \A \QExpected no function of the name in main already (music)\E )x,
         'a name a database has';
     like dies { statement(keep_all => music => 'SELECT 1') },
         qr( \A \QExpected no function of the name in main already (keep_all)\E )x,
         'or a sink imported';
+};
+
+subtest "a definition's names are pipelines, resolved as it's made" => sub {
+    Ekorn::Pipeline->named(trimmed => sub { s( \A \s+ | \s+ \z )()xgr });
+    Ekorn::Pipeline->named(shouted => sub { uc });
+    music 'CREATE TABLE padded (name TEXT)';
+    music 'INSERT INTO padded VALUES (?)', $_ for '  abba ', ' blur';
+    statement(
+        padded_names => music => 'SELECT name FROM padded WHERE name LIKE ?',
+        sub { $_->[0] }, trimmed => 'shouted',
+    );
+    is [padded_names('%b%', keep_all)], [qw(ABBA BLUR)],
+        'each name, in its place among the stages';
+    is [padded_names('trimmed', keep_all)], [],
+        'and a string given to the call is a bind value, not a name';
+    like dies { padded_names('%abba%', 'trimmed', keep_all) },
+        qr( called\ with\ 2\ bind\ variables\ when\ 1\ are\ needed )x,
+        'even after the bind values, where a stage could go';
+
+    package Other::Names {    ## no critic (Modules::ProhibitMultiplePackages)
+        use DBIx::Squirrel::Sugar qw(statement);
+        Ekorn::Pipeline->named(trimmed => sub { 'theirs' });
+        statement(their_names => music => 'SELECT name FROM padded', 'trimmed');
+    }
+    is [Other::Names::their_names(keep_all)], [qw(theirs theirs)],
+        "a name is looked up in the package making the definition";
+    statement(
+        borrowed => music => 'SELECT name FROM padded',
+        'Other::Names::trimmed',
+    );
+    is [borrowed(keep_all)], [qw(theirs theirs)], "or a qualified one, its own";
+
+    my $line = __LINE__ + 1;
+    like dies { statement(nameless => music => 'SELECT 1', 'nowhere') },
+        qr( \A \QNo pipeline named main::nowhere\E\ at\ \Q${\ __FILE__ }\E\ line\ $line\. )x,
+        "a name not defined croaks as it's made, at its line";
+};
+
+subtest "a named pipeline's stage that dies is named" => sub {
+    Ekorn::Pipeline->named(fussy => sub { $_ }, sub { die "no names today\n" })
+        ;    ## no critic (ErrorHandling::RequireCarping)
+    statement(
+        fussy_names => music => 'SELECT name FROM artist', sub { $_ },
+        'fussy',
+    );
+    my $line = __LINE__ + 1;
+    is dies { fussy_names(keep_all) },
+        "Pipeline stage #2.1.2 (main::fussy#2) failed at ${\ __FILE__ } line $line:\n"
+        . "    no names today\n",
+        'by its place, and by its name and its place there';
 };
 
 done_testing;

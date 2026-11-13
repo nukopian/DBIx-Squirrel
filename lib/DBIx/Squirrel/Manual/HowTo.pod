@@ -1064,6 +1064,26 @@ needs a statement defined then too:
     say join ', ', top_hits(keep_all);             # Dancing Queen, Sunshine of Your Love, Girls & Boys, Parklife
     say join ', ', top_hits(take(2), keep_all);    # Dancing Queen, Sunshine of Your Love
 
+=head2 Name a pipeline once, and use it in definitions
+
+A pipeline named with Ekorn::Pipeline's C<named> can be given to a
+statement's definition by its name. The name is looked up as the
+statement is defined, so define it first: for a statement defined on
+C<use>, in a C<BEGIN> block above it. Called, the statement takes
+strings as bind values, never as names:
+
+    use Ekorn::Pipeline;
+    use Ekorn::Pipeline::Sinks qw(keep_all);
+
+    BEGIN { Ekorn::Pipeline->named(shouted => sub { uc }) }
+
+    use DBIx::Squirrel::Sugar statement => {
+        loud_titles => [music => 'SELECT title FROM album WHERE year < ? ORDER BY year',
+            sub { $_->[0] }, 'shouted'],
+    };
+
+    say join ', ', loud_titles(1990, keep_all);    # DISRAELI GEARS, ARRIVAL
+
 =head1 Caching and connections
 
 =head2 Prepare a statement once, wherever it's used

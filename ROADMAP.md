@@ -41,26 +41,10 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing, between 2026-0017, shipped on `pipeline-experimental`, and
-2026-0018.
+Nothing, between 2026-0018, shipped on `pipeline-experimental`, and
+2026-0019, which waits for Ekorn::Pipeline v0.3.0 on CPAN.
 
 ## Next
-
-### 2026-0018. Pipelines named in the Sugar's definitions
-
-**Added:** 2026-11-13. **Size:** M (3). **Split from:** 2026-0013.
-**Depends on:** 2026-0017
-
-What: a statement's definition in DBIx::Squirrel::Sugar can name
-pipelines, as `[music => $sql, clean => trim =>]`, resolved with
-Ekorn's `pipeline_in` in the package that used the Sugar, as the
-design's section 8 has it (Ekorn's D36). It replaces 2026-0010, a
-`pipeline` key of the Sugar's own. Why: names are Ekorn's, so the Sugar
-uses them rather than defining pipelines itself. Done when: a
-definition's names resolve, a string given when a statement is called
-stays a bind value, and the docs show it, the reference's entry for
-"Pipeline stage #%s failed" with the name of a named pipeline (Ekorn's
-2026-0013).
 
 ### 2026-0019. DBIx::Squirrel v3.0.0
 

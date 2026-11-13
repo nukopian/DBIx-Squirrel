@@ -1508,6 +1508,27 @@ It gives the calling package a function of that name, and returns the
 function. The database is found when the function runs, so it can be
 defined after the statement.
 
+A stage in a definition can be a pipeline's **name**, as Ekorn::Pipeline
+names them with `named`. A name is looked up as the statement is
+defined, in the package defining it, unless it's qualified, as
+`My::Module::clean`. So it must be defined first, and one that isn't
+croaks then: `No pipeline named main::clean`. Each name stands in its
+place among the stages. When the statement's function is called, a
+string given is a bind value, never a name.
+
+```perl
+use Ekorn::Pipeline;
+
+BEGIN { Ekorn::Pipeline->named(trimmed => sub { s( \A \s+ | \s+ \z )()xgr }) }
+
+use DBIx::Squirrel::Sugar statement => {
+    titles => [music => 'SELECT title FROM album', sub { $_->[0] }, 'trimmed'],
+};
+```
+
+On `use`, the definition is made as the program compiles, so the name
+is defined in a `BEGIN` block before it.
+
 ### The function a statement is given
 
 ```perl
@@ -1621,7 +1642,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected stage #%d to be a code reference or a pipeline` | Something passed as a stage wasn't a code reference or a pipeline. No stage runs. |
 | `Expected a code reference` | The source given to a pipeline's `iterator`, or the block given to `gather`, wasn't a code reference. |
 | `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end` | The block given to `gather` for that stage returned something else. |
-| `Pipeline stage #%s failed at %s line %d:` | A stage, or its flush, died. The message it died with follows, indented. A stage inside a pipeline given as a stage is named `#2.3`, for the third stage of the pipeline given as stage #2. |
+| `Pipeline stage #%s failed at %s line %d:` | A stage, or its flush, died. The message it died with follows, indented. A stage inside a pipeline given as a stage is named `#2.3`, for the third stage of the pipeline given as stage #2. A stage of a named pipeline is named by its name and its place there too: `#2.1.2 (main::fussy#2)`, for the second stage of `fussy`, named in a statement's definition as its second stage. |
 | `Stop used outside a pipeline` | `Stop` was called where no pipeline was running to catch it. |
 
 ### Canned stages
@@ -1651,7 +1672,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected a database defined once (%s)` | The name was given to another database already. |
 | `Expected a database defined as %s` | `database` was given a name no database has. |
 | `Expected a database and a statement for %s` | A statement's definition didn't name its database, or have its SQL. |
-| `Expected only code references or pipelines after the statement for %s` | A statement's definition had something other than stages, which are code references or pipelines, after the statement and its attributes. |
+| `Expected only code references, pipelines or their names after the statement for %s` | A statement's definition had something other than stages, which are code references, pipelines or pipelines' names, after the statement and its attributes. |
 | `Expected no function of the name in %s already (%s)` | The package has a function of that name already. |
 
 ## Differences from plain DBI

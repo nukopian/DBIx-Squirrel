@@ -2,12 +2,12 @@ use v5.36;
 
 package DBIx::Squirrel::Sugar;
 
-use Ref::Util qw(is_arrayref is_hashref);
+use Ref::Util qw(is_arrayref is_hashref is_ref);
 
 use Ekorn::Pipeline qw(is_stage);
 
 use DBIx::Squirrel         qw();
-use DBIx::Squirrel::Errors qw(croakf);
+use DBIx::Squirrel::Errors qw(at_caller   croakf);
 use DBIx::Squirrel::Util   qw(install_sub is_name shift_attrs split_stages);
 
 use namespace::clean;
@@ -106,9 +106,11 @@ sub _define_statement ($package, $name, @definition) {
         && (!defined $rest[0] || is_hashref($rest[0]) && !is_stage($rest[0]))
         ? shift @rest
         : undef;
-    croakf 'Expected only code references or pipelines after the statement for %s',
+    croakf
+        'Expected only code references, pipelines or their names after the statement for %s',
         $name
-        if grep { !is_stage($_) } @rest;
+        if grep { !is_stage($_) && !_is_pipeline_name($_) } @rest;
+    @rest = map { _resolved($package, $_) } @rest;
     my %definition = (
         database  => $database,
         statement => $statement,
@@ -118,6 +120,24 @@ sub _define_statement ($package, $name, @definition) {
     my $function = sub (@args) { _run_statement(\%definition, @args) };
     _install($package, $name, $function);
     return $function;
+}
+
+# Return true if a stage given in a definition is a pipeline's name:
+# words joined by ::, as Ekorn::Pipeline names them.
+sub _is_pipeline_name ($stage) {
+    return
+           defined $stage
+        && !is_ref($stage)
+        && $stage =~ m( \A [^\W\d]\w* (?: :: [^\W\d]\w* )* \z )xa;
+}
+
+# Return a stage given in a definition: a pipeline's name resolved now, in
+# the package making the definition, as Ekorn::Pipeline's pipeline word
+# resolves one in its caller's, each on its own, so the other stages keep
+# their places; anything else as it is.
+sub _resolved ($package, $stage) {
+    return $stage unless _is_pipeline_name($stage);
+    return at_caller { Ekorn::Pipeline->pipeline_in($package, $stage) };
 }
 
 # Run a statement's function: execute the statement with the bind values
@@ -299,6 +319,20 @@ It gives the calling package a function of that name, and returns the
 function. The database is found when the function runs, so it can be
 defined after the statement.
 
+A stage in a definition can be a pipeline's name, as
+L<Ekorn::Pipeline/named> names them. A name is looked up as the
+statement is defined, in the package defining it, unless it's
+qualified, as C<My::Module::clean>, so it must be defined first. One
+that isn't croaks then, "No pipeline named main::clean". Each name
+stands in its place among the stages. When the statement's function is
+called, a string given is a bind value, never a name.
+
+    BEGIN { Ekorn::Pipeline->named(trimmed => sub { s( \A \s+ | \s+ \z )()xgr }) }
+
+    use DBIx::Squirrel::Sugar statement => {
+        titles => [music => 'SELECT title FROM album', sub { $_->[0] }, 'trimmed'],
+    };
+
 =head2 The function a database is given
 
     $dbh     = music();
@@ -379,10 +413,16 @@ A name can't be a function's.
 
 A statement given to C<use> didn't name its database, or have its SQL.
 
-=item Expected only code references or pipelines after the statement for %s
+=item Expected only code references, pipelines or their names after the statement for %s
 
 A statement's definition had something other than stages, which are
-code references or pipelines, after the statement and its attributes.
+code references, pipelines or pipelines' names, after the statement
+and its attributes.
+
+=item No pipeline named %s
+
+A statement's definition named a pipeline that wasn't defined. This is
+Ekorn::Pipeline's message.
 
 =item Expected a name for a database (%s)
 

@@ -8,13 +8,15 @@ Unreleased
     statement is read. A call taking stages gives a sink's result when
     a sink is last, and otherwise an iterator, the Sugar's statements
     included. DBIx::Squirrel uses Ekorn::Pipeline as it is, so its own
-    Pipeline and Pipes modules are gone. DBIx::Squirrel::Stages::Flow
-    passes on three more of Ekorn's stages, and a gather has a flush
-    and an end. This is work towards v3.0.0, on the
-    pipeline-experimental branch (roadmap 2026-0014 to 2026-0017), and
-    breaks code that uses count, relies on single croaking, takes a
-    gather for a code reference, reads a Sugar statement given stages
-    as a list or a count, or uses DBIx::Squirrel::Pipeline.
+    Pipeline and Pipes modules are gone, and a Sugar statement's
+    definition can name Ekorn's named pipelines.
+    DBIx::Squirrel::Stages::Flow passes on three more of Ekorn's
+    stages, and a gather has a flush and an end. This is work towards
+    v3.0.0, on the pipeline-experimental branch (roadmap 2026-0014 to
+    2026-0018), and breaks code that uses count, relies on single
+    croaking, takes a gather for a code reference, reads a Sugar
+    statement given stages as a list or a count, or uses
+    DBIx::Squirrel::Pipeline.
 
     - An iterator is a source, which a pipeline of Ekorn::Pipeline's can
       read, passing on the statement's columns as the run's context. Its
@@ -45,6 +47,13 @@ Unreleased
     - DBIx::Squirrel::Stop still exports Stop, but is no longer a
       class: throw with Ekorn::Pipeline::Stop->throw, and subclass
       Ekorn::Pipeline::Stop.
+    - A Sugar statement's definition can give a pipeline's name, as
+      Ekorn::Pipeline's named names them, among its stages, looked up
+      as the statement is defined, in the package defining it. A
+      string given when the statement is called is a bind value, as
+      before. Its message for anything else is now "Expected only
+      code references, pipelines or their names after the statement
+      for %s".
     - pluck, as_hash and result_original work in any run reading a
       statement: through |, or in a pipeline of your own, as well as
       in an iterator's own stages. result_number and iterator are

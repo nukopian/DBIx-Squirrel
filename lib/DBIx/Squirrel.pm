@@ -494,7 +494,8 @@ method you called.
 A stage passed to L</pipe> or L</tap>, or its flush, died. The
 message it died with follows, indented. A stage inside a pipeline given
 as a stage is named C<#2.3>, for the third stage of the pipeline given
-as stage #2.
+as stage #2. A stage of a named pipeline is named by its name and its
+place there too, as C<#2.1.2 (main::fussy#2)>.
 
 =item Expected stage #%d to be a code reference or a pipeline
 

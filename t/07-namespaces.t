@@ -59,8 +59,8 @@ my %imported = (
     'DBIx::Squirrel::Stop'  => [qw(croak)],
     'DBIx::Squirrel::Sugar' => [
         qw(
-            croakf     install_sub is_arrayref is_coderef
-            is_hashref is_name     shift_attrs split_stages
+            at_caller  croakf  install_sub is_arrayref is_coderef
+            is_hashref is_name is_ref      shift_attrs split_stages
         ),
     ],
     'DBIx::Squirrel::st' => [

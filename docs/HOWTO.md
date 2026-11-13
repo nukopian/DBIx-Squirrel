@@ -1133,6 +1133,28 @@ say join ', ', top_hits(keep_all);             # Dancing Queen, Sunshine of Your
 say join ', ', top_hits(take(2), keep_all);    # Dancing Queen, Sunshine of Your Love
 ```
 
+### Name a pipeline once, and use it in definitions
+
+A pipeline named with Ekorn::Pipeline's `named` can be given to a
+statement's definition by its name. The name is looked up as the
+statement is defined, so define it first: for a statement defined on
+`use`, in a `BEGIN` block above it. Called, the statement takes
+strings as bind values, never as names:
+
+```perl
+use Ekorn::Pipeline;
+use Ekorn::Pipeline::Sinks qw(keep_all);
+
+BEGIN { Ekorn::Pipeline->named(shouted => sub { uc }) }
+
+use DBIx::Squirrel::Sugar statement => {
+    loud_titles => [music => 'SELECT title FROM album WHERE year < ? ORDER BY year',
+        sub { $_->[0] }, 'shouted'],
+};
+
+say join ', ', loud_titles(1990, keep_all);    # DISRAELI GEARS, ARRIVAL
+```
+
 ## Caching and connections
 
 ### Prepare a statement once, wherever it's used

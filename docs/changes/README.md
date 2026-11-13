@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [Pipelines named in the Sugar's definitions](2026-0018-sugar-names-pipelines.md),
+  roadmap 2026-0018: shipped, unreleased.
 - [The facades go](2026-0017-facades-go.md),
   roadmap 2026-0017: shipped, unreleased.
 - [Runs that end in a sink](2026-0016-runs-ending-in-a-sink.md),
