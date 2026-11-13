@@ -1336,7 +1336,19 @@ The end is called once the run has ended, however it ended, and is
 told how: C<done>, C<stopped> or C<died>. An iterator's run is C<done>
 once its rows run out, and C<stopped> when C<first> or C<single> finishes
 it. What the end returns is dropped. For an end without a flush,
-return C<undef> in the flush's place. Ekorn's reference gives the
+return C<undef> in the flush's place, or return the parts by name, as
+one hash reference with the keys C<step>, C<flush> and C<end>, giving
+only those the stage has:
+
+    gather {
+        my $count = 0;    # this run's
+        return {
+            step => sub ($row) { $count++; $row },
+            end  => sub ($how) { warn "$count rows, $how\n" if $how ne 'done' },
+        };
+    }
+
+Ekorn's reference gives the
 order flushes and ends are called in, in
 L<Flushes and ends|Ekorn::Pipeline::Manual::Reference/"Flushes and ends">.
 It also says what the block must return, in

@@ -298,7 +298,7 @@ sub _statement ($self) {
             $sth->finish if $sth->{Active};
             return;
         };
-        return ($step, $end, $context);
+        return {step => $step, end => $end, context => $context};
     };
 }
 

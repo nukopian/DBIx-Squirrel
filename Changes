@@ -80,6 +80,9 @@ Unreleased
       an end".
     - A stage made with gather is an object that can go wherever a
       stage can, and no longer a code reference.
+    - A gather's block can return its parts by name, as one hash
+      reference with the keys step, flush and end, giving only those
+      it has, as Ekorn::Pipeline v0.3.0 allows.
 
 v2.1.0 2026-11-10
 

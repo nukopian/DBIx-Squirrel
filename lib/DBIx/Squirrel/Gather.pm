@@ -52,7 +52,9 @@ statement or of a pipeline itself. Its block returns the stage, which
 can be a pipeline, and optionally a flush and an end. The flush is
 called once the values have run out, and what it returns goes through
 the rest of the stages. The end is called once the run has ended, and
-told how: C<done>, C<stopped> or C<died>.
+told how: C<done>, C<stopped> or C<died>. The block can return them as
+a list, in that order, or by name, as one hash reference with the keys
+C<step>, C<flush> and C<end>, giving only those it has.
 
 The stage it makes is an Ekorn::Pipeline::Gather, an object that can
 go wherever a stage can. To test for one, test for that class, not

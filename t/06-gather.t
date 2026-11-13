@@ -263,6 +263,32 @@ subtest 'an iterator run while a flush gives its values has originals' => sub {
     is \@seen, [['Abba'], undef], 'the inner one has its own, the outer none';
 };
 
+subtest 'a block can return its parts by name' => sub {
+    my @how;
+    my $it = $dbh->iterate(
+        'SELECT name FROM artist ORDER BY id',
+        sub { $_->[0] },
+        gather {
+            my @seen;
+            return {
+                step  => sub ($name) { push @seen, $name; () },
+                flush => sub () { join ',', @seen },
+                end   => sub ($how) { push @how, $how },
+            };
+        },
+    );
+    is [$it->all], ['Abba,Blur,Cream,Dido,Enya'], 'a step and a flush';
+    is \@how,      ['done'],                      'and an end';
+    $it = $dbh->iterate(
+        'SELECT name FROM artist ORDER BY id',
+        gather {
+            +{step => sub { $_->[0] }, end => sub ($how) { push @how, $how }}
+        },
+    );
+    is $it->first, 'Abba',             'or a step and an end alone';
+    is \@how,      [qw(done stopped)], 'told how the run ended';
+};
+
 subtest "a gather's end is told how the iterator's run ended" => sub {
     my @how;
     my $it = $dbh->iterate(

@@ -1114,7 +1114,21 @@ The end is called once the run has ended, however it ended, and is
 told how: `done`, `stopped` or `died`. An iterator's run is `done`
 once its rows run out, and `stopped` when `first` or `single` finishes
 it. What the end returns is dropped. For an end without a flush,
-return `undef` in the flush's place. Ekorn's reference gives the
+return `undef` in the flush's place, or return the parts by name, as
+one hash reference with the keys `step`, `flush` and `end`, giving
+only those the stage has:
+
+```perl
+gather {
+    my $count = 0;    # this run's
+    return {
+        step => sub ($row) { $count++; $row },
+        end  => sub ($how) { warn "$count rows, $how\n" if $how ne 'done' },
+    };
+}
+```
+
+Ekorn's reference gives the
 order flushes and ends are called in, in
 [Flushes and ends](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#flushes-and-ends).
 It also says what the block must return, in
