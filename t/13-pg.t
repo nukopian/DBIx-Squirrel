@@ -161,7 +161,7 @@ subtest 'prepare_cached and iterators' => sub {
     weaken(my $gone = $it);
     undef $it;
     ok !$gone, 'which lets the iterator go';
-    is scalar($sth->iterate(last => 250)->all), 250, 'all of them, after';
+    is scalar(@{ $sth->iterate(last => 250)->all }), 250, 'all of them, after';
     $it = $sth->iterate(
         last => 250,
         sub ($row) { Stop() if $row->[0] > 3; $row->[0] },

@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [The iterator as a source](2026-0014-iterator-as-source.md),
-  roadmap 2026-0014: in progress.
+  roadmap 2026-0014: shipped, unreleased.
 - [DBIx::Squirrel on Ekorn as it is: one design](2026-0013-one-design.md),
   from a task of Ekorn-Pipeline's: split into 2026-0014 to 2026-0019.
 - [Export Ekorn's pipeline()](2026-0009-export-pipeline.md),

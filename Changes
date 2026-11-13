@@ -3,11 +3,12 @@ Revision history for DBIx-Squirrel
 Unreleased
 
     An iterator is a source for Ekorn::Pipeline, reading only as many
-    rows as it needs, DBIx::Squirrel::Stages::Flow passes on three more
-    of Ekorn's stages, and a gather has a flush and an end. This is
-    work towards v3.0.0, on the pipeline-experimental branch (roadmap
-    2026-0014), and breaks code that uses count, relies on single
-    croaking, or takes a gather for a code reference.
+    rows as it needs, with Ekorn's | and @{}, and saying how its run
+    ended. DBIx::Squirrel::Stages::Flow passes on three more of Ekorn's
+    stages, and a gather has a flush and an end. This is work towards
+    v3.0.0, on the pipeline-experimental branch (roadmap 2026-0014),
+    and breaks code that uses count, relies on single croaking, or
+    takes a gather for a code reference.
 
     - An iterator is a source, which a pipeline of Ekorn::Pipeline's can
       read, passing on the statement's columns as the run's context. Its
@@ -16,6 +17,12 @@ Unreleased
       fills its batch, up to 64, as in version 1, rather than 100 at a
       time. Reading one row of wide rows is about 20 times quicker.
     - first, new: the next result, or undef, finishing the statement.
+    - ended, new: how the last run ended, done, stopped or died.
+    - | and @{}, new, as Ekorn::Pipeline's sources have them, where
+      use Ekorn::Pipeline::Operators is in scope: $it | keep_all gives
+      an array reference of the results, $it | count_items a number,
+      and @$it every result. | always gives one value. Each use runs
+      the statement afresh, as the iterator's own run.
     - single gives the next result, or undef, and finishes the
       statement. At a second result, it warns "Expected only one item,
       but there were more", and gives the first, rather than croak. It

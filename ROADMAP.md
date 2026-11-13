@@ -41,16 +41,8 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0014. The iterator as a source
-
-**Added:** 2026-11-13. **Size:** M (3). **Split from:** 2026-0013
-
-DBIx::Squirrel's iterator becomes a source of Ekorn::Pipeline's, its
-stages run by Ekorn, reading only as many rows as it needs: the design's
-section 4. The spike for its Q30 built most of it on
-`pipeline-experimental`; what's left is `ended`, `|` and `@{}`, and
-results as objects through it. Its [record](docs/changes/2026-0014-iterator-as-source.md)
-has the plan.
+Nothing, between 2026-0014, shipped on `pipeline-experimental`, and
+2026-0015.
 
 ## Next
 

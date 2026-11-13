@@ -1,6 +1,6 @@
 # 2026-0014. The iterator as a source
 
-**Status:** in progress
+**Status:** shipped, unreleased, on `pipeline-experimental`
 
 **Decisions:** None open. They're 2026-0013's: D4, a fresh run from
 `ekorn_source`; D22 and D23, `all`, `first` and `single` as Ekorn's
@@ -13,6 +13,8 @@ Iain approved on 2026-11-13
 
 **Started:** 2026-11-12, as the spike for 2026-0013's Q30, in
 af0324c3f8b11eaf0fa69a479bf4177103d9b2e9
+
+**Finished:** 2026-11-13
 
 ## Background
 
@@ -63,3 +65,41 @@ meets its floors.
   af0324c3f8b11eaf0fa69a479bf4177103d9b2e9, with whole batches in
   9331a4d7ba024d3891e8dc47e9d336460a12aed5 and `next` taking the code
   reference once in 118538e.
+- **2026-11-13, outcome:** section 4 is built, against Ekorn's
+  working copy at a9e9891f6b9c48544e91e1706cce1cf6b5e46ce0, on its `pipeline-experimental`.
+  Every test passes there, against SQLite, MySQL 8.4 and PostgreSQL
+  18 on Iain's Mac; coverage meets its floors (branch 97.3%). Done when
+  allowed for `t/06-gather.t`'s two failures; there are none, as
+  f044232 followed Ekorn's flush and end first.
+  - `ended` gives the last run's `done`, `stopped` or `died`, kept
+    once the iterator lets the run go, and nothing while a run is
+    going, or after `reset`.
+  - `|` and `@{}` are Ekorn's `chain` and `drain`, overloaded on the
+    iterator, so on DBIx::Squirrel::Results too, with Operators loaded
+    with an empty import list. Without `use Ekorn::Pipeline::Operators`
+    in scope, both croak with Ekorn's message, executing nothing.
+  - The tests are in `t/25-iterator-ended-operators.t`.
+- **Found: a result set read by a pipeline after it was let go gave
+  plain arrays,** not objects: the source blessed each row through the
+  weak reference to the result set, and gave the row as it was once
+  that had gone. Now the source asks the iterator, as the run starts,
+  for what makes each row (`_row_maker`, in place of `_row`), and
+  keeps it. DBIx::Squirrel::Results finds its rows' class there, from
+  the columns' names, in place of its own `reset`.
+- **Found: two things the plan didn't say,** both as the design
+  implies, and in the POD:
+  - `single` on a statement with one row ends `done`, not
+    `stopped`: its lookahead reached the end.
+  - A run read with `|` or `@{}` is the iterator's last run, as
+    `ekorn_source` starts it with `reset`. So `next` after one
+    returns nothing, and `ended` says how that run ended, until
+    `reset`.
+- **Fixed: `t/12-mysql.t` and `t/13-pg.t` still took `all` in
+  scalar context for a count,** which the spike changed to an array
+  reference. CI has neither server, so only the run on Iain's Mac
+  showed it.
+- **What's left:** the iterator's stages ask DBIx::Squirrel::Context,
+  so `pluck` and the like don't yet work in a user's own pipeline
+  reading the iterator through `|`: 2026-0015. A sink given last as an
+  argument: 2026-0016. The README, reference and how-to, with `|`
+  giving one value explained where it's first shown: 2026-0019.

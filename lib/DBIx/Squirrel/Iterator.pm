@@ -11,12 +11,21 @@ use Ref::Util  qw(is_plain_arrayref);
 
 use Ekorn::Pipeline            qw();
 use Ekorn::Pipeline::Factories qw(source);
+use Ekorn::Pipeline::Operators qw();
 
 use DBIx::Squirrel::Context qw();
 use DBIx::Squirrel::Errors  qw(at_caller      croakf);
 use DBIx::Squirrel::Util    qw(iterator_going split_stages);
 
 use namespace::clean;
+
+# | and @{} are Ekorn's, as for its own sources, in force only where the
+# user wrote use Ekorn::Pipeline::Operators. Loading it with an empty
+# import list defines them without putting them in force here.
+use overload
+    '|'      => \&Ekorn::Pipeline::Operators::chain,
+    '@{}'    => \&Ekorn::Pipeline::Operators::drain,
+    fallback => 1;
 
 # Croak at the line that called DBIx::Squirrel.
 our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
@@ -127,6 +136,7 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     my %fresh = (
         executed     => 1,
         done         => 0,
+        ended        => undef,
         produced     => 0,
         original     => undef,
         column_names => [],
@@ -149,6 +159,14 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     # doesn't keep the run, which the iterator holds.
     $self->{pull} = \&{ $self->{run} };
     return $self;
+}
+
+# Return how the last run ended, as Ekorn's iterator says: done, stopped
+# or died; nothing while it's going, or before one has started.
+sub ended ($self) {
+    my $run = $self->{run};
+    return $run->ended if $run;
+    return $self->{ended} // ();
 }
 
 # Return the names of the statement's columns, as fetchrow_hashref keys
@@ -183,7 +201,10 @@ sub _executed ($self) {
 sub _finish ($self) {
     delete $self->{pull};
     my $run = delete $self->{run};
-    $run->finish if $run;
+    if ($run) {
+        $run->finish;
+        $self->{ended} = $run->ended;
+    }
     $self->{done} = 1;
     my $sth = $self->{sth};
     $sth->finish if $sth->{Active};
@@ -198,10 +219,9 @@ sub _finish ($self) {
 # ends a run before it starts another. The run keeps what it needs
 # itself, so it reads on if the iterator is let go first, as when a
 # pipeline reads it. A subclass can make something else of each row,
-# before the stages see it, with a _row method of its own, as
+# before the stages see it, with a _row_maker method of its own, as
 # DBIx::Squirrel::Results does.
 sub _statement ($self) {
-    my $row = $self->can('_row');
     weaken $self;
     return source {
         my $sth   = $self->{sth};
@@ -222,6 +242,7 @@ sub _statement ($self) {
             @names = at_caller { $sth->{NUM_OF_FIELDS} ? @{ $sth->{$key} } : () };
         }
         $self->{column_names} = [@names];
+        my $row   = $done ? undef : $self->_row_maker($sth);
         my $fetch = sub ($size) {
             return at_caller {
                 $sth->{Active} && $sth->{NUM_OF_FIELDS}
@@ -230,9 +251,8 @@ sub _statement ($self) {
             };
         };
         my $made = sub (@rows) {
-            return @rows unless $self;
-            @rows             = map { $self->$row($_) } @rows if $row;
-            $self->{original} = $rows[-1]                     if @rows;
+            @rows             = map { $row->($_) } @rows if $row;
+            $self->{original} = $rows[-1]                if $self && @rows;
             return @rows;
         };
         my $step = sub () {
@@ -264,6 +284,14 @@ sub _statement ($self) {
         };
         return ($step, $end, {columns => [@names], statement => $sth});
     };
+}
+
+# Return what makes each row fetched into the row the stages see, or
+# undef for the row as it is. It's called as a run starts, once the
+# statement is executed, and before a row is fetched, so a subclass can
+# read the columns, and the run keeps what it returns.
+sub _row_maker ($self, $sth) {    ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
+    return undef;                 ## no critic (Subroutines::ProhibitExplicitReturnUndef)
 }
 
 # Return the slice rows are fetched as: the ekorn_slice attribute, or
@@ -414,6 +442,20 @@ prepared again, on a new statement handle, if a list given has a
 different number of values from the one before. L</sth> then returns
 the new handle.
 
+=head2 ended
+
+    $how = $it->ended;
+
+Returns how the last run ended, as L<Ekorn::Pipeline::Iterator/ended>
+says: C<done> if the rows ran out, C<stopped> if the run was cut short,
+by L</first>, by L</single> finding a second result, or by a stage
+that stopped, and C<died> if a stage died. While a run is going, and
+before one has started, it returns nothing. L</reset> starts a new run,
+so it returns nothing after one.
+
+A run read with C<|> or C<@{}> is the iterator's last run, too (see
+L</Operators>).
+
 =head2 column_names
 
     @names = $it->column_names;
@@ -440,6 +482,38 @@ reading it executes the statement again, from its first row, through
 the iterator's stages, and passes on the statement's columns as the
 run's context. It's called by Ekorn::Pipeline, not by you.
 
+=head1 Operators
+
+An iterator overloads C<|> and C<@{}> as Ekorn::Pipeline's own sources
+do, with L<Ekorn::Pipeline::Operators>. They're in force only where
+you write C<use Ekorn::Pipeline::Operators>. Elsewhere, they croak.
+
+    use Ekorn::Pipeline::Operators;
+    use Ekorn::Pipeline::Sinks qw(count_items keep_all);
+
+    my $it    = $dbh->iterate('SELECT name FROM artist', sub { $_->[0] });
+    my $names = $it | keep_all;       # an array reference
+    my $n     = $it | count_items;    # a number
+    my @names = @$it;                 # every result
+
+B<C<|> always gives one value.> Perl calls an overloaded C<|> for
+one value, so a sink that keeps many, such as C<keep_all>, gives an
+array reference, even in a list assignment:
+
+    my @names = $it | keep_all;       # one element: the array reference
+    my @names = @{ $it | keep_all };  # the names
+
+B<Each use is a run of its own,> from the first row, through the
+iterator's stages, as L</ekorn_source> says. So C<< $it->[0] >>,
+C<scalar @$it> and C<$#$it> read every row to give one row, a count
+or an index, and two uses run the statement twice. C<for (@$it)>
+reads every row before the loop starts, where L</next>, in a C<while>,
+gives each as it comes.
+
+B<The run it starts is the iterator's.> It ends a run the iterator
+had going, so L</next> returns nothing after, and L</ended> says how
+the C<|> or C<@{}> run ended, until L</reset>.
+
 =head1 DIAGNOSTICS
 
 =over
@@ -463,7 +537,7 @@ before executing this one.
 =head1 SEE ALSO
 
 L<DBIx::Squirrel>, L<DBIx::Squirrel::Context>,
-L<DBIx::Squirrel::Pipeline>
+L<DBIx::Squirrel::Pipeline>, L<Ekorn::Pipeline::Operators>
 
 =head1 AUTHOR
 
