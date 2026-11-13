@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [pipeline-experimental back to develop](2026-0024-back-to-develop.md),
+  from Ekorn-Pipeline's messages: in progress.
 - [The reference, rewritten for v3](2026-0023-reference-for-v3.md),
   roadmap 2026-0023: shipped, unreleased.
 - [Trim DBIx::Squirrel's cost per row](2026-0022-cost-per-row.md),
