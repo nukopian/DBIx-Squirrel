@@ -71,6 +71,19 @@ it, they open as before. And with `$/` undefined, an empty file now
 gives no record when slurped. It only adds; nothing you use changes.
 Ekorn's design has it in 17.38.
 
+## From Ekorn-Pipeline, 2026-11-13: `generator {...}` and `yield`
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+3f68edc959505ae3cd6142a765e3a90e7b1c2423, on its branch
+`pipeline-experimental`)
+
+As 2026-0022's D70, Ekorn's Factories has a new word, `generator
+{...}`, with `yield` beside it, both on request: a source written as
+Python writes a generator, its block calling `yield(...)` inside any
+loops. Each run calls the block once, to its end, and gives what it
+yielded in one step, so it suits finite producers. It only adds;
+nothing you use changes. Ekorn's design has it in 17.39.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
