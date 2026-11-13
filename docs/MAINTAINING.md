@@ -83,13 +83,16 @@ perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpanm Minilla
 Run these first, and check that each one succeeds. Don't pipe them
 through `tail` or `grep` to judge them. The pipe's exit status is the
 last command's, and hides a failure. The perltidy loop is CI's style
-check. It prints a diff for each file perltidy would change.
+check. It prints a diff for each file perltidy would change. Both
+linters run on Perl 5.44, as CI's style job does: Perl::Critic takes
+the Perl's keywords from the Perl it runs on, so an older one can pass
+what CI flags.
 
 ```
 cd ~/Git/github.com/nukopian/DBIx-Squirrel
 perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test -L
-perlbrew exec --with perl-5.36.3@dbix-squirrel-2 perlcritic lib
-for f in $(git ls-files 'lib/*.pm' 't/*.t' 'xt/*.t'); do perlbrew exec --quiet --with perl-5.36.3@dbix-squirrel-2 perltidy "$f" | diff -u "$f" -; done
+perlbrew exec --with perl-5.44.0@dbix-squirrel-2 perlcritic lib
+for f in $(git ls-files 'lib/*.pm' 't/*.t' 'xt/*.t'); do perlbrew exec --quiet --with perl-5.44.0@dbix-squirrel-2 perltidy "$f" | diff -u "$f" -; done
 ```
 
 DBIx::Squirrel's pipeline is Ekorn::Pipeline's. CI installs Ekorn from

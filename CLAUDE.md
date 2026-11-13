@@ -299,7 +299,7 @@ logs, Term::ANSIColor, IO::Pager, Email::Stuffer). Devel::NYTProf
   what it would change:
 
   ```
-  perlbrew exec --quiet --with perl-5.36.3@dbix-squirrel-2 perltidy lib/DBIx/Squirrel.pm | diff lib/DBIx/Squirrel.pm -
+  perlbrew exec --quiet --with perl-5.44.0@dbix-squirrel-2 perltidy lib/DBIx/Squirrel.pm | diff lib/DBIx/Squirrel.pm -
   ```
 
 - **Perl::Critic** reviews it, with `.perlcriticrc`: severity 3 and up,
@@ -307,8 +307,14 @@ logs, Term::ANSIColor, IO::Pager, Email::Stuffer). Devel::NYTProf
   `ProhibitVersionStrings` among them, since modules start `use v5.36`.
 
   ```
-  perlbrew exec --with perl-5.36.3@dbix-squirrel-2 perlcritic lib
+  perlbrew exec --with perl-5.44.0@dbix-squirrel-2 perlcritic lib
   ```
+
+- **Both run on Perl 5.44, as CI's style job does,** as Iain decided
+  on 2026-11-13. Perl::Critic takes the Perl's keywords from the Perl
+  it runs on, through B::Keywords, so a newer Perl can flag what an
+  older one passes: `all`, a keyword from 5.42, flagged Ekorn's
+  `sub all` on CI's 5.44 though it passed by hand on 5.36.
 
 - **Data::Dump**'s `pp` is for looking at data while debugging, not for
   the shipped modules or for test expectations (see Tests).
@@ -331,7 +337,9 @@ logs, Term::ANSIColor, IO::Pager, Email::Stuffer). Devel::NYTProf
 
 All three are in the project's perlbrew library: Data::Dump 1.25,
 Perl::Critic 1.156 and Perl::Tidy 20260826, installed 2026-10-22, when
-both profiles were checked against a module with signatures.
+both profiles were checked against a module with signatures. The two
+linters are in `perl-5.44.0@dbix-squirrel-2` too, at the same
+versions.
 CPAN::Uploader 0.103019, for `cpan-upload` at a release, joined them the
 same day.
 
