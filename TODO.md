@@ -58,6 +58,19 @@ Iain says DBIx::Squirrel may add its own, such as a source over an
 array reference or a hash, keeping Ekorn's source protocol, as any
 package may. Ekorn's design has it in 17.37.
 
+## From Ekorn-Pipeline, 2026-11-13: `from_file` and `to_file` take I/O layers
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+7b26ed8e069198bf4e933f8031d5ffb03c9a757c, on its branch
+`pipeline-experimental`)
+
+As 2026-0022's D69, `from_file` and `to_file` take an optional second
+argument, the I/O layers to open the file with: `':raw'` for bytes,
+unchanged on any platform, or `':encoding(UTF-8)'` for text. Without
+it, they open as before. And with `$/` undefined, an empty file now
+gives no record when slurped. It only adds; nothing you use changes.
+Ekorn's design has it in 17.38.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
