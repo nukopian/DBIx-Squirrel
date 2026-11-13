@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [Context over Ekorn's run](2026-0015-context-over-run.md),
+  roadmap 2026-0015: shipped, unreleased.
 - [The iterator as a source](2026-0014-iterator-as-source.md),
   roadmap 2026-0014: shipped, unreleased.
 - [DBIx::Squirrel on Ekorn as it is: one design](2026-0013-one-design.md),

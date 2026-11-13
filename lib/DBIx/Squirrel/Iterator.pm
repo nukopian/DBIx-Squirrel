@@ -138,7 +138,6 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
         done         => 0,
         ended        => undef,
         produced     => 0,
-        original     => undef,
         column_names => [],
         slice        => $slice,
     );
@@ -242,8 +241,12 @@ sub _statement ($self) {
             @names = at_caller { $sth->{NUM_OF_FIELDS} ? @{ $sth->{$key} } : () };
         }
         $self->{column_names} = [@names];
-        my $row   = $done ? undef : $self->_row_maker($sth);
-        my $fetch = sub ($size) {
+        my $row = $done ? undef : $self->_row_maker($sth);
+        # The run's context: the statement, its columns, and the row given
+        # last, which the stages behind the source are working on, for
+        # DBIx::Squirrel::Context and the stages that ask for columns.
+        my $context = {columns => [@names], statement => $sth, row => undef};
+        my $fetch   = sub ($size) {
             return at_caller {
                 $sth->{Active} && $sth->{NUM_OF_FIELDS}
                     ? $sth->fetchall_arrayref($slice, $size)
@@ -251,8 +254,8 @@ sub _statement ($self) {
             };
         };
         my $made = sub (@rows) {
-            @rows             = map { $row->($_) } @rows if $row;
-            $self->{original} = $rows[-1]                if $self && @rows;
+            @rows           = map { $row->($_) } @rows if $row;
+            $context->{row} = $rows[-1]                if @rows;
             return @rows;
         };
         my $step = sub () {
@@ -277,12 +280,13 @@ sub _statement ($self) {
         };
         my $end = sub ($how) {
             @buffer = ();
+            $context->{row} = undef;
             # At program exit, the database may have gone already.
             return       if ${^GLOBAL_PHASE} eq 'DESTRUCT';
             $sth->finish if $sth->{Active};
             return;
         };
-        return ($step, $end, {columns => [@names], statement => $sth});
+        return ($step, $end, $context);
     };
 }
 

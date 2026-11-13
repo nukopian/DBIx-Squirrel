@@ -41,25 +41,10 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing, between 2026-0014, shipped on `pipeline-experimental`, and
-2026-0015.
+Nothing, between 2026-0015, shipped on `pipeline-experimental`, and
+2026-0016.
 
 ## Next
-
-### 2026-0015. Context over Ekorn's run
-
-**Added:** 2026-11-13. **Size:** S (2). **Split from:** 2026-0013.
-**Depends on:** 2026-0014
-
-What: DBIx::Squirrel::Context and the stages `pluck` and `as_hash` ask
-Ekorn's `run_context()` and `ending()`, as the design's section 5 has
-it: the columns, and the row a value came from, from the statement's
-context, so they work in a user's own pipeline too; `result_number`
-and `iterator` only where DBIx::Squirrel's iterator runs the stages.
-Why: a statement read through `|` has its stages run by Ekorn, not by
-DBIx::Squirrel. Done when: `pluck`, `as_hash` and `result_original`
-work in `$it | stage`, with tests, and the docs warn that `pluck` after
-a stage that reshapes rows reads the statement's columns (D21).
 
 ### 2026-0016. Runs that end in a sink
 

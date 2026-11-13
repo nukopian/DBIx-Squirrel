@@ -36,6 +36,7 @@ my %imported = (
             study_sql    unwrap_values values_for     values_taken
         ),
     ],
+    'DBIx::Squirrel::Context'  => [qw(is_plain_hashref)],
     'DBIx::Squirrel::Errors'   => [qw(croak  is_ref)],
     'DBIx::Squirrel::Gather'   => [qw(croakf is_coderef)],
     'DBIx::Squirrel::Iterator' => [

@@ -713,6 +713,21 @@ my $album = $dbh->iterate('SELECT title, year FROM album WHERE id = 2', as_hash)
 say "$album->{title} ($album->{year})";    # Parklife (1994)
 ```
 
+`pluck` finds a name's position in an array row from the statement's
+columns, not from the row. After a stage that reshapes rows, it picks
+the wrong field, and says nothing. Use `as_hash` first, and `pluck` by
+name then reads each hash's own keys, however a stage changes them:
+
+```perl
+my @titles = $dbh->iterate(
+    'SELECT title, year FROM album ORDER BY year',
+    as_hash,
+    sub { +{%$_, title => uc $_->{title}} },
+    pluck('title'),
+)->all;
+say "@titles";    # DISRAELI GEARS ARRIVAL PARKLIFE THE GREAT ESCAPE
+```
+
 ### Number the results, or see the row as fetched
 
 DBIx::Squirrel::Context tells a stage which result it's making, and the
@@ -1422,10 +1437,11 @@ my @all = bands();    # without stages, as they are
 say scalar @all;      # 3
 ```
 
-Some stages need a statement's column names, so they need an iterator:
-`as_hash`, and `pluck` with a name for an array or a position for a
-hash. `pluck` with a name for a hash, as here, doesn't. Outside an
-iterator, DBIx::Squirrel::Context's functions return `undef`.
+Some stages need a statement's column names, so they need to be in a
+run reading a statement: `as_hash`, and `pluck` with a name for an
+array or a position for a hash. `pluck` with a name for a hash, as
+here, doesn't. In a pipeline called with values, as here,
+DBIx::Squirrel::Context's functions return `undef`.
 
 ### Pull values from anything, one at a time
 

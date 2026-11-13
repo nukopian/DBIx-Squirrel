@@ -1110,10 +1110,14 @@ use DBIx::Squirrel::Gather ();
 
 ## What a stage can ask: Context
 
-Inside a stage run by an iterator or result set, these functions tell
-the stage about the result it's making: things it can't work out from
-the value it's given. Outside a stage, they return `undef`. None is
-exported by default.
+Inside a stage, these functions tell the stage about the result it's
+making: things it can't work out from the value it's given.
+`result_original` works in any run reading a statement: an iterator's
+or result set's own stages, and the stages of a chain made with `|`, or
+of a pipeline of yours, reading one. `result_number` and `iterator`
+work only in an iterator's or result set's own stages, run by its
+`next`, `all`, `first` or `single`. Elsewhere, and outside a stage,
+they return `undef`. None is exported by default.
 
 ```perl
 use DBIx::Squirrel::Context qw(iterator result_number result_original);
@@ -1126,9 +1130,9 @@ my $it = $dbh->iterate(
 
 | Function | Returns |
 |---|---|
-| `iterator` | The iterator running the stage. Its `sth` is the statement handle, and the statement handle's `Database` is the database handle. |
-| `result_number` | The number of the result being made, from 1. It counts results, not rows. While a stage drops rows, the number stays the same. Each value a stage returns in place of one row is a result of its own. In a flush, it's the number of the first value the flush returns. |
-| `result_original` | The row the result is being made from, as it was fetched, before any stage changed it. For a result set, it's the row object. In a [flush](#gathering-stages-with-state-and-an-end), and the stages after it, it's `undef`. What a flush gives comes from every row, not one. |
+| `iterator` | The iterator running the stage, in its own stages. Its `sth` is the statement handle, and the statement handle's `Database` is the database handle. |
+| `result_number` | The number of the result being made, from 1. It counts results, not rows. While a stage drops rows, the number stays the same. Each value a stage returns in place of one row is a result of its own. In a flush, it's the number of the first value the flush returns. Only in an iterator's or result set's own stages. |
+| `result_original` | The row the result is being made from, as it was fetched, before any stage changed it. For a result set, it's the row object. In a [flush](#gathering-stages-with-state-and-an-end), and the stages after it, it's `undef`. What a flush gives comes from every row, not one. It's there wherever a statement is read, through `\|` or a pipeline of yours. |
 
 ## pipe and tap on handles
 
@@ -1237,8 +1241,25 @@ Each is a function that makes a stage. It checks what it's given when
 it's called, not on each value. Those that keep a count or hold values
 are made with [`gather`](#gathering-stages-with-state-and-an-end), so
 they start afresh on each run. `pluck` and `as_hash` find the column
-names through the iterator running them. So a name for an array row,
-or `as_hash`, needs the stages to be run by an iterator or result set.
+names in the run they're in, which a statement gives it: an iterator's
+or result set's own stages, or a chain made with `|`, or a pipeline of
+yours, reading one. So a name for an array row, or `as_hash`, needs a
+statement to be what the run reads.
+
+**`pluck` reads the statement's columns, not the row's.** After a
+stage that reshapes rows, a name or position for an array row picks
+the wrong field, and says nothing. Make the rows hashes first, with
+`as_hash`. Then `pluck` by name reads each hash's own keys:
+
+```perl
+my $sql = 'SELECT id, name FROM artist';
+
+# Wrong: the arrays are reversed, but pluck still finds id at 0
+my @wrong = $dbh->iterate($sql, sub { [reverse @$_] }, pluck('id'))->all;
+
+# Right: the hashes keep their keys, however a stage changes them
+my @ids = $dbh->iterate($sql, as_hash, sub { +{%$_, name => uc $_->{name}} }, pluck('id'))->all;
+```
 
 ```perl
 use DBIx::Squirrel::Stages::Flow;     # take, drop
@@ -1571,7 +1592,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected only one item, but there were more` | A warning: `take_single` was given a second value, and stopped the pipeline, passing on only the first. |
 | `Expected a column, by name or position` | `pluck` was given no column, or an empty name. |
 | `Expected a column of the row (%s)` | A row hasn't got the column `pluck` was given. |
-| `Expected an iterator, for the column names` | `as_hash`, or `pluck` with a name for an array row or a position for a hash row, ran where no iterator was running it. |
+| `Expected an iterator, for the column names` | `as_hash`, or `pluck` with a name for an array row or a position for a hash row, ran where no statement was being read, such as in a pipeline called with values. |
 | `Expected a row: an array, a hash or a row object` | `pluck` or `as_hash` was given a value that isn't a row. |
 | `Expected a reference to a scalar` | `count_into` was given something else. |
 | `Expected an open filehandle` | `dump_to` was given something else. |

@@ -684,6 +684,19 @@ C<fetchrow_hashref> would:
     my $album = $dbh->iterate('SELECT title, year FROM album WHERE id = 2', as_hash)->single;
     say "$album->{title} ($album->{year})";    # Parklife (1994)
 
+C<pluck> finds a name's position in an array row from the statement's
+columns, not from the row. After a stage that reshapes rows, it picks
+the wrong field, and says nothing. Use C<as_hash> first, and C<pluck> by
+name then reads each hash's own keys, however a stage changes them:
+
+    my @titles = $dbh->iterate(
+        'SELECT title, year FROM album ORDER BY year',
+        as_hash,
+        sub { +{%$_, title => uc $_->{title}} },
+        pluck('title'),
+    )->all;
+    say "@titles";    # DISRAELI GEARS ARRIVAL PARKLIFE THE GREAT ESCAPE
+
 =head2 Number the results, or see the row as fetched
 
 DBIx::Squirrel::Context tells a stage which result it's making, and the
@@ -1311,10 +1324,11 @@ database:
     my @all = bands();    # without stages, as they are
     say scalar @all;      # 3
 
-Some stages need a statement's column names, so they need an iterator:
-C<as_hash>, and C<pluck> with a name for an array or a position for a
-hash. C<pluck> with a name for a hash, as here, doesn't. Outside an
-iterator, DBIx::Squirrel::Context's functions return C<undef>.
+Some stages need a statement's column names, so they need to be in a
+run reading a statement: C<as_hash>, and C<pluck> with a name for an
+array or a position for a hash. C<pluck> with a name for a hash, as
+here, doesn't. In a pipeline called with values, as here,
+DBIx::Squirrel::Context's functions return C<undef>.
 
 =head2 Pull values from anything, one at a time
 

@@ -4,11 +4,12 @@ Unreleased
 
     An iterator is a source for Ekorn::Pipeline, reading only as many
     rows as it needs, with Ekorn's | and @{}, and saying how its run
-    ended. DBIx::Squirrel::Stages::Flow passes on three more of Ekorn's
-    stages, and a gather has a flush and an end. This is work towards
-    v3.0.0, on the pipeline-experimental branch (roadmap 2026-0014),
-    and breaks code that uses count, relies on single croaking, or
-    takes a gather for a code reference.
+    ended. Its stages' Context, pluck and as_hash work wherever a
+    statement is read. DBIx::Squirrel::Stages::Flow passes on three
+    more of Ekorn's stages, and a gather has a flush and an end. This
+    is work towards v3.0.0, on the pipeline-experimental branch
+    (roadmap 2026-0014 and 2026-0015), and breaks code that uses count,
+    relies on single croaking, or takes a gather for a code reference.
 
     - An iterator is a source, which a pipeline of Ekorn::Pipeline's can
       read, passing on the statement's columns as the run's context. Its
@@ -23,6 +24,10 @@ Unreleased
       an array reference of the results, $it | count_items a number,
       and @$it every result. | always gives one value. Each use runs
       the statement afresh, as the iterator's own run.
+    - pluck, as_hash and result_original work in any run reading a
+      statement: through |, or in a pipeline of your own, as well as
+      in an iterator's own stages. result_number and iterator are
+      undef there, as only an iterator's own stages are counted.
     - single gives the next result, or undef, and finishes the
       statement. At a second result, it warns "Expected only one item,
       but there were more", and gives the first, rather than croak. It
