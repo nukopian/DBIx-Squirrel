@@ -91,3 +91,12 @@ PostgreSQL; and coverage meets its floors.
   neither.
 - **What's left:** the reference's Upgrading from 1.x still says what
   `all` and `count` did in v2: 2026-0019, which rewrites the docs.
+- **2026-11-13, after it shipped: `selectall_array` died given
+  stages.** DBIx::Squirrel didn't define it, so the DBI's ran, calling
+  `selectall_arrayref` with the stages for one value, which gave a
+  count, and dereferencing that. Iain asked, "Do all select methods
+  accept stages?", and chose the fix: `selectall_array` is defined,
+  and, given stages, pushes each row through them, as each row is a
+  value of what it returns (D18). Without stages, it gives what the
+  DBI's does. Tests in `t/27-sinks.t`; the reference, the POD and the
+  user guide say so, and the guide now shows it first.

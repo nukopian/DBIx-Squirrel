@@ -791,11 +791,12 @@ L<iterator|/"Iterators">, or the select methods, for those.
     $ary_ref  = $dbh->selectall_arrayref($statement, \%attr, @bind_values);
     $hash_ref = $dbh->selectall_hashref($statement, $key_field, \%attr, @bind_values);
     $ary_ref  = $dbh->selectcol_arrayref($statement, \%attr, @bind_values);
+    @rows     = $dbh->selectall_array($statement, \%attr, @bind_values);
 
 Each works as the DBI's does. It prepares the statement as C<prepare>
 does, unless it's already a statement handle, and binds the values as
-L<C<bind>|/"bind"> binds them. The DBI's C<selectall_array> goes through
-C<selectall_arrayref>, so it does all this too.
+L<C<bind>|/"bind"> binds them. C<selectall_array> gives the rows
+C<selectall_arrayref> gives, as a list, as the DBI's does.
 
 As with L<C<do>|/"do">, the attributes may be left out. The first
 argument after the statement, or after C<selectall_hashref>'s key
@@ -807,11 +808,11 @@ Given stages after the bind values, each pushes what the DBI's method
 returns through them, as a pipeline called with values does, and
 returns what comes out of the last: every value; or, where one value
 is asked for, a sink's result, if a sink is last, and otherwise how
-many values came out. C<selectrow_array> pushes the row's values, and
-the others their one reference. With no statement as their source,
+many values came out. C<selectrow_array> pushes the row's values,
+C<selectall_array> each row, and the others their one reference. With no statement as their source,
 the stages can't use C<pluck> by a name for an array row, or C<as_hash>.
 
-    my @names = $dbh->selectall_arrayref('SELECT name FROM artist', sub { map { $_->[0] } @$_ });
+    my @names = $dbh->selectall_array('SELECT name FROM artist', sub { $_->[0] });
 
     my $names = $dbh->selectcol_arrayref(
         'SELECT name FROM artist WHERE id IN ($1, $2)', 1, 2,

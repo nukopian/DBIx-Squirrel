@@ -582,12 +582,13 @@ $hash_ref = $dbh->selectrow_hashref($statement, \%attr, @bind_values);
 $ary_ref  = $dbh->selectall_arrayref($statement, \%attr, @bind_values);
 $hash_ref = $dbh->selectall_hashref($statement, $key_field, \%attr, @bind_values);
 $ary_ref  = $dbh->selectcol_arrayref($statement, \%attr, @bind_values);
+@rows     = $dbh->selectall_array($statement, \%attr, @bind_values);
 ```
 
 Each works as the DBI's does. It prepares the statement as `prepare`
 does, unless it's already a statement handle, and binds the values as
-[`bind`](#bind) binds them. The DBI's `selectall_array` goes through
-`selectall_arrayref`, so it does all this too.
+[`bind`](#bind) binds them. `selectall_array` gives the rows
+`selectall_arrayref` gives, as a list, as the DBI's does.
 
 As with [`do`](#do), the attributes may be left out. The first
 argument after the statement, or after `selectall_hashref`'s key
@@ -599,12 +600,12 @@ Given stages after the bind values, each pushes what the DBI's method
 returns through them, as a pipeline called with values does, and
 returns what comes out of the last: every value; or, where one value
 is asked for, a sink's result, if a sink is last, and otherwise how
-many values came out. `selectrow_array` pushes the row's values, and
-the others their one reference. With no statement as their source,
+many values came out. `selectrow_array` pushes the row's values,
+`selectall_array` each row, and the others their one reference. With no statement as their source,
 the stages can't use `pluck` by a name for an array row, or `as_hash`.
 
 ```perl
-my @names = $dbh->selectall_arrayref('SELECT name FROM artist', sub { map { $_->[0] } @$_ });
+my @names = $dbh->selectall_array('SELECT name FROM artist', sub { $_->[0] });
 ```
 
 ```perl

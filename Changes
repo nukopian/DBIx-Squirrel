@@ -40,7 +40,8 @@ Unreleased
       every result, or how many in scalar context.
     - The select methods take stages after the bind values, and push
       what the DBI gives through them: every value that comes out, or,
-      for one value, a sink's result, or how many.
+      for one value, a sink's result, or how many. selectall_array
+      pushes each row.
     - DBIx::Squirrel::Pipeline is gone: make a pipeline with
       Ekorn::Pipeline->new. DBIx::Squirrel::Pipes is gone: the handles
       take pipe and tap from Ekorn::Pipeline::Pipes.

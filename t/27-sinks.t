@@ -5,7 +5,8 @@ use Test2::Plugin::NoWarnings;
 use DBIx::Squirrel;
 use DBIx::Squirrel::Stages::Flow qw(take);
 use DBIx::Squirrel::Stages::Rows qw(pluck);
-use Ekorn::Pipeline::Sinks qw(count_items keep keep_all keep_first keep_last
+use Ekorn::Pipeline::Sinks       qw(
+    count_items keep keep_all keep_first keep_last
     keep_single);
 
 # A call taking stages gives a sink's result when its last stage is one,
@@ -109,6 +110,31 @@ subtest 'the select methods push what the DBI gives through stages' => sub {
     },
         qr( Expected\ an\ iterator,\ for\ the\ column\ names )x,
         'a pushed run, with no columns for pluck';
+};
+
+subtest 'selectall_array pushes each row through its stages' => sub {
+    is [$dbh->selectall_array($sql, sub { $_->[1] })], \@names,
+        'each row, a value of its own';
+    is [
+        $dbh->selectall_array(
+            'SELECT name FROM artist WHERE id > ? ORDER BY id', 3, pluck(0), sub { lc })
+        ],
+        [qw(dido enya)], 'after its bind values, through several stages';
+    is scalar($dbh->selectall_array($sql, sub { $_->[0] > 3 ? $_ : () })), 2,
+        'how many come out, with no sink, where one value is asked for';
+    is
+        scalar(
+            $dbh->selectall_array($sql, {Slice => {}}, sub { $_->{name} }, keep_all)),
+        \@names, "a sink's result, after attributes";
+    is $dbh->selectall_array($sql, count_items), 5, 'count_items';
+    is [$dbh->selectall_array($sql, take(2), sub { $_->[1] })], [qw(Abba Blur)],
+        'a stop, ending the push';
+    is [$dbh->selectall_array('SELECT name FROM artist WHERE 0', sub { uc })],
+        [],
+        'no rows, nothing through them';
+    is [$dbh->selectall_array($sql)], [map { [$_ + 1, $names[$_]] } 0 .. 4],
+        'and without stages, the rows, as the DBI gives them';
+    is scalar($dbh->selectall_array($sql)), 5, 'or how many, for one value';
 };
 
 done_testing;

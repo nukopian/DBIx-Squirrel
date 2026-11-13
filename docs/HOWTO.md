@@ -505,16 +505,25 @@ Give a select method stages after its values, and what the DBI's
 method returns is sent through them, and what comes out of the last one
 comes back. Stages come into their own in
 [chapter 5](#5-stages-shaping-rows-on-the-way-out); here's a first
-taste. `selectall_arrayref` gives one value, its array reference of
-rows, so the first stage gets that:
+taste. `selectall_array` gives the rows, so each row goes through the
+stages in turn:
 
 ```perl
-my @names = $dbh->selectall_arrayref(
+my @names = $dbh->selectall_array(
     'SELECT name FROM artist ORDER BY name',
-    sub ($rows) { map { $_->[0] } @$rows },    # the array of rows, into names
-    sub { uc },                                 # each name, in capitals
+    sub ($row) { $row->[0] },    # each row, into its name
+    sub { uc },                  # each name, in capitals
 );
 say "@names";    # ABBA BLUR CREAM
+```
+
+The others give one value, a reference, so their first stage gets
+that: `selectall_arrayref`'s array of rows, say, which a stage can turn
+into names all at once:
+
+```perl
+my @names = $dbh->selectall_arrayref('SELECT name FROM artist ORDER BY name', sub ($rows) { map { $_->[0] } @$rows });
+say "@names";    # Abba Blur Cream
 ```
 
 `selectrow_array` gives the row's values, one at a time. Asked for one
