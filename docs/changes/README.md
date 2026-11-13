@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [The how-to as a user guide](2026-0021-user-guide.md),
+  roadmap 2026-0021: open.
 - [Pipelines named in the Sugar's definitions](2026-0018-sugar-names-pipelines.md),
   roadmap 2026-0018: shipped, unreleased.
 - [The facades go](2026-0017-facades-go.md),

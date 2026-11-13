@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0020.
+Last id: 2026-0021.
 
 Items come in four groups:
 
@@ -41,8 +41,29 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing, between 2026-0018, shipped on `pipeline-experimental`, and
-2026-0019, which waits for Ekorn::Pipeline v0.3.0 on CPAN.
+### 2026-0020. The how-to's tests check what its examples print
+
+**Added:** 2026-11-13. **Size:** S (2)
+
+`xt/howto.t` runs the how-to's examples, but checks only that they run
+without warnings, not that what each prints matches the `# ...`
+comments beside it. In 2026-0016, the Sugar's examples printed
+iterators where their comments showed names, and passed. Done when
+each example's output is compared with its comments, and a mismatch
+fails, naming the example's line. Done first, so the guide of
+2026-0021 is written against it, as Iain decided on 2026-11-13.
+
+### 2026-0021. The how-to as a user guide
+
+**Added:** 2026-11-13. **Size:** L (5). **Split from:** 2026-0019.
+**Depends on:** 2026-0020
+
+The how-to rewritten as a user guide, as Iain asked: around the
+package's concepts and layers, from the DBI at the bottom to the Sugar
+at the top, in plain English, with recipes that work, comparisons
+where the features have an advantage, and Ekorn::Pipeline's features
+as they apply to rows. Its [record](docs/changes/2026-0021-user-guide.md)
+has the decisions and the plan.
 
 ## Next
 
@@ -50,15 +71,15 @@ Nothing, between 2026-0018, shipped on `pipeline-experimental`, and
 
 **Added:** 2026-11-13. **Size:** L (5). **Split from:** 2026-0013.
 **Depends on:** 2026-0014, 2026-0015, 2026-0016, 2026-0017,
-2026-0018, and Ekorn::Pipeline v0.3.0 on CPAN
+2026-0018, 2026-0021, and Ekorn::Pipeline v0.3.0 on CPAN
 
 What: the release on Ekorn::Pipeline v0.3.0, as the design's sections
-10, 11 and 15 have it: the README, reference and how-to rewritten,
-with `|` giving one value explained where it's first shown; a table of
-what changes for users and how they move; `Changes`' precis; the
-`cpanfile`'s range, `>= v0.3.0, < v0.4.0`; CI; and the PDFs, rebuilt and
-read once the docs have settled, before the tag, as none are rebuilt
-while they change on `pipeline-experimental`. Why: it breaks code,
+10, 11 and 15 have it: the README and reference rewritten, with `|`
+giving one value explained where it's first shown, the how-to being
+2026-0021's; a table of what changes for users and how they move;
+`Changes`' precis; the `cpanfile`'s range, `>= v0.3.0, < v0.4.0`; CI;
+and the PDFs, rebuilt and read once the docs have settled, before the
+tag, as none are rebuilt while they change on `pipeline-experimental`. Why: it breaks code,
 which a major version is for. Done when: v3.0.0 is on CPAN.
 
 ## Later
@@ -76,11 +97,4 @@ Split into items, each sized, when one is taken up.
 
 ## Ideas
 
-### 2026-0020. The how-to's tests check what its examples print
-
-**Added:** 2026-11-13. **Size:** S (2)
-
-`xt/howto.t` runs the how-to's examples, but checks only that they run
-without warnings, not that what each prints matches the `# ...`
-comments beside it. In 2026-0016, the Sugar's examples printed
-iterators where their comments showed names, and passed.
+Nothing yet.
