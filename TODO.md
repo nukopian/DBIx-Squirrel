@@ -1,3 +1,28 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-13: a sink's kinds are one and many, in every name
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+b43d6132853a6ecc7bb0721ed54f766938f57623, on its branch
+`pipeline-experimental`)
+
+Iain renamed the sink protocols, as 2026-0022's D64, and the rest
+follows. A change to a protocol, so your sinks need the new names:
+
+| Was | Now |
+|---|---|
+| `ekorn_sink_scalar` | `ekorn_sink_one` |
+| `ekorn_sink` | `ekorn_sink_many` |
+| `Sink->new_scalar` | `Sink->new_sink_one` |
+| `Sink->new` | `Sink->new_sink_many` (`new` goes) |
+| `sink_scalar {...}` | `sink_one {...}` |
+| `sink {...}` | `sink_many {...}` (`sink` goes) |
+| `Sink::Scalar`, `Sink::List` | `Sink::One`, `Sink::Many` |
+| `is_sink`: `scalar`, `list` | `one`, `many` |
+
+Each name says which kind, so neither is the default, revising D47's
+lists first. Nothing else changes. Ekorn's design has it in 17.34.
+
 # Planned work
 
 ## 3. Review Ekorn's design and code, and design DBIx::Squirrel's side
