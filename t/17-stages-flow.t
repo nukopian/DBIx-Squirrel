@@ -31,22 +31,25 @@ subtest 'what is exported' => sub {
         use DBIx::Squirrel::Stages::Flow;
         ::ok __PACKAGE__->can($_), "$_ by default" for qw(take drop);
         ::ok !__PACKAGE__->can($_), "not $_"
-            for qw(take_first take_last take_single take_while drop_while take_if
+            for qw(
+                take_first take_last take_single take_while drop_while take_if
                 drop_if);
     }
 
     package All {         ## no critic (Modules::ProhibitMultiplePackages)
         use DBIx::Squirrel::Stages::Flow qw(:all);
         ::ok __PACKAGE__->can($_), "$_ with :all"
-            for qw(take drop take_first take_last take_single take_while drop_while
-            take_if drop_if);
+            for qw(
+                take    drop take_first take_last take_single take_while drop_while
+                take_if drop_if);
     }
 
     package None {        ## no critic (Modules::ProhibitMultiplePackages)
         use DBIx::Squirrel::Stages::Flow ();
         ::ok !__PACKAGE__->can($_), "not $_ with ()"
-            for qw(take drop take_first take_last take_single take_while drop_while
-            take_if drop_if);
+            for qw(
+                take    drop take_first take_last take_single take_while drop_while
+                take_if drop_if);
     }
 };
 
@@ -158,7 +161,7 @@ subtest 'take_if and drop_if' => sub {
     $dbh->do('INSERT INTO n VALUES (?)', $_) for 1 .. 6;
     is [
         $dbh->iterate(
-            'SELECT id FROM n ORDER BY id', take_if { $_->[0] > 4 }, sub { $_->[0] }
+            'SELECT id FROM n ORDER BY id', take_if { $_->[0] > 4 }, sub { $_->[0] },
         )->all
         ],
         [5, 6], 'over rows';

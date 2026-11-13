@@ -117,7 +117,8 @@ subtest 'selectall_array pushes each row through its stages' => sub {
         'each row, a value of its own';
     is [
         $dbh->selectall_array(
-            'SELECT name FROM artist WHERE id > ? ORDER BY id', 3, pluck(0), sub { lc })
+            'SELECT name FROM artist WHERE id > ? ORDER BY id', 3, pluck(0), sub { lc },
+        ),
         ],
         [qw(dido enya)], 'after its bind values, through several stages';
     is scalar($dbh->selectall_array($sql, sub { $_->[0] > 3 ? $_ : () })), 2,

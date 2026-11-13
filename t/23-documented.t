@@ -373,8 +373,10 @@ subtest "The run's context" => sub {
         'a pushed run has no statement';
 
     my $kept;
-    $dbh->iterate('SELECT id FROM artist',
-        sub { $kept = Ekorn::Pipeline::run_context(); $_ })->all;
+    $dbh->iterate(
+        'SELECT id FROM artist',
+        sub { $kept = Ekorn::Pipeline::run_context(); $_ },
+    )->all;
     is $kept->{row}, undef, 'and the row is gone once the run has ended';
 };
 
