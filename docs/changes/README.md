@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [DBIx::Squirrel::Tooling](2026-0025-tooling.md),
-  roadmap 2026-0025: in progress.
+  roadmap 2026-0025: shipped, unreleased.
 - [pipeline-experimental back to develop](2026-0024-back-to-develop.md),
   from Ekorn-Pipeline's messages: done.
 - [The reference, rewritten for v3](2026-0023-reference-for-v3.md),

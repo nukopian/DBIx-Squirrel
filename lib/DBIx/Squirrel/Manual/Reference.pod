@@ -46,6 +46,10 @@ L<At a glance|/"At a glance">
 
 =item *
 
+L<Importing: DBIx::Squirrel::Tooling|/"Importing: DBIx::Squirrel::Tooling">
+
+=item *
+
 L<1. Connecting|/"1. Connecting">
 
 =item *
@@ -130,10 +134,13 @@ L<The modules|/"The modules">
 
 The examples run against this SQLite database, the user guide's, a
 file called C<music.db>. They follow on from each other, so C<$dbh> is
-this handle wherever it appears.
+this handle wherever it appears. It imports everything from
+L<DBIx::Squirrel::Tooling|/"Importing: DBIx::Squirrel::Tooling">, so the
+examples needn't.
 
     use v5.36;
     use DBIx::Squirrel;
+    use DBIx::Squirrel::Tooling qw(:all);    # every stage, sink and word
 
     my $dbh = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', {RaiseError => 1, PrintError => 0});
 
@@ -153,9 +160,7 @@ this handle wherever it appears.
 
 =head1 At a glance
 
-    use DBIx::Squirrel::Stages::Flow;    # take, drop
-    use DBIx::Squirrel::Stages::Rows;    # pluck, as_hash
-    use Ekorn::Pipeline::Sinks qw(keep_all count_items);
+    use DBIx::Squirrel::Tooling qw(:all);    # every stage, sink and word
 
     # Placeholders in the style you like: ?, ?1, :1, $1, :name or $name
     my $sth = $dbh->prepare('SELECT name FROM artist WHERE id = :id');
@@ -183,6 +188,125 @@ this handle wherever it appears.
 
     # Each row as an object, with a method for each column
     say $dbh->results('SELECT * FROM album WHERE id = ?', 2)->first->title;    # Parklife
+
+=head1 Importing: DBIx::Squirrel::Tooling
+
+    use DBIx::Squirrel::Tooling qw(:all);               # everything below
+    use DBIx::Squirrel::Tooling qw(:stages :sinks);     # or some tags
+    use DBIx::Squirrel::Tooling qw(pluck keep_all);     # or some names
+
+What a caller uses to do work is made in several modules, each
+described below. DBIx::Squirrel::Tooling exports all of it, from one
+place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
+C<:rows> and C<:context> besides:
+
+=over 4
+
+=item C<:core>
+
+B<Holds:> C<Stop>, C<gather>
+
+B<Made in:> L<Stop|/"6. Stopping a pipeline">, L<Gather|/"7. Gathering: stages made for each run">
+
+=item C<:flow>
+
+B<Holds:> C<take>, C<take_first>, C<take_last>, C<take_single>, C<take_if>, C<take_while>, C<drop>, C<drop_if>, C<drop_while>
+
+B<Made in:> L<Stages::Flow|/"Taking and dropping">
+
+=item C<:batch>
+
+B<Holds:> C<batch>, C<collect>
+
+B<Made in:> L<Stages::Batch|/"Batching and collecting">
+
+=item C<:taps>
+
+B<Holds:> C<peek>, C<count_into>, C<dump_to>
+
+B<Made in:> L<Stages::Taps|/"Canned stages">
+
+=item C<:rows>
+
+B<Holds:> C<pluck>, C<as_hash>
+
+B<Made in:> L<Stages::Rows|/"Canned stages">
+
+=item C<:stages>
+
+B<Holds:> C<:flow>, C<:batch>, C<:taps> and C<:rows>
+
+=item C<:context>
+
+B<Holds:> C<iterator>, C<result_number>, C<result_original>
+
+B<Made in:> L<Context|/"Context">
+
+=item C<:sources>
+
+B<Holds:> C<from_array>, C<from_fh>, C<from_file>, C<counter>
+
+B<Made in:> Ekorn::Pipeline::Sources
+
+=item C<:sinks>
+
+B<Holds:> C<count_items>, C<keep>, C<keep_all>, C<keep_first>, C<keep_last>, C<keep_single>, C<to_fh>, C<to_file>
+
+B<Made in:> L<Sinks|/"8. Sinks">
+
+=item C<:words>
+
+B<Holds:> C<pipeline>, C<stage>, C<gather>, C<source>, C<generator>, C<yield>, C<sink_one>, C<sink_many>
+
+B<Made in:> Ekorn::Pipeline::Factories
+
+=item C<:all>
+
+B<Holds:> all of the above
+
+=back
+
+=over 4
+
+=item *
+
+B<Nothing by default.> Ask for tags, names, or both. An unknown tag
+or name is Exporter's error: it warns C<"%s" is not defined in
+%DBIx::Squirrel::Tooling::EXPORT_TAGS>, or C<"%s" is not exported by
+the DBIx::Squirrel::Tooling module>, and dies C<Can't continue after
+import errors>.
+
+=item *
+
+B<The same subs.> Each name is the sub its own module exports,
+prototype and all, so C<take_if { ... }> and C<stage { ... }> parse as
+they do imported from there, and importing a name from both does no
+harm.
+
+=item *
+
+B<DBIx::Squirrel's, where both export a name.> Each name comes from
+DBIx::Squirrel's own module where it has one, and from
+Ekorn::Pipeline's only where it has none. Today each name both
+export is the same sub, so importing Ekorn::Pipeline::Tooling too,
+in either order, gives the same subs. A test fails if that changes.
+
+=item *
+
+B<What's left out.> What's for extending DBIx::Squirrel rather than
+using it, such as C<croakf>, from DBIx::Squirrel::Errors, and
+C<is_stage>, from Ekorn::Pipeline; L<the Sugar|/"12. Sugar: a function for each database and statement">,
+whose C<use> makes functions; and L<C<E<verbar>>|/"11. Operators: E<verbar> and @{}">, which
+only C<use Ekorn::Pipeline::Operators> puts in force, in its own
+scope.
+
+=item *
+
+B<What a tag holds is public.> A name may be added to one in a
+release that only adds, but is dropped or renamed only in a major
+release.
+
+=back
 
 =head1 1. Connecting
 
@@ -1076,8 +1200,6 @@ work only in an iterator's or result set's own stages, run by its
 C<next>, C<all>, C<first> or C<single>. Elsewhere, and outside a stage,
 they return C<undef>.
 
-    use DBIx::Squirrel::Context qw(result_number result_original);
-
     my @chart = $dbh->iterate(
         'SELECT name, plays FROM track ORDER BY plays DESC',
         sub { $_->[0] },
@@ -1152,9 +1274,6 @@ Writes each value, with Data::Dumper, to C<$fh> or STDERR, and passes it on.
 
 =back
 
-    use DBIx::Squirrel::Stages::Rows;
-    use DBIx::Squirrel::Stages::Taps;
-
     my $read  = 0;
     my @names = $dbh->iterate('SELECT id, name FROM artist ORDER BY id', count_into(\$read), pluck('name'))->all;
     say "@names, from $read rows";    # Abba Blur Cream, from 3 rows
@@ -1173,8 +1292,6 @@ for a hash row reads the hash's own keys, and works anywhere.
 stage that reshapes rows, a name or position for an array row picks
 the wrong field, and says nothing. Make the rows hashes first, with
 C<as_hash>. Then C<pluck> by name reads each hash's own keys:
-
-    use DBIx::Squirrel::Stages::Rows;
 
     my $sql = 'SELECT id, name FROM artist ORDER BY id';
 
@@ -1226,8 +1343,6 @@ An iterator that's stopped finishes its statement. Stages after the
 one that stopped, made with L<C<gather>|/"7. Gathering: stages made for each run">,
 still have their flushes called.
 
-    use DBIx::Squirrel::Stop;
-
     my @upto = $dbh->iterate(
         'SELECT title, year FROM album ORDER BY year',
         sub { $_->[1] >= 1990 ? Stop($_) : $_ },    # this one, then no more
@@ -1252,7 +1367,6 @@ a stop on again. Check for C<Ekorn::Pipeline::Stop>. Every stop is one,
 including those the canned stages throw, such as C<take>'s:
 
     use experimental qw(try);
-    use DBIx::Squirrel::Stop;
 
     my @safe = $dbh->iterate(
         'SELECT name FROM artist ORDER BY id',
@@ -1313,8 +1427,6 @@ Passes on each value the block is true of, testing every one, as C<grep> does; i
 Passes on each value the block is false of, testing every one.
 
 =back
-
-    use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while take_last take_if);
 
     my @page = $dbh->iterate('SELECT name FROM track ORDER BY id', sub { $_->[0] }, drop(2), take(2))->all;
     say join ', ', @page;    # Girls & Boys, Parklife
@@ -1379,8 +1491,6 @@ The parts can be given as a list, in that order, with C<undef> for a
 flush left out before an end, or by name, as one hash reference with
 the keys C<step>, C<flush> and C<end>, giving only those the stage has.
 
-    use DBIx::Squirrel::Gather;
-
     # Each value, then, once they run out, how many there were
     sub and_count () {
         return gather {
@@ -1429,9 +1539,6 @@ Holds every value. When they run out, it passes on what the block makes of them,
 
 =back
 
-    use DBIx::Squirrel::Stages::Batch;
-    use DBIx::Squirrel::Stages::Rows;
-
     my @batches = $dbh->iterate('SELECT name FROM track ORDER BY id', pluck('name'), batch(4))->all;
     say scalar(@$_), ': ', join ', ', @$_ for @batches;
     # 4: Dancing Queen, Knowing Me, Knowing You, Girls & Boys, Parklife
@@ -1446,8 +1553,9 @@ The user guide's L<chapter 8|DBIx::Squirrel::Manual::HowTo/"8. Sinks: saying wha
 A sink is a last stage that says what a run gives. Given last to
 C<iterate>, C<results>, a Sugar function, or a select method, it makes
 the call read the run through and give the sink's result, not an
-iterator. The sinks are Ekorn::Pipeline's, from Ekorn::Pipeline::Sinks;
-none is exported by default:
+iterator. The sinks are Ekorn::Pipeline's, from Ekorn::Pipeline::Sinks,
+which exports none by default, and DBIx::Squirrel::Tooling's C<:sinks>
+exports them all:
 
     use Ekorn::Pipeline::Sinks qw(keep_all keep_first keep_last keep_single keep count_items to_file to_fh);
 
@@ -1506,9 +1614,6 @@ B<Stops the run early?:> no
 A sink of many, C<keep_all> or C<keep>, never gives a count: for that,
 use C<count_items>. An empty result is an empty array reference, which
 is true, so test it with C<@$rows>.
-
-    use Ekorn::Pipeline::Sinks qw(keep_all keep_last keep_single keep count_items);
-    use DBIx::Squirrel::Stages::Rows;
 
     my @names = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'), keep_all);
     my $names = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'), keep_all);
@@ -1685,8 +1790,6 @@ run in its place, as if written out there, so a C<take> inside it limits
 the whole run:
 
     use Ekorn::Pipeline;
-    use DBIx::Squirrel::Stages::Flow;
-    use DBIx::Squirrel::Stages::Rows;
 
     my $hits = Ekorn::Pipeline->new(sub { $_->[1] >= 5000 ? $_ : () }, pluck('name'));
     my $sql  = 'SELECT name, plays FROM track ORDER BY plays DESC';
@@ -1714,8 +1817,6 @@ take names too. Ekorn's reference has the rules, in
 L<Named pipelines|Ekorn::Pipeline::Manual::Reference/"Named pipelines">.
 
     use Ekorn::Pipeline;
-    use Ekorn::Pipeline::Factories qw(pipeline);
-    use DBIx::Squirrel::Stages::Flow;
 
     Ekorn::Pipeline->named(first_column => sub { $_->[0] });
     say join ' ', $dbh->iterate('SELECT name FROM artist ORDER BY id', pipeline('first_column', take(2)))->all;    # Abba Blur
@@ -1824,8 +1925,6 @@ going, so C<next> returns nothing after, and C<ended> says how the C<|> or
 C<@{}> run ended, until C<reset>.
 
     use Ekorn::Pipeline::Operators;
-    use Ekorn::Pipeline::Sinks qw(keep_all count_items);
-    use DBIx::Squirrel::Stages::Rows;
 
     my $it    = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'));
     my $names = $it | keep_all;
@@ -1915,7 +2014,6 @@ attributes to prepare it with. The statement can be a statement
 handle, which is itself executed, or iterated over.
 
     use DBIx::Squirrel::Sugar database => {music => ['dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1}]};
-    use Ekorn::Pipeline::Sinks qw(keep_all);
 
     say music('SELECT name FROM artist WHERE id = ?', 1)->fetchrow_arrayref->[0];    # Abba
     say ref music('SELECT name FROM artist', sub { $_->[0] });                        # DBIx::Squirrel::Iterator
@@ -1955,7 +2053,6 @@ given. Stages given are for that call only. A string given is always a
 bind value, never a pipeline's name.
 
     use Ekorn::Pipeline;
-    use Ekorn::Pipeline::Sinks qw(keep_all count_items);
 
     BEGIN { Ekorn::Pipeline->named(shouted => sub {uc}) }
 
@@ -1974,7 +2071,8 @@ bind value, never a pipeline's name.
 
 A sink, imported, is a function of your package, so a statement can't
 be given its name: C<Expected no function of the name in main already
-(count_items)>. Import sinks by name, or call one by its full name,
+(count_items)>. With Tooling's C<:all>, that's any name it exports.
+Import fewer tags, or by name, or call one by its full name,
 C<Ekorn::Pipeline::Sinks::count_items()>.
 
 The statement is prepared once for each database handle, with
@@ -2054,7 +2152,6 @@ pipelines and Ekorn's stage objects, and false of strings and other
 values:
 
     use Ekorn::Pipeline qw(is_stage);
-    use Ekorn::Pipeline::Sinks qw(count_items);
 
     sub albums_since ($year, @stages) {
         return $dbh->iterate('SELECT title FROM album WHERE year >= ? ORDER BY year', $year, @stages);
@@ -3014,6 +3111,10 @@ Canned stages run for their side effects: C<peek>, C<count_into>, C<dump_to>.
 =item C<DBIx::Squirrel::Context>
 
 What a stage can ask about the result it's making.
+
+=item C<DBIx::Squirrel::Tooling>
+
+Exports what callers use to do work, from one place, by tags: see L<Importing|/"Importing: DBIx::Squirrel::Tooling">.
 
 =item C<DBIx::Squirrel::Sugar>
 

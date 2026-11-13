@@ -41,16 +41,8 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0025. DBIx::Squirrel::Tooling
-
-**Added:** 2026-11-13. **Size:** M (3)
-
-One module that exports everything a caller uses to do work, as
-Ekorn::Pipeline::Tooling does, with the same tags, and DBIx::Squirrel's
-own stages and context besides: DBIx::Squirrel's version of any name
-both export. The docs' examples import from it. Its
-[record](docs/changes/2026-0025-tooling.md) has the decisions and the
-plan.
+Nothing, between 2026-0025, shipped, and 2026-0019, which waits for
+Ekorn::Pipeline v0.3.0 on CPAN.
 
 ## Next
 

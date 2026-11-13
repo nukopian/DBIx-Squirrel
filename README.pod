@@ -132,11 +132,11 @@ L<DBIx::Squirrel::Stages::Taps>.
 
 A sink, given last, says what the call gives in place of an iterator:
 C<keep_all> every result, C<count_items> how many, C<keep_first> the
-first, and others. They're in L<Ekorn::Pipeline::Sinks>:
+first, and others. They're in L<Ekorn::Pipeline::Sinks>.
+L<DBIx::Squirrel::Tooling> exports every stage, sink and word from one
+module, by tags, as C<:stages> and C<:sinks>, or C<:all>:
 
-    use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_if);
-    use DBIx::Squirrel::Stages::Rows;
-    use Ekorn::Pipeline::Sinks qw(keep_all count_items);
+    use DBIx::Squirrel::Tooling qw(:all);
 
     my @top_ten = $dbh->iterate(
         'SELECT name, plays FROM track ORDER BY plays DESC',
@@ -167,7 +167,7 @@ objects.
 
 =head3 6. Give your databases and statements names.
 
-    use Ekorn::Pipeline::Sinks qw(keep_all);
+    use DBIx::Squirrel::Tooling qw(keep_all);
     use DBIx::Squirrel::Sugar
         database  => {music => ['dbi:SQLite:dbname=music.db', '', '']},
         statement => {

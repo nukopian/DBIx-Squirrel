@@ -127,11 +127,11 @@ They're in four modules: `take` and `drop` in
 
 A sink, given last, says what the call gives in place of an iterator:
 `keep_all` every result, `count_items` how many, `keep_first` the
-first, and others. They're in [Ekorn::Pipeline::Sinks](https://metacpan.org/pod/Ekorn%3A%3APipeline%3A%3ASinks):
+first, and others. They're in [Ekorn::Pipeline::Sinks](https://metacpan.org/pod/Ekorn%3A%3APipeline%3A%3ASinks).
+[DBIx::Squirrel::Tooling](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3ATooling) exports every stage, sink and word from one
+module, by tags, as `:stages` and `:sinks`, or `:all`:
 
-    use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_if);
-    use DBIx::Squirrel::Stages::Rows;
-    use Ekorn::Pipeline::Sinks qw(keep_all count_items);
+    use DBIx::Squirrel::Tooling qw(:all);
 
     my @top_ten = $dbh->iterate(
         'SELECT name, plays FROM track ORDER BY plays DESC',
@@ -162,7 +162,7 @@ objects.
 
 ### 6. Give your databases and statements names.
 
-    use Ekorn::Pipeline::Sinks qw(keep_all);
+    use DBIx::Squirrel::Tooling qw(keep_all);
     use DBIx::Squirrel::Sugar
         database  => {music => ['dbi:SQLite:dbname=music.db', '', '']},
         statement => {

@@ -26,7 +26,9 @@ Unreleased
       result_number, result_original) besides, :stages including
       :rows. It exports nothing by default. Where DBIx::Squirrel and
       Ekorn::Pipeline both export a name, it's DBIx::Squirrel's, which
-      today is the same sub (roadmap 2026-0025).
+      today is the same sub. The README, the reference and the user
+      guide import from it, so their examples carry no imports of
+      their own, and each has a section on it (roadmap 2026-0025).
     - An iterator is a source, which a pipeline of Ekorn::Pipeline's can
       read, passing on the statement's columns as the run's context. Its
       stages are run by Ekorn::Pipeline.
