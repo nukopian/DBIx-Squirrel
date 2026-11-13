@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0022.
+Last id: 2026-0023.
 
 Items come in four groups:
 
@@ -41,8 +41,16 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing, between 2026-0022, shipped on `pipeline-experimental`, and
-2026-0019, which waits for Ekorn::Pipeline v0.3.0 on CPAN.
+### 2026-0023. The reference, rewritten for v3
+
+**Added:** 2026-11-13. **Size:** L (5). **Split from:** 2026-0019
+
+The reference brought up to date with everything on
+`pipeline-experimental`, in the user guide's layer order, with the
+protocols DBIx::Squirrel offers, its examples run and checked as the
+guide's are, and a section on upgrading from 2.x. Its
+[record](docs/changes/2026-0023-reference-for-v3.md) has the decisions
+and the plan.
 
 ## Next
 
@@ -50,12 +58,13 @@ Nothing, between 2026-0022, shipped on `pipeline-experimental`, and
 
 **Added:** 2026-11-13. **Size:** L (5). **Split from:** 2026-0013.
 **Depends on:** 2026-0014, 2026-0015, 2026-0016, 2026-0017,
-2026-0018, 2026-0021, and Ekorn::Pipeline v0.3.0 on CPAN
+2026-0018, 2026-0021, 2026-0023, and Ekorn::Pipeline v0.3.0 on
+CPAN
 
 What: the release on Ekorn::Pipeline v0.3.0, as the design's sections
-10, 11 and 15 have it: the README and reference rewritten, with `|`
-giving one value explained where it's first shown, the how-to being
-2026-0021's; a table of what changes for users and how they move;
+10, 11 and 15 have it: the README rewritten, with `|` giving one value
+explained where it's first shown, the how-to being 2026-0021's and the
+reference, with its table of what changes for users, 2026-0023's;
 `Changes`' precis; the `cpanfile`'s range, `>= v0.3.0, < v0.4.0`; CI;
 and the PDFs, rebuilt and read once the docs have settled, before the
 tag, as none are rebuilt while they change on `pipeline-experimental`. Why: it breaks code,
