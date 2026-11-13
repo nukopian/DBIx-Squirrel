@@ -46,7 +46,8 @@ Ekorn-Pipeline settled a design for both repositories, its 2026-0022:
 DBIx::Squirrel uses Ekorn as any other package would, and subclasses,
 wraps and remakes nothing of it. Task 3 asks DBIx-Squirrel to review
 it as Ekorn's first user, send what it finds as messages, and design
-its own side, in [docs/design/DESIGN.md](../design/DESIGN.md).
+its own side, in [docs/design/DESIGN.md](https://github.com/nukopian/DBIx-Squirrel/blob/archive/pipeline-experimental/docs/design/DESIGN.md),
+kept by the tag `archive/pipeline-experimental` since 2026-0024.
 
 Reviewed at Ekorn-Pipeline a75d178e4becfd1c3b6c57194bf6c111dabb8b98,
 on 2026-11-12:

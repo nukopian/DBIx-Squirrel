@@ -41,8 +41,8 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing, between 2026-0023, shipped on `pipeline-experimental`, and
-2026-0019, which waits for Ekorn::Pipeline v0.3.0 on CPAN.
+Nothing, between 2026-0023, shipped, and 2026-0019, which waits for
+Ekorn::Pipeline v0.3.0 on CPAN.
 
 ## Next
 
@@ -59,7 +59,7 @@ explained where it's first shown, the how-to being 2026-0021's and the
 reference, with its table of what changes for users, 2026-0023's;
 `Changes`' precis; the `cpanfile`'s range, `>= v0.3.0, < v0.4.0`; CI;
 and the PDFs, rebuilt and read once the docs have settled, before the
-tag, as none are rebuilt while they change on `pipeline-experimental`.
+tag, as none were rebuilt while they changed on `pipeline-experimental`.
 Why: it breaks code, which a major version is for. Done when: v3.0.0 is on CPAN.
 
 ## Later

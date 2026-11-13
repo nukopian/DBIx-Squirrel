@@ -75,3 +75,20 @@ Done when: `develop` is the branch's last commit, CI passes on it, and
 the archive tag holds `docs/design/`.
 
 ## What happened
+
+- **Steps 1 and 2:** this record in
+  badcdb90464b149866dd5c2718d6c7e1bd8b0785; the two tags signed and
+  pushed, `rollback/develop-2026-11-13` on
+  c2f593b46451757a9acb6d378438fd183a85127f, and
+  `archive/pipeline-experimental` on
+  badcdb90464b149866dd5c2718d6c7e1bd8b0785, which holds
+  `docs/design/DESIGN.md`. `DESIGN.pdf` was never committed, as
+  `.gitignore` ignores PDFs.
+- **Step 3:** `docs/design/` deleted; record 2026-0013's link to it
+  points at the archive tag on GitHub; `docs/MAINTAINING.md`'s
+  Branches says there's no experimental branch now; `ROADMAP.md` no
+  longer speaks of the branch as current.
+- **Before the plan:** the README brought up to date for version 3,
+  three test files tidied, the condition floor raised to 88%, and the
+  linters' commands moved to Perl 5.44, as CI's style job runs them,
+  the last at Ekorn's suggestion.
