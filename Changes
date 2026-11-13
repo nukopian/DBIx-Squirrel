@@ -59,6 +59,9 @@ Unreleased
       order, with every example run, the protocols other code can rely
       on, the run's context among them, and upgrading from 2.x
       (roadmap 2026-0023).
+    - The README describes version 3: sinks given last, first,
+      take_if, |, a Sugar statement giving an iterator, and upgrading
+      from 2.x.
     - The how-to is rewritten as a user guide, DBIx::Squirrel's
       layers from the DBI up, with recipes that print what their
       comments say, comparisons with the alternatives, and answers to
