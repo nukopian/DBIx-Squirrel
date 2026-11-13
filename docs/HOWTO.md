@@ -1874,7 +1874,7 @@ it takes: arrays, hashes from `ekorn_slice`, and objects from
 Name it for its job, in the namespace where its stages belong, and
 name the distribution after it, as `DBIx-Squirrel-Stages-JSON` for
 `DBIx::Squirrel::Stages::JSON`. Have it require the DBIx::Squirrel it
-was tested with. The reference's [Writing stages](REFERENCE.md#writing-stages)
+was tested with. The reference's [Stages for others](REFERENCE.md#stages-for-others)
 has the details, and Ekorn::Pipeline's guide has more, in
 [Building parts for others](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#10-building-parts-for-others),
 including how to write sources and sinks of your own.
@@ -2068,9 +2068,9 @@ and limiting, is better done in SQL.
 
 ## 17. Coming from version 1 or 2
 
-The reference's [Upgrading from 1.x](REFERENCE.md#upgrading-from-1x)
-lists every change from version 1. These are the changes most code
-meets first.
+The reference's [Upgrading from 2.x](REFERENCE.md#upgrading-from-2x)
+and [Upgrading from 1.x](REFERENCE.md#upgrading-from-1x) list every
+change. These are the changes most code meets first.
 
 ### From version 2
 

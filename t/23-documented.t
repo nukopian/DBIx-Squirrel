@@ -203,7 +203,7 @@ subtest 'Pipelines' => sub {
     }
 };
 
-subtest "A pipeline's stages" => sub {
+subtest 'A pipeline as a stage' => sub {
     my $dbh   = music();
     my $count = Ekorn::Pipeline->new(
         sub ($dbh) { $dbh->selectrow_array('SELECT COUNT(*) FROM artist') },
@@ -268,7 +268,7 @@ subtest 'Canned stages' => sub {
         'nor does pluck by name, on a hash';
 };
 
-subtest 'What a stage can ask: Context' => sub {
+subtest 'Context' => sub {
     my $dbh = music();
     my($original) = $dbh->results(
         'SELECT id, name FROM artist WHERE id = 1',
@@ -293,7 +293,7 @@ package My::Stages {    ## no critic (Modules::ProhibitMultiplePackages)
     }
 }
 
-subtest 'Writing stages' => sub {
+subtest 'Stages for others' => sub {
     my $dbh = music();
     my $it  = $dbh->iterate('SELECT name FROM artist', My::Stages::no_blur());
     my $line;
@@ -340,6 +340,42 @@ subtest 'The function a statement is given' => sub {
     );
     is [names_of(sub { uc })->all], [qw(X Y)], 'stages given go after its own';
     is [names_of()->all],           [qw(x y)], 'for that call only';
+};
+
+subtest "The run's context" => sub {
+    my $dbh = music();
+    my @seen;
+    my $look = sub ($row) {
+        my $context = Ekorn::Pipeline::run_context();
+        push @seen, [
+            $context->{statement} isa 'DBIx::Squirrel::st',
+            [@{ $context->{columns} }],
+            $context->{row} == $row ? 'the row' : 'another',
+        ];
+        return $row;
+    };
+    my $it = $dbh->iterate('SELECT id, name FROM artist WHERE id = 1', $look);
+    $it->all;
+    is \@seen, [[T(), [qw(id name)], 'the row']],
+        "a statement's run: its handle, its columns and the row the value came from";
+
+    @seen = ();
+    my $next = Ekorn::Pipeline->new($look)
+        ->iterator($dbh->iterate('SELECT id, name FROM artist WHERE id = 2'));
+    $next->();
+    is \@seen, [[T(), [qw(id name)], 'the row']],
+        'and a pipeline reading an iterator';
+
+    my $context;
+    Ekorn::Pipeline->new(sub { $context = Ekorn::Pipeline::run_context(); $_ })
+        ->(1);
+    ok !(ref $context eq 'HASH' && $context->{statement}),
+        'a pushed run has no statement';
+
+    my $kept;
+    $dbh->iterate('SELECT id FROM artist',
+        sub { $kept = Ekorn::Pipeline::run_context(); $_ })->all;
+    is $kept->{row}, undef, 'and the row is gone once the run has ended';
 };
 
 done_testing;

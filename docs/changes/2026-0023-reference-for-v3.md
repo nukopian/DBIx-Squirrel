@@ -1,6 +1,6 @@
 # 2026-0023. The reference, rewritten for v3
 
-**Status:** in progress
+**Status:** shipped, unreleased, on `pipeline-experimental`
 
 **Decisions:** All settled: D1, its own item, now; D2, in the user
 guide's layer order; D3, its examples run and checked; D4, upgrading
@@ -11,6 +11,8 @@ must be quite stale now." Split from 2026-0019, whose plan had the
 reference rewritten with the README.
 
 **Started:** 2026-11-13
+
+**Finished:** 2026-11-13
 
 ## Background
 
@@ -70,3 +72,35 @@ they say; the tests pass against Ekorn's working copy, with coverage at
 its floors; and the manuals are made from it.
 
 ## What happened
+
+- **2026-11-13, outcome:** `docs/REFERENCE.md` is rewritten for what's
+  on `pipeline-experimental`, against Ekorn's working copy at
+  be205aecafe1a9d1f9ba64310e9177417cbf50cc, in the guide's order, each
+  chapter linking to the guide's. Every test passes, on SQLite, MySQL
+  8.4 and PostgreSQL 18, and coverage meets its floors.
+  - **Added:** the examples' database and a runnable at-a-glance;
+    sinks (8); the iterator's `first`, `ended` and what `all`,
+    `first` and `single` take; stages for the select methods,
+    `selectall_array` among them; named pipelines; `|` and `@{}`
+    (11); 15. Protocols, D5: the iterator as a source, the run's
+    context (`statement`, `columns`, `row`) as a documented contract,
+    what a call takes as stages, and a `gather` block's parts;
+    Ekorn's messages users meet; differences for stages; and
+    "Upgrading from 2.x", the design's section 10 table, D4.
+  - **Corrected:** the 1.x table's right-hand column described v2
+    (`all` giving a count, `count`, `single` croaking); it now says
+    what happens now. Stop is no longer a class. The Sugar's handle
+    in use is an earlier call's iterator, as well as a statement
+    handle not read to the end.
+  - **Examples:** 81, of which 50 run, each printing what its
+    comments say; the 31 not run are usage synopses, or need a server
+    or a driver the tests don't have. `xt/howto.t` became
+    `xt/examples.t`, running both documents, each as a program of its
+    own, D3; CLAUDE.md and MAINTAINING.md name it.
+  - **Tests:** `t/23-documented.t`'s subtests follow the sections'
+    new names, and "The run's context" pins down D5's contract.
+- **Found:** `xt/manuals.t`'s check of links between the manuals
+  didn't unescape `E<verbar>`, a `|` in a section's name, so the link
+  to the guide's chapter 11 failed it; it does now.
+- **What's left:** the README's upgrade note names 1.x only; the
+  README is 2026-0019's.

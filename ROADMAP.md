@@ -41,16 +41,8 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0023. The reference, rewritten for v3
-
-**Added:** 2026-11-13. **Size:** L (5). **Split from:** 2026-0019
-
-The reference brought up to date with everything on
-`pipeline-experimental`, in the user guide's layer order, with the
-protocols DBIx::Squirrel offers, its examples run and checked as the
-guide's are, and a section on upgrading from 2.x. Its
-[record](docs/changes/2026-0023-reference-for-v3.md) has the decisions
-and the plan.
+Nothing, between 2026-0023, shipped on `pipeline-experimental`, and
+2026-0019, which waits for Ekorn::Pipeline v0.3.0 on CPAN.
 
 ## Next
 
@@ -67,8 +59,8 @@ explained where it's first shown, the how-to being 2026-0021's and the
 reference, with its table of what changes for users, 2026-0023's;
 `Changes`' precis; the `cpanfile`'s range, `>= v0.3.0, < v0.4.0`; CI;
 and the PDFs, rebuilt and read once the docs have settled, before the
-tag, as none are rebuilt while they change on `pipeline-experimental`. Why: it breaks code,
-which a major version is for. Done when: v3.0.0 is on CPAN.
+tag, as none are rebuilt while they change on `pipeline-experimental`.
+Why: it breaks code, which a major version is for. Done when: v3.0.0 is on CPAN.
 
 ## Later
 

@@ -55,6 +55,10 @@ Unreleased
       before. Its message for anything else is now "Expected only
       code references, pipelines or their names after the statement
       for %s".
+    - The reference is rewritten for version 3, in the user guide's
+      order, with every example run, the protocols other code can rely
+      on, the run's context among them, and upgrading from 2.x
+      (roadmap 2026-0023).
     - The how-to is rewritten as a user guide, DBIx::Squirrel's
       layers from the DBI up, with recipes that print what their
       comments say, comparisons with the alternatives, and answers to

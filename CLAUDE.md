@@ -219,7 +219,7 @@ installed, as DBD::Pg links to its `libpq` by full path.
   decided on 2026-11-09. DBIx-Squirrel dogfoods Ekorn-Pipeline, so its
   tests should catch a change there before Ekorn releases it, not
   after. Put `~/Git/github.com/nukopian/Ekorn-Pipeline/lib` first on
-  `PERL5LIB`, which reaches the subprocesses `xt/howto.t` starts, as
+  `PERL5LIB`, which reaches the subprocesses `xt/examples.t` starts, as
   yath's `-I` doesn't; its manuals' POD is there too, for
   `xt/manuals.t` and `scripts/manuals`:
 
@@ -261,10 +261,11 @@ installed, as DBD::Pg links to its `libpq` by full path.
   installer uses, so they must pass under `prove` too. yath is the
   maintainers' choice, not a requirement.
 - **`xt/` holds the maintainers' tests,** which yath runs with those in
-  `t/`, as `.yath.rc` says, and `prove` doesn't. `xt/howto.t` runs the
-  examples in `docs/HOWTO.md`, so they can't drift from the code; an
-  example needing a server the tests don't have is marked
-  `<!-- not run -->` above it.
+  `t/`, as `.yath.rc` says, and `prove` doesn't. `xt/examples.t` runs
+  the examples in `docs/HOWTO.md` and `docs/REFERENCE.md`, and checks
+  each prints what its comments say, so they can't drift from the code;
+  a usage synopsis, or an example needing a server the tests don't
+  have, is marked `<!-- not run -->` above it.
 
 On Iain's Mac, each server has a test account of its own, set up on
 2026-11-04, which can reach only its own database, `dbix_squirrel_test`:

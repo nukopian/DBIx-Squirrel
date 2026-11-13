@@ -1939,7 +1939,7 @@ C<results>.
 Name it for its job, in the namespace where its stages belong, and
 name the distribution after it, as C<DBIx-Squirrel-Stages-JSON> for
 C<DBIx::Squirrel::Stages::JSON>. Have it require the DBIx::Squirrel it
-was tested with. The reference's L<Writing stages|DBIx::Squirrel::Manual::Reference/"Writing stages">
+was tested with. The reference's L<Stages for others|DBIx::Squirrel::Manual::Reference/"Stages for others">
 has the details, and Ekorn::Pipeline's guide has more, in
 L<Building parts for others|Ekorn::Pipeline::Manual::HowTo/"10. Building parts for others">,
 including how to write sources and sinks of your own.
@@ -2148,9 +2148,9 @@ and limiting, is better done in SQL.
 
 =head1 17. Coming from version 1 or 2
 
-The reference's L<Upgrading from 1.x|DBIx::Squirrel::Manual::Reference/"Upgrading from 1.x">
-lists every change from version 1. These are the changes most code
-meets first.
+The reference's L<Upgrading from 2.x|DBIx::Squirrel::Manual::Reference/"Upgrading from 2.x">
+and L<Upgrading from 1.x|DBIx::Squirrel::Manual::Reference/"Upgrading from 1.x"> list every
+change. These are the changes most code meets first.
 
 =head2 From version 2
 

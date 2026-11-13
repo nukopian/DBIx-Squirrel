@@ -96,7 +96,7 @@ DBIx::Squirrel's pipeline is Ekorn::Pipeline's. CI installs Ekorn from
 CPAN, so it tests what users get. Locally, test against
 Ekorn-Pipeline's working copy too, so a change there that breaks
 DBIx::Squirrel shows up before Ekorn releases it. Its `lib` goes first
-on `PERL5LIB`, which reaches the Perls `xt/howto.t` starts, as yath's
+on `PERL5LIB`, which reaches the Perls `xt/examples.t` starts, as yath's
 `-I` doesn't:
 
 ```

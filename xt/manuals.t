@@ -233,6 +233,8 @@ subtest 'each link between the manuals finds its section' => sub {
             =~ m( L< [^|>]+ \| (DBIx::Squirrel::Manual::\w+ / "[^"]+") > )xg)
         {
             my($to, $section) = $link =~ m( \A ([\w:]+) / "(.+)" \z )x;
+            # A | in a link's section is written E<verbar>.
+            $section =~ s( E<verbar> )(|)xg;
             ok $heads{$to}{$section}, "$module: $to has $section";
         }
     }

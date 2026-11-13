@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [The reference, rewritten for v3](2026-0023-reference-for-v3.md),
-  roadmap 2026-0023: in progress.
+  roadmap 2026-0023: shipped, unreleased.
 - [Trim DBIx::Squirrel's cost per row](2026-0022-cost-per-row.md),
   roadmap 2026-0022: shipped, unreleased.
 - [The how-to as a user guide](2026-0021-user-guide.md),
