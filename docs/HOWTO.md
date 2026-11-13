@@ -1064,7 +1064,9 @@ my $handle = music;                                   # the database handle
 my $sth    = music 'SELECT name FROM artist WHERE id = ?', 1;
 say $sth->fetchrow_arrayref->[0];                     # Abba
 
-my @names = music 'SELECT name FROM artist', sub { $_->[0] };
+use Ekorn::Pipeline::Sinks qw(keep_all);
+
+my @names = music 'SELECT name FROM artist', sub { $_->[0] }, keep_all;
 say "@names";                                         # Abba Blur Cream
 ```
 
@@ -1077,10 +1079,15 @@ use DBIx::Squirrel::Sugar statement => {
     album     => [music => 'SELECT * FROM album WHERE id = ?'],
 };
 
-my @titles = titles_by artist => 2;
+use Ekorn::Pipeline::Sinks qw(keep_all);
+
+my $it = titles_by artist => 2;    # with stages, an iterator
+while (my($title) = $it->next) { say $title }
+
+my @titles = titles_by artist => 2, keep_all;    # a sink last, its result
 say "@titles";    # Parklife The Great Escape
 
-my @shouted = titles_by artist => 2, sub { uc };    # more stages, for this call
+my @shouted = titles_by artist => 2, sub { uc }, keep_all;    # more stages, for this call
 say "@shouted";   # PARKLIFE THE GREAT ESCAPE
 
 my $sth = album 1;    # no stages: the statement handle, executed
@@ -1093,9 +1100,11 @@ say $sth->fetchrow_hashref->{title};    # Arrival
 use DBIx::Squirrel::Sugar qw(database statement);
 
 database(archive => 'dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1});
+use Ekorn::Pipeline::Sinks qw(keep_single);
+
 statement(artist_count => archive => 'SELECT COUNT(*) FROM artist', sub { $_->[0] });
 
-my($n) = artist_count();
+my $n = artist_count(keep_single);
 say $n;    # 3
 say ref database('archive');    # DBIx::Squirrel::db
 ```
@@ -1118,8 +1127,10 @@ my $hits = DBIx::Squirrel::Pipeline->new(
 );
 statement(top_hits => archive => 'SELECT name, plays FROM track ORDER BY plays DESC', $hits);
 
-say join ', ', top_hits();           # Dancing Queen, Sunshine of Your Love, Girls & Boys, Parklife
-say join ', ', top_hits(take(2));    # Dancing Queen, Sunshine of Your Love
+use Ekorn::Pipeline::Sinks qw(keep_all);
+
+say join ', ', top_hits(keep_all);             # Dancing Queen, Sunshine of Your Love, Girls & Boys, Parklife
+say join ', ', top_hits(take(2), keep_all);    # Dancing Queen, Sunshine of Your Love
 ```
 
 ## Caching and connections
@@ -1320,7 +1331,9 @@ use DBIx::Squirrel::Sugar
     database  => {db => ['dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1}]},
     statement => {artist_id => [db => 'SELECT id FROM artist WHERE name = ?', sub ($row) { $row->[0] }]};
 
-my($id) = artist_id('Blur');
+use Ekorn::Pipeline::Sinks qw(keep_single);
+
+my $id = artist_id('Blur', keep_single);
 say $id;    # 2
 ```
 

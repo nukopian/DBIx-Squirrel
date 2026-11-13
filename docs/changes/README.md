@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [Runs that end in a sink](2026-0016-runs-ending-in-a-sink.md),
+  roadmap 2026-0016: shipped, unreleased.
 - [Context over Ekorn's run](2026-0015-context-over-run.md),
   roadmap 2026-0015: shipped, unreleased.
 - [The iterator as a source](2026-0014-iterator-as-source.md),

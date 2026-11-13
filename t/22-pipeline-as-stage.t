@@ -101,21 +101,21 @@ subtest 'results and a statement handle take one too' => sub {
 };
 
 subtest 'Sugar takes one where a stage goes' => sub {
-    is [names_in_capitals()], \@all, 'in a statement\'s definition';
-    is [first_two()], [qw(ABBA BLUR)], 'with a stage after it';
-    is [named_after(3, $names)], [qw(DIDO ENYA)],
+    is [names_in_capitals()->all], \@all, 'in a statement\'s definition';
+    is [first_two()->all], [qw(ABBA BLUR)], 'with a stage after it';
+    is [named_after(3, $names)->all], [qw(DIDO ENYA)],
         'after a statement\'s bind values';
-    is [music($all, {ekorn_slice => {}}, $names, take(1))], ['ABBA'],
+    is [music($all, {ekorn_slice => {}}, $names, take(1))->all], ['ABBA'],
         'after a database\'s statement';
-    is [music($after, {ekorn_slice => {}}, 4, $names)], ['ENYA'],
+    is [music($after, {ekorn_slice => {}}, 4, $names)->all], ['ENYA'],
         'and its bind values';
 };
 
 subtest 'a pipeline straight after the statement is a stage' => sub {
-    is [names_without_attrs()], \@all, 'defined on use';
+    is [names_without_attrs()->all], \@all, 'defined on use';
     statement(names_as_it_runs => music => $all, $names);
-    is [names_as_it_runs()], \@all, 'defined as the program runs';
-    is [names_as_it_runs(take(2))], [qw(ABBA BLUR)],
+    is [names_as_it_runs()->all], \@all, 'defined as the program runs';
+    is [names_as_it_runs(take(2))->all], [qw(ABBA BLUR)],
         'with more stages for a call';
 };
 

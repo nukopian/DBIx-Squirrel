@@ -287,7 +287,9 @@ sub selectcol_arrayref ($self, $statement, @args) {
 
 # Call one of the DBI's select methods with a statement handle, prepared,
 # unless it was given one, and with any values bound. Return what the
-# DBI's method returns. The attributes may be left out, as with do.
+# DBI's method returns; or, with stages after the values, push what it
+# returns through them, and return what comes out, as a pipeline called
+# with values does. The attributes may be left out, as with do.
 #
 # A statement that can't be prepared returns what the DBI's method does,
 # without RaiseError: undef from those returning a reference to one row
@@ -296,7 +298,11 @@ sub _select ($self, $method, $statement, $before, @args) {
     state %UNDEF = map { ($_ => 1) } qw(
         selectrow_arrayref selectrow_hashref selectall_arrayref
     );
-    my $attrs = shift_attrs(\@args);
+    my $attrs  = @args && is_stage($args[0]) ? undef : shift_attrs(\@args);
+    my @stages = split_stages(\@args);
+    return _select_through($self, $method, $statement, $before, $attrs, \@stages,
+        @args)
+        if @stages;
     return in_method $self, $method, sub {
         my $sth
             = $statement isa 'DBI::st'
@@ -316,6 +322,18 @@ sub _select ($self, $method, $statement, $before, @args) {
         my $super = "SUPER::$method";
         at_caller { $self->$super($sth, @$before, $attrs, @values) };
     };
+}
+
+# Call a select method as _select does, without stages, and push what it
+# returns through the stages: a reference, from most, or a row's values,
+# from selectrow_array. What comes out is what a pipeline called with
+# values gives: every value, or, where one is asked for, a sink's result,
+# or how many.
+sub _select_through ($self, $method, $statement, $before, $attrs, $stages,
+    @args)
+{
+    my @got = _select($self, $method, $statement, $before, $attrs, @args);
+    return Ekorn::Pipeline->new(@$stages)->(@got);
 }
 
 # Return a statement with its placeholders rewritten as "?", for the DBI
@@ -634,7 +652,8 @@ methods, for those.
     $it = $dbh->iterate($statement, @bind_values, @stages);
 
 Prepares a statement, as L</prepare> does, and returns a
-L<DBIx::Squirrel::Iterator> over its results. See
+L<DBIx::Squirrel::Iterator> over its results, or, if the last stage is
+a sink, the sink's result. See
 L<DBIx::Squirrel::st/iterate>. As with L</do>, the attributes may be
 left out. A statement taking a list is prepared for the values given.
 
@@ -682,6 +701,18 @@ through C<selectall_arrayref>, so it does all this too.
 As with L</do>, the attributes may be left out. The first argument
 after the statement, or after C<selectall_hashref>'s key field, is
 taken as the attributes only if it's a hash reference or C<undef>.
+
+Given stages after the bind values, each pushes what the DBI's method
+returns through them, as a pipeline called with values does, and
+returns what comes out of the last: every value; or, where one value
+is asked for, a sink's result, if a sink is last, and otherwise how
+many values came out. C<selectrow_array> pushes the row's values, and
+the others their one reference.
+
+    my @names = $dbh->selectall_arrayref(
+        'SELECT name FROM artist',
+        sub { map { $_->[0] } @$_ },
+    );
 
 Unlike L</prepare>, they don't croak if the statement can't be
 prepared. Without C<RaiseError>, each returns what the DBI's returns,

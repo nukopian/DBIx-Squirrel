@@ -595,6 +595,18 @@ field, is taken as the attributes only if it's a hash reference or
 `undef`. So named values given in a hash reference, or a first value
 that's `undef`, need the attributes, or `undef`, in front.
 
+Given stages after the bind values, each pushes what the DBI's method
+returns through them, as a pipeline called with values does, and
+returns what comes out of the last: every value; or, where one value
+is asked for, a sink's result, if a sink is last, and otherwise how
+many values came out. `selectrow_array` pushes the row's values, and
+the others their one reference. With no statement as their source,
+the stages can't use `pluck` by a name for an array row, or `as_hash`.
+
+```perl
+my @names = $dbh->selectall_arrayref('SELECT name FROM artist', sub { map { $_->[0] } @$_ });
+```
+
 ```perl
 my $names = $dbh->selectcol_arrayref(
     'SELECT name FROM artist WHERE id IN ($1, $2)', 1, 2,
@@ -629,6 +641,26 @@ which stands for its stages. Each row is run through them, and what
 comes out is the result. With no stages, the result is the row. A
 stage can name the row with a signature, or leave it out and use `$_`,
 as here. See [Stages](#stages).
+
+**A sink given last says what comes back.** If the last stage is one
+of Ekorn::Pipeline's sinks, from
+[Ekorn::Pipeline::Sinks](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#sinks-ekornpipelinesinks),
+`iterate` reads the results to the end and returns the sink's result,
+not an iterator. A sink of one value, such as `count_items`,
+`keep_first`, `keep_last` or `keep_single`, gives it. A sink of many,
+such as `keep_all` or `keep(N)`, gives a list, or, where one value is
+asked for, an array reference: never a count. `keep_single` warns if
+there's a second result, and gives the first; with no results, it
+gives `undef`.
+
+```perl
+use Ekorn::Pipeline::Sinks qw(count_items keep_all keep_single);
+
+my @rows   = $dbh->iterate('SELECT * FROM artist', keep_all);
+my $rows   = $dbh->iterate('SELECT * FROM artist', keep_all);    # an array reference
+my $n      = $dbh->iterate('SELECT * FROM artist', count_items);
+my $artist = $dbh->iterate('SELECT * FROM artist WHERE id = ?', 1, keep_single);
+```
 
 ```perl
 my $it = $dbh->iterate(
@@ -730,7 +762,8 @@ $results = $dbh->results($statement, @bind_values, @stages);
 $results = $sth->results(@bind_values, @stages);
 ```
 
-As [`iterate`](#iterate), returning a `DBIx::Squirrel::Results`. That's
+As [`iterate`](#iterate), returning a `DBIx::Squirrel::Results`, or a
+sink's result, if the last stage is a sink. A result set is
 an iterator whose rows are objects, with a method for each column,
 named in lower case. The stages see the objects. A result set has the
 iterator's methods, and no others.
@@ -1440,15 +1473,15 @@ function's. The package can't have a function of that name already.
 $dbh     = music();
 $sth     = music($statement, @bind_values);
 $sth     = music($statement, \%attr, @bind_values);
-@results = music($statement, @bind_values, @stages);
-$count   = music($statement, @bind_values, @stages);
+$it      = music($statement, @bind_values, @stages);
+@results = music($statement, @bind_values, @stages, keep_all);
 ```
 
 | Called with | It |
 |---|---|
 | nothing | returns the database handle. |
 | a statement and bind values | prepares the statement, executes it, and returns the statement handle, or nothing if it couldn't be executed. |
-| those, and stages at the end | iterates over the results, as `iterate` does, and returns them all, or, in scalar context, how many there were. |
+| those, and stages at the end | returns what `iterate` does: an iterator over the results, or, if the last stage is a sink, the sink's result. |
 
 A hash reference or `undef` straight after the statement is the
 attributes to prepare it with. The statement can be a statement
@@ -1456,7 +1489,8 @@ handle, which is itself executed, or iterated over.
 
 ```perl
 my $sth   = music 'SELECT * FROM artist WHERE id = ?', 1;
-my @names = music 'SELECT name FROM artist', sub ($row) { $row->[0] };
+my $it    = music 'SELECT name FROM artist', sub ($row) { $row->[0] };
+my @names = music 'SELECT name FROM artist', sub ($row) { $row->[0] }, keep_all;
 ```
 
 ### statement
@@ -1476,23 +1510,29 @@ defined after the statement.
 
 ```perl
 $sth     = artist(@bind_values);
-@results = artist(@bind_values, @stages);
-$count   = artist(@bind_values, @stages);
+$it      = artist(@bind_values, @stages);
+@results = artist(@bind_values, @stages, keep_all);
 ```
 
 It executes the statement with the bind values, and returns the
 statement handle, or nothing if it couldn't be executed.
 
-With stages, its own or those given after the bind values, it iterates
-over the results. They go through its own stages, then those given. It
-returns them all, or, in scalar context, how many there were. Stages
-given are for that call only.
+With stages, its own or those given after the bind values, it returns
+an iterator over the results, or, if the last stage is a sink, the
+sink's result, as `iterate` does. They go through its own stages, then
+those given. Stages given are for that call only.
 
 ```perl
-my @all   = artist_names;                             # through its stage
-my @upper = artist_names sub ($name) { uc $name };    # and one more
-my $found = artist id => 1;                           # the statement handle
+my $names = artist_names;                                       # an iterator
+my @all   = artist_names keep_all;                              # through its stage
+my @upper = artist_names sub ($name) { uc $name }, keep_all;    # and one more
+my $found = artist id => 1;                                     # the statement handle
 ```
+
+A sink is a function of the package that imports it, so a statement
+can't be given its name: `Expected no function of the name in main
+already (count_items)`. Import sinks by name, or call one by its full
+name, `Ekorn::Pipeline::Sinks::count_items()`.
 
 The statement is prepared once for each database handle, with
 `prepare_cached`. Its handle may be in use: by a statement handle not

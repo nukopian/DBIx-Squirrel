@@ -122,7 +122,8 @@ sub _define_statement ($package, $name, @definition) {
 
 # Run a statement's function: execute the statement with the bind values
 # given, and return its handle, or, with stages, its own or those given
-# after the bind values, return the results. The statement is prepared
+# after the bind values, return an iterator over the results, or, if the
+# last stage is a sink, its result. The statement is prepared
 # once for each handle, with prepare_cached, which makes a new one,
 # cached in its place, when the one prepared is in use; one taking a list
 # is prepared for the values given, and not cached.
@@ -139,13 +140,13 @@ sub _run_statement ($definition, @args) {
 
 # Run what a database's function is given: nothing, for the handle; a
 # statement and its bind values, for the statement handle, executed; or
-# those and stages after them, for the results.
+# those and stages after them, for an iterator, or a sink's result.
 sub _run ($name, @args) {
     my $dbh = database($name);
     return $dbh unless @args;
     my $statement = shift @args;
-    return _execute($statement, @args)            if $statement isa 'DBI::st';
-    return _all($dbh->iterate($statement, @args)) if _ends_in_stages(\@args);
+    return _execute($statement, @args)      if $statement isa 'DBI::st';
+    return $dbh->iterate($statement, @args) if _ends_in_stages(\@args);
     my $attrs = shift_attrs(\@args);
 
     my $sth = DBIx::Squirrel::db::_prepare_as(    ## no critic (Subroutines::ProtectPrivateSubs)
@@ -154,18 +155,12 @@ sub _run ($name, @args) {
     return _execute($sth, @args);
 }
 
-# Return every result of an iterator, or, in scalar context, how many
-# there were, as a Sugar statement given stages does.
-sub _all ($iterator) {
-    my @all = $iterator->all;
-    return wantarray ? @all : scalar @all;
-}
-
 # Execute a statement handle with the bind values given, and return it,
 # or nothing if it couldn't be executed; or, with stages after the bind
-# values, return the results.
+# values, return an iterator over the results, or, if the last stage is a
+# sink, its result.
 sub _execute ($sth, @args) {
-    return _all($sth->iterate(@args)) if _ends_in_stages(\@args);
+    return $sth->iterate(@args) if _ends_in_stages(\@args);
     defined $sth->execute(@args) or return;
     return $sth;
 }
@@ -206,8 +201,12 @@ DBIx::Squirrel::Sugar - a function for each database, and each statement
     my $sth = music 'SELECT * FROM artist WHERE id = ?', 1;   # executed
     say $sth->fetchrow_hashref->{name};
 
-    my @names = music 'SELECT name FROM artist',       # through stages
+    use Ekorn::Pipeline::Sinks qw(keep_all);
+
+    my $it = music 'SELECT name FROM artist',          # an iterator
         sub ($row) { $row->[0] };
+    my @names = music 'SELECT name FROM artist',       # a sink's result
+        sub ($row) { $row->[0] }, keep_all;
 
     # Anywhere in the program
     my $handle = database('music');
@@ -218,8 +217,9 @@ DBIx::Squirrel::Sugar - a function for each database, and each statement
         artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
     };
 
-    my @all   = artist_names;                             # the results
-    my @upper = artist_names sub ($name) { uc $name };    # with more stages
+    my $names = artist_names;                                       # an iterator
+    my @all   = artist_names keep_all;                              # the results
+    my @upper = artist_names sub ($name) { uc $name }, keep_all;    # more stages
     my $found = artist id => 1;                           # executed
 
     # Or defined as the program runs
@@ -304,8 +304,9 @@ defined after the statement.
     $dbh     = music();
     $sth     = music($statement, @bind_values);
     $sth     = music($statement, \%attr, @bind_values);
-    @results = music($statement, @bind_values, @stages);
-    $count   = music($statement, @bind_values, @stages);
+    $it      = music($statement, @bind_values, @stages);
+    @results = music($statement, @bind_values, @stages, keep_all);
+    $count   = music($statement, @bind_values, @stages, count_items);
 
 Called with nothing, returns the database handle.
 
@@ -315,9 +316,13 @@ the statement handle, or nothing if it couldn't be executed. A hash
 reference, or C<undef>, straight after the statement is the attributes
 to prepare it with, as with L<DBIx::Squirrel::db/do>.
 
-With stages at the end, code references or pipelines, it iterates over
-the results, as L<DBIx::Squirrel::db/iterate> does. It returns them
-all, or, in scalar context, how many there were.
+With stages at the end, it does what L<DBIx::Squirrel::db/iterate>
+does: it returns an iterator over the results, or, if the last stage
+is a sink, such as L<Ekorn::Pipeline::Sinks>' C<keep_all> or
+C<count_items>, the sink's result. What it returns doesn't depend on
+the calling context, but for a sink of many, such as C<keep_all>,
+which gives a list, or, where one value is asked for, an array
+reference.
 
 The statement can be a statement handle, which is itself executed, or
 iterated over.
@@ -325,16 +330,24 @@ iterated over.
 =head2 The function a statement is given
 
     $sth     = artist(@bind_values);
-    @results = artist(@bind_values, @stages);
-    $count   = artist(@bind_values, @stages);
+    $it      = artist(@bind_values, @stages);
+    @results = artist(@bind_values, @stages, keep_all);
+    $count   = artist(@bind_values, @stages, count_items);
 
 Executes the statement with the bind values, and returns the statement
 handle, or nothing if it couldn't be executed.
 
-With stages, its own or those given after the bind values, it iterates
-over the results. They go through its own stages, then those given. It
-returns them all, or, in scalar context, how many there were. Stages
-given are for that call only.
+With stages, its own or those given after the bind values, it returns
+an iterator over the results, or, if the last stage is a sink, the
+sink's result, as the function a database is given does. The results
+go through its own stages, then those given. Stages given are for that
+call only.
+
+A sink is a function in the package that imports it, so a statement
+can't take its name. Define C<count_items> as a statement where
+C<count_items> is imported, and the definition croaks, as for any
+function the package has. Import sinks by name, or call one by its
+full name, C<Ekorn::Pipeline::Sinks::count_items()>.
 
 The statement is prepared once for each database handle, with
 L<DBIx::Squirrel::db/prepare_cached>. Its handle may be in use: by a

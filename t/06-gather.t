@@ -298,8 +298,8 @@ subtest 'a Sugar statement runs its gathers afresh on each call' => sub {
         sub { $_->[0] },
         joined,
     );
-    is [band_names(2)], ['Abba,Blur'],       'the first call';
-    is [band_names(3)], ['Abba,Blur,Cream'], 'the second, starting afresh';
+    is [band_names(2)->all], ['Abba,Blur'],       'the first call';
+    is [band_names(3)->all], ['Abba,Blur,Cream'], 'the second, starting afresh';
 };
 
 done_testing;

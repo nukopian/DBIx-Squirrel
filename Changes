@@ -5,11 +5,14 @@ Unreleased
     An iterator is a source for Ekorn::Pipeline, reading only as many
     rows as it needs, with Ekorn's | and @{}, and saying how its run
     ended. Its stages' Context, pluck and as_hash work wherever a
-    statement is read. DBIx::Squirrel::Stages::Flow passes on three
-    more of Ekorn's stages, and a gather has a flush and an end. This
-    is work towards v3.0.0, on the pipeline-experimental branch
-    (roadmap 2026-0014 and 2026-0015), and breaks code that uses count,
-    relies on single croaking, or takes a gather for a code reference.
+    statement is read. A call taking stages gives a sink's result when
+    a sink is last, and otherwise an iterator, the Sugar's statements
+    included. DBIx::Squirrel::Stages::Flow passes on three more of
+    Ekorn's stages, and a gather has a flush and an end. This is work
+    towards v3.0.0, on the pipeline-experimental branch (roadmap
+    2026-0014 to 2026-0016), and breaks code that uses count, relies on
+    single croaking, takes a gather for a code reference, or reads a
+    Sugar statement given stages as a list or a count.
 
     - An iterator is a source, which a pipeline of Ekorn::Pipeline's can
       read, passing on the statement's columns as the run's context. Its
@@ -24,6 +27,16 @@ Unreleased
       an array reference of the results, $it | count_items a number,
       and @$it every result. | always gives one value. Each use runs
       the statement afresh, as the iterator's own run.
+    - iterate and results, on either handle, give a sink's result when
+      the last stage is one of Ekorn::Pipeline::Sinks' sinks:
+      keep_all a list, or an array reference for one value;
+      count_items, keep_first, keep_last and keep_single their value.
+    - A Sugar statement, or a database's function, given stages gives
+      an iterator, or, with a sink last, the sink's result, in place of
+      every result, or how many in scalar context.
+    - The select methods take stages after the bind values, and push
+      what the DBI gives through them: every value that comes out, or,
+      for one value, a sink's result, or how many.
     - pluck, as_hash and result_original work in any run reading a
       statement: through |, or in a pipeline of your own, as well as
       in an iterator's own stages. result_number and iterator are

@@ -108,8 +108,8 @@ subtest 'Lists' => sub {
         some => listed => 'SELECT id FROM n WHERE id IN (...:ids) ORDER BY id',
         sub { $_->[0] },
     );
-    is [some(ids => [1, 3])], [1, 3], 'a Sugar statement takes a list';
-    is [some(ids => [2])],    [2],    'of any length';
+    is [some(ids => [1, 3])->all], [1, 3], 'a Sugar statement takes a list';
+    is [some(ids => [2])->all],    [2],    'of any length';
     is scalar(keys %{ database('listed')->{CachedKids} // {} }), 0,
         "and isn't cached, as each length makes another statement";
 };
@@ -237,7 +237,7 @@ subtest "A pipeline's stages" => sub {
     database(piped => @source);
     database('piped')->do('CREATE TABLE p (id INTEGER, name TEXT)');
     database('piped')->do(q{INSERT INTO p VALUES (1, 'x')});
-    is [piped('SELECT id, name FROM p', $names)], ['X'],
+    is [piped('SELECT id, name FROM p', $names)->all], ['X'],
         "and to a database's function, straight after the statement";
 };
 
@@ -338,8 +338,8 @@ subtest 'The function a statement is given' => sub {
         names_of => staged => 'SELECT name FROM a ORDER BY name',
         sub { $_->[0] },
     );
-    is [names_of(sub { uc })], [qw(X Y)], 'stages given go after its own';
-    is [names_of()],           [qw(x y)], 'for that call only';
+    is [names_of(sub { uc })->all], [qw(X Y)], 'stages given go after its own';
+    is [names_of()->all],           [qw(x y)], 'for that call only';
 };
 
 done_testing;

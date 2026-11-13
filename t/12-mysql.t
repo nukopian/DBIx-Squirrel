@@ -5,10 +5,11 @@ use Test2::Plugin::NoWarnings;
 use DBI;
 use DBIx::Squirrel;
 use DBIx::Squirrel::Stop;
-use DBIx::Squirrel::Sugar qw(database statement);
-use Time::HiRes           qw(sleep);
-use experimental          qw(builtin);
-use builtin               qw(weaken);
+use DBIx::Squirrel::Sugar  qw(database statement);
+use Ekorn::Pipeline::Sinks qw(keep_single);
+use Time::HiRes            qw(sleep);
+use experimental           qw(builtin);
+use builtin                qw(weaken);
 
 # Against a real MySQL server, named by a data source in the environment,
 # such as "dbi:mysql:mysql_read_default_file=...;mysql_read_default_group=...",
@@ -141,7 +142,7 @@ sub eventually ($code) {
 subtest 'Sugar connects again after the server drops the connection' => sub {
     database(server => $source, @attrs);
     statement(twice => server => 'SELECT $1 * 2', sub ($row) { $row->[0] });
-    is [twice(21)], [42], 'a statement on it';
+    is twice(21, keep_single), 42, 'a statement on it';
 
     my $first = server();
     my($id) = $first->selectrow_array('SELECT CONNECTION_ID()');
@@ -156,7 +157,7 @@ subtest 'Sugar connects again after the server drops the connection' => sub {
     ok dies { server('SELECT 1') },
         'so the call after fails, as with plain DBI';
     ref_is_not server(), $first, 'and the call after that connects again';
-    is [twice(4)], [8], 'for its statements too';
+    is twice(4, keep_single), 8, 'for its statements too';
 };
 
 done_testing;

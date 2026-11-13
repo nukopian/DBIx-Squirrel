@@ -41,24 +41,10 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing, between 2026-0015, shipped on `pipeline-experimental`, and
-2026-0016.
+Nothing, between 2026-0016, shipped on `pipeline-experimental`, and
+2026-0017.
 
 ## Next
-
-### 2026-0016. Runs that end in a sink
-
-**Added:** 2026-11-13. **Size:** M (3). **Split from:** 2026-0013.
-**Depends on:** 2026-0014
-
-What: a call taking stages gives a sink's result when its last stage is
-one, as the design's section 6 has it: `iterate`, `results`, the Sugar's
-statements, and the `select` methods, which take stages and push the
-DBI's result through them (D18). Without a sink, DBIx::Squirrel's own
-calls give an iterator, the Sugar's statements included (D16). Why: a
-sink given last says what comes back, so no call lists or counts by its
-calling context. Done when: each call does so, with tests, and section
-10's table of what changes for users holds.
 
 ### 2026-0017. The facades go
 
@@ -98,7 +84,9 @@ What: the release on Ekorn::Pipeline v0.3.0, as the design's sections
 10, 11 and 15 have it: the README, reference and how-to rewritten,
 with `|` giving one value explained where it's first shown; a table of
 what changes for users and how they move; `Changes`' precis; the
-`cpanfile`'s range, `>= v0.3.0, < v0.4.0`; and CI. Why: it breaks code,
+`cpanfile`'s range, `>= v0.3.0, < v0.4.0`; CI; and the PDFs, rebuilt and
+read once the docs have settled, before the tag, as none are rebuilt
+while they change on `pipeline-experimental`. Why: it breaks code,
 which a major version is for. Done when: v3.0.0 is on CPAN.
 
 ## Later

@@ -97,15 +97,16 @@ sub execute ($self, @args) {
 }
 
 # Return an iterator over the statement's results, executed with the bind
-# values given, and run through the stages given after them.
+# values given, and run through the stages given after them; or, if the
+# last stage is a sink, the sink's result.
 sub iterate ($self, @args) {
-    return DBIx::Squirrel::Iterator->new($self, @args);
+    return DBIx::Squirrel::Iterator->new($self, @args)->_or_sink;    ## no critic (Subroutines::ProtectPrivateSubs)
 }
 
 # Return a result set over the statement's results: an iterator handing
-# out rows as objects.
+# out rows as objects; or, if the last stage is a sink, the sink's result.
 sub results ($self, @args) {
-    return DBIx::Squirrel::Results->new($self, @args);
+    return DBIx::Squirrel::Results->new($self, @args)->_or_sink;    ## no critic (Subroutines::ProtectPrivateSubs)
 }
 
 # Return the values given, or those in an array reference given alone,
@@ -311,12 +312,24 @@ L</execute> takes, when the first result is asked for. Each row is run
 through C<@stages>, the code references or pipelines at the end of the
 arguments.
 
+If the last stage is one of L<Ekorn::Pipeline::Sinks>' sinks, it reads
+the results to the end and returns the sink's result instead. A sink
+of one value, such as C<count_items> or C<keep_single>, gives it. A
+sink of many, such as C<keep_all>, gives a list, or, where one value
+is asked for, an array reference.
+
+    use Ekorn::Pipeline::Sinks qw(count_items keep_all);
+
+    my @rows = $sth->iterate(1990, keep_all);
+    my $n    = $sth->iterate(1990, count_items);
+
 =head2 results
 
     $results = $sth->results(@bind_values, @stages);
 
 As L</iterate>, returning a L<DBIx::Squirrel::Results>, whose rows are
-objects with a method for each column.
+objects with a method for each column, or, if the last stage is a
+sink, the sink's result.
 
 =head1 DIAGNOSTICS
 

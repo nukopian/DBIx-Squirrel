@@ -4,7 +4,8 @@ use Test2::Plugin::NoWarnings;
 
 use DBIx::Squirrel;
 use DBIx::Squirrel::Pipeline;
-use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_first take_last take_single
+use DBIx::Squirrel::Stages::Flow qw(
+    :DEFAULT   take_first take_last take_single
     take_while drop_while);
 use DBIx::Squirrel::Sugar qw(database statement);
 
@@ -192,8 +193,8 @@ subtest 'a Sugar statement takes afresh on each call' => sub {
         sub { $_->[0] },
         take(2),
     );
-    is [first_two()], [qw(Abba Blur)], 'the first call';
-    is [first_two()], [qw(Abba Blur)], 'the second';
+    is [first_two()->all], [qw(Abba Blur)], 'the first call';
+    is [first_two()->all], [qw(Abba Blur)], 'the second';
 };
 
 done_testing;

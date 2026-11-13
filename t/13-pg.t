@@ -5,10 +5,11 @@ use Test2::Plugin::NoWarnings;
 use DBI;
 use DBIx::Squirrel;
 use DBIx::Squirrel::Stop;
-use DBIx::Squirrel::Sugar qw(database statement);
-use Time::HiRes           qw(sleep);
-use experimental          qw(builtin);
-use builtin               qw(weaken);
+use DBIx::Squirrel::Sugar  qw(database statement);
+use Ekorn::Pipeline::Sinks qw(keep_single);
+use Time::HiRes            qw(sleep);
+use experimental           qw(builtin);
+use builtin                qw(weaken);
 
 # Against a real PostgreSQL server, named by a data source in the
 # environment, such as "dbi:Pg:dbname=test;host=localhost;user=test".
@@ -191,7 +192,7 @@ subtest 'Sugar connects again after the server drops the connection' => sub {
         twice => server => 'SELECT $1::int * 2',
         sub ($row) { $row->[0] },
     );
-    is [twice(21)], [42], 'a statement on it';
+    is twice(21, keep_single), 42, 'a statement on it';
 
     my $first = server();
     my($pid) = $first->selectrow_array('SELECT pg_backend_pid()');
@@ -206,7 +207,7 @@ subtest 'Sugar connects again after the server drops the connection' => sub {
     ok dies { server('SELECT 1') },
         'so the call after fails, as with plain DBI';
     ref_is_not server(), $first, 'and the call after that connects again';
-    is [twice(4)], [8], 'for its statements too';
+    is twice(4, keep_single), 8, 'for its statements too';
 };
 
 done_testing;

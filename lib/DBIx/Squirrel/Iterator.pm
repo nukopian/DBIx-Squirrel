@@ -189,6 +189,18 @@ sub ekorn_source ($self) {
     return $self->{run}->ekorn_source;
 }
 
+# For the calls taking stages: return the iterator; or, if its last stage
+# is a sink, the sink's result, reading the run to its end. A sink of
+# many, whose items a run hands out one by one, gives them as a list,
+# or, where one value is asked for, as an array reference.
+sub _or_sink ($self) {    ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
+    my $stages = $self->{stages_initial};
+    my $sink   = @$stages && Ekorn::Pipeline::is_sink($stages->[-1]);
+    return $self        unless $sink;
+    return $self->first unless $sink eq 'many';
+    return $self->all;
+}
+
 # Execute the statement, unless it's been executed.
 sub _executed ($self) {
     $self->reset unless $self->{executed};
