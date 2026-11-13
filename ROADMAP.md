@@ -41,17 +41,8 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0020. The how-to's tests check what its examples print
-
-**Added:** 2026-11-13. **Size:** S (2)
-
-`xt/howto.t` runs the how-to's examples, but checks only that they run
-without warnings, not that what each prints matches the `# ...`
-comments beside it. In 2026-0016, the Sugar's examples printed
-iterators where their comments showed names, and passed. Done when
-each example's output is compared with its comments, and a mismatch
-fails, naming the example's line. Done first, so the guide of
-2026-0021 is written against it, as Iain decided on 2026-11-13.
+Nothing, between 2026-0021, shipped on `pipeline-experimental`, and
+2026-0019, which waits for Ekorn::Pipeline v0.3.0 on CPAN.
 
 ## Next
 
