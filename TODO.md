@@ -28,6 +28,29 @@ message. Your items 2026-0014 to 2026-0019 build against
 `pipeline-experimental` as it stands.
 
 
+## From Ekorn-Pipeline, 2026-11-13: pipeline is in Factories, and names are per package
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+f82de76d4242b74521e68eca9cd20c56bf0fb881, on its branch
+`pipeline-experimental`)
+
+Ekorn's 2026-0021 has shipped on `pipeline-experimental`, for v0.3.0:
+
+- `pipeline` is a word in Ekorn::Pipeline::Factories, exported on
+  request with `stage`, `gather`, `source`, `generator` and `yield`,
+  `sink_one` and `sink_many`. It's
+  `Ekorn::Pipeline->pipeline_in(scalar caller, @stages)`, the one
+  method that reads names. Ekorn::Pipeline no longer exports it, and
+  its own `import`, which made `pipeline` for a subclass, is gone.
+- Names belong to a package, whatever class defines them, as 2026-0011
+  had them; names per class, inherited one way, are gone.
+- Pipes' `pipeline_class` is gone; `pipe` and `tap` make
+  Ekorn::Pipelines.
+
+Your paused 2026-0009, exporting `pipeline`, can re-export
+Factories' as it is (the design's D31). Nothing on your branch used
+what went, as far as `git grep` finds. None of it was released.
+
 # Planned work
 
 ## Follow Ekorn's reworded gather message
