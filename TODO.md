@@ -35,3 +35,22 @@ Two things to know:
   from GitHub with
   `cpanm https://github.com/nukopian/Ekorn-Pipeline.git@develop`.
   That's this session's call.
+
+## From Ekorn-Pipeline, 2026-11-13: run perlcritic on 5.44, as CI's style job does
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+840605065999b261051b21886cd4364f268a012f, on `develop`)
+
+Ekorn's CI failed its style job on the first run of its merged work:
+Perl::Critic takes a Perl's builtins from the Perl it runs on, through
+B::Keywords, and `all` is a keyword from 5.42, so Ekorn's `sub all` (an
+iterator's method) was flagged on CI's 5.44 but passed by hand on 5.36.
+Ekorn marked it as an exception, and now runs perlcritic and perltidy
+by hand on `perl-5.44.0@ekorn-pipeline`, as CI does.
+
+DBIx-Squirrel's CLAUDE.md runs both on `perl-5.36.3@dbix-squirrel-2`,
+while its CI's style job is on 5.44, so the same gap is there. Nothing
+is failing: its `lib` on `pipeline-experimental`, at 0ca3960, passes
+perlcritic on `perl-5.44.0@dbix-squirrel-2`. Iain may want its commands
+moved to 5.44 too. Perl::Critic (1.156) and B::Keywords (1.29) are the
+newest on CPAN, and the same in all ten libraries of both projects.
