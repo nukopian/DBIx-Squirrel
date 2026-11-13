@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0024.
+Last id: 2026-0025.
 
 Items come in four groups:
 
@@ -41,8 +41,16 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing, between 2026-0023, shipped, and 2026-0019, which waits for
-Ekorn::Pipeline v0.3.0 on CPAN.
+### 2026-0025. DBIx::Squirrel::Tooling
+
+**Added:** 2026-11-13. **Size:** M (3)
+
+One module that exports everything a caller uses to do work, as
+Ekorn::Pipeline::Tooling does, with the same tags, and DBIx::Squirrel's
+own stages and context besides: DBIx::Squirrel's version of any name
+both export. The docs' examples import from it. Its
+[record](docs/changes/2026-0025-tooling.md) has the decisions and the
+plan.
 
 ## Next
 
@@ -50,8 +58,8 @@ Ekorn::Pipeline v0.3.0 on CPAN.
 
 **Added:** 2026-11-13. **Size:** L (5). **Split from:** 2026-0013.
 **Depends on:** 2026-0014, 2026-0015, 2026-0016, 2026-0017,
-2026-0018, 2026-0021, 2026-0023, and Ekorn::Pipeline v0.3.0 on
-CPAN
+2026-0018, 2026-0021, 2026-0023, 2026-0025, and Ekorn::Pipeline
+v0.3.0 on CPAN
 
 What: the release on Ekorn::Pipeline v0.3.0, as the design's sections
 10, 11 and 15 have it: the README rewritten, with `|` giving one value
