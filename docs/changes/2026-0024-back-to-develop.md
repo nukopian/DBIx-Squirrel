@@ -1,6 +1,6 @@
 # 2026-0024. pipeline-experimental back to develop
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: merge without `docs/design/`, kept by an
 archive tag. D2 settled: no TRIAL of Ekorn; test against its
@@ -10,7 +10,9 @@ history kept.
 **Origin:** two messages from Ekorn-Pipeline's session, 2026-11-13
 (Ekorn-Pipeline 3b6804ef19eeda7702723a260f70ba68192b9d34, its 2026-0025)
 
-**Started:** 2026-11-13
+**Started:** 2026-11-13, in badcdb90464b149866dd5c2718d6c7e1bd8b0785
+
+**Finished:** 2026-11-13
 
 ## Background
 
@@ -76,6 +78,18 @@ the archive tag holds `docs/design/`.
 
 ## What happened
 
+- **Outcome:** done, as Done when says. `develop` fast-forwarded from
+  c2f593b46451757a9acb6d378438fd183a85127f to the branch's last
+  commit, fb40bae750020efcb8fe38c1b0bf7189da867114, with no merge
+  commit. CI's first run on the work, 43515052956, passed all ten
+  jobs, the DBI 1.643 and macOS ones among them, and its log shows
+  Ekorn installed from GitHub's `develop`. The archive tag holds
+  `docs/design/DESIGN.md`.
+- **Step 4:** before the fast-forward, at fb40bae, the tests passed
+  against Ekorn's `develop` at 6a36bd7, 30 files and 1,981
+  assertions, and gitleaks found nothing in 401 commits.
+- **Step 5:** the branch deleted, here and on GitHub, as Iain said,
+  on 2026-11-13.
 - **Steps 1 and 2:** this record in
   badcdb90464b149866dd5c2718d6c7e1bd8b0785; the two tags signed and
   pushed, `rollback/develop-2026-11-13` on
