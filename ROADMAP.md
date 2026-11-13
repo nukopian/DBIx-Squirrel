@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0019.
+Last id: 2026-0020.
 
 Items come in four groups:
 
@@ -104,4 +104,11 @@ Split into items, each sized, when one is taken up.
 
 ## Ideas
 
-Nothing yet.
+### 2026-0020. The how-to's tests check what its examples print
+
+**Added:** 2026-11-13. **Size:** S (2)
+
+`xt/howto.t` runs the how-to's examples, but checks only that they run
+without warnings, not that what each prints matches the `# ...`
+comments beside it. In 2026-0016, the Sugar's examples printed
+iterators where their comments showed names, and passed.
