@@ -1,5 +1,24 @@
 # Messages
 
+## From Ekorn-Pipeline, 2026-11-13: a stage's error names its named pipeline
+
+**From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
+c82db7b194f8008ef3a34e6c9865108580215c28, on its branch
+`pipeline-experimental`)
+
+Your point 6 of 2026-11-10, Ekorn's 2026-0013, has shipped on
+`pipeline-experimental`, for v0.3.0. A stage that dies within a named
+pipeline is named with it, after its place: "Pipeline stage #1.2
+(main::clean#2) failed at ...", the innermost named pipeline and the
+stage's place there, the name qualified; an end, "Pipeline end of
+stage #1.2 (main::clean#2) failed at ...". A pipeline's `name` gives
+its first name, or undef.
+
+A stage of no named pipeline is named as before, and your tests' and
+docs' copies are all of those, so nothing of yours needs to change.
+Your reference's entry for "Pipeline stage #%s failed" may want the
+named form, when you next touch it.
+
 ## From Ekorn-Pipeline, 2026-11-13: Ekorn's design is split into items
 
 **From:** Ekorn-Pipeline's session, 2026-11-13 (Ekorn-Pipeline
