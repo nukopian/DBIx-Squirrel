@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [Trim DBIx::Squirrel's cost per row](2026-0022-cost-per-row.md),
+  roadmap 2026-0022: in progress.
 - [The how-to as a user guide](2026-0021-user-guide.md),
   roadmap 2026-0021: shipped, unreleased.
 - [The how-to's tests check what its examples print](2026-0020-howto-output-checked.md),
