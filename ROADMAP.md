@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0013.
+Last id: 2026-0019.
 
 Items come in four groups:
 
@@ -41,11 +41,86 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing yet.
+### 2026-0014. The iterator as a source
+
+**Added:** 2026-11-13. **Size:** M (3). **Split from:** 2026-0013
+
+DBIx::Squirrel's iterator becomes a source of Ekorn::Pipeline's, its
+stages run by Ekorn, reading only as many rows as it needs: the design's
+section 4. The spike for its Q30 built most of it on
+`pipeline-experimental`; what's left is `ended`, `|` and `@{}`, and
+results as objects through it. Its [record](docs/changes/2026-0014-iterator-as-source.md)
+has the plan.
 
 ## Next
 
-Nothing yet.
+### 2026-0015. Context over Ekorn's run
+
+**Added:** 2026-11-13. **Size:** S (2). **Split from:** 2026-0013.
+**Depends on:** 2026-0014
+
+What: DBIx::Squirrel::Context and the stages `pluck` and `as_hash` ask
+Ekorn's `run_context()` and `ending()`, as the design's section 5 has
+it: the columns, and the row a value came from, from the statement's
+context, so they work in a user's own pipeline too; `result_number`
+and `iterator` only where DBIx::Squirrel's iterator runs the stages.
+Why: a statement read through `|` has its stages run by Ekorn, not by
+DBIx::Squirrel. Done when: `pluck`, `as_hash` and `result_original`
+work in `$it | stage`, with tests, and the docs warn that `pluck` after
+a stage that reshapes rows reads the statement's columns (D21).
+
+### 2026-0016. Runs that end in a sink
+
+**Added:** 2026-11-13. **Size:** M (3). **Split from:** 2026-0013.
+**Depends on:** 2026-0014
+
+What: a call taking stages gives a sink's result when its last stage is
+one, as the design's section 6 has it: `iterate`, `results`, the Sugar's
+statements, and the `select` methods, which take stages and push the
+DBI's result through them (D18). Without a sink, DBIx::Squirrel's own
+calls give an iterator, the Sugar's statements included (D16). Why: a
+sink given last says what comes back, so no call lists or counts by its
+calling context. Done when: each call does so, with tests, and section
+10's table of what changes for users holds.
+
+### 2026-0017. The facades go
+
+**Added:** 2026-11-13. **Size:** S (2). **Split from:** 2026-0013
+
+What: DBIx::Squirrel::Pipeline and DBIx::Squirrel::Pipes go; `db` and
+`st` take `pipe` and `tap` from Ekorn::Pipeline::Pipes; Stop, Gather and
+the `Stages::` modules stay as plain re-exports of Ekorn's functions
+(D1, D6), as the design's section 9 has it. Why: DBIx::Squirrel uses
+Ekorn as it is, subclassing and wrapping nothing of it. Done when: the
+modules are gone or plain, their tests and docs follow, and nothing
+checks a pipeline `isa` DBIx::Squirrel::Pipeline.
+
+### 2026-0018. Pipelines named in the Sugar's definitions
+
+**Added:** 2026-11-13. **Size:** M (3). **Split from:** 2026-0013.
+**Depends on:** 2026-0017
+
+What: a statement's definition in DBIx::Squirrel::Sugar can name
+pipelines, as `[music => $sql, clean => trim =>]`, resolved with
+Ekorn's `pipeline_in` in the package that used the Sugar, as the
+design's section 8 has it (Ekorn's D36). It replaces 2026-0010, a
+`pipeline` key of the Sugar's own. Why: names are Ekorn's, so the Sugar
+uses them rather than defining pipelines itself. Done when: a
+definition's names resolve, a string given when a statement is called
+stays a bind value, and the docs show it.
+
+### 2026-0019. DBIx::Squirrel v3.0.0
+
+**Added:** 2026-11-13. **Size:** L (5). **Split from:** 2026-0013.
+**Depends on:** 2026-0014, 2026-0015, 2026-0016, 2026-0017,
+2026-0018, and Ekorn::Pipeline v0.3.0 on CPAN
+
+What: the release on Ekorn::Pipeline v0.3.0, as the design's sections
+10, 11 and 15 have it: the README, reference and how-to rewritten,
+with `|` giving one value explained where it's first shown; a table of
+what changes for users and how they move; `Changes`' precis; the
+`cpanfile`'s range, `>= v0.3.0, < v0.4.0`; and CI. Why: it breaks code,
+which a major version is for. Done when: v3.0.0 is on CPAN.
 
 ## Later
 
@@ -62,49 +137,4 @@ Split into items, each sized, when one is taken up.
 
 ## Ideas
 
-### 2026-0009. Export Ekorn's pipeline()
-
-**Added:** 2026-11-10. **Size:** S (2). **Depends on:**
-Ekorn-Pipeline 2026-0021
-
-Give DBIx::Squirrel a `pipeline` of its own, in
-DBIx::Squirrel::Factories, making DBIx::Squirrel::Pipelines, so a
-named pipeline can be a statement's stage, as `pipeline('clean')`,
-with a recipe and tests. From Ekorn-Pipeline's message of 2026-11-10
-(Ekorn-Pipeline 7679466a4edff604713af01bbf6bb6d7cc208709). Paused until
-Ekorn moves `pipeline` to Ekorn::Pipeline::Factories, its 2026-0021,
-as its [record](docs/changes/2026-0009-export-pipeline.md) says.
-
-**Paused** with Ekorn's work, as Iain asked on 2026-11-11, until one
-design for both repositories is approved (Ekorn-Pipeline 2026-0022).
-
-### 2026-0010. A pipeline key in DBIx::Squirrel::Sugar
-
-**Added:** 2026-11-10. **Size:** M (3). **Depends on:** 2026-0009,
-Ekorn-Pipeline 2026-0010
-
-Let `use DBIx::Squirrel::Sugar` take a `pipeline` key, defining each
-pipeline with `DBIx::Squirrel::Pipeline->named`, so one `use` names
-databases, statements and pipelines. It doesn't hand them to
-Ekorn::Pipeline::Sugar, which makes only Ekorn::Pipelines (Ekorn's
-2026-0010 D10). A statement naming a pipeline by a string
-needs the pipelines defined first, whatever order the keys come in,
-and Sugar qualifies the name with its caller's package, as
-`"${package}::clean"`, as Ekorn decided (its 2026-0011 D5).
-From the same message, and Ekorn-Pipeline's reply (Ekorn-Pipeline
-6184dfeaa846c62d26bf2d310e0e6141cb75b884).
-
-**Paused** with Ekorn's work, as Iain asked on 2026-11-11, until one
-design for both repositories is approved (Ekorn-Pipeline 2026-0022).
-
-### 2026-0011. Ekorn's install_sub and is_name
-
-**Added:** 2026-11-10. **Size:** XS (1). **Depends on:**
-Ekorn-Pipeline 2026-0010
-
-Take `install_sub` and `is_name` from Ekorn::Pipeline once it has them,
-and drop the copies in DBIx::Squirrel::Util. From the same message.
-Ekorn plans them with its Sugar, in its 2026-0010.
-
-**Paused** with Ekorn's work, as Iain asked on 2026-11-11, until one
-design for both repositories is approved (Ekorn-Pipeline 2026-0022).
+Nothing yet.

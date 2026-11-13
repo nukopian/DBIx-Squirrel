@@ -1,6 +1,6 @@
 # 2026-0013. DBIx::Squirrel on Ekorn as it is: one design
 
-**Status:** in progress
+**Status:** split into 2026-0014 to 2026-0019, and retired, on 2026-11-13
 
 **Decisions:** D1 settled: `DBIx::Squirrel::Pipeline` goes. D2
 settled: v3.0.0. D3 settled: keep `result_number` and
@@ -37,6 +37,8 @@ settled: Ekorn is asked about its `&{}` overload's cost. None open.
 **Depends on:** Ekorn-Pipeline 2026-0022, its one design
 
 **Started:** 2026-11-12, on `pipeline-experimental`
+
+**Finished:** 2026-11-13
 
 ## Background
 
@@ -337,7 +339,22 @@ its section 12.3 (Ekorn-Pipeline
 
 ## The plan
 
-Written when the design is approved and split into items.
+Written when the design was approved, on 2026-11-13: it's split into
+six roadmap items, each no bigger than L, and this item is retired.
+
+| Id | Item | Design | Size | Depends on |
+|---|---|---|---|---|
+| 2026-0014 | The iterator as a source | 4 | M (3) | |
+| 2026-0015 | Context over Ekorn's run | 5 | S (2) | 2026-0014 |
+| 2026-0016 | Runs that end in a sink | 6 | M (3) | 2026-0014 |
+| 2026-0017 | The facades go | 9 | S (2) | |
+| 2026-0018 | Pipelines named in the Sugar's definitions | 8 | M (3) | 2026-0017 |
+| 2026-0019 | DBIx::Squirrel v3.0.0 | 10, 11, 15 | L (5) | all five, and Ekorn::Pipeline v0.3.0 on CPAN |
+
+Section 14's other items: 2026-0009 is dropped, as users import
+`pipeline` from Ekorn::Pipeline::Factories; 2026-0010 is retired into
+2026-0018; 2026-0011 is dropped, as the Sugar keeps its own
+`install_sub` and `is_name`; and 2026-0003 stays in Later.
 
 ## What happened
 
@@ -605,4 +622,5 @@ Written when the design is approved and split into items.
   Ekorn-Pipeline's: "I'm happy with both designs". Task 3 is done.
   Next, the design is split into roadmap items, and this record's plan
   is written.
-
+- **2026-11-13:** split into roadmap items, as the plan says, as Iain
+  agreed. The spike's code is 2026-0014's.

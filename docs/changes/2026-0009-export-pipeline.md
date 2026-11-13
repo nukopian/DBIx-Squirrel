@@ -1,8 +1,6 @@
 # 2026-0009. Export Ekorn's pipeline()
 
-**Status:** open, paused until one design for both repositories is
-approved (Ekorn-Pipeline 2026-0022), and Ekorn-Pipeline 2026-0021 is
-built
+**Status:** dropped, on 2026-11-13
 
 **Decisions:** D1 settled: Ekorn's `pipeline` makes our subclass,
 asked of Ekorn in a task. D2 settled: our `pipeline` goes in
@@ -142,3 +140,12 @@ Written when work starts.
 ## What happened
 
 Nothing yet.
+- **2026-11-13:** dropped, as the design both repositories share, which
+  Iain approved, has it (DBIx-Squirrel 2026-0013, its section 14).
+  DBIx::Squirrel uses Ekorn as it is, so it makes no `pipeline` of its
+  own, and no DBIx::Squirrel::Factories: its users import `pipeline`
+  from Ekorn::Pipeline::Factories, and name pipelines with Ekorn's
+  Sugar or `named`. D1 and D2, which planned the export over a
+  subclass, are overtaken by that design's D1, which drops the
+  subclass.
+
