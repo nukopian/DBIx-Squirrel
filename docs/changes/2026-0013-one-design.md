@@ -585,4 +585,13 @@ Written when the design is approved and split into items.
 - **2026-11-12:** Iain has read the design, and likes it. He's
   reviewing Ekorn-Pipeline's design, the bigger, and both are approved
   together, before either is split into items.
+- **2026-11-13:** Ekorn-Pipeline's two messages on its D64 (Ekorn-Pipeline
+  b43d6132853a6ecc7bb0721ed54f766938f57623 and
+  1b3990a3056a7591ded4a1e0c0b82d2c96dfc851): the sink protocols are
+  `ekorn_sink_one` and `ekorn_sink_many`, `is_sink` says `one` or
+  `many`, and what was a scalar or list sink is a sink of one or of
+  many, in prose too. The design follows, in prose and where it names
+  the protocols; this record's entries keep the words of their day.
+  The iterator asks `is_sink` only whether a stage is a sink, so its
+  code doesn't change, and against 1b3990a the tests stand as before.
 

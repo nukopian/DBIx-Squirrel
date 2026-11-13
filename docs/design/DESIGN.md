@@ -298,7 +298,7 @@ settled below):
    `$sth->iterate(keep_all)`, `$it | keep_all` and `count_items` pull
    a row per step, so the way the docs lead with would be slower than
    the method. For its source to give every row at once there, it
-   would need to know that nothing but a list sink follows it, which
+   would need to know that nothing but a sink of many follows it, which
    no protocol tells it.
 2. **A lookahead that consumes nothing is only the iterator's.**
    Ekorn's iterator's `single` holds the value it looked at (Ekorn's
@@ -461,8 +461,8 @@ statements. Without a sink last, each follows the rule in section 3:
   `selectrow_array` the row's values. As a pushed run, it has no
   context, so `pluck` and `as_hash` croak there (Q13). What comes out
   is as Ekorn's pushed runs give it: every value in list context; in
-  scalar context, a sink's result if a sink is last, a list sink's as
-  an array reference, or, with no sink, a count (Ekorn's D17). That
+  scalar context, a sink's result if a sink is last, the result of a
+  sink of many as an array reference, or, with no sink, a count (Ekorn's D17). That
   last is the one place a call of DBIx::Squirrel's still counts by its
   calling context.
 
@@ -487,7 +487,7 @@ and a sink do what one would.
 
 Iain dropped it for now (Q11, settled), with roadmap 2026-0012. It
 will be found again if a need comes. If it is, it's as Ekorn 12.4 has
-it, a scalar sink, with one change (Q5, settled): it begins and
+it, a sink of one, with one change (Q5, settled): it begins and
 commits a transaction only when `AutoCommit` is on. With `AutoCommit`
 off, or in a transaction the user began, it leaves the transaction to
 the user, and neither commits nor rolls back.
@@ -625,7 +625,7 @@ None, since 2026-11-12.
 | **Q7** | CI against Ekorn's `pipeline-experimental`? | D7: yes, but locally first, and CI once the designs are nailed down |
 | **Q8** | What does a result sink give? | D10, overtaken by D11: a `Results` over the rows collected. No result sink is made now |
 | **Q11** | Keep `insert_into`? | D9: not now. Roadmap 2026-0012 is dropped, and it'll be found again if a need comes |
-| **Q12** | `is_stage` took a bind value with an `as_list` method for a sink | D8, from Ekorn's D49: its role methods are renamed `ekorn_source`, `ekorn_stage`, `ekorn_sink` and `ekorn_sink_scalar`, so `is_stage` leaves any other object as a bind value. Checked at 8ce1c95. DBIx::Squirrel adds a test with such a bind value |
+| **Q12** | `is_stage` took a bind value with an `as_list` method for a sink | D8, from Ekorn's D49: its role methods are renamed `ekorn_source`, `ekorn_stage`, `ekorn_sink` and `ekorn_sink_scalar`, so `is_stage` leaves any other object as a bind value. Checked at 8ce1c95. The sinks' are `ekorn_sink_many` and `ekorn_sink_one` since Ekorn's D64. DBIx::Squirrel adds a test with such a bind value |
 | **Q13** | `pluck` and `as_hash` with no run's columns? | D13: croak, as now, with the message unchanged; `pluck` by name on a hash row uses the row's own keys, as now, without columns |
 | **Q15** | Should `all`, `single` and `count` stay methods, or be sinks? | D11: sinks, Ekorn's, named in D14. The methods go in v3.0.0; `next` and `reset` stay. A call ending in a sink gives its result (Ekorn's D43). Weighed: keeping the methods as shorthands over the sinks, which keeps two ways to do one thing. Revised by D22: `all`, `single` and a new `first` come back, taking what's left of a run, as Ekorn's iterator's do (its D59 and D60); `count` stays gone |
 | **Q16** | `count` or `to_count`? | D12: `count`, as it says what the sink is, not where the result goes. Ekorn named it `count_items` (its D53) |
@@ -634,7 +634,7 @@ None, since 2026-11-12.
 | **Q19** | What does a call give without a sink last? | D16: the rule in section 3: DBIx::Squirrel's own calls give an iterator, the Sugar's statements included; the DBI's calls give what the DBI gives |
 | **Q20** | What does `only_item` do at a second item? | D17: it warns, not croaks, and gives the first: there's a second when a SELECT forgot `LIMIT 1`. It's `keep_single` now (Ekorn's D53 and D55) |
 | **Q21** | `pluck` after a stage that reshapes rows reads the statement's columns, as a context describes the source (Ekorn's D46), and so picks the wrong field, silently | D21: the reference and the how-to say so loudly, and show `as_hash` first, then `pluck` by name, which uses the hash's own keys |
-| **Q22** | A list sink last, `all_items`, gave a count in scalar context (Ekorn's D47), so `my $rows = ... all_items` quietly gave a number | D20, from Ekorn's D51, as Iain proposed: a list sink asked for one value gives its list as an array reference, at the end of a `\|` chain too. A run with no sink still gives a count |
+| **Q22** | A list sink last, `all_items`, gave a count in scalar context (Ekorn's D47), so `my $rows = ... all_items` quietly gave a number | D20, from Ekorn's D51, as Iain proposed: a sink of many asked for one value gives its list as an array reference, at the end of a `\|` chain too. A run with no sink still gives a count |
 | **Q23** | Ekorn's sinks, imported, can clash with names in the user's package, such as a Sugar database or statement called `count_items`, or Test2::V0's `all_items` | D19: a test shows the Sugar's clash check catches a sink of the same name; the docs import sinks by name. Where a name clashes, call the sink by its full name, `Ekorn::Pipeline::Sinks::count_items()`, or through a code reference in a lexical, `my $count_items = \&Ekorn::Pipeline::Sinks::count_items;`, called as `$count_items->()`. Test2::V0's `all_items` no longer clashes, as the sink is `keep_all` (Ekorn's D55) |
 | **Q25** | Are the iterator's `all`, `first` and `single` Ekorn's, or DBIx::Squirrel's own, with `single` using the batch fetch as its lookahead? | D23: Ekorn's, through the Ekorn iterator inside. Its `single` consumes nothing (Ekorn's D60), and with no stages takes the second row from the batch already fetched; with stages, a count of rows would be wrong. The batch size stays at two or more |
 | **Q26** | How many rows does a statement's source fetch at a time? | D24: as version 1 did: 2 at first, the least that tells whether there's a second, doubling each time a fetch fills its batch, up to 64. So `first`, `single` and `take(1)` fetch 2 rows, not 100, and `single`'s lookahead (Q25) is always in the first batch. Today's fixed 100 goes |
@@ -665,8 +665,8 @@ dropped as moot by D11, which leaves it none.
 
 - **`|` gives one value, front and centre,** in the reference and the
   how-to, as Iain asked on 2026-11-12: an overloaded operator always
-  returns one scalar, a limit of Perl's, so a chain ending in a list
-  sink gives an array reference, and `my @rows = $it | keep_all` gets
+  returns one scalar, a limit of Perl's, so a chain ending in a sink of
+  many gives an array reference, and `my @rows = $it | keep_all` gets
   one element, the reference. Each says so where it first shows `|`,
   not in a note later, with the three forms that work, as in section
   4.5: `my $rows = ... | keep_all`, `my @rows = @{ ... | keep_all }`,
