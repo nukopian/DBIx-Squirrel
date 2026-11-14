@@ -37,18 +37,16 @@ jobs:
       - name: yath
         run: yath test
 
-  # The tests on Windows, at the floor and the newest Perl, as
-  # Ekorn-Pipeline's CI has them: the v3.0.0 trial failed on CPAN
-  # Testers' Windows, where a test's child program, given after -e, had
-  # its quotes mangled by the command line. yath doesn't support
-  # Windows, so prove runs t/, as an installer would, without the
-  # develop modules. Git is told not to turn LF into CRLF, so the files
-  # are as the tarball has them.
+  # The tests on Windows, at Perl 5.36 and 5.42, as CPAN Testers'
+  # Windows testers run them: the v3.0.0 trial failed there, where a
+  # test's child program, given after -e, had its quotes mangled by the
+  # command line. yath doesn't support Windows, so prove runs t/, as an
+  # installer would, without the develop modules. Git is told not to
+  # turn LF into CRLF, so the files are as the tarball has them.
   #
-  # On 5.44, Variable::Magic 0.65 crashes perl as it exits, so anything
-  # using namespace::clean does too, as its B::Hooks::EndOfScope loads
-  # it. That job uses EndOfScope's pure Perl version instead; 5.36
-  # keeps the XS one, as installers have it.
+  # Not 5.44, as Ekorn-Pipeline's CI has it: there, DBD::SQLite 1.78's
+  # Makefile.PL ended without writing a Makefile, or saying why, and
+  # CPAN Testers have no report of it on Windows at 5.44 either.
   windows:
     name: perl ${{ matrix.perl }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -56,14 +54,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-2025]
-        perl: ["5.36", "5.44"]
-        include:
-          - perl: "5.36"
-            endofscope: XS
-          - perl: "5.44"
-            endofscope: PP
-    env:
-      B_HOOKS_ENDOFSCOPE_IMPLEMENTATION: ${{ matrix.endofscope }}
+        perl: ["5.36", "5.42"]
     steps:
       - name: LF as it is
         run: git config --global core.autocrlf false
