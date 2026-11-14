@@ -1194,7 +1194,11 @@ sub and_count () {
     };
 }
 
-my @lines = $dbh->iterate('SELECT name FROM artist ORDER BY name', sub { $_->[0] }, and_count)->all;
+my @lines = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY name',
+    sub { $_->[0] },
+    and_count,
+)->all;
 say "@lines";    # Abba Blur Cream (3)
 ```
 
@@ -1954,7 +1958,11 @@ package My::Stages {
     }
 }
 
-my $chart = $dbh->iterate('SELECT name FROM artist ORDER BY id', sub { $_->[0] }, My::Stages::numbered_from(1));
+my $chart = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    sub { $_->[0] },
+    My::Stages::numbered_from(1),
+);
 say join ', ', $chart->all;           # 1. Abba, 2. Blur, 3. Cream
 say join ', ', $chart->reset->all;    # 1. Abba, 2. Blur, 3. Cream
 

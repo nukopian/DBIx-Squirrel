@@ -1198,7 +1198,11 @@ sub and_count () {
     };
 }
 
-my $it = $dbh->iterate('SELECT name FROM artist ORDER BY id', sub { $_->[0] }, and_count);
+my $it = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    sub { $_->[0] },
+    and_count,
+);
 say join ' ', $it->all;           # Abba Blur Cream (3)
 say join ' ', $it->reset->all;    # Abba Blur Cream (3)
 
@@ -1965,7 +1969,12 @@ package My::Stages {
     }
 }
 
-say join ' ', $dbh->iterate('SELECT name FROM artist ORDER BY id', sub { $_->[0] }, My::Stages::prefixed('#'))->all;    # #Abba #Blur #Cream
+say join ' ', $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    sub { $_->[0] },
+    My::Stages::prefixed('#'),
+)->all;
+# #Abba #Blur #Cream
 
 eval { My::Stages::prefixed('') };
 print $@;    # Expected a prefix at ... line ...
