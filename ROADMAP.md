@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0026.
+Last id: 2026-0027.
 
 Items come in four groups:
 
@@ -76,4 +76,14 @@ Split into items, each sized, when one is taken up.
 
 ## Ideas
 
-Nothing yet.
+### 2026-0027. A pipeline key for the Sugar
+
+Added 2026-11-14. One `use DBIx::Squirrel::Sugar` names pipelines as
+well as databases and statements, by passing a `pipeline` key to
+Ekorn::Pipeline::Sugar's `import_into` (Ekorn-Pipeline 2026-0010),
+handled before the statements that name them, and installing no
+`pipeline` function, which is Ekorn's word and in Tooling's `:all`.
+After v3.0.0, as it only adds. **Origin:** a message from
+Ekorn-Pipeline, 2026-11-14 (its commit
+d5be2efc91490bfc9c4e94582a4b937fd2327dbd), whose details are in TODO.md at
+fb67c9ab896aff6d67e8a4a6d8d97b1389ae11b7.
