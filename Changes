@@ -145,6 +145,8 @@ Unreleased
       the Sugar's "Expected a database named %s", not "Expected a
       database defined as %s". Code matching the old wording needs
       updating.
+    - Requires Ekorn::Pipeline v0.3.0 or later, below v0.4.0, for its
+      Tooling, a gather's flush and end, and the two messages' wording.
 
 v2.1.0 2026-11-10
 

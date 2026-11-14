@@ -28,8 +28,9 @@ jobs:
         with:
           perl-version: ${{ matrix.perl }}
       # Ekorn::Pipeline from its develop, until v0.3.0 is on CPAN: this
-      # code needs v0.3.0, which still says v0.2.0, within the cpanfile's
-      # range, so installdeps keeps it. TODO.md has the task to remove it.
+      # code needs v0.3.0, which develop now says, within the cpanfile's
+      # range, so installdeps keeps it. Only a trial is on CPAN, which
+      # installdeps can't find. TODO.md has the task to remove it.
       - name: Ekorn::Pipeline from GitHub
         run: cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop
       - name: dependencies
