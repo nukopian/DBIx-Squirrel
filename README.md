@@ -10,12 +10,14 @@ takes away the friction around it: placeholders in whatever style you
 like, iterators over results, and a pipeline of stages written beside
 the query. It never hides the SQL, and it isn't an ORM.
 
-    my @names = $dbh->iterate(
-        'SELECT name FROM track WHERE plays > :plays ORDER BY plays DESC',
-        plays => 6000,
-        sub { $_->[0] },    # each row's name
-        sub { uc },         # in capitals
-    )->all;
+```perl
+my @names = $dbh->iterate(
+    'SELECT name FROM track WHERE plays > :plays ORDER BY plays DESC',
+    plays => 6000,
+    sub { $_->[0] },    # each row's name
+    sub { uc },         # in capitals
+)->all;
+```
 
 It's a subclass of the DBI, so everything the DBI does still works.
 Where the two do the same thing, they give the same result.
@@ -66,37 +68,45 @@ on its own, and code written for the DBI keeps working at every one.
 
 ### 1. Connect with it.
 
-    use DBIx::Squirrel;
+```perl
+use DBIx::Squirrel;
 
-    my $dbh = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', '', '');
+my $dbh = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', '', '');
+```
 
 Your DBI code runs as it did. `connect` and `prepare` croak if they
 fail, so there's no `or die` to write.
 
 ### 2. Write placeholders in the style you like.
 
-    my $sth = $dbh->prepare('SELECT title FROM album WHERE artist_id = :artist AND year > :year');
-    $sth->execute(artist => 2, year => 1994);
+```perl
+my $sth = $dbh->prepare('SELECT title FROM album WHERE artist_id = :artist AND year > :year');
+$sth->execute(artist => 2, year => 1994);
 
-    my $album = $dbh->selectrow_hashref('SELECT * FROM album WHERE id = $1', 2);
+my $album = $dbh->selectrow_hashref('SELECT * FROM album WHERE id = $1', 2);
+```
 
 `?`, `?1`, `:1`, `$1`, `:name` and `$name` are each rewritten as
 `?` for the DBI. A numbered or named placeholder takes one value,
 wherever it appears. `do` and the select methods need no `undef`
 before the values.
 
-    my $of_years = $dbh->selectall_arrayref('SELECT * FROM album WHERE year IN (...:years)',
-        years => [1967, 1994]);
+```perl
+my $of_years = $dbh->selectall_arrayref('SELECT * FROM album WHERE year IN (...:years)',
+    years => [1967, 1994]);
+```
 
 A placeholder with `...` before it takes a list. It's written as a
 `?` for each value in the array reference given.
 
 ### 3. Iterate over the results.
 
-    my $albums = $dbh->iterate('SELECT title, year FROM album ORDER BY year');
-    while (my($row) = $albums->next) {
-        say "$row->[0] ($row->[1])";
-    }
+```perl
+my $albums = $dbh->iterate('SELECT title, year FROM album ORDER BY year');
+while (my($row) = $albums->next) {
+    say "$row->[0] ($row->[1])";
+}
+```
 
 Rows are fetched in batches, and the statement is finished when they
 run out. `all` takes the rest at once, nearly as quickly as plain
@@ -105,11 +115,13 @@ if there's another.
 
 ### 4. Add stages.
 
-    my @hits = $dbh->iterate(
-        'SELECT name, plays FROM track ORDER BY plays DESC',
-        sub { $_->[1] >= 5000 ? $_ : () },    # leave out the rest
-        sub { "$_->[0] ($_->[1])" },          # make each a string
-    )->all;
+```perl
+my @hits = $dbh->iterate(
+    'SELECT name, plays FROM track ORDER BY plays DESC',
+    sub { $_->[1] >= 5000 ? $_ : () },    # leave out the rest
+    sub { "$_->[0] ($_->[1])" },          # make each a string
+)->all;
+```
 
 Each row goes through the stages, given as `$_`. A stage returns
 nothing to drop the row, one value in its place, or several. It can
@@ -131,17 +143,19 @@ first, and others. They're in [Ekorn::Pipeline::Sinks](https://metacpan.org/pod/
 [DBIx::Squirrel::Tooling](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3ATooling) exports every stage, sink and word from one
 module, by tags, as `:stages` and `:sinks`, or `:all`:
 
-    use DBIx::Squirrel::Tooling qw(:all);
+```perl
+use DBIx::Squirrel::Tooling qw(:all);
 
-    my @top_ten = $dbh->iterate(
-        'SELECT name, plays FROM track ORDER BY plays DESC',
-        take_if { $_->[1] >= 5000 },    # leave out the rest
-        pluck('name'),
-        take(10),
-        keep_all,
-    );
+my @top_ten = $dbh->iterate(
+    'SELECT name, plays FROM track ORDER BY plays DESC',
+    take_if { $_->[1] >= 5000 },    # leave out the rest
+    pluck('name'),
+    take(10),
+    keep_all,
+);
 
-    my $hits = $dbh->iterate('SELECT * FROM track WHERE plays > ?', 6000, count_items);
+my $hits = $dbh->iterate('SELECT * FROM track WHERE plays > ?', 6000, count_items);
+```
 
 Where [Ekorn::Pipeline::Operators](https://metacpan.org/pod/Ekorn%3A%3APipeline%3A%3AOperators) is in scope, `|` chains them too,
 as in `$it | count_items`. The reference says how to write your own
@@ -157,22 +171,26 @@ keeps its own names for its modules of functions, such as
 
 ### 5. Have rows as objects.
 
-    my $album = $dbh->results('SELECT * FROM album WHERE id = :id', id => 2)->single;
-    say $album->title, ' (', $album->year, ')';
+```perl
+my $album = $dbh->results('SELECT * FROM album WHERE id = :id', id => 2)->single;
+say $album->title, ' (', $album->year, ')';
+```
 
 Each row has a method for each column, and stages can work on the
 objects.
 
 ### 6. Give your databases and statements names.
 
-    use DBIx::Squirrel::Tooling qw(keep_all);
-    use DBIx::Squirrel::Sugar
-        database  => {music => ['dbi:SQLite:dbname=music.db', '', '']},
-        statement => {
-            titles_by => [music => 'SELECT title FROM album WHERE artist_id = ?', sub { $_->[0] }],
-        };
+```perl
+use DBIx::Squirrel::Tooling qw(keep_all);
+use DBIx::Squirrel::Sugar
+    database  => {music => ['dbi:SQLite:dbname=music.db', '', '']},
+    statement => {
+        titles_by => [music => 'SELECT title FROM album WHERE artist_id = ?', sub { $_->[0] }],
+    };
 
-    my @titles = titles_by 2, keep_all;
+my @titles = titles_by 2, keep_all;
+```
 
 [DBIx::Squirrel::Sugar](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3ASugar) makes each a function with its own name. A
 statement's stages are declared beside its SQL. Called, it gives an
@@ -189,7 +207,9 @@ on top, with recipes that work. Each module's POD, starting with
 
 ## Installing
 
-    cpanm DBIx::Squirrel
+```
+cpanm DBIx::Squirrel
+```
 
 It needs Perl 5.36 or later.
 
@@ -207,7 +227,9 @@ and
 lists them. To stay on 1.x, which also runs on older Perls, install
 its last version:
 
-    cpanm DBIx::Squirrel@1.6.5
+```
+cpanm DBIx::Squirrel@1.6.5
+```
 
 Its code is in the archived
 [DBIx-Squirrel-1](https://github.com/nukopian/DBIx-Squirrel-1)

@@ -26,6 +26,7 @@ on develop => sub {
     requires 'Perl::Critic';
     requires 'Perl::Tidy';
     requires 'Pod::Coverage';
+    requires 'Pod::Markdown::Github';
     requires 'Test2::Harness';
     requires 'Test2::Plugin::Cover';
     requires 'Test::Spellunker';

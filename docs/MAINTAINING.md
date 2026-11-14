@@ -533,8 +533,9 @@ gh api repos/nukopian/DBIx-Squirrel/secret-scanning/alerts --jq '.[] | select(.s
 ## Tools
 
 - The project's perlbrew library, with Minilla and the dependencies in
-  `cpanfile` (yath, Perl::Critic, Perl::Tidy and CPAN::Uploader among
-  them);
+  `cpanfile` (yath, Perl::Critic, Perl::Tidy, CPAN::Uploader and
+  Pod::Markdown::Github, which writes README.md's code in fences,
+  among them);
 - `gh`, `gitleaks` and `jq`;
 - for the PDFs, `pandoc` and Prince.
 
