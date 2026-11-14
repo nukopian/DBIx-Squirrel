@@ -2015,8 +2015,8 @@ it takes: arrays, hashes from `ekorn_slice`, and objects from
 ### Publish a module of stages
 
 Name it for its job, in the namespace where its stages belong, and
-name the distribution after it, as `DBIx-Squirrel-Stages-JSON` for
-`DBIx::Squirrel::Stages::JSON`. Have it require the DBIx::Squirrel it
+name the distribution after it, as `DBIx-Squirrel-Stages-CSV` for
+`DBIx::Squirrel::Stages::CSV`. Have it require the DBIx::Squirrel it
 was tested with. The reference's [Stages for
 others](REFERENCE.md#stages-for-others) has the details, and
 Ekorn::Pipeline's guide has more, in [Building parts for

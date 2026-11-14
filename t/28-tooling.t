@@ -25,6 +25,7 @@ my %module = (
     context => ['DBIx::Squirrel::Context'],
     sources => ['Ekorn::Pipeline::Sources'],
     sinks   => ['Ekorn::Pipeline::Sinks'],
+    json    => ['Ekorn::Pipeline::JSON'],
     words   => ['Ekorn::Pipeline::Factories'],
 );
 
@@ -197,6 +198,29 @@ subtest ':all, its parts working together on a statement' => sub {
         'stages, the context and a sink';
     is Tooling::All::until_badge($dbh, $sql), 2, 'Stop';
     is Tooling::All::pairs($dbh, $sql),       2, 'batch';
+};
+
+subtest ':json, rows as JSON Lines and back' => sub {
+
+    package Tooling::Json {
+        use DBIx::Squirrel::Tooling qw(:json :rows :sinks);
+
+
+        sub lines ($dbh, $sql) {
+            return $dbh->iterate(
+                $sql, as_hash, to_jsonl(json => {canonical => 1}),
+                keep_all,
+            );
+        }
+    }
+    my @lines = Tooling::Json::lines(
+        $dbh,
+        'SELECT id, name FROM track WHERE id < 3 ORDER BY id',
+    );
+    is \@lines, ['{"id":1,"name":"Waterloo"}', '{"id":2,"name":"Parklife"}'];
+    is [Ekorn::Pipeline->new(Tooling::Json::from_jsonl())->(@lines)],
+        [{id => 1, name => 'Waterloo'}, {id => 2, name => 'Parklife'}],
+        'from_jsonl undoes it';
 };
 
 subtest "| isn't in force, though Operators is loaded" => sub {

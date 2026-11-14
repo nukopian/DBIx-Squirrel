@@ -21,10 +21,11 @@ Unreleased
 
     - DBIx::Squirrel::Tooling, new: everything a caller uses to do
       work, from one module, by Ekorn::Pipeline::Tooling's tags, :core,
-      :flow, :batch, :taps, :stages, :sources, :sinks, :words and :all,
-      with :rows (pluck, as_hash) and :context (iterator,
-      result_number, result_original) besides, :stages including
-      :rows. It exports nothing by default. Where DBIx::Squirrel and
+      :flow, :batch, :taps, :stages, :sources, :sinks, :json
+      (from_json, from_jsonl, to_json, to_jsonl, from
+      Ekorn::Pipeline::JSON), :words and :all, with :rows (pluck,
+      as_hash) and :context (iterator, result_number, result_original)
+      besides, :stages including :rows. It exports nothing by default. Where DBIx::Squirrel and
       Ekorn::Pipeline both export a name, it's DBIx::Squirrel's, which
       today is the same sub. The README, the reference and the user
       guide import from it, so their examples carry no imports of

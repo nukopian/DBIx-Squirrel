@@ -2131,8 +2131,8 @@ C<results>.
 =head2 Publish a module of stages
 
 Name it for its job, in the namespace where its stages belong, and
-name the distribution after it, as C<DBIx-Squirrel-Stages-JSON> for
-C<DBIx::Squirrel::Stages::JSON>. Have it require the DBIx::Squirrel it
+name the distribution after it, as C<DBIx-Squirrel-Stages-CSV> for
+C<DBIx::Squirrel::Stages::CSV>. Have it require the DBIx::Squirrel it
 was tested with. The reference's L<Stages for
 others|DBIx::Squirrel::Manual::Reference/"Stages for others"> has the details, and
 Ekorn::Pipeline's guide has more, in L<Building parts for

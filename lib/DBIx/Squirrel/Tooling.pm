@@ -14,6 +14,7 @@ use Exporter qw(import);
 # export is one sub.
 use Ekorn::Pipeline::Sources   qw(:all);
 use Ekorn::Pipeline::Sinks     qw(:all);
+use Ekorn::Pipeline::JSON      qw(:all);
 use Ekorn::Pipeline::Factories qw(
     pipeline stage source generator yield
     sink_one sink_many);
@@ -41,6 +42,7 @@ our %EXPORT_TAGS = (
         qw(count_items keep keep_all keep_first keep_last keep_single),
         qw(to_fh to_file),
     ],
+    json  => [qw(from_json from_jsonl to_json to_jsonl)],
     words => [
         qw(pipeline stage gather source generator yield),
         qw(sink_one sink_many),
@@ -52,7 +54,8 @@ $EXPORT_TAGS{stages} = [map { @{ $EXPORT_TAGS{$_} } } qw(flow batch taps rows)];
 our @EXPORT_OK = do {
     my %seen;
     grep { !$seen{$_}++ }
-        map { @{ $EXPORT_TAGS{$_} } } qw(core stages context sources sinks words);
+        map { @{ $EXPORT_TAGS{$_} } }
+        qw(core stages context sources sinks json words);
 };
 $EXPORT_TAGS{all} = [@EXPORT_OK];
 
@@ -86,7 +89,8 @@ DBIx::Squirrel::Tooling - DBIx::Squirrel's stages, sinks and words, from one mod
 What a caller uses to do work with DBIx::Squirrel is made in several
 modules: stages in L<DBIx::Squirrel::Stages::Flow>, Batch, Taps and
 Rows, C<Stop>, C<gather> and the run's context in modules of their
-own, and sinks, sources and words in Ekorn::Pipeline's. This module
+own, sinks, sources and words in Ekorn::Pipeline's, and JSON's sources,
+sinks and stages in L<Ekorn::Pipeline::JSON>. This module
 exports all of them, by the tags below, so there's one module to
 import from, and nothing to remember about which module makes which.
 
@@ -160,6 +164,13 @@ C<from_fh>, C<from_file> and C<counter>.
 Everything L<Ekorn::Pipeline::Sinks> exports: C<count_items>, C<keep>,
 C<keep_all>, C<keep_first>, C<keep_last>, C<keep_single>, C<to_fh> and
 C<to_file>.
+
+=item C<:json>
+
+Everything L<Ekorn::Pipeline::JSON> exports: C<from_json>,
+C<from_jsonl>, C<to_json> and C<to_jsonl>. L<JSON> exports a
+C<from_json> and a C<to_json> of its own, by default, so a module using
+both imports C<:all> from only one of them.
 
 =item C<:words>
 

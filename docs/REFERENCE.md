@@ -143,6 +143,7 @@ place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
 | `:context` | `iterator`, `result_number`, `result_original` | [Context](#context) |
 | `:sources` | `from_array`, `from_fh`, `from_file`, `counter` | Ekorn::Pipeline::Sources |
 | `:sinks` | `count_items`, `keep`, `keep_all`, `keep_first`, `keep_last`, `keep_single`, `to_fh`, `to_file` | [Sinks](#8-sinks) |
+| `:json` | `from_json`, `from_jsonl`, `to_json`, `to_jsonl` | Ekorn::Pipeline::JSON |
 | `:words` | `pipeline`, `stage`, `gather`, `source`, `generator`, `yield`, `sink_one`, `sink_many` | Ekorn::Pipeline::Factories |
 | `:all` | all of the above | |
 
@@ -166,6 +167,9 @@ place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
   Sugar](#12-sugar-a-function-for-each-database-and-statement), whose
   `use` makes functions; and [`|`](#11-operators--and-), which only
   `use Ekorn::Pipeline::Operators` puts in force, in its own scope.
+- **JSON.pm's names.** JSON exports a `from_json` and a `to_json` of
+  its own, by default, so a module using both imports `:all` or `:json`
+  from only one of them, or calls the other's by its full name.
 - **What a tag holds is public.** A name may be added to one in a
   release that only adds, but is dropped or renamed only in a major
   release.
@@ -2003,8 +2007,8 @@ database. Run it twice, to show it starts afresh. Then run it on rows
 from an in-memory SQLite database, in each shape it takes.
 
 **Publishing.** Name a module of stages for its job, as
-`DBIx::Squirrel::Stages::JSON`, in a distribution named
-`DBIx-Squirrel-Stages-JSON`. Have it require the DBIx::Squirrel it was
+`DBIx::Squirrel::Stages::CSV`, in a distribution named
+`DBIx-Squirrel-Stages-CSV`. Have it require the DBIx::Squirrel it was
 tested with: v3.0.0 is the first with sinks, `|` and the run's context
 described in [15. Protocols](#15-protocols).
 
@@ -2597,7 +2601,7 @@ distributions of their own.
 | 1.x | Instead |
 |---|---|
 | `DBIx::Squirrel::Crypt::Fernet`, and `decrypt` from DBIx::Squirrel::util. | A Fernet module from CPAN. |
-| `DBIx::Squirrel::Transform::JSON::Syck` and `DBIx::Squirrel::Transform::YAML::Syck`. | A stage of your own calling a JSON or YAML module. See [Stages for others](#stages-for-others). |
+| `DBIx::Squirrel::Transform::JSON::Syck` and `DBIx::Squirrel::Transform::YAML::Syck`. | For JSON, `from_json` and `to_json`, from Ekorn::Pipeline::JSON, by Tooling's [`:json`](#importing-dbixsquirreltooling). For YAML, a stage of your own calling a YAML module: see [Stages for others](#stages-for-others). |
 | `get_file_contents`, `slurp`, `uncompress`, `unmarshal` and `utf8decode`, from DBIx::Squirrel::util. | Path::Tiny, IO::Uncompress::Bunzip2, a JSON module, and Encode. |
 | `load_tuples`, on a database handle. | `prepare` and `execute`, in a loop. |
 | `statement_digest`, `statement_normalise`, `statement_study` and `statement_trim`, on a statement handle. | `study_sql` and `trim_sql`, from DBIx::Squirrel::Placeholders. |

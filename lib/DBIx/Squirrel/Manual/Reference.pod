@@ -263,6 +263,12 @@ B<Holds:> C<count_items>, C<keep>, C<keep_all>, C<keep_first>, C<keep_last>, C<k
 
 B<Made in:> L<Sinks|/"8. Sinks">
 
+=item C<:json>
+
+B<Holds:> C<from_json>, C<from_jsonl>, C<to_json>, C<to_jsonl>
+
+B<Made in:> Ekorn::Pipeline::JSON
+
 =item C<:words>
 
 B<Holds:> C<pipeline>, C<stage>, C<gather>, C<source>, C<generator>, C<yield>, C<sink_one>, C<sink_many>
@@ -308,6 +314,12 @@ C<is_stage>, from Ekorn::Pipeline; L<the
 Sugar|/"12. Sugar: a function for each database and statement">, whose
 C<use> makes functions; and L<C<E<verbar>>|/"11. Operators: E<verbar> and @{}">, which only
 C<use Ekorn::Pipeline::Operators> puts in force, in its own scope.
+
+=item *
+
+B<JSON.pm's names.> JSON exports a C<from_json> and a C<to_json> of
+its own, by default, so a module using both imports C<:all> or C<:json>
+from only one of them, or calls the other's by its full name.
 
 =item *
 
@@ -2383,8 +2395,8 @@ database. Run it twice, to show it starts afresh. Then run it on rows
 from an in-memory SQLite database, in each shape it takes.
 
 B<Publishing.> Name a module of stages for its job, as
-C<DBIx::Squirrel::Stages::JSON>, in a distribution named
-C<DBIx-Squirrel-Stages-JSON>. Have it require the DBIx::Squirrel it was
+C<DBIx::Squirrel::Stages::CSV>, in a distribution named
+C<DBIx-Squirrel-Stages-CSV>. Have it require the DBIx::Squirrel it was
 tested with: v3.0.0 is the first with sinks, C<|> and the run's context
 described in L<15. Protocols|/"15. Protocols">.
 
@@ -3427,7 +3439,7 @@ A Fernet module from CPAN.
 
 =item C<DBIx::Squirrel::Transform::JSON::Syck> and C<DBIx::Squirrel::Transform::YAML::Syck>.
 
-A stage of your own calling a JSON or YAML module. See L<Stages for others|/"Stages for others">.
+For JSON, C<from_json> and C<to_json>, from Ekorn::Pipeline::JSON, by Tooling's L<C<:json>|/"Importing: DBIx::Squirrel::Tooling">. For YAML, a stage of your own calling a YAML module: see L<Stages for others|/"Stages for others">.
 
 =item C<get_file_contents>, C<slurp>, C<uncompress>, C<unmarshal> and C<utf8decode>, from DBIx::Squirrel::util.
 
