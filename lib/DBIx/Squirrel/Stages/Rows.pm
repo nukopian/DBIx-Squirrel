@@ -69,7 +69,7 @@ sub as_hash : prototype() () {
 # stages are running on.
 sub _column_names () {
     my $run = DBIx::Squirrel::Context::statement_context()
-        or croakf 'Expected an iterator, for the column names';
+        or croakf 'Expected a statement to read, for the column names';
     return @{ $run->{columns} };
 }
 
@@ -174,7 +174,7 @@ C<pluck> was given no column, or an empty name.
 
 A row hasn't got the column C<pluck> was given.
 
-=item Expected an iterator, for the column names
+=item Expected a statement to read, for the column names
 
 C<as_hash>, or C<pluck> with a name for an array row or a position for
 a hash row, ran where no statement was being read, such as in a

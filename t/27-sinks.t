@@ -108,7 +108,7 @@ subtest 'the select methods push what the DBI gives through stages' => sub {
     like dies {
         my @x = $dbh->selectall_arrayref($sql, sub { @$_ }, pluck('name'))
     },
-        qr( Expected\ an\ iterator,\ for\ the\ column\ names )x,
+        qr( Expected\ a\ statement\ to\ read,\ for\ the\ column\ names )x,
         'a pushed run, with no columns for pluck';
 };
 

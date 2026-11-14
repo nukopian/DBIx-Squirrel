@@ -256,7 +256,7 @@ subtest 'Canned stages' => sub {
         && Named::And::Defaults->can('take_while'),
         ':DEFAULT keeps them, with the one named';
 
-    my $expected = 'Expected an iterator, for the column names';
+    my $expected = 'Expected a statement to read, for the column names';
     like dies { Ekorn::Pipeline->new(pluck('name'))->([1, 'Abba']) },
         qr( \Q$expected\E )x, 'pluck by name, on an array, needs an iterator';
     like dies { Ekorn::Pipeline->new(as_hash)->([1, 'Abba']) },

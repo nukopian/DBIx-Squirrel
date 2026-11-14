@@ -105,7 +105,8 @@ subtest "pluck after a reshaping stage reads the statement's columns" => sub {
 };
 
 subtest "without a statement's columns, pluck and as_hash croak" => sub {
-    my $msg = qr( Expected\ an\ iterator,\ for\ the\ column\ names\ at\  )x;
+    my $msg
+        = qr( Expected\ a\ statement\ to\ read,\ for\ the\ column\ names\ at\  )x;
     like dies { my $x = from_array([1, 'Abba']) | pluck('name') | keep_all },
         $msg,
         'pluck, over a source that is not a statement';

@@ -54,7 +54,7 @@ sub import ($class, @args) {
 # the connection, but each leaves the failure in err.
 sub database ($name, @connect) {
     return _define(scalar caller, $name, @connect) if @connect;
-    croakf 'Expected a database defined as %s', $name
+    croakf 'Expected a database named %s', $name
         unless $connect_args{$name};
     my $dbh = $handle{$name};
     return $dbh
@@ -107,7 +107,7 @@ sub _define_statement ($package, $name, @definition) {
         ? shift @rest
         : undef;
     croakf
-        'Expected only code references, pipelines or their names after the statement for %s',
+        "Expected only stages after the statement for %s: code references, pipelines or their names, or objects offering a stage's role method",
         $name
         if grep { !is_stage($_) && !_is_pipeline_name($_) } @rest;
     @rest = map { _resolved($package, $_) } @rest;
@@ -413,11 +413,10 @@ A name can't be a function's.
 
 A statement given to C<use> didn't name its database, or have its SQL.
 
-=item Expected only code references, pipelines or their names after the statement for %s
+=item Expected only stages after the statement for %s: code references, pipelines or their names, or objects offering a stage's role method
 
-A statement's definition had something other than stages, which are
-code references, pipelines or pipelines' names, after the statement
-and its attributes.
+A statement's definition had something after the statement and its
+attributes that's neither a stage nor a pipeline's name.
 
 =item No pipeline named %s
 
@@ -436,7 +435,7 @@ The name was given to another database already.
 
 The package has a function of that name already.
 
-=item Expected a database defined as %s
+=item Expected a database named %s
 
 L</database> was given a name no database has.
 

@@ -2174,7 +2174,7 @@ caller's line. Those starting "Expected" say what was expected.
 
 | Message | Cause |
 |---|---|
-| `Expected a statement handle` | `DBIx::Squirrel::Iterator->new` wasn't given a `DBIx::Squirrel::st`. |
+| `Expected a DBIx::Squirrel statement handle` | `DBIx::Squirrel::Iterator->new` wasn't given a `DBIx::Squirrel::st`. |
 | `Expected only one item, but there were more` | A warning: `single`, `keep_single` or `take_single` found a second result, and gave the first. |
 | `Expected the statement handle's other iterator to be finished` | Another iterator over the same statement handle has results left. |
 | `Expected ekorn_result_class to be a subclass of DBIx::Squirrel::Result (%s)` | `ekorn_result_class` named a class that isn't one. |
@@ -2203,7 +2203,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected a count of 0 or more` | `take`, `drop` or `keep` was given something other than a whole number. |
 | `Expected a batch size of 1 or more` | `batch` was given something other than a whole number above 0. |
 | `Expected a column, by name or position` | `pluck` was given no column, or an empty name. |
-| `Expected an iterator, for the column names` | `as_hash`, or `pluck` with a name for an array row or a position for a hash row, ran where no statement was being read, such as in a pipeline called with values. |
+| `Expected a statement to read, for the column names` | `as_hash`, or `pluck` with a name for an array row or a position for a hash row, ran where no statement was being read, such as in a pipeline called with values. |
 | `Expected a row: an array, a hash or a row object` | `pluck` or `as_hash` was given a value that isn't a row. |
 | `Expected a reference to a scalar` | `count_into` was given something else. |
 | `Expected an open filehandle` | `dump_to` or `to_fh` was given something else. |
@@ -2218,9 +2218,9 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected a name for a database (%s)` | The name can't be a function's. |
 | `Expected a name for a statement (%s)` | The name can't be a function's. |
 | `Expected a database defined once (%s)` | The name was given to another database already. |
-| `Expected a database defined as %s` | `database` was given a name no database has. |
+| `Expected a database named %s` | `database` was given a name no database has. |
 | `Expected a database and a statement for %s` | A statement's definition didn't name its database, or have its SQL. |
-| `Expected only code references, pipelines or their names after the statement for %s` | A statement's definition had something other than stages, which are code references, pipelines or pipelines' names, after the statement and its attributes. |
+| `Expected only stages after the statement for %s: code references, pipelines or their names, or objects offering a stage's role method` | A statement's definition had something after the statement and its attributes that's neither a stage nor a pipeline's name. |
 | `Expected no function of the name in %s already (%s)` | The package has a function of that name already, such as a sink it imported. |
 
 ## Making each kind of part

@@ -2633,7 +2633,7 @@ The handle of a statement taking a list was executed or bound with a list of ano
 
 =over 4
 
-=item C<Expected a statement handle>
+=item C<Expected a DBIx::Squirrel statement handle>
 
 C<< DBIx::Squirrel::Iterator->new >> wasn't given a C<DBIx::Squirrel::st>.
 
@@ -2721,7 +2721,7 @@ C<batch> was given something other than a whole number above 0.
 
 C<pluck> was given no column, or an empty name.
 
-=item C<Expected an iterator, for the column names>
+=item C<Expected a statement to read, for the column names>
 
 C<as_hash>, or C<pluck> with a name for an array row or a position for a hash row, ran where no statement was being read, such as in a pipeline called with values.
 
@@ -2767,7 +2767,7 @@ The name can't be a function's.
 
 The name was given to another database already.
 
-=item C<Expected a database defined as %s>
+=item C<Expected a database named %s>
 
 C<database> was given a name no database has.
 
@@ -2775,9 +2775,9 @@ C<database> was given a name no database has.
 
 A statement's definition didn't name its database, or have its SQL.
 
-=item C<Expected only code references, pipelines or their names after the statement for %s>
+=item C<Expected only stages after the statement for %s: code references, pipelines or their names, or objects offering a stage's role method>
 
-A statement's definition had something other than stages, which are code references, pipelines or pipelines' names, after the statement and its attributes.
+A statement's definition had something after the statement and its attributes that's neither a stage nor a pipeline's name.
 
 =item C<Expected no function of the name in %s already (%s)>
 

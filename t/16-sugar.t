@@ -259,7 +259,7 @@ subtest 'statements defined as the program runs' => sub {
     );
     ref_is $function, \&count_of,
         'gives the package its function, and returns it';
-    my $expected = 'Expected a database defined as later';
+    my $expected = 'Expected a database named later';
     my $line     = __LINE__ + 1;
     like dies { count_of() },
         qr( \A \Q$expected\E \ at\ \Q${\ __FILE__ }\E\ line\ $line\. )x,
@@ -278,7 +278,7 @@ sub use_error ($args) {
 }
 
 subtest 'mistakes' => sub {
-    my $expected = 'Expected a database defined as unknown';
+    my $expected = 'Expected a database named unknown';
     my $line     = __LINE__ + 1;
     like dies { database('unknown') },
         qr( \A \Q$expected\E \ at\ \Q${\ __FILE__ }\E\ line\ $line\. )x,
@@ -313,10 +313,10 @@ subtest 'mistakes' => sub {
         qr( \A \QExpected a database and a statement for nowhere\E )x,
         'a statement on no database';
     like dies { statement(odd => music => 'SELECT 1', ['x']) },
-        qr( \A \QExpected only code references, pipelines or their names after the statement for odd\E )x,
+        qr( \A \QExpected only stages after the statement for odd: code references, pipelines or their names, or objects offering a stage's role method\E )x,
         'anything but code references, pipelines or names after it';
     like dies { statement(odder => music => 'SELECT 1', 'no good') },
-        qr( \A \QExpected only code references, pipelines or their names after the statement for odder\E )x,
+        qr( \A \QExpected only stages after the statement for odder: code references, pipelines or their names, or objects offering a stage's role method\E )x,
         'a string that is not a name';
     like dies { statement(music => music => 'SELECT 1') },
         qr( \A \QExpected no function of the name in main already (music)\E )x,

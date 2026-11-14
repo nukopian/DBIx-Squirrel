@@ -127,10 +127,10 @@ subtest 'mistakes' => sub {
     like dies { $dbh->iterate($all, @slice, pluck(2))->all },
         qr( Expected\ a\ column\ of\ the\ row\ \(2\) )x, 'by position';
     like dies { $class->new(pluck('a'))->([1]) },
-        qr( Expected\ an\ iterator,\ for\ the\ column\ names )x,
+        qr( Expected\ a\ statement\ to\ read,\ for\ the\ column\ names )x,
         'a name, for an array, with no iterator';
     like dies { $class->new(as_hash)->([1]) },
-        qr( Expected\ an\ iterator,\ for\ the\ column\ names )x,
+        qr( Expected\ a\ statement\ to\ read,\ for\ the\ column\ names )x,
         'as_hash, with no iterator';
     like dies { $class->new(pluck(0))->('x') },
         qr( Expected\ a\ row:\ an\ array,\ a\ hash\ or\ a\ row\ object )x,

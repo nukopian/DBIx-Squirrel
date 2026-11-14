@@ -1547,8 +1547,8 @@ say join ' ', $shout->('hello', 'world');    # HELLO! WORLD!
 
 Stages that need a statement's column names, `as_hash`, and `pluck` by
 a name for an array row, can't work there, as there's no statement:
-they croak "Expected an iterator, for the column names". `pluck` by
-name on hashes, which reads their keys, works anywhere.
+they croak "Expected a statement to read, for the column names".
+`pluck` by name on hashes, which reads their keys, works anywhere.
 
 ### Name a pipeline, and use it by name
 

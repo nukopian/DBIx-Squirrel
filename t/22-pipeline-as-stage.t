@@ -155,7 +155,7 @@ subtest 'anything else is still a bind value' => sub {
             bad => [music => $all, undef, bless {}, 'Not::A::Pipeline'],
         });
     },
-        qr( \A \QExpected only code references, pipelines or their names after the statement for bad\E )x,
+        qr( \A \QExpected only stages after the statement for bad: code references, pipelines or their names, or objects offering a stage's role method\E )x,
         'and a statement\'s definition says so';
 };
 

@@ -358,7 +358,7 @@ subtest 'errors are reported at the caller' => sub {
         qr( $expected \ at\ \Q${\ __FILE__ }\E\ line\ $line\. )x,
         'from binding';
     like dies { DBIx::Squirrel::Iterator->new('x') },
-        qr( \A Expected\ a\ statement\ handle )x, 'from new';
+        qr( \A Expected\ a\ DBIx::Squirrel\ statement\ handle )x, 'from new';
 
     # The second row overflows, so the fetch fails after execute succeeds.
     my $failed = 'DBD::SQLite::st fetchall_arrayref failed: integer overflow';

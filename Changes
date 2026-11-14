@@ -67,8 +67,8 @@ Unreleased
       as the statement is defined, in the package defining it. A
       string given when the statement is called is a bind value, as
       before. Its message for anything else is now "Expected only
-      code references, pipelines or their names after the statement
-      for %s".
+      stages after the statement for %s: code references, pipelines or
+      their names, or objects offering a stage's role method".
     - The README, the user guide, the reference and the modules' POD
       are swept, as Ekorn::Pipeline's were for its v0.3.0: the
       reference names every function the modules document, older
@@ -128,6 +128,13 @@ Unreleased
       quietly found nothing; a blessed array was unwrapped as a list of
       values; and a blessed scalar croaked "Expected a reference to a
       HASH or ARRAY".
+    - Three messages say what their conditions test: the iterator's
+      "Expected a DBIx::Squirrel statement handle", not "Expected a
+      statement handle"; pluck's and as_hash's "Expected a statement to
+      read, for the column names", not "Expected an iterator, ..."; and
+      the Sugar's "Expected a database named %s", not "Expected a
+      database defined as %s". Code matching the old wording needs
+      updating.
 
 v2.1.0 2026-11-10
 

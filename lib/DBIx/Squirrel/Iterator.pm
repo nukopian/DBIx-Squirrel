@@ -39,7 +39,7 @@ my $BATCH_LIMIT = 64;
 # Return a new iterator over the rows of a statement handle, executed with
 # the bind values given, and run through the stages given after them.
 sub new ($class, $sth, @args) {
-    croakf 'Expected a statement handle'
+    croakf 'Expected a DBIx::Squirrel statement handle'
         unless $sth isa 'DBIx::Squirrel::st';
     my @stages = split_stages(\@args);
     return bless {
@@ -548,7 +548,7 @@ C<|> or C<@{}> run ended, until L</reset>.
 
 =over
 
-=item Expected a statement handle
+=item Expected a DBIx::Squirrel statement handle
 
 L</new> wasn't given a L<DBIx::Squirrel::st>.
 

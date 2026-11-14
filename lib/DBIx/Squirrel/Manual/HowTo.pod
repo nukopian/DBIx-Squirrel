@@ -1677,8 +1677,8 @@ try a pipeline, or test it, without a database:
 
 Stages that need a statement's column names, C<as_hash>, and C<pluck> by
 a name for an array row, can't work there, as there's no statement:
-they croak "Expected an iterator, for the column names". C<pluck> by
-name on hashes, which reads their keys, works anywhere.
+they croak "Expected a statement to read, for the column names".
+C<pluck> by name on hashes, which reads their keys, works anywhere.
 
 =head2 Name a pipeline, and use it by name
 
