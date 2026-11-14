@@ -155,7 +155,12 @@ Ask for what you need, by tag or by name. Nothing comes by default:
 ```perl
 package My::Report {
     use DBIx::Squirrel::Tooling qw(:stages :sinks);
-    say $dbh->iterate('SELECT name, plays FROM track', take_if { $_->[1] > 6000 }, count_items);    # 3
+    say $dbh->iterate(
+        'SELECT name, plays FROM track',
+        take_if { $_->[1] > 6000 },
+        count_items,
+    );
+    # 3
 }
 ```
 
@@ -890,7 +895,11 @@ without a word. Make the rows hashes first, and `pluck` by name reads
 each hash's own keys, however a stage has changed them:
 
 ```perl
-my @wrong = $dbh->iterate('SELECT id, name FROM artist ORDER BY id', sub { [reverse @$_] }, pluck('id'))->all;
+my @wrong = $dbh->iterate(
+    'SELECT id, name FROM artist ORDER BY id',
+    sub { [reverse @$_] },
+    pluck('id'),
+)->all;
 say "@wrong";    # Abba Blur Cream
 
 my @right = $dbh->iterate(
@@ -1008,7 +1017,8 @@ my @page = $dbh->iterate(
     'SELECT name FROM track ORDER BY id',
     sub { $_->[0] },
     sub { m( \s )x ? $_ : () },    # names of more than one word
-    drop(1), take(2),              # the second and third of them
+    drop(1),                       # the second and third of them
+    take(2),
 )->all;
 say for @page;
 # Knowing Me, Knowing You
@@ -1023,13 +1033,25 @@ never stop the run, unlike `take_while`, which stops at the first
 value its test fails:
 
 ```perl
-my @popular = $dbh->iterate('SELECT name, plays FROM track ORDER BY id', take_if { $_->[1] > 6000 }, sub { $_->[0] })->all;
+my @popular = $dbh->iterate(
+    'SELECT name, plays FROM track ORDER BY id',
+    take_if { $_->[1] > 6000 },
+    sub { $_->[0] },
+)->all;
 say join ', ', @popular;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
 
-my @quiet = $dbh->iterate('SELECT name, plays FROM track ORDER BY id', drop_if { $_->[1] > 6000 }, sub { $_->[0] })->all;
+my @quiet = $dbh->iterate(
+    'SELECT name, plays FROM track ORDER BY id',
+    drop_if { $_->[1] > 6000 },
+    sub { $_->[0] },
+)->all;
 say join ', ', @quiet;    # Knowing Me, Knowing You, Parklife, Country House
 
-my @until = $dbh->iterate('SELECT name, plays FROM track ORDER BY id', take_while { $_->[1] > 6000 }, sub { $_->[0] })->all;
+my @until = $dbh->iterate(
+    'SELECT name, plays FROM track ORDER BY id',
+    take_while { $_->[1] > 6000 },
+    sub { $_->[0] },
+)->all;
 say join ', ', @until;    # Dancing Queen
 ```
 
@@ -1065,10 +1087,18 @@ the stages after them go on working with it. `take_single` warns at a
 second value, as `single` does:
 
 ```perl
-my @oldest = $dbh->iterate('SELECT title FROM album ORDER BY year', take_first, sub { uc $_->[0] })->all;
+my @oldest = $dbh->iterate(
+    'SELECT title FROM album ORDER BY year',
+    take_first,
+    sub { uc $_->[0] },
+)->all;
 say "@oldest";    # DISRAELI GEARS
 
-my @newest = $dbh->iterate('SELECT title FROM album ORDER BY year', take_last, sub { lc $_->[0] })->all;
+my @newest = $dbh->iterate(
+    'SELECT title FROM album ORDER BY year',
+    take_last,
+    sub { lc $_->[0] },
+)->all;
 say "@newest";    # the great escape
 ```
 
@@ -1202,14 +1232,22 @@ they run out, passes on what its block makes of them, or an array of
 them:
 
 ```perl
-my $batches = $dbh->iterate('SELECT name FROM track ORDER BY id', pluck('name'), batch(4));
+my $batches = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    pluck('name'),
+    batch(4),
+);
 while (my($batch) = $batches->next) {
     say scalar(@$batch), ': ', join ', ', @$batch;
 }
 # 4: Dancing Queen, Knowing Me, Knowing You, Girls & Boys, Parklife
 # 2: Country House, Sunshine of Your Love
 
-my $line = $dbh->iterate('SELECT name FROM artist ORDER BY name', pluck('name'), collect { join ', ', @_ })->first;
+my $line = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY name',
+    pluck('name'),
+    collect { join ', ', @_ },
+)->first;
 say $line;    # Abba, Blur, Cream
 ```
 
@@ -1228,7 +1266,10 @@ my $it = $dbh->iterate(
     'SELECT name FROM artist ORDER BY name',
     gather {
         my $n = 0;    # this run's
-        Ekorn::Pipeline->new(sub { ++$n . ". $_->[0]" }, take(2));
+        Ekorn::Pipeline->new(
+            sub { ++$n . ". $_->[0]" },
+            take(2),
+        );
     },
 );
 say join ', ', $it->all;           # 1. Abba, 2. Blur
@@ -1253,10 +1294,18 @@ does.
 for, an array reference. `count_items` gives how many there were:
 
 ```perl
-my @names = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'), keep_all);
+my @names = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck('name'),
+    keep_all,
+);
 say "@names";    # Abba Blur Cream
 
-my $names = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'), keep_all);
+my $names = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck('name'),
+    keep_all,
+);
 say ref $names;    # ARRAY
 
 my $popular = $dbh->iterate('SELECT name FROM track WHERE plays > ?', 5000, count_items);
@@ -1275,9 +1324,26 @@ gives the only one, warning at a second, as `single` does. Each gives
 `undef` if there are none:
 
 ```perl
-say $dbh->iterate('SELECT name FROM track ORDER BY plays DESC', pluck('name'), keep_first);    # Dancing Queen
-say $dbh->iterate('SELECT name FROM track ORDER BY plays DESC', pluck('name'), keep_last);     # Country House
-say $dbh->iterate('SELECT name FROM artist WHERE id = ?', 3, pluck('name'), keep_single);      # Cream
+say $dbh->iterate(
+    'SELECT name FROM track ORDER BY plays DESC',
+    pluck('name'),
+    keep_first,
+);
+# Dancing Queen
+
+say $dbh->iterate(
+    'SELECT name FROM track ORDER BY plays DESC',
+    pluck('name'),
+    keep_last,
+);
+# Country House
+
+say $dbh->iterate(
+    'SELECT name FROM artist WHERE id = ?', 3,
+    pluck('name'),
+    keep_single,
+);
+# Cream
 
 my $nobody = $dbh->iterate('SELECT name FROM artist WHERE id = ?', 9, keep_single);
 say defined $nobody ? 'found' : 'none';    # none
@@ -1289,7 +1355,11 @@ say defined $nobody ? 'found' : 'none';    # none
 them, so no more rows are fetched:
 
 ```perl
-my @top = $dbh->iterate('SELECT name FROM track ORDER BY plays DESC', pluck('name'), keep(3));
+my @top = $dbh->iterate(
+    'SELECT name FROM track ORDER BY plays DESC',
+    pluck('name'),
+    keep(3),
+);
 say join ', ', @top;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
 ```
 
@@ -1299,7 +1369,11 @@ say join ', ', @top;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
 many it wrote. It closes the file however the run ends:
 
 ```perl
-my $written = $dbh->iterate('SELECT title FROM album ORDER BY year', pluck('title'), to_file('titles.txt'));
+my $written = $dbh->iterate(
+    'SELECT title FROM album ORDER BY year',
+    pluck('title'),
+    to_file('titles.txt'),
+);
 say $written;    # 4
 
 open my $in, '<', 'titles.txt' or die "Can't read titles.txt: $!";
@@ -1434,7 +1508,13 @@ my $hits = Ekorn::Pipeline->new(
 
 my $by_plays = 'SELECT name, plays FROM track ORDER BY plays DESC';
 say join ', ', $dbh->iterate($by_plays, $hits)->all;             # Dancing Queen, Sunshine of Your Love, Girls & Boys, Parklife
-say join ', ', $dbh->iterate($by_plays, $hits, take(2))->all;    # Dancing Queen, Sunshine of Your Love
+say join ', ', $dbh->iterate(
+    $by_plays,
+    $hits,
+    take(2),
+)->all;
+# Dancing Queen, Sunshine of Your Love
+
 ```
 
 Its stages run in its place, as if written out there, with more stages
@@ -1449,7 +1529,10 @@ try a pipeline, or test it, without a database:
 ```perl
 use Ekorn::Pipeline;
 
-my $shout = Ekorn::Pipeline->new(sub { uc }, sub { "$_!" });
+my $shout = Ekorn::Pipeline->new(
+    sub { uc },
+    sub { "$_!" },
+);
 say join ' ', $shout->('hello', 'world');    # HELLO! WORLD!
 ```
 
@@ -1512,7 +1595,10 @@ does what it makes:
 ```perl
 use Ekorn::Pipeline::Operators;
 
-my $top = $dbh->iterate('SELECT name FROM track ORDER BY plays DESC') | pluck('name') | take(3) | keep_all;
+my $top = $dbh->iterate('SELECT name FROM track ORDER BY plays DESC')
+    | pluck('name')
+    | take(3)
+    | keep_all;
 say join ', ', @$top;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
 
 my $n = $dbh->iterate('SELECT * FROM album') | count_items;
@@ -1532,13 +1618,23 @@ reference, even assigned to an array:
 ```perl
 use Ekorn::Pipeline::Operators;
 
-my @oops = $dbh->iterate('SELECT name FROM artist') | pluck('name') | keep_all;
+my @oops = $dbh->iterate('SELECT name FROM artist')
+    | pluck('name')
+    | keep_all;
 say scalar @oops;    # 1
 
-my @names = @{ $dbh->iterate('SELECT name FROM artist ORDER BY id') | pluck('name') | keep_all };
+my @names = @{
+    $dbh->iterate('SELECT name FROM artist ORDER BY id')
+        | pluck('name')
+        | keep_all
+};
 say "@names";    # Abba Blur Cream
 
-my @also = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'), keep_all);
+my @also = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck('name'),
+    keep_all,
+);
 say "@also";    # Abba Blur Cream
 ```
 
@@ -1764,8 +1860,21 @@ sub tracks_by ($artist, @stages) {
 }
 
 say ref tracks_by('Blur');                                       # DBIx::Squirrel::Iterator
-say join ', ', tracks_by('Blur', pluck('name'), keep_all);       # Girls & Boys, Parklife, Country House
-say join ', ', tracks_by('Blur', pluck('name'), take(1), keep_all);    # Girls & Boys
+say join ', ', tracks_by(
+    'Blur',
+    pluck('name'),
+    keep_all,
+);
+# Girls & Boys, Parklife, Country House
+
+say join ', ', tracks_by(
+    'Blur',
+    pluck('name'),
+    take(1),
+    keep_all,
+);
+# Girls & Boys
+
 say tracks_by('Abba', count_items);                              # 2
 ```
 
@@ -1791,7 +1900,10 @@ sub bands (@stages) {
     return Ekorn::Pipeline->new(@stages)->(@bands);
 }
 
-my @older = bands(sub { $_->{formed} < 1980 ? $_ : () }, pluck('name'));
+my @older = bands(
+    sub { $_->{formed} < 1980 ? $_ : () },
+    pluck('name'),
+);
 say "@older";    # Abba Cream
 ```
 
@@ -1860,7 +1972,10 @@ do:
 use Ekorn::Pipeline;
 
 sub loud_names () {
-    return Ekorn::Pipeline->new(pluck('name'), sub { uc });
+    return Ekorn::Pipeline->new(
+        pluck('name'),
+        sub { uc },
+    );
 }
 
 say join ' ', $dbh->iterate('SELECT id, name FROM artist ORDER BY id', loud_names)->all;    # ABBA BLUR CREAM
@@ -1946,7 +2061,11 @@ A stage that dies is reported at the line that asked for the result,
 with the stage's place in the list, and its message below:
 
 ```perl
-my $it = $dbh->iterate('SELECT name FROM artist', sub { $_ }, sub { die "no names today\n" });
+my $it = $dbh->iterate(
+    'SELECT name FROM artist',
+    sub { $_ },
+    sub { die "no names today\n" },
+);
 eval { $it->next };
 print $@;
 # Pipeline stage #2 failed at ... line ...:

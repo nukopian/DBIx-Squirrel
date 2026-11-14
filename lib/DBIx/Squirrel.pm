@@ -466,7 +466,11 @@ with C<dump_to> on request.
     use DBIx::Squirrel::Stages::Flow;
     use DBIx::Squirrel::Stages::Rows;
 
-    my @names = $dbh->iterate('SELECT name FROM artist', pluck('name'), take(10))->all;
+    my @names = $dbh->iterate(
+        'SELECT name FROM artist',
+        pluck('name'),
+        take(10),
+    )->all;
 
 The reference's "Writing stages" says how to write your own stages to
 work alongside them.

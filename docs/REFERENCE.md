@@ -103,7 +103,12 @@ while (my($row) = $it->next) {
 # Cream
 
 # Stages beside the query, and a sink last to say what comes back
-my @top = $dbh->iterate('SELECT name FROM track ORDER BY plays DESC', pluck('name'), take(2), keep_all);
+my @top = $dbh->iterate(
+    'SELECT name FROM track ORDER BY plays DESC',
+    pluck('name'),
+    take(2),
+    keep_all,
+);
 say join ', ', @top;    # Dancing Queen, Sunshine of Your Love
 
 say $dbh->iterate('SELECT * FROM track WHERE plays > ?', 6000, count_items);    # 3
@@ -689,7 +694,11 @@ pushed run has no statement as its source, the stages can't use
 `pluck` by a name for an array row, or `as_hash`.
 
 ```perl
-my @names = $dbh->selectall_array('SELECT name FROM artist ORDER BY id', sub { $_->[0] }, sub {uc});
+my @names = $dbh->selectall_array(
+    'SELECT name FROM artist ORDER BY id',
+    sub { $_->[0] },
+    sub {uc},
+);
 say "@names";    # ABBA BLUR CREAM
 
 say scalar $dbh->selectall_array('SELECT * FROM artist', sub { $_->[0] > 1 ? $_ : () });    # 2
@@ -972,7 +981,11 @@ called, not on each value.
 
 ```perl
 my $read  = 0;
-my @names = $dbh->iterate('SELECT id, name FROM artist ORDER BY id', count_into(\$read), pluck('name'))->all;
+my @names = $dbh->iterate(
+    'SELECT id, name FROM artist ORDER BY id',
+    count_into(\$read),
+    pluck('name'),
+)->all;
 say "@names, from $read rows";    # Abba Blur Cream, from 3 rows
 
 my $album = $dbh->iterate('SELECT title, year FROM album WHERE id = 2', as_hash)->first;
@@ -994,10 +1007,19 @@ the wrong field, and says nothing. Make the rows hashes first, with
 ```perl
 my $sql = 'SELECT id, name FROM artist ORDER BY id';
 
-my @wrong = $dbh->iterate($sql, sub { [reverse @$_] }, pluck('id'))->all;
+my @wrong = $dbh->iterate(
+    $sql,
+    sub { [reverse @$_] },
+    pluck('id'),
+)->all;
 say "@wrong";    # Abba Blur Cream
 
-my @ids = $dbh->iterate($sql, as_hash, sub { +{%$_, name => uc $_->{name}} }, pluck('id'))->all;
+my @ids = $dbh->iterate(
+    $sql,
+    as_hash,
+    sub { +{%$_, name => uc $_->{name}} },
+    pluck('id'),
+)->all;
 say "@ids";    # 1 2 3
 ```
 
@@ -1095,16 +1117,33 @@ their place or by a test:
 | `drop_if { ... }` | Passes on each value the block is false of, testing every one. |
 
 ```perl
-my @page = $dbh->iterate('SELECT name FROM track ORDER BY id', sub { $_->[0] }, drop(2), take(2))->all;
+my @page = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    sub { $_->[0] },
+    drop(2),
+    take(2),
+)->all;
 say join ', ', @page;    # Girls & Boys, Parklife
 
-my @hits = $dbh->iterate('SELECT name, plays FROM track ORDER BY plays DESC', take_while { $_->[1] > 6000 }, sub { $_->[0] })->all;
+my @hits = $dbh->iterate(
+    'SELECT name, plays FROM track ORDER BY plays DESC',
+    take_while { $_->[1] > 6000 },
+    sub { $_->[0] },
+)->all;
 say join ', ', @hits;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
 
-my @newest = $dbh->iterate('SELECT title FROM album ORDER BY year', take_last, sub { $_->[0] })->all;
+my @newest = $dbh->iterate(
+    'SELECT title FROM album ORDER BY year',
+    take_last,
+    sub { $_->[0] },
+)->all;
 say "@newest";    # The Great Escape
 
-my @popular = $dbh->iterate('SELECT name, plays FROM track ORDER BY id', take_if { $_->[1] > 6000 }, sub { $_->[0] })->all;
+my @popular = $dbh->iterate(
+    'SELECT name, plays FROM track ORDER BY id',
+    take_if { $_->[1] > 6000 },
+    sub { $_->[0] },
+)->all;
 say join ', ', @popular;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
 ```
 
@@ -1191,12 +1230,22 @@ DBIx::Squirrel::Stages::Batch's stages are made with `gather`:
 | `collect { ... }` | Holds every value. When they run out, it passes on what the block makes of them, given as its arguments. |
 
 ```perl
-my @batches = $dbh->iterate('SELECT name FROM track ORDER BY id', pluck('name'), batch(4))->all;
+my @batches = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    pluck('name'),
+    batch(4),
+)->all;
 say scalar(@$_), ': ', join ', ', @$_ for @batches;
 # 4: Dancing Queen, Knowing Me, Knowing You, Girls & Boys, Parklife
 # 2: Country House, Sunshine of Your Love
 
-say $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'), collect { join '+', @_ })->first;    # Abba+Blur+Cream
+say $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck('name'),
+    collect { join '+', @_ },
+)->first;
+# Abba+Blur+Cream
+
 ```
 
 ## 8. Sinks
@@ -1232,14 +1281,40 @@ use `count_items`. An empty result is an empty array reference, which
 is true, so test it with `@$rows`.
 
 ```perl
-my @names = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'), keep_all);
-my $names = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'), keep_all);
+my @names = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck('name'),
+    keep_all,
+);
+my $names = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck('name'),
+    keep_all,
+);
 say "@names";            # Abba Blur Cream
 say scalar @$names;      # 3
 
-say $dbh->iterate('SELECT name FROM track ORDER BY plays', pluck('name'), keep_last);         # Dancing Queen
-say $dbh->iterate('SELECT name FROM artist WHERE id = ?', 2, pluck('name'), keep_single);     # Blur
-say join ', ', $dbh->iterate('SELECT name FROM track ORDER BY plays DESC', pluck('name'), keep(2));    # Dancing Queen, Sunshine of Your Love
+say $dbh->iterate(
+    'SELECT name FROM track ORDER BY plays',
+    pluck('name'),
+    keep_last,
+);
+# Dancing Queen
+
+say $dbh->iterate(
+    'SELECT name FROM artist WHERE id = ?', 2,
+    pluck('name'),
+    keep_single,
+);
+# Blur
+
+say join ', ', $dbh->iterate(
+    'SELECT name FROM track ORDER BY plays DESC',
+    pluck('name'),
+    keep(2),
+);
+# Dancing Queen, Sunshine of Your Love
+
 say $dbh->iterate('SELECT * FROM album', count_items);    # 4
 ```
 
@@ -1404,7 +1479,10 @@ the stages it was made of.
 ```perl
 use Ekorn::Pipeline;
 
-my $shout = Ekorn::Pipeline->new(sub {uc}, sub {"$_!"});
+my $shout = Ekorn::Pipeline->new(
+    sub {uc},
+    sub {"$_!"},
+);
 say join ' ', $shout->('hello', 'world');    # HELLO! WORLD!
 
 my $next  = Ekorn::Pipeline->new(sub { $_->[0] })->iterator($dbh->iterate('SELECT name FROM artist ORDER BY id'));
@@ -1424,10 +1502,19 @@ it limits the whole run:
 ```perl
 use Ekorn::Pipeline;
 
-my $hits = Ekorn::Pipeline->new(sub { $_->[1] >= 5000 ? $_ : () }, pluck('name'));
+my $hits = Ekorn::Pipeline->new(
+    sub { $_->[1] >= 5000 ? $_ : () },
+    pluck('name'),
+);
 my $sql  = 'SELECT name, plays FROM track ORDER BY plays DESC';
 say join ', ', $dbh->iterate($sql, $hits)->all;             # Dancing Queen, Sunshine of Your Love, Girls & Boys, Parklife
-say join ', ', $dbh->iterate($sql, $hits, take(1))->all;    # Dancing Queen
+say join ', ', $dbh->iterate(
+    $sql,
+    $hits,
+    take(1),
+)->all;
+# Dancing Queen
+
 ```
 
 Make a stage that counts or remembers with
@@ -1480,7 +1567,10 @@ they end, so a chain of method calls can carry on. On a statement
 handle, the statement handle goes through the stages instead.
 
 ```perl
-my @names = $dbh->pipe(sub ($dbh) { @{ $dbh->selectcol_arrayref('SELECT name FROM artist ORDER BY id') } }, sub {uc});
+my @names = $dbh->pipe(
+    sub ($dbh) { @{ $dbh->selectcol_arrayref('SELECT name FROM artist ORDER BY id') } },
+    sub {uc},
+);
 say "@names";    # ABBA BLUR CREAM
 
 my $n = $dbh->tap(sub ($dbh) { say 'tapped ', ref $dbh })->selectrow_array('SELECT COUNT(*) FROM artist');
@@ -1504,7 +1594,11 @@ and its place there too: `#2.2 (main::fussy#2)`. An exception object
 is passed on unchanged.
 
 ```perl
-my $it = $dbh->iterate('SELECT name FROM artist', sub {$_}, sub { die "no names today\n" });
+my $it = $dbh->iterate(
+    'SELECT name FROM artist',
+    sub {$_},
+    sub { die "no names today\n" },
+);
 eval { $it->next };
 print $@;
 # Pipeline stage #2 failed at ... line ...:
@@ -1659,7 +1753,13 @@ use DBIx::Squirrel::Sugar database => {music => ['dbi:SQLite:dbname=music.db', '
 
 say music('SELECT name FROM artist WHERE id = ?', 1)->fetchrow_arrayref->[0];    # Abba
 say ref music('SELECT name FROM artist', sub { $_->[0] });                        # DBIx::Squirrel::Iterator
-say join ' ', music('SELECT name FROM artist ORDER BY id', sub { $_->[0] }, keep_all);    # Abba Blur Cream
+say join ' ', music(
+    'SELECT name FROM artist ORDER BY id',
+    sub { $_->[0] },
+    keep_all,
+);
+# Abba Blur Cream
+
 ```
 
 ### statement

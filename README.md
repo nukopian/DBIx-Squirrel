@@ -136,7 +136,9 @@ module, by tags, as `:stages` and `:sinks`, or `:all`:
     my @top_ten = $dbh->iterate(
         'SELECT name, plays FROM track ORDER BY plays DESC',
         take_if { $_->[1] >= 5000 },    # leave out the rest
-        pluck('name'), take(10), keep_all,
+        pluck('name'),
+        take(10),
+        keep_all,
     );
 
     my $hits = $dbh->iterate('SELECT * FROM track WHERE plays > ?', 6000, count_items);

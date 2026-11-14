@@ -73,7 +73,9 @@ DBIx::Squirrel::Tooling - DBIx::Squirrel's stages, sinks and words, from one mod
 
     my @names = $dbh->iterate(
         'SELECT name, plays FROM track ORDER BY plays DESC',
-        take_if { $_->[1] > 6000 }, pluck('name'), keep_all,
+        take_if { $_->[1] > 6000 },
+        pluck('name'),
+        keep_all,
     );
 
     use DBIx::Squirrel::Tooling qw(:stages :sinks);    # or only some
