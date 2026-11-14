@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0027.
+Last id: 2026-0028.
 
 Items come in four groups:
 
@@ -45,7 +45,22 @@ Nothing.
 
 ## Next
 
-Nothing.
+### 2026-0028. Measured gains in the handles, for v3.0.3
+
+**Added:** 2026-11-14. **Size:** M (3)
+
+What: profile `DBIx::Squirrel::db` and `DBIx::Squirrel::st`, with
+Devel::NYTProf against the gazetteer's SQLite tables and their copies
+in PostgreSQL and MySQL, and make the gains that measure as real:
+`prepare`, `execute` and binding, as 2026-0022 did for reading rows.
+Among the candidates, a statement's placeholders kept in an array, by
+position, rather than a hash, which timed `_binds` 20% quicker, though
+that's under a microsecond a statement and `study_sql`'s result is
+documented as a hash.
+Why: Iain asked, after v3.0.2, to see where real gains could be
+measured and made in the two handles.
+Done when: each change is measured before and after, kept only if it
+gains, and v3.0.3 is on CPAN with them.
 
 ## Later
 
