@@ -362,8 +362,9 @@ sub _select_through (
 #
 # A statement given as a string, without attributes, as most are, is
 # studied once for each handle, which keeps what was found in its
-# private_ekorn_studied attribute, keyed by the statement and, with DBD::Pg, its placeholder options, as they can be
-# changed on the handle. Each statement handle has a copy of its own of
+# private_ekorn_studied attribute, keyed by the statement and, with
+# DBD::Pg, its placeholder options, as they can be changed on the
+# handle. Each statement handle has a copy of its own of
 # what the statement handle keeps, as an iterator adds to it. The handle
 # keeps no more than $STUDIED statements, starting again when it has
 # that many, so statements made as the program runs can't fill memory.
