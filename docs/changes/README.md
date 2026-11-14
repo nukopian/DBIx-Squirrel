@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [A sweep of the docs](2026-0026-docs-sweep.md),
+  from a task of Ekorn-Pipeline's: in progress.
 - [DBIx::Squirrel::Tooling](2026-0025-tooling.md),
   roadmap 2026-0025: shipped, unreleased.
 - [pipeline-experimental back to develop](2026-0024-back-to-develop.md),

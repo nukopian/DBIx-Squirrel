@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0025.
+Last id: 2026-0026.
 
 Items come in four groups:
 
