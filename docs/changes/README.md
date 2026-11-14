@@ -84,6 +84,8 @@ Newest id first.
   from a task of Ekorn-Pipeline's: shipped, unreleased.
 - [DBIx::Squirrel::Tooling](2026-0025-tooling.md),
   roadmap 2026-0025: shipped, unreleased.
+- [DBIx::Squirrel v3.0.0](2026-0019-v3-0-0.md),
+  roadmap 2026-0019: in progress.
 - [pipeline-experimental back to develop](2026-0024-back-to-develop.md),
   from Ekorn-Pipeline's messages: done.
 - [The reference, rewritten for v3](2026-0023-reference-for-v3.md),

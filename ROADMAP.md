@@ -41,40 +41,37 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing, between 2026-0025, shipped, and 2026-0019, which waits for
-Ekorn::Pipeline v0.3.0 on CPAN.
-
-## Next
-
 ### 2026-0019. DBIx::Squirrel v3.0.0
 
 **Added:** 2026-11-13. **Size:** L (5). **Split from:** 2026-0013.
 **Depends on:** 2026-0014, 2026-0015, 2026-0016, 2026-0017,
 2026-0018, 2026-0021, 2026-0023, 2026-0025, and Ekorn::Pipeline
-v0.3.0 on CPAN
+v0.3.1 on CPAN
 
-What: the release on Ekorn::Pipeline v0.3.0, as the design's sections
-10, 11 and 15 have it: the README rewritten, with `|` giving one value
-explained where it's first shown, the how-to being 2026-0021's and the
-reference, with its table of what changes for users, 2026-0023's;
-`Changes`' precis; the `cpanfile`'s range, `>= v0.3.0, < v0.4.0`; and
-CI.
-Why: it breaks code, which a major version is for. Done when: v3.0.0 is on CPAN.
+The release on Ekorn::Pipeline v0.3.1, as the design's sections 10,
+11 and 15 have it. The docs and the `cpanfile`'s range are done; left
+are Ekorn's release, CI taking Ekorn from CPAN, `Changes`' v3.0.0
+entry, the README's Acknowledgements, a trial and the release. Its
+[record](docs/changes/2026-0019-v3-0-0.md) has the plan.
+
+## Next
+
+Nothing.
 
 ## Later
 
+Nothing.
+
+## Ideas
+
 ### 2026-0003. Add-on stage distributions
 
-**Added:** 2026-11-08. **Size:** L (5)
-
-Stages for one concern each, in distributions of their own after 2.0,
-as the plan for 2.0 had them: serializers (JSON, YAML, XML, CSV,
+Added 2026-11-08. Stages for one concern each, in distributions of
+their own, as the plan for 2.0 had them: serializers (YAML, XML, CSV,
 dumps), decoding columns, types such as dates and booleans,
 validation, and progress and logging taps. Those that need no database
 may belong in Ekorn::Pipeline's `Ekorn::Pipeline::Stages::` instead.
 Split into items, each sized, when one is taken up.
-
-## Ideas
 
 ### 2026-0027. A pipeline key for the Sugar
 
