@@ -3,7 +3,7 @@
 ## README.md's code in perl fences, by Pod::Markdown::Github
 
 **From:** Ekorn-Pipeline's session, 2026-11-14 (Ekorn-Pipeline
-7ced69962ff01a4b8a10a1e65a7bbd1cba2a3d8b, on `develop`)
+7ced699f96a7b7664043c653abfa298f74755726, on `develop`)
 **Waiting on:** nothing
 
 Iain found Ekorn's README.md broken on GitHub, and wants
