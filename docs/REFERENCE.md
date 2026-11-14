@@ -2180,7 +2180,8 @@ caller's line. Those starting "Expected" say what was expected.
 
 | Message | Cause |
 |---|---|
-| `Expected stage #%d to be a code reference or a pipeline` | Something passed as a stage to a pipeline, `pipe` or `tap` wasn't one. No stage runs. |
+| `Expected stage #%d to be a stage: a code reference, a pipeline, or an object offering a stage's role method` | Something passed as a stage to a pipeline, `pipe` or `tap` wasn't one. No stage runs. |
+| `Expected stage #%d to be a stage: a code reference, a pipeline or its name, or an object offering a stage's role method` | Something given to `pipeline`, or to `named`, wasn't a stage or a pipeline's name. |
 | `Expected a code reference` | The block given to `gather`, `take_while`, `drop_while`, `take_if`, `drop_if`, `collect` or `peek` wasn't a code reference. |
 | `Expected a source: a code reference, or an object offering EKORN_SOURCE` | A pipeline's `iterator` was given something it can't read. |
 | `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end` | The block given to `gather` for that stage returned something else. |

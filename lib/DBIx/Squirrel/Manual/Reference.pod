@@ -2658,9 +2658,13 @@ C<|> or C<@{}> was used on an iterator where the operators aren't in force.
 
 =over 4
 
-=item C<Expected stage #%d to be a code reference or a pipeline>
+=item C<Expected stage #%d to be a stage: a code reference, a pipeline, or an object offering a stage's role method>
 
 Something passed as a stage to a pipeline, C<pipe> or C<tap> wasn't one. No stage runs.
+
+=item C<Expected stage #%d to be a stage: a code reference, a pipeline or its name, or an object offering a stage's role method>
+
+Something given to C<pipeline>, or to C<named>, wasn't a stage or a pipeline's name.
 
 =item C<Expected a code reference>
 

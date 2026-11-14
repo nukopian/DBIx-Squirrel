@@ -504,10 +504,9 @@ stage is named C<#2.3>, for the third stage of the pipeline given as
 stage #2. A stage of a named pipeline is named by its name and its
 place there too, as C<#2.2 (main::fussy#2)>.
 
-=item Expected stage #%d to be a code reference or a pipeline
+=item Expected stage #%d to be a stage: a code reference, a pipeline, or an object offering a stage's role method
 
-Something passed to L</pipe> or L</tap> wasn't a code reference or a
-pipeline. No stage runs.
+Something passed to L</pipe> or L</tap> wasn't a stage. No stage runs.
 
 =item Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end
 
