@@ -318,6 +318,11 @@ subtest 'mistakes' => sub {
     like dies { statement(odder => music => 'SELECT 1', 'no good') },
         qr( \A \QExpected only stages after the statement for odder: code references, pipelines or their names, or objects offering a stage's role method\E )x,
         'a string that is not a name';
+    like dies {
+        statement(oddest => music => 'SELECT 1', bless {}, 'Not::Attrs')
+    },
+        qr( \A \QExpected only stages after the statement for oddest: \E )x,
+        'an object that is not a stage, not taken for the attributes';
     like dies { statement(music => music => 'SELECT 1') },
         qr( \A \QExpected no function of the name in main already (music)\E )x,
         'a name a database has';

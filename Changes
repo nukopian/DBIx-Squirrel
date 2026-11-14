@@ -127,7 +127,16 @@ Unreleased
       was taken for the attributes, so nothing was bound and the query
       quietly found nothing; a blessed array was unwrapped as a list of
       values; and a blessed scalar croaked "Expected a reference to a
-      HASH or ARRAY".
+      HASH or ARRAY". In a Sugar statement's definition, an object
+      straight after the SQL is no longer taken for the attributes: one
+      that isn't a stage croaks, as anything else there does.
+    - Two of Ekorn::Pipeline's messages, which DBIx::Squirrel passes
+      on, say what a stage and a source are, as of Ekorn::Pipeline
+      v0.3.0: "Expected stage #%d to be a stage: a code reference, a
+      pipeline, or an object offering a stage's role method", for what
+      isn't a stage, and "Expected a source: a code reference, or an
+      object offering EKORN_SOURCE", from a pipeline's iterator. Code
+      matching the old wording needs updating.
     - Three messages say what their conditions test: the iterator's
       "Expected a DBIx::Squirrel statement handle", not "Expected a
       statement handle"; pluck's and as_hash's "Expected a statement to

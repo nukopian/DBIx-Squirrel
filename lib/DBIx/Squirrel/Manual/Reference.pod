@@ -959,8 +959,8 @@ does.
 As with L<C<do>|/"do">, the attributes may be left out. The first
 argument after the statement, or after C<selectall_hashref>'s key
 field, is taken as the attributes only if it's an unblessed hash
-reference or C<undef>. So named values given in a hash reference, or a first value
-that's C<undef>, need the attributes, or C<undef>, in front.
+reference or C<undef>. So named values given in a hash reference, or a
+first value that's C<undef>, need the attributes, or C<undef>, in front.
 
 B<Given stages after the bind values,> each pushes what the DBI's
 method returns through them, as a pipeline called with values does. It
@@ -2147,8 +2147,8 @@ returns what C<iterate> does: an iterator over the results, or, if the last stag
 
 =back
 
-An unblessed hash reference or C<undef> straight after the statement is the
-attributes to prepare it with. The statement can be a statement
+An unblessed hash reference or C<undef> straight after the statement is
+the attributes to prepare it with. The statement can be a statement
 handle, which is itself executed, or iterated over.
 
     use DBIx::Squirrel::Sugar database => {music => ['dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1}]};
@@ -2421,8 +2421,8 @@ Ekorn|Ekorn::Pipeline::Manual::Reference/"Delivering parts for Ekorn">.
 A C<DBIx::Squirrel::Iterator>, and so a result set, is a source, as
 Ekorn::Pipeline takes one: it offers C<EKORN_SOURCE>, the role method
 that a pipeline's C<iterator>, a chain made with C<|>, and C<@{}> call.
-You don't call it yourself. Each call starts a fresh run of the statement, from
-its first row:
+You don't call it yourself. Each call starts a fresh run of the
+statement, from its first row:
 
 =over 4
 
@@ -2511,10 +2511,10 @@ C<pipe>, C<tap> and the Sugar's functions take stages at the end of
 their arguments. A stage is whatever Ekorn::Pipeline's C<is_stage> is
 true of: a code reference, a pipeline, or one of Ekorn's stage
 objects. Those include stages made with C<gather>, Ekorn's words and
-the canned stages, and its sinks. Anything else is a bind value, so an object of your own
-given as a value stays one. A sink, if one is last, says what the call
-gives (see L<8. Sinks|/"8. Sinks">). Only a Sugar statement's definition
-takes pipelines' names, as strings.
+the canned stages, and its sinks. Anything else is a bind value, so an
+object of your own given as a value stays one. A sink, if one is last,
+says what the call gives (see L<8. Sinks|/"8. Sinks">). Only a Sugar
+statement's definition takes pipelines' names, as strings.
 
 =head2 What a gather's block returns
 

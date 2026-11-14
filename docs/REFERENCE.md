@@ -691,8 +691,8 @@ does.
 As with [`do`](#do), the attributes may be left out. The first
 argument after the statement, or after `selectall_hashref`'s key
 field, is taken as the attributes only if it's an unblessed hash
-reference or `undef`. So named values given in a hash reference, or a first value
-that's `undef`, need the attributes, or `undef`, in front.
+reference or `undef`. So named values given in a hash reference, or a
+first value that's `undef`, need the attributes, or `undef`, in front.
 
 **Given stages after the bind values,** each pushes what the DBI's
 method returns through them, as a pipeline called with values does. It
@@ -1761,8 +1761,8 @@ $it      = music($statement, @bind_values, @stages);
 | a statement and bind values | prepares the statement, executes it, and returns the statement handle, or nothing if it couldn't be executed. |
 | those, and stages at the end | returns what `iterate` does: an iterator over the results, or, if the last stage is a sink, the sink's result. |
 
-An unblessed hash reference or `undef` straight after the statement is the
-attributes to prepare it with. The statement can be a statement
+An unblessed hash reference or `undef` straight after the statement is
+the attributes to prepare it with. The statement can be a statement
 handle, which is itself executed, or iterated over.
 
 ```perl
@@ -2033,8 +2033,8 @@ Ekorn](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#de
 A `DBIx::Squirrel::Iterator`, and so a result set, is a source, as
 Ekorn::Pipeline takes one: it offers `EKORN_SOURCE`, the role method
 that a pipeline's `iterator`, a chain made with `|`, and `@{}` call.
-You don't call it yourself. Each call starts a fresh run of the statement, from
-its first row:
+You don't call it yourself. Each call starts a fresh run of the
+statement, from its first row:
 
 - the statement is executed again, finishing it first if it's active,
   as `reset` does, with the iterator's bind values;
@@ -2099,10 +2099,10 @@ own, which has no row unless it too reads a statement.
 their arguments. A stage is whatever Ekorn::Pipeline's `is_stage` is
 true of: a code reference, a pipeline, or one of Ekorn's stage
 objects. Those include stages made with `gather`, Ekorn's words and
-the canned stages, and its sinks. Anything else is a bind value, so an object of your own
-given as a value stays one. A sink, if one is last, says what the call
-gives (see [8. Sinks](#8-sinks)). Only a Sugar statement's definition
-takes pipelines' names, as strings.
+the canned stages, and its sinks. Anything else is a bind value, so an
+object of your own given as a value stays one. A sink, if one is last,
+says what the call gives (see [8. Sinks](#8-sinks)). Only a Sugar
+statement's definition takes pipelines' names, as strings.
 
 ### What a gather's block returns
 

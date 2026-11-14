@@ -2,7 +2,7 @@ use v5.36;
 
 package DBIx::Squirrel::Sugar;
 
-use Ref::Util qw(is_arrayref is_hashref is_ref);
+use Ref::Util qw(is_arrayref is_hashref is_plain_hashref is_ref);
 
 use Ekorn::Pipeline qw(is_stage);
 
@@ -99,11 +99,10 @@ sub _define_statement ($package, $name, @definition) {
         unless is_name($name);
     croakf 'Expected a database and a statement for %s', $name
         unless defined $database && defined $statement;
-    # A pipeline is a blessed hash, so is_hashref is true of it too: one
-    # straight after the statement is a stage, not the attributes.
+    # Only a plain hash is the attributes: a pipeline, or any other
+    # object, straight after the statement is a stage, or a mistake.
     my $attrs
-        = @rest
-        && (!defined $rest[0] || is_hashref($rest[0]) && !is_stage($rest[0]))
+        = @rest && (!defined $rest[0] || is_plain_hashref($rest[0]))
         ? shift @rest
         : undef;
     croakf
@@ -346,9 +345,9 @@ Called with nothing, returns the database handle.
 
 Called with a statement, prepares it and executes it with the bind
 values, in any form L<DBIx::Squirrel::st/execute> takes. It returns
-the statement handle, or nothing if it couldn't be executed. A hash
-reference, or C<undef>, straight after the statement is the attributes
-to prepare it with, as with L<DBIx::Squirrel::db/do>.
+the statement handle, or nothing if it couldn't be executed. An
+unblessed hash reference, or C<undef>, straight after the statement is
+the attributes to prepare it with, as with L<DBIx::Squirrel::db/do>.
 
 With stages at the end, it does what L<DBIx::Squirrel::db/iterate>
 does: it returns an iterator over the results, or, if the last stage
