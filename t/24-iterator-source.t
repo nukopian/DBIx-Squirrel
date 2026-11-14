@@ -5,6 +5,7 @@ use Test2::Plugin::NoWarnings;
 use DBIx::Squirrel;
 use DBIx::Squirrel::Stages::Flow qw(take);
 use Ekorn::Pipeline              qw();
+use File::Temp                   qw(tempfile);
 use IPC::Open3                   qw(open3);
 use Symbol                       qw(gensym);
 use experimental                 qw(builtin);
@@ -178,9 +179,15 @@ subtest 'ends at program exit are quiet' => sub {
         our $handle = $dbh;
         print "ran\n";
         PERL
+    # The program goes in a file, not after -e: on Windows, a child's
+    # arguments pass through one command line, whose quoting mangled
+    # the program's double quotes, on CPAN Testers' v3.0.0 trial.
+    my($fh, $file) = tempfile(SUFFIX => '.pl', UNLINK => 1);
+    print { $fh } $code;
+    close $fh;
     my $pid = open3(
         my $in, my $out, my $err = gensym(), $^X, (map { "-I$_" } @INC),
-        '-e',   $code,
+        $file,
     );
     close $in;
     my $said   = do { local $/ = undef; <$out> };

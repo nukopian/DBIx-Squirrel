@@ -7,6 +7,7 @@ use Test2::Plugin::NoWarnings;
 
 use DBI;
 use DBIx::Squirrel;
+use File::Temp              qw(tempfile);
 use DBIx::Squirrel::Context qw(result_number result_original);
 use Ekorn::Pipeline         qw();
 use DBIx::Squirrel::Stages::Rows;
@@ -194,8 +195,13 @@ subtest 'Pipelines' => sub {
         Gather       Stop Context Stages::Flow Stages::Batch
         Stages::Taps Stages::Rows))
     {
-        my $code = qq{use DBIx::Squirrel::$module; print \$INC{'DBI.pm'} ? 1 : 0};
-        open my $child, '-|', $^X, @inc, '-e', $code
+        # In a file, not after -e, as a Windows command line can mangle
+        # the quotes of code given there (t/24-iterator-source.t).
+        my($fh, $file) = tempfile(SUFFIX => '.pl', UNLINK => 1);
+        print { $fh }
+            qq{use DBIx::Squirrel::$module; print \$INC{'DBI.pm'} ? 1 : 0};
+        close $fh;
+        open my $child, '-|', $^X, @inc, $file
             or die "Can't run $^X: $!";    ## no critic (ErrorHandling::RequireCarping)
         my $loaded = do { local $/ = undef; <$child> };
         close $child;

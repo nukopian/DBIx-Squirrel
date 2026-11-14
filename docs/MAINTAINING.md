@@ -190,7 +190,8 @@ precis, and takes the item off [ROADMAP.md](../ROADMAP.md).
 ## A trial release
 
 A trial puts a version on CPAN for CPAN Testers to test, on platforms
-CI doesn't cover, such as Windows and the BSDs. CPAN doesn't index it,
+CI doesn't cover, such as the BSDs and Solaris. CI has run on Windows
+since the v3.0.0 trial failed there. CPAN doesn't index it,
 so `cpanm DBIx::Squirrel` still installs the last release. PAUSE takes
 a tarball whose name ends `-TRIAL` as a trial. That's all Minilla's
 own `minil release --trial` does. There's no tag and no GitHub
