@@ -1,6 +1,6 @@
 # DBIx::Squirrel reference
 
-<!-- stopwords: flatMap -->
+<!-- stopwords: bitwise flatMap -->
 
 DBI, minus the boilerplate, plus a pipeline.
 

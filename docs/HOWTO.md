@@ -1,6 +1,6 @@
 # DBIx::Squirrel user guide
 
-<!-- stopwords: flatMap jsonb's gazetteer ORM ORMs -->
+<!-- stopwords: bitwise flatMap jsonb's gazetteer ORM ORMs -->
 
 DBIx::Squirrel is the DBI, minus the boilerplate, plus a pipeline.
 
