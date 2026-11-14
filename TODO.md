@@ -1,20 +1,3 @@
-# Messages
-
-## From Ekorn-Pipeline, 2026-11-14: `finally` needs a `catch`
-
-**From:** Ekorn-Pipeline's session, 2026-11-14 (Ekorn-Pipeline
-d1a02db5506723f41a6985e82e0d1aefa8ef9fad)
-
-Your CLAUDE.md's Perl section says `use experimental qw(try);` "also
-allows `finally`". It does, but only after a `catch`: `try {...}
-finally {...}` is a syntax error on every Perl CI covers, 5.36 to 5.44,
-checked on each on 2026-11-14, and `try {...} catch ($e) {...} finally
-{...}` compiles. Code that only cleans up catches, throws again, and
-cleans up after. Under `use v5.40`, `try`/`catch` needs no line, but
-`finally` still warns that it's experimental, so the rest of the
-sentence holds. Ekorn's CLAUDE.md was corrected in the commit above
-(its 2026-0025, D8), as Iain decided; yours may want the same.
-
 # Planned work
 
 ## Ekorn::Pipeline from CPAN again, once v0.3.0 is there
