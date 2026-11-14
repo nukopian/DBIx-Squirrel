@@ -155,15 +155,15 @@ C<from_fh>, C<from_file> and C<counter>.
 
 =item C<:sinks>
 
-Everything L<Ekorn::Pipeline::Sinks> exports: C<count_items>,
-C<keep>, C<keep_all>, C<keep_first>, C<keep_last>, C<keep_single>,
-C<to_fh> and C<to_file>.
+Everything L<Ekorn::Pipeline::Sinks> exports: C<count_items>, C<keep>,
+C<keep_all>, C<keep_first>, C<keep_last>, C<keep_single>, C<to_fh> and
+C<to_file>.
 
 =item C<:words>
 
 Everything L<Ekorn::Pipeline::Factories> exports: C<pipeline>,
-C<stage>, C<gather>, C<source>, C<generator> and C<yield>,
-C<sink_one> and C<sink_many>.
+C<stage>, C<gather>, C<source>, C<generator> and C<yield>, C<sink_one>
+and C<sink_many>.
 
 =item C<:all>
 
@@ -189,7 +189,7 @@ Iain Campbell E<lt>cpanic@cpan.orgE<gt>
 
 Copyright (c) 2024-2026 by Iain Campbell.
 
-This is free software; you can redistribute it and/or modify it under the
-same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

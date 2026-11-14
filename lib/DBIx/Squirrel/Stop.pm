@@ -44,9 +44,9 @@ here to stay, so code written with it keeps working. It isn't a class:
 a stop is an Ekorn::Pipeline::Stop.
 
 A stop is the exception that ends a pipeline early and quietly. The
-rest of the stage that throws it doesn't run. The values already out of
-the pipeline are kept. The values the stop carries go on through the
-stages after it, and nothing else is processed.
+rest of the stage that throws it doesn't run. The values already out
+of the pipeline are kept. The values the stop carries go on through
+the stages after it, and nothing else is processed.
 
 =head1 FUNCTIONS
 
@@ -56,8 +56,8 @@ stages after it, and nothing else is processed.
     Stop(@values);
 
 Throws a stop carrying C<@values>. The function is
-L<Ekorn::Pipeline::Stop/Stop>, so the stop is an Ekorn::Pipeline::Stop.
-To keep it out of your namespace:
+L<Ekorn::Pipeline::Stop/Stop>, so the stop is an
+Ekorn::Pipeline::Stop. To keep it out of your namespace:
 
     use DBIx::Squirrel::Stop ();
 
@@ -104,7 +104,7 @@ Iain Campbell E<lt>cpanic@cpan.orgE<gt>
 
 Copyright (c) 2024-2026 by Iain Campbell.
 
-This is free software; you can redistribute it and/or modify it under the
-same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

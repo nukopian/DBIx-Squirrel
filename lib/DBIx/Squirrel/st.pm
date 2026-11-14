@@ -181,8 +181,8 @@ DBIx::Squirrel::st - DBIx::Squirrel's statement handle class
 =head1 DESCRIPTION
 
 A statement handle prepared on a DBIx::Squirrel database handle is
-blessed into this class. It's a subclass of the DBI's C<DBI::st>, so it
-does everything a DBI statement handle does. It also inherits
+blessed into this class. It's a subclass of the DBI's C<DBI::st>, so
+it does everything a DBI statement handle does. It also inherits
 L<DBIx::Squirrel/pipe> and L<DBIx::Squirrel/tap> from
 L<Ekorn::Pipeline::Pipes>.
 
@@ -273,11 +273,12 @@ unwrapped as usual, as the driver can't bind arrays.
 Binds a value, as the DBI's C<bind_param> does, and returns what it
 returns. A numbered placeholder is given by number, and a named one by
 name, with or without its sigil. The value is bound to every use of it
-in the statement. A statement with named placeholders can also be bound
-by position, as with the DBI.
+in the statement. A statement with named placeholders can also be
+bound by position, as with the DBI.
 
-The value for a list placeholder is its list. Each value in it is bound
-to a position of its own, with the same C<\%attr> or C<$bind_type>.
+The value for a list placeholder is its list. Each value in it is
+bound to a position of its own, with the same C<\%attr> or
+C<$bind_type>.
 
 =head2 execute
 
@@ -350,14 +351,14 @@ A value was given for a placeholder the statement doesn't have.
 
 =item Expected a value for each placeholder (none for %s)
 
-A statement with named placeholders wasn't given a value for each name,
-or a statement with numbered or named placeholders was executed without
-values when some had none bound.
+A statement with named placeholders wasn't given a value for each
+name, or a statement with numbered or named placeholders was executed
+without values when some had none bound.
 
 =item Expected a reference to an ARRAY for a list (%s)
 
-The value given for a list placeholder, named with its C<...>, wasn't a
-list. It was a plain value, C<undef>, or a reference to something
+The value given for a list placeholder, named with its C<...>, wasn't
+a list. It was a plain value, C<undef>, or a reference to something
 other than an array.
 
 =item Expected at least one value in a list (%s)
@@ -391,7 +392,7 @@ Iain Campbell E<lt>cpanic@cpan.orgE<gt>
 
 Copyright (c) 2024-2026 by Iain Campbell.
 
-This is free software; you can redistribute it and/or modify it under the
-same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

@@ -488,9 +488,9 @@ DBIx::Squirrel::db - DBIx::Squirrel's database handle class
 =head1 DESCRIPTION
 
 A database handle from L<DBIx::Squirrel/connect> is blessed into this
-class. It's a subclass of the DBI's C<DBI::db>, so it does everything a
-DBI database handle does. It also inherits L<DBIx::Squirrel/pipe> and
-L<DBIx::Squirrel/tap> from L<Ekorn::Pipeline::Pipes>.
+class. It's a subclass of the DBI's C<DBI::db>, so it does everything
+a DBI database handle does. It also inherits L<DBIx::Squirrel/pipe>
+and L<DBIx::Squirrel/tap> from L<Ekorn::Pipeline::Pipes>.
 
 =head1 METHODS
 
@@ -669,9 +669,9 @@ methods, for those.
 
 Prepares a statement, as L</prepare> does, and returns a
 L<DBIx::Squirrel::Iterator> over its results, or, if the last stage is
-a sink, the sink's result. See
-L<DBIx::Squirrel::st/iterate>. As with L</do>, the attributes may be
-left out. A statement taking a list is prepared for the values given.
+a sink, the sink's result. See L<DBIx::Squirrel::st/iterate>. As with
+L</do>, the attributes may be left out. A statement taking a list is
+prepared for the values given.
 
 =head2 results
 
@@ -740,9 +740,9 @@ as C<do> does.
 
 =item Expected one placeholder style, not several (%s)
 
-The statement used more than one style of placeholder, such as C<?> and
-C<:name>. The styles found are listed, each as an example: C<?>, C<?1>,
-C<:1>, C<$1>, C<:name> or C<$name>.
+The statement used more than one style of placeholder, such as C<?>
+and C<:name>. The styles found are listed, each as an example: C<?>,
+C<?1>, C<:1>, C<$1>, C<:name> or C<$name>.
 
 =item Expected placeholders numbered from 1 (%s)
 
@@ -750,8 +750,8 @@ The statement had a numbered placeholder such as C<$0>.
 
 =item Expected a statement
 
-The statement was blank, or was a reference other than those L</prepare>
-takes.
+The statement was blank, or was a reference other than those
+L</prepare> takes.
 
 =item Expected bind values with a statement taking a list (%s)
 
@@ -773,8 +773,8 @@ DBD::Pg as written, so a C<$1> placeholder can't take a list.
 =item Expected a reference to a HASH or ARRAY
 
 The first argument after the statement in L</do>, L</iterate>,
-L</results> or a select method was a reference, but not to a hash or an
-array.
+L</results> or a select method was a reference, but not to a hash or
+an array.
 
 =back
 
@@ -790,7 +790,7 @@ Iain Campbell E<lt>cpanic@cpan.orgE<gt>
 
 Copyright (c) 2024-2026 by Iain Campbell.
 
-This is free software; you can redistribute it and/or modify it under the
-same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

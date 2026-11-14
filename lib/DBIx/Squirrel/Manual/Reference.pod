@@ -20,13 +20,13 @@ pipeline of stages written beside the query. It's a subclass of the
 DBI, so everything the DBI does still works. Where the two do the same
 thing, they give the same result.
 
-This reference describes every method, attribute, function and message,
-and the protocols other code can rely on. Its chapters follow the
-L<user guide|DBIx::Squirrel::Manual::HowTo>'s, a layer at a time from the DBI up, and each
-links to its chapter there: the guide is the tour, this is the map.
-Each module's own POD says the same things more briefly. Where the two
-differ, the POD is the authority. Every example runs, against the
-database below, and its comments say what it prints.
+This reference describes every method, attribute, function and
+message, and the protocols other code can rely on. Its chapters follow
+the L<user guide|DBIx::Squirrel::Manual::HowTo>'s, a layer at a time from the DBI up, and
+each links to its chapter there: the guide is the tour, this is the
+map. Each module's own POD says the same things more briefly. Where
+the two differ, the POD is the authority. Every example runs, against
+the database below, and its comments say what it prints.
 
 This is version 3. L<Upgrading from 2.x|/"Upgrading from 2.x"> and
 L<Upgrading from 1.x|/"Upgrading from 1.x"> list what changes for code
@@ -295,10 +295,10 @@ in either order, gives the same subs. A test fails if that changes.
 
 B<What's left out.> What's for extending DBIx::Squirrel rather than
 using it, such as C<croakf>, from DBIx::Squirrel::Errors, and
-C<is_stage>, from Ekorn::Pipeline; L<the Sugar|/"12. Sugar: a function for each database and statement">,
-whose C<use> makes functions; and L<C<E<verbar>>|/"11. Operators: E<verbar> and @{}">, which
-only C<use Ekorn::Pipeline::Operators> puts in force, in its own
-scope.
+C<is_stage>, from Ekorn::Pipeline; L<the
+Sugar|/"12. Sugar: a function for each database and statement">, whose
+C<use> makes functions; and L<C<E<verbar>>|/"11. Operators: E<verbar> and @{}">, which only
+C<use Ekorn::Pipeline::Operators> puts in force, in its own scope.
 
 =item *
 
@@ -330,12 +330,12 @@ does, and the DBI exports them:
     $dbh = DBIx::Squirrel->connect($dbh, \%attr);
 
 C<connect> connects to a data source, as the DBI's C<connect> does, and
-returns a database handle, a C<DBIx::Squirrel::db>. Its statement handles
-are C<DBIx::Squirrel::st>s. Both are subclasses of the DBI's own, so they
-do everything the DBI's handles do.
+returns a database handle, a C<DBIx::Squirrel::db>. Its statement
+handles are C<DBIx::Squirrel::st>s. Both are subclasses of the DBI's
+own, so they do everything the DBI's handles do.
 
-The username and password can be left out, with the attributes straight
-after the data source.
+The username and password can be left out, with the attributes
+straight after the data source.
 
 Unlike the DBI's C<connect>, it B<always croaks> if the connection
 fails, whatever C<RaiseError> is set to. The message is the one the DBI
@@ -362,11 +362,11 @@ DBIx::Squirrel's:
     my $squirrel = DBIx::Squirrel->connect($plain);
     say ref $squirrel;    # DBIx::Squirrel::db
 
-The new handle keeps the first one's C<ekorn_> defaults. Any passed take
-their place. It's a separate connection, not a second name for the
-first. It doesn't share the first one's transaction, temporary tables
-or session settings. An in-memory SQLite database, for example, gives
-a new, empty database.
+The new handle keeps the first one's C<ekorn_> defaults. Any passed
+take their place. It's a separate connection, not a second name for
+the first. It doesn't share the first one's transaction, temporary
+tables or session settings. An in-memory SQLite database, for example,
+gives a new, empty database.
 
 =head2 DBIx::Squirrel's own attributes
 
@@ -437,8 +437,8 @@ Name the dialect when C<connect> can't tell:
 =head2 Subclassing
 
 Called on a subclass of DBIx::Squirrel, C<connect> uses that subclass's
-database and statement handle classes. The DBI requires the subclass to
-have both, and each must be a subclass of DBIx::Squirrel's:
+database and statement handle classes. The DBI requires the subclass
+to have both, and each must be a subclass of DBIx::Squirrel's:
 
     package My::Squirrel     { our @ISA = 'DBIx::Squirrel' }
     package My::Squirrel::db { our @ISA = 'DBIx::Squirrel::db' }
@@ -447,8 +447,8 @@ have both, and each must be a subclass of DBIx::Squirrel's:
     my $mine = My::Squirrel->connect('dbi:SQLite:dbname=music.db', {RaiseError => 1});
     say ref $mine;    # My::Squirrel::db
 
-Without them, the DBI warns that the subclass isn't set up, and returns
-its own handles.
+Without them, the DBI warns that the subclass isn't set up, and
+returns its own handles.
 
 =head1 2. Placeholders
 
@@ -499,8 +499,8 @@ B<How values are bound:> By name.
 
 =back
 
-A statement uses B<one style> throughout. C<prepare> croaks if it finds
-more than one, listing each as an example:
+A statement uses B<one style> throughout. C<prepare> croaks if it
+finds more than one, listing each as an example:
 C<Expected one placeholder style, not several (?, :name)>.
 
 The same placeholder can appear more than once:
@@ -516,9 +516,9 @@ number, and numbers start from 1.
 
 =item *
 
-A B<named> placeholder is bound by name, wherever it appears. Values
-are given as pairs or in a hash reference, with or without the sigil.
-There must be a value for each name, and no other.
+A B<named> placeholder is bound by name, wherever it appears.
+Values are given as pairs or in a hash reference, with or without
+the sigil. There must be a value for each name, and no other.
 
 =back
 
@@ -573,19 +573,18 @@ list.
 
 =item *
 
-B<A placeholder takes a list everywhere it's used, or nowhere.> Used
-twice, it takes its list in both places.
+B<A placeholder takes a list everywhere it's used, or nowhere.>
+Used twice, it takes its list in both places.
 
 =item *
 
 B<Its handle is for lists of the lengths it was prepared for.> The
 statement handle of a statement taking a list, such as an iterator's
 C<sth>, can be executed again with lists of the same lengths. Given
-another length, it croaks. An iterator's
-L<C<reset>|/"reset"> prepares the statement again, on a new handle,
-when a list has a different number of values. A Sugar statement
-taking a list isn't cached, as each length makes a different
-statement.
+another length, it croaks. An iterator's L<C<reset>|/"reset"> prepares
+the statement again, on a new handle, when a list has a different
+number of values. A Sugar statement taking a list isn't cached, as
+each length makes a different statement.
 
 =item *
 
@@ -655,8 +654,8 @@ MySQL's C<NO_BACKSLASH_ESCAPES> mode isn't noticed.
 
 =item *
 
-With other dialects, a backslash is an ordinary character in a string
-(C<'C:\'>), except in PostgreSQL's C<E'...'> strings.
+With other dialects, a backslash is an ordinary character in a
+string (C<'C:\'>), except in PostgreSQL's C<E'...'> strings.
 
 =back
 
@@ -666,8 +665,8 @@ To read one statement as another dialect, give it C<ekorn_dialect>:
 
 =head2 DBD::Pg's own options
 
-DBD::Pg's placeholder options are followed, whether set on the database
-handle or passed to C<prepare>:
+DBD::Pg's placeholder options are followed, whether set on the
+database handle or passed to C<prepare>:
 
 =over 4
 
@@ -686,7 +685,8 @@ placeholders, so array slices such as C<data[:2]> are left alone.
 
 =head1 3. Preparing, binding and running
 
-The user guide's L<chapter 3|DBIx::Squirrel::Manual::HowTo/"3. Binding values and running statements">.
+The user guide's L<chapter
+3|DBIx::Squirrel::Manual::HowTo/"3. Binding values and running statements">.
 
 =head2 prepare
 
@@ -758,8 +758,8 @@ A statement with numbered or named placeholders, executed without
 values, croaks unless each placeholder already has a value bound. The
 value can come from L<C<bind>|/"bind">, L<C<bind_param>|/"bind_param"> or an
 earlier C<execute>, as the DBI keeps them. The DBI would leave the
-placeholder unbound, which most drivers read as C<NULL>. C<do>, iterators
-and the select methods check the same way:
+placeholder unbound, which most drivers read as C<NULL>. C<do>,
+iterators and the select methods check the same way:
 
     my $sth = $dbh->prepare('SELECT name FROM artist WHERE id = :id');
     eval { $sth->execute };
@@ -860,8 +860,8 @@ or C<'$1'>;
 
 =item *
 
-by name, for named placeholders, with or without the sigil: C<'id'> or
-C<':id'>;
+by name, for named placeholders, with or without the sigil: C<'id'>
+or C<':id'>;
 
 =item *
 
@@ -893,9 +893,9 @@ C<DBD::SQLite::db do failed: ...>.
 
 Unlike the DBI's, the attributes may be left out. The first argument
 after the statement is taken as the attributes only if it's a hash
-reference or C<undef>. An array reference there stands for the
-L<values in it|/"An array reference of values">. Any other reference
-croaks: C<Expected a reference to a HASH or ARRAY>.
+reference or C<undef>. An array reference there stands for the L<values
+in it|/"An array reference of values">. Any other reference croaks:
+C<Expected a reference to a HASH or ARRAY>.
 
     $dbh->begin_work;
     say $dbh->do('UPDATE artist SET name = :name WHERE id = :id', name => 'BLUR', id => 2);    # 1
@@ -959,7 +959,8 @@ nothing.
 
 =head1 4. Iterators
 
-The user guide's L<chapter 4|DBIx::Squirrel::Manual::HowTo/"4. A statement as a source of rows">.
+The user guide's L<chapter
+4|DBIx::Squirrel::Manual::HowTo/"4. A statement as a source of rows">.
 
 An iterator treats a statement as a source of rows, read only as
 they're wanted. Each row is run through the iterator's
@@ -996,8 +997,8 @@ end and returns the sink's result, not an iterator.
 
 The statement isn't executed until the first result is asked for. It's
 finished when the results run out, when the run is ended early, by a
-L<stop|/"6. Stopping a pipeline">, or by C<first> or C<single>, and when the
-iterator is let go.
+L<stop|/"6. Stopping a pipeline">, or by C<first> or C<single>, and when
+the iterator is let go.
 
 =head2 How rows are fetched
 
@@ -1069,10 +1070,11 @@ after C<next> they start from the next result:
     say $dbh->iterate('SELECT COUNT(*) FROM track', sub { $_->[0] })->single;          # 6
     say join ', ', $dbh->iterate('SELECT id, title AS Album FROM album')->column_names;    # id, Album
 
-C<ended> is C<done> when the rows ran out, C<stopped> when the run was cut
-short, by C<first>, by C<single> finding a second result, or by a stage
-that stopped, and C<died> when a stage died. A run read with C<|> or
-C<@{}> is the iterator's last run too (see L<11. Operators|/"11. Operators: E<verbar> and @{}">).
+C<ended> is C<done> when the rows ran out, C<stopped> when the run was
+cut short, by C<first>, by C<single> finding a second result, or by a
+stage that stopped, and C<died> when a stage died. A run read with C<|>
+or C<@{}> is the iterator's last run too (see L<11.
+Operators|/"11. Operators: E<verbar> and @{}">).
 
 =head2 reset
 
@@ -1081,9 +1083,10 @@ C<@{}> is the iterator's last run too (see L<11. Operators|/"11. Operators: E<ve
 
 Executes the statement again, ready to iterate from its first row, and
 returns the iterator. If the statement is still active, it's finished
-first, and whatever the run before held goes with it. Bind values given
-replace those given before. Stages given are added to those given when
-the iterator was made. Both are kept until others are given:
+first, and whatever the run before held goes with it. Bind values
+given replace those given before. Stages given are added to those
+given when the iterator was made. Both are kept until others are
+given:
 
     my $it = $dbh->iterate('SELECT name FROM artist WHERE id > ? ORDER BY id', 0, sub { $_->[0] });
     say join ' ', $it->all;                      # Abba Blur Cream
@@ -1116,7 +1119,8 @@ that's let go ends its run, and finishes its statement.
 
 =head1 5. Stages and Context
 
-The user guide's L<chapter 5|DBIx::Squirrel::Manual::HowTo/"5. Stages: shaping rows on the way out">.
+The user guide's L<chapter
+5|DBIx::Squirrel::Manual::HowTo/"5. Stages: shaping rows on the way out">.
 
 =head2 Stages
 
@@ -1166,13 +1170,14 @@ the next stage needs.
 
 A stage can be a code reference, a L<pipeline|/"10. Pipelines">, or one
 of Ekorn::Pipeline's stage objects, such as those its words and the
-canned stages make. L<How values go through stages|Ekorn::Pipeline::Manual::Reference/"How values go through stages">,
+canned stages make. L<How values go through
+stages|Ekorn::Pipeline::Manual::Reference/"How values go through stages">,
 in Ekorn's reference, has the details.
 
 =head2 Context
 
-DBIx::Squirrel::Context's functions tell a stage what it can't work out
-from its value. None is exported by default.
+DBIx::Squirrel::Context's functions tell a stage what it can't work
+out from its value. None is exported by default.
 
     use DBIx::Squirrel::Context qw(iterator result_number result_original);
 
@@ -1193,13 +1198,12 @@ The row the result is being made from, as it was fetched, before any stage chang
 =back
 
 C<result_original> works in any run reading a statement: an iterator's
-or result set's own stages, and the stages of a chain made with C<|>, or
-of a pipeline of yours, reading one, as it's read from the
-L<run's context|/"The run's context">. C<result_number> and C<iterator>
-work only in an iterator's or result set's own stages, run by its
-C<next>, C<all>, C<first> or C<single>, or by a sink given last to the
-call that made it. Elsewhere, and outside a stage, they return
-C<undef>.
+or result set's own stages, and the stages of a chain made with C<|>,
+or of a pipeline of yours, reading one, as it's read from the L<run's
+context|/"The run's context">. C<result_number> and C<iterator> work only
+in an iterator's or result set's own stages, run by its C<next>, C<all>,
+C<first> or C<single>, or by a sink given last to the call that made it.
+Elsewhere, and outside a stage, they return C<undef>.
 
     my @chart = $dbh->iterate(
         'SELECT name, plays FROM track ORDER BY plays DESC',
@@ -1242,11 +1246,12 @@ B<On request:> C<dump_to($fh)>
 
 =back
 
-Flow's are described in L<6. Stopping a pipeline|/"6. Stopping a pipeline">,
-and Batch's in L<7. Gathering|/"7. Gathering: stages made for each run">.
-Flow's, Batch's and Taps' stages are Ekorn::Pipeline's, exported from a
-list of DBIx::Squirrel's own; its reference's
-L<Canned stages|Ekorn::Pipeline::Manual::Reference/"Canned stages">
+Flow's are described in L<6. Stopping a
+pipeline|/"6. Stopping a pipeline">, and Batch's in L<7.
+Gathering|/"7. Gathering: stages made for each run">. Flow's, Batch's and
+Taps' stages are Ekorn::Pipeline's, exported from a list of
+DBIx::Squirrel's own; its reference's L<Canned
+stages|Ekorn::Pipeline::Manual::Reference/"Canned stages">
 describes them in full. Rows' stages are DBIx::Squirrel's own. Each is
 a function that makes a stage, checking what it's given when it's
 called, not on each value.
@@ -1282,12 +1287,12 @@ Writes each value, with Data::Dumper, to C<$fh> or STDERR, and passes it on.
     my $album = $dbh->iterate('SELECT title, year FROM album WHERE id = 2', as_hash)->first;
     say "$album->{title} ($album->{year})";    # Parklife (1994)
 
-C<pluck> and C<as_hash> find the column names in the
-L<run's context|/"The run's context">, which a statement gives it: an
-iterator's or result set's own stages, or a chain made with C<|>, or a
-pipeline of yours, reading one. So a name for an array row, or
-C<as_hash>, needs a statement to be what the run reads. C<pluck> by name
-for a hash row reads the hash's own keys, and works anywhere.
+C<pluck> and C<as_hash> find the column names in the L<run's
+context|/"The run's context">, which a statement gives it: an iterator's
+or result set's own stages, or a chain made with C<|>, or a pipeline of
+yours, reading one. So a name for an array row, or C<as_hash>, needs a
+statement to be what the run reads. C<pluck> by name for a hash row
+reads the hash's own keys, and works anywhere.
 
 **C<pluck> reads the statement's columns, not the row's.** After a
 stage that reshapes rows, a name or position for an array row picks
@@ -1341,8 +1346,9 @@ Nothing else is processed, and no more rows are fetched.
 =back
 
 An iterator that's stopped finishes its statement. Stages after the
-one that stopped, made with L<C<gather>|/"7. Gathering: stages made for each run">,
-still have their flushes called.
+one that stopped, made with
+L<C<gather>|/"7. Gathering: stages made for each run">, still have their
+flushes called.
 
     my @upto = $dbh->iterate(
         'SELECT title, year FROM album ORDER BY year',
@@ -1358,10 +1364,11 @@ namespace, C<use DBIx::Squirrel::Stop ()>.
 =head2 What a stop is
 
 A stop is an exception, an C<Ekorn::Pipeline::Stop>, which the pipeline
-catches. DBIx::Squirrel::Stop isn't a class: it exports Ekorn's C<Stop>.
-A subclass of your own is a subclass of C<Ekorn::Pipeline::Stop>, and
-stops a pipeline as C<Stop> does. Ekorn's reference says what a stop
-holds, in L<The stop object|Ekorn::Pipeline::Manual::Reference/"The stop object">.
+catches. DBIx::Squirrel::Stop isn't a class: it exports Ekorn's
+C<Stop>. A subclass of your own is a subclass of
+C<Ekorn::Pipeline::Stop>, and stops a pipeline as C<Stop> does. Ekorn's
+reference says what a stop holds, in L<The stop
+object|Ekorn::Pipeline::Manual::Reference/"The stop object">.
 
 A stage that catches errors itself, with C<eval> or C<try>, should throw
 a stop on again. Check for C<Ekorn::Pipeline::Stop>. Every stop is one,
@@ -1459,9 +1466,9 @@ The user guide's L<chapter 7|DBIx::Squirrel::Manual::HowTo/"7. Parts made for ea
     my $stage = gather { ...; return {step => $step, flush => $flush, end => $end} };
 
 C<gather> makes a stage afresh at the start of each run, by calling its
-block, so whatever the block declares is fresh each time. A run is each
-execution of an iterator or result set, including after C<reset>, each
-call of a Sugar statement, and each call of a pipeline. The block
+block, so whatever the block declares is fresh each time. A run is
+each execution of an iterator or result set, including after C<reset>,
+each call of a Sugar statement, and each call of a pipeline. The block
 returns:
 
 =over 4
@@ -1513,8 +1520,8 @@ A block that returns anything else croaks as the run starts:
 C<Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end>.
 C<gather> given something other than a block or code reference croaks
 C<Expected a code reference>. Ekorn's reference gives the order flushes
-and ends are called in, in
-L<Flushes and ends|Ekorn::Pipeline::Manual::Reference/"Flushes and ends">.
+and ends are called in, in L<Flushes and
+ends|Ekorn::Pipeline::Manual::Reference/"Flushes and ends">.
 
 A stage made with C<gather> is an C<Ekorn::Pipeline::Gather>, an object
 that can go wherever a stage can. C<gather> is exported by default; to
@@ -1549,14 +1556,15 @@ Holds every value. When they run out, it passes on what the block makes of them,
 
 =head1 8. Sinks
 
-The user guide's L<chapter 8|DBIx::Squirrel::Manual::HowTo/"8. Sinks: saying what you want back">.
+The user guide's L<chapter
+8|DBIx::Squirrel::Manual::HowTo/"8. Sinks: saying what you want back">.
 
 A sink is a last stage that says what a run gives. Given last to
 C<iterate>, C<results>, a Sugar function, or a select method, it makes
 the call read the run through and give the sink's result, not an
-iterator. The sinks are Ekorn::Pipeline's, from Ekorn::Pipeline::Sinks,
-which exports none by default, and DBIx::Squirrel::Tooling's C<:sinks>
-exports them all:
+iterator. The sinks are Ekorn::Pipeline's, from
+Ekorn::Pipeline::Sinks, which exports none by default, and
+DBIx::Squirrel::Tooling's C<:sinks> exports them all:
 
     use Ekorn::Pipeline::Sinks qw(keep_all keep_first keep_last keep_single keep count_items to_file to_fh);
 
@@ -1629,9 +1637,9 @@ is true, so test it with C<@$rows>.
 The iterator's methods and the sinks overlap: C<all> and C<keep_all>,
 C<first> and C<keep_first>, C<single> and C<keep_single>. A method takes
 what's left of an iterator you have; a sink says, in the call, what it
-gives, and is the only way to have a count, the last, the first few, or
-a file. C<all> without stages is quicker than C<keep_all>, as it fetches
-every row in one go.
+gives, and is the only way to have a count, the last, the first few,
+or a file. C<all> without stages is quicker than C<keep_all>, as it
+fetches every row in one go.
 
 Ekorn's reference has the sinks in full, and how to write one, in
 L<Sinks|Ekorn::Pipeline::Manual::Reference/"Sinks: Ekorn::Pipeline::Sinks">.
@@ -1648,10 +1656,10 @@ The user guide's L<chapter 9|DBIx::Squirrel::Manual::HowTo/"9. Rows as objects">
     @result  = $dbh->results($statement, @bind_values, @stages, $sink);
 
 As L<C<iterate>|/"iterate">, returning a C<DBIx::Squirrel::Results>, or a
-sink's result, if the last stage is a sink. A result set is an iterator
-whose rows are objects, with a method for each column, named in lower
-case. The stages see the objects. A result set has the iterator's
-methods, and no others.
+sink's result, if the last stage is a sink. A result set is an
+iterator whose rows are objects, with a method for each column, named
+in lower case. The stages see the objects. A result set has the
+iterator's methods, and no others.
 
     my $results = $dbh->results('SELECT id, Name FROM artist WHERE id <= ? ORDER BY id', 2);
     while (my($artist) = $results->next) {
@@ -1710,10 +1718,10 @@ C<Expected a column of the row (x)>.
 
 =head2 Methods of your own
 
-Row classes are subclasses of C<DBIx::Squirrel::Result>, or of the class
-given in the C<ekorn_result_class> attribute, which must itself be a
-subclass of C<DBIx::Squirrel::Result>. So rows can have methods of your
-own:
+Row classes are subclasses of C<DBIx::Squirrel::Result>, or of the
+class given in the C<ekorn_result_class> attribute, which must itself
+be a subclass of C<DBIx::Squirrel::Result>. So rows can have methods of
+your own:
 
     package My::Artist {
         our @ISA = 'DBIx::Squirrel::Result';
@@ -1728,14 +1736,16 @@ C<Expected ekorn_result_class to be a subclass of DBIx::Squirrel::Result (My::Ot
 
 =head1 10. Pipelines
 
-The user guide's L<chapter 10|DBIx::Squirrel::Manual::HowTo/"10. Building pipelines from pipelines">.
+The user guide's L<chapter
+10|DBIx::Squirrel::Manual::HowTo/"10. Building pipelines from pipelines">.
 
-The pipeline is L<Ekorn::Pipeline|Ekorn::Pipeline>'s.
-It began here, and is now a distribution of its own, so that any
-function can take stages from its caller. DBIx::Squirrel uses it as it
-is: a pipeline is made with C<< Ekorn::Pipeline->new >>, and the handles'
-C<pipe> and C<tap> are Ekorn::Pipeline::Pipes'. Loading it doesn't load
-the DBI, so a pipeline works in code that has nothing to do with a
+The pipeline is
+L<Ekorn::Pipeline|Ekorn::Pipeline>'s. It
+began here, and is now a distribution of its own, so that any function
+can take stages from its caller. DBIx::Squirrel uses it as it is: a
+pipeline is made with C<< Ekorn::Pipeline->new >>, and the handles' C<pipe>
+and C<tap> are Ekorn::Pipeline::Pipes'. Loading it doesn't load the
+DBI, so a pipeline works in code that has nothing to do with a
 database.
 
 DBIx::Squirrel keeps its own names for the modules of functions:
@@ -1748,9 +1758,10 @@ a stop is an C<Ekorn::Pipeline::Stop>, and a stage made with C<gather>
 an C<Ekorn::Pipeline::Gather>. DBIx::Squirrel subclasses none of
 Ekorn's classes.
 
-Ekorn::Pipeline's L<reference|Ekorn::Pipeline::Manual::Reference>
-describes the pipeline in full, and its
-L<user guide|Ekorn::Pipeline::Manual::HowTo>
+Ekorn::Pipeline's
+L<reference|Ekorn::Pipeline::Manual::Reference>
+describes the pipeline in full, and its L<user
+guide|Ekorn::Pipeline::Manual::HowTo>
 has recipes for any values. This chapter keeps to what DBIx::Squirrel
 does with it.
 
@@ -1765,13 +1776,13 @@ does with it.
 
 A pipeline is an object that can be called as a code reference. Called
 with values, it returns what comes out of the last stage: every value
-in list context; in scalar context, a sink's result, if a sink is last,
-or how many values came out. C<iterator> returns an iterator, an object
-called as a code reference, handing out those values one per call,
-from a source; a DBIx::Squirrel iterator is a source
-(L<15. Protocols|/"The iterator as a source">). C<stages> returns
-the pipeline's stages, in order, a pipeline given as a stage appearing
-as the stages it was made of.
+in list context; in scalar context, a sink's result, if a sink is
+last, or how many values came out. C<iterator> returns an iterator, an
+object called as a code reference, handing out those values one per
+call, from a source; a DBIx::Squirrel iterator is a source (L<15.
+Protocols|/"The iterator as a source">). C<stages> returns the
+pipeline's stages, in order, a pipeline given as a stage appearing as
+the stages it was made of.
 
     use Ekorn::Pipeline;
 
@@ -1786,10 +1797,10 @@ as the stages it was made of.
 =head2 A pipeline as a stage
 
 A pipeline can go wherever a stage goes: in another pipeline, or given
-to C<iterate>, C<results>, an iterator's C<reset>, C<pipe>, C<tap>, a select
-method, or a Sugar function, for a database or a statement. Its stages
-run in its place, as if written out there, so a C<take> inside it limits
-the whole run:
+to C<iterate>, C<results>, an iterator's C<reset>, C<pipe>, C<tap>, a
+select method, or a Sugar function, for a database or a statement. Its
+stages run in its place, as if written out there, so a C<take> inside
+it limits the whole run:
 
     use Ekorn::Pipeline;
 
@@ -1811,12 +1822,13 @@ every run it's in.
 
 C<< Ekorn::Pipeline->named >> names a pipeline for the rest of the program,
 in the package that names it, unless the name is qualified, as
-C<My::Module::clean>. C<pipeline>, from Ekorn::Pipeline::Factories, makes
-a pipeline of stages and names, looked up in its caller's package as
-it's made. A name given alone gives the pipeline named, so its stages
-are numbered where it stands. The L<Sugar's definitions|/"statement">
-take names too. Ekorn's reference has the rules, in
-L<Named pipelines|Ekorn::Pipeline::Manual::Reference/"Named pipelines">.
+C<My::Module::clean>. C<pipeline>, from Ekorn::Pipeline::Factories,
+makes a pipeline of stages and names, looked up in its caller's
+package as it's made. A name given alone gives the pipeline named, so
+its stages are numbered where it stands. The L<Sugar's
+definitions|/"statement"> take names too. Ekorn's reference has the
+rules, in L<Named
+pipelines|Ekorn::Pipeline::Manual::Reference/"Named pipelines">.
 
     use Ekorn::Pipeline;
 
@@ -1833,10 +1845,10 @@ Database and statement handles both have these methods, from
 Ekorn::Pipeline::Pipes. C<pipe> runs the handle itself through stages,
 and returns what comes out of the last one: all of it in list context;
 in scalar context, the first value, or C<undef>. With no stages, it
-returns the handle. C<tap> runs the handle through stages for their side
-effects, drops what comes out, and returns the handle however they end,
-so a chain of method calls can carry on. On a statement handle, the
-statement handle goes through the stages instead.
+returns the handle. C<tap> runs the handle through stages for their
+side effects, drops what comes out, and returns the handle however
+they end, so a chain of method calls can carry on. On a statement
+handle, the statement handle goes through the stages instead.
 
     my @names = $dbh->pipe(sub ($dbh) { @{ $dbh->selectcol_arrayref('SELECT name FROM artist ORDER BY id') } }, sub {uc});
     say "@names";    # ABBA BLUR CREAM
@@ -1846,7 +1858,8 @@ statement handle goes through the stages instead.
     # tapped DBIx::Squirrel::db
     # 3
 
-L<pipe and tap|Ekorn::Pipeline::Manual::Reference/"pipe and tap: Ekorn::Pipeline::Pipes">,
+L<pipe and
+tap|Ekorn::Pipeline::Manual::Reference/"pipe and tap: Ekorn::Pipeline::Pipes">,
 in Ekorn's reference, says how to give a class of your own the same.
 
 =head2 When a stage dies
@@ -1855,9 +1868,9 @@ If a stage dies, the call that asked for the result croaks, at your
 line. The message names the stage by its place, from C<#1>, and indents
 the stage's own message below. A stage inside a pipeline given as a
 stage is named by its place in each: C<#2.3> is the third stage of the
-pipeline given as stage #2. A stage of a named pipeline gives the
-name and its place there too: C<#2.2 (main::fussy#2)>. An exception
-object is passed on unchanged.
+pipeline given as stage #2. A stage of a named pipeline gives the name
+and its place there too: C<#2.2 (main::fussy#2)>. An exception object
+is passed on unchanged.
 
     my $it = $dbh->iterate('SELECT name FROM artist', sub {$_}, sub { die "no names today\n" });
     eval { $it->next };
@@ -1887,9 +1900,9 @@ The user guide's L<chapter 11|DBIx::Squirrel::Manual::HowTo/"11. Chaining with E
     @values = @$it;
 
 An iterator, and so a result set, overloads C<|> and C<@{}> with
-Ekorn::Pipeline::Operators' C<chain> and C<drain>, as Ekorn's own sources
-do. They're in force only where C<use Ekorn::Pipeline::Operators> is in
-scope. Elsewhere, both croak:
+Ekorn::Pipeline::Operators' C<chain> and C<drain>, as Ekorn's own
+sources do. They're in force only where
+C<use Ekorn::Pipeline::Operators> is in scope. Elsewhere, both croak:
 C<Expected use Ekorn::Pipeline::Operators in scope, for |>.
 DBIx::Squirrel loads Operators with an empty import list, so it's
 there, but in force only where you say.
@@ -1922,9 +1935,9 @@ iterator's stages. So C<< $it->[0] >>, C<scalar @$it> and C<$#$it> read every
 row to give one row, a count or an index; two uses run the statement
 twice; and C<for (@$it)> reads every row before the loop starts.
 
-B<The run it starts is the iterator's.> It ends a run the iterator had
-going, so C<next> returns nothing after, and C<ended> says how the C<|> or
-C<@{}> run ended, until C<reset>.
+B<The run it starts is the iterator's.> It ends a run the iterator
+had going, so C<next> returns nothing after, and C<ended> says how the
+C<|> or C<@{}> run ended, until C<reset>.
 
     use Ekorn::Pipeline::Operators;
 
@@ -1945,7 +1958,8 @@ Keep the result: C<my $n = $it | to_file($path)>.
 
 =head1 12. Sugar: a function for each database and statement
 
-The user guide's L<chapter 12|DBIx::Squirrel::Manual::HowTo/"12. A function for each database and statement">.
+The user guide's L<chapter
+12|DBIx::Squirrel::Manual::HowTo/"12. A function for each database and statement">.
 
 C<DBIx::Squirrel::Sugar> gives each database a name. The package that
 names it gets a function of that name, which returns the database
@@ -1978,9 +1992,9 @@ C<statement> functions, and, given just their names, only those.
     $function = database($name, @connect_args);
 
 Given a name, returns the handle of the database defined by that name,
-anywhere in the program, connecting to it if it isn't connected.
-Given a name and the arguments C<connect> takes, it defines a database
-by that name, gives the calling package a function of that name, and
+anywhere in the program, connecting to it if it isn't connected. Given
+a name and the arguments C<connect> takes, it defines a database by
+that name, gives the calling package a function of that name, and
 returns the function. A database defined with a database handle, in
 place of a data source, is a clone of it, as C<connect> makes, made
 when the database is first used. A database is defined once in a
@@ -2032,13 +2046,14 @@ It gives the calling package a function of that name, and returns the
 function. The database is found when the function runs, so it can be
 defined after the statement.
 
-A stage in a definition can be a pipeline's B<name>, as Ekorn::Pipeline
-names them with C<named>: words joined by C<::>. A name is looked up as
-the statement is defined, in the package defining it, unless it's
-qualified, as C<My::Module::clean>, and stands in its place among the
-stages. So it must be defined first, and one that isn't croaks then:
-C<No pipeline named main::clean>. On C<use>, the definition is made as
-the program compiles, so define the name in a C<BEGIN> block before it.
+A stage in a definition can be a pipeline's B<name>, as
+Ekorn::Pipeline names them with C<named>: words joined by C<::>. A name
+is looked up as the statement is defined, in the package defining it,
+unless it's qualified, as C<My::Module::clean>, and stands in its place
+among the stages. So it must be defined first, and one that isn't
+croaks then: C<No pipeline named main::clean>. On C<use>, the definition
+is made as the program compiles, so define the name in a C<BEGIN> block
+before it.
 
 =head2 The function a statement is given
 
@@ -2094,8 +2109,8 @@ The user guide's L<chapter 13|DBIx::Squirrel::Manual::HowTo/"13. Caching and con
     $sth = $dbh->prepare_cached($statement, \%attr, $if_active);
 
 As C<prepare>, using the DBI's cache of statement handles. Its errors
-name C<prepare_cached>, as the DBI's do. Like C<prepare>, it croaks given
-a statement taking a L<list|/"Lists">.
+name C<prepare_cached>, as the DBI's do. Like C<prepare>, it croaks
+given a statement taking a L<list|/"Lists">.
 
 Two statements can be rewritten the same: C<SELECT :a, :b> and
 C<SELECT :b, :a> both become C<SELECT ?, ?>. Each still has a handle of
@@ -2134,24 +2149,25 @@ A Sugar database is connected to when it's first used, not when it's
 defined, with C<connect_cached>. So two databases defined with the same
 arguments share a handle. The handle is kept, and each use has the
 same one, without a ping to the database each time. It's pinged only
-while its last call has failed, which leaves the error to be read. It's
-made again if the connection has gone, or if the handle has been
+while its last call has failed, which leaves the error to be read.
+It's made again if the connection has gone, or if the handle has been
 disconnected. So the call after a connection drops fails, as it would
 with plain DBI, and the call after that has a new connection.
 
 =head1 14. Writing stages, and functions that take them
 
-The user guide's L<chapter 14|DBIx::Squirrel::Manual::HowTo/"14. Functions that take stages, and stages for others">.
+The user guide's L<chapter
+14|DBIx::Squirrel::Manual::HowTo/"14. Functions that take stages, and stages for others">.
 
 =head2 A function that takes stages
 
 A function can take stages from its caller, at the end of its
-arguments, and hand them to C<iterate> after its values. Its caller then
-gets an iterator, or, with a sink last, the sink's result. To find the
-stages at the end of a list of arguments, test each from the end with
-Ekorn::Pipeline's C<is_stage>, which is true of code references,
-pipelines and Ekorn's stage objects, and false of strings and other
-values:
+arguments, and hand them to C<iterate> after its values. Its caller
+then gets an iterator, or, with a sink last, the sink's result. To
+find the stages at the end of a list of arguments, test each from the
+end with Ekorn::Pipeline's C<is_stage>, which is true of code
+references, pipelines and Ekorn's stage objects, and false of strings
+and other values:
 
     use Ekorn::Pipeline qw(is_stage);
 
@@ -2166,10 +2182,10 @@ values:
 =head2 Stages for others
 
 A stage of your own is a code reference, or a pipeline of other
-stages. Ekorn's reference, in
-L<Writing stages|Ekorn::Pipeline::Manual::Reference/"Writing stages">,
-and its user guide, in
-L<Building parts for others|Ekorn::Pipeline::Manual::HowTo/"10. Building parts for others">,
+stages. Ekorn's reference, in L<Writing
+stages|Ekorn::Pipeline::Manual::Reference/"Writing stages">,
+and its user guide, in L<Building parts for
+others|Ekorn::Pipeline::Manual::HowTo/"10. Building parts for others">,
 say how to write one that works alongside the canned stages:
 
 =over 4
@@ -2239,15 +2255,15 @@ make the format from data: it does whatever its C<%> directives say.
 B<Where they go.> A stage goes where what it needs to know is. One
 that needs a database, a statement, a row's column names, or the row a
 result came from goes under C<DBIx::Squirrel::Stages::>. One that would
-work on values from anywhere belongs under C<Ekorn::Pipeline::Stages::>,
-where any function's stages can use it, even if it was written for
-rows. Ekorn::Pipeline can't depend on DBIx::Squirrel, so a stage that
-would C<use> DBIx::Squirrel goes under C<DBIx::Squirrel::Stages::>. A
-stage added under C<Ekorn::Pipeline::Stages::> reaches DBIx::Squirrel's
-users only once DBIx::Squirrel adds it to the names its own modules of
-stages export. The user guide's
-L<Decide where a stage belongs|DBIx::Squirrel::Manual::HowTo/"Decide where a stage belongs">
-says how to choose.
+work on values from anywhere belongs under
+C<Ekorn::Pipeline::Stages::>, where any function's stages can use it,
+even if it was written for rows. Ekorn::Pipeline can't depend on
+DBIx::Squirrel, so a stage that would C<use> DBIx::Squirrel goes under
+C<DBIx::Squirrel::Stages::>. A stage added under
+C<Ekorn::Pipeline::Stages::> reaches DBIx::Squirrel's users only once
+DBIx::Squirrel adds it to the names its own modules of stages export.
+The user guide's L<Decide where a stage
+belongs|DBIx::Squirrel::Manual::HowTo/"Decide where a stage belongs"> says how to choose.
 
 B<Testing.> A pipeline called with values tests a stage without a
 database. Run it twice, to show it starts afresh. Then run it on rows
@@ -2264,8 +2280,9 @@ described in L<15. Protocols|/"15. Protocols">.
 What other code can rely on: the contracts between DBIx::Squirrel and
 Ekorn::Pipeline, and between a statement's run and the stages reading
 it. They're Ekorn::Pipeline's protocols, as DBIx::Squirrel keeps them;
-Ekorn's reference describes the protocols themselves, in
-L<Delivering parts for Ekorn|Ekorn::Pipeline::Manual::Reference/"Delivering parts for Ekorn">.
+Ekorn's reference describes the protocols themselves, in L<Delivering
+parts for
+Ekorn|Ekorn::Pipeline::Manual::Reference/"Delivering parts for Ekorn">.
 
 =head2 The iterator as a source
 
@@ -2357,15 +2374,15 @@ own, which has no row unless it too reads a statement.
 
 =head2 What a call takes as stages
 
-C<iterate>, C<results>, an iterator's C<reset>, the select methods, C<pipe>,
-C<tap> and the Sugar's functions take as stages, at the end of their
-arguments, whatever Ekorn::Pipeline's C<is_stage> is true of: code
-references, pipelines, and Ekorn's stage objects, among them stages
-made with C<gather>, Ekorn's words and the canned stages, and its sinks.
-Anything else is a bind value, so an object of your own given as a
-value stays one. A sink, if one is last, says what the call gives (see
-L<8. Sinks|/"8. Sinks">). Only a Sugar statement's definition takes
-pipelines' names, as strings.
+C<iterate>, C<results>, an iterator's C<reset>, the select methods,
+C<pipe>, C<tap> and the Sugar's functions take as stages, at the end of
+their arguments, whatever Ekorn::Pipeline's C<is_stage> is true of:
+code references, pipelines, and Ekorn's stage objects, among them
+stages made with C<gather>, Ekorn's words and the canned stages, and
+its sinks. Anything else is a bind value, so an object of your own
+given as a value stays one. A sink, if one is last, says what the call
+gives (see L<8. Sinks|/"8. Sinks">). Only a Sugar statement's definition
+takes pipelines' names, as strings.
 
 =head2 What a gather's block returns
 
@@ -2382,8 +2399,8 @@ The user guide's L<chapter 15|DBIx::Squirrel::Manual::HowTo/"15. When things go 
 =head2 Errors
 
 Errors are reported at the line of your code that called
-DBIx::Squirrel, never at a line inside it or the DBI. That includes the
-DBI's own errors under C<RaiseError>, such as
+DBIx::Squirrel, never at a line inside it or the DBI. That includes
+the DBI's own errors under C<RaiseError>, such as
 C<DBD::SQLite::db prepare failed: near "SELEC": syntax error>, which
 keep the DBI's message.
 
@@ -2392,8 +2409,8 @@ C<prepare> and C<prepare_cached>. The error then has the message the DBI
 raises under C<RaiseError>, so it reads the same whatever C<RaiseError>
 is set to.
 
-Each error names the method you called, as plain DBI does: C<do> and the
-select methods, not the C<prepare> or C<execute> they call;
+Each error names the method you called, as plain DBI does: C<do> and
+the select methods, not the C<prepare> or C<execute> they call;
 C<selectall_array>'s errors name C<selectall_arrayref>, as the DBI's do.
 
 An error from a C<HandleError> callback, or one that isn't a string, is
@@ -2407,8 +2424,8 @@ line, naming the method you called.
 =head2 Diagnostics
 
 These are DBIx::Squirrel's own messages, and the messages of
-Ekorn::Pipeline's that its users meet. Each is reported at the caller's
-line. Those starting "Expected" say what was expected.
+Ekorn::Pipeline's that its users meet. Each is reported at the
+caller's line. Those starting "Expected" say what was expected.
 
 =head3 Connecting, preparing and binding
 
@@ -2626,8 +2643,8 @@ The package has a function of that name already, such as a sink it imported.
 
 =head1 Differences from plain DBI
 
-Where DBIx::Squirrel and plain DBI do the same thing, they give the same
-result. These are the places they differ.
+Where DBIx::Squirrel and plain DBI do the same thing, they give the
+same result. These are the places they differ.
 
 =over 4
 

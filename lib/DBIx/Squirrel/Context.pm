@@ -89,26 +89,27 @@ C<undef>. None is exported by default.
 
 =head2 iterator
 
-The iterator running the stage, in its own stages. Its C<sth> is the statement handle,
-and the statement handle's C<Database> is the database handle.
+The iterator running the stage, in its own stages. Its C<sth> is the
+statement handle, and the statement handle's C<Database> is the
+database handle.
 
 =head2 result_number
 
 The number of the result being made, from 1. It counts results, not
 rows. While a stage drops rows, the number stays the same. Each value
-a stage returns in place of one row is a result of its own. In a
-flush of a stage made with L<DBIx::Squirrel::Gather>, it's the number
-of the first value the flush returns. It's there only in an iterator's
-own stages, as only the iterator counts its results.
+a stage returns in place of one row is a result of its own. In a flush
+of a stage made with L<DBIx::Squirrel::Gather>, it's the number of the
+first value the flush returns. It's there only in an iterator's own
+stages, as only the iterator counts its results.
 
 =head2 result_original
 
 The row the result is being made from, as it was fetched, before any
 stage changed it. In a flush of a stage made with
-L<DBIx::Squirrel::Gather>, and the stages after it, it's C<undef>. What
-a flush gives comes from every row, not one. The statement's source
-keeps the row in its run's context, so it's there wherever a statement
-is read.
+L<DBIx::Squirrel::Gather>, and the stages after it, it's C<undef>.
+What a flush gives comes from every row, not one. The statement's
+source keeps the row in its run's context, so it's there wherever a
+statement is read.
 
 =head2 statement_context
 
@@ -132,7 +133,7 @@ Iain Campbell E<lt>cpanic@cpan.orgE<gt>
 
 Copyright (c) 2024-2026 by Iain Campbell.
 
-This is free software; you can redistribute it and/or modify it under the
-same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

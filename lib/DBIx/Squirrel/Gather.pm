@@ -62,8 +62,9 @@ this one.
 
 Inside a flush, and the stages it sends values to,
 L<DBIx::Squirrel::Context/result_number> is the number of the result
-being made, as in any stage. L<DBIx::Squirrel::Context/result_original>
-is C<undef>, as what a flush gives comes from many rows, not one.
+being made, as in any stage.
+L<DBIx::Squirrel::Context/result_original> is C<undef>, as what a
+flush gives comes from many rows, not one.
 
 To keep C<gather> out of your namespace:
 
@@ -71,7 +72,8 @@ To keep C<gather> out of your namespace:
 
 =head1 SEE ALSO
 
-L<Ekorn::Pipeline::Gather>, L<DBIx::Squirrel>, L<DBIx::Squirrel::Context>
+L<Ekorn::Pipeline::Gather>, L<DBIx::Squirrel>,
+L<DBIx::Squirrel::Context>
 
 =head1 AUTHOR
 
@@ -81,7 +83,7 @@ Iain Campbell E<lt>cpanic@cpan.orgE<gt>
 
 Copyright (c) 2024-2026 by Iain Campbell.
 
-This is free software; you can redistribute it and/or modify it under the
-same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

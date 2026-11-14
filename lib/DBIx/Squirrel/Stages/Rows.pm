@@ -188,8 +188,8 @@ A stage was given a value that isn't a row.
 
 =head1 SEE ALSO
 
-L<DBIx::Squirrel>, L<DBIx::Squirrel::Iterator>, L<DBIx::Squirrel::Result>,
-L<DBIx::Squirrel::Context>
+L<DBIx::Squirrel>, L<DBIx::Squirrel::Iterator>,
+L<DBIx::Squirrel::Result>, L<DBIx::Squirrel::Context>
 
 =head1 AUTHOR
 
@@ -199,7 +199,7 @@ Iain Campbell E<lt>cpanic@cpan.orgE<gt>
 
 Copyright (c) 2024-2026 by Iain Campbell.
 
-This is free software; you can redistribute it and/or modify it under the
-same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

@@ -363,23 +363,23 @@ DBIx::Squirrel::Iterator - an iterator over a statement's results
 =head1 DESCRIPTION
 
 An iterator executes a statement and hands out its rows one at a time.
-Each row is run through a pipeline of stages, as
-L<Ekorn::Pipeline> runs them. A stage can change a row, drop
-it, return several values in its place, or stop the iteration with
-L<DBIx::Squirrel::Stop>. A result is whatever comes out of the stages.
-With no stages, it's the row. A stage can ask about the result it's
-making with L<DBIx::Squirrel::Context>.
+Each row is run through a pipeline of stages, as L<Ekorn::Pipeline>
+runs them. A stage can change a row, drop it, return several values in
+its place, or stop the iteration with L<DBIx::Squirrel::Stop>. A
+result is whatever comes out of the stages. With no stages, it's the
+row. A stage can ask about the result it's making with
+L<DBIx::Squirrel::Context>.
 
 An iterator is made by L<DBIx::Squirrel::db/iterate> or
-L<DBIx::Squirrel::st/iterate>. It executes the statement when its first
-result is asked for, and finishes the statement when the results run
-out.
+L<DBIx::Squirrel::st/iterate>. It executes the statement when its
+first result is asked for, and finishes the statement when the results
+run out.
 
 Rows are fetched with L<DBI/fetchall_arrayref>, 2 at first, the least
 that tells whether there's a second, then twice as many each time a
 fetch fills its batch, up to 64. L</all> without stages fetches the
-rest at once. Each row is an array, or,
-with the C<ekorn_slice> attribute, in the shape it gives:
+rest at once. Each row is an array, or, with the C<ekorn_slice>
+attribute, in the shape it gives:
 
     $dbh = DBIx::Squirrel->connect($dsn, $user, $pass, {ekorn_slice => {}});
     $sth = $dbh->prepare($statement, {ekorn_slice => {}});
@@ -463,8 +463,9 @@ until L</reset>.
 
 Executes the statement again, ready to iterate from its first row, and
 returns the iterator. If the statement is still active, it's finished
-first, and whatever the run before held goes with it. Bind values given replace those given before. Stages given are
-added to those given to L</new>. Both are kept until others are given.
+first, and whatever the run before held goes with it. Bind values
+given replace those given before. Stages given are added to those
+given to L</new>. Both are kept until others are given.
 
 A statement taking a list (see L<DBIx::Squirrel::st/Lists>) is
 prepared again, on a new statement handle, if a list given has a
@@ -476,11 +477,11 @@ the new handle.
     $how = $it->ended;
 
 Returns how the last run ended, as L<Ekorn::Pipeline::Iterator/ended>
-says: C<done> if the rows ran out, C<stopped> if the run was cut short,
-by L</first>, by L</single> finding a second result, or by a stage
-that stopped, and C<died> if a stage died. While a run is going, and
-before one has started, it returns nothing. L</reset> starts a new run,
-so it returns nothing after one.
+says: C<done> if the rows ran out, C<stopped> if the run was cut
+short, by L</first>, by L</single> finding a second result, or by a
+stage that stopped, and C<died> if a stage died. While a run is going,
+and before one has started, it returns nothing. L</reset> starts a new
+run, so it returns nothing after one.
 
 A run read with C<|> or C<@{}> is the iterator's last run, too (see
 L</Operators>).
@@ -525,23 +526,23 @@ you write C<use Ekorn::Pipeline::Operators>. Elsewhere, they croak.
     my $n     = $it | count_items;    # a number
     my @names = @$it;                 # every result
 
-B<C<|> always gives one value.> Perl calls an overloaded C<|> for
-one value, so a sink that keeps many, such as C<keep_all>, gives an
-array reference, even in a list assignment:
+B<C<|> always gives one value.> Perl calls an overloaded C<|> for one
+value, so a sink that keeps many, such as C<keep_all>, gives an array
+reference, even in a list assignment:
 
     my @names = $it | keep_all;       # one element: the array reference
     my @names = @{ $it | keep_all };  # the names
 
 B<Each use is a run of its own,> from the first row, through the
 iterator's stages, as L</EKORN_SOURCE> says. So C<< $it->[0] >>,
-C<scalar @$it> and C<$#$it> read every row to give one row, a count
-or an index, and two uses run the statement twice. C<for (@$it)>
-reads every row before the loop starts, where L</next>, in a C<while>,
-gives each as it comes.
+C<scalar @$it> and C<$#$it> read every row to give one row, a count or
+an index, and two uses run the statement twice. C<for (@$it)> reads
+every row before the loop starts, where L</next>, in a C<while>, gives
+each as it comes.
 
-B<The run it starts is the iterator's.> It ends a run the iterator
-had going, so L</next> returns nothing after, and L</ended> says how
-the C<|> or C<@{}> run ended, until L</reset>.
+B<The run it starts is the iterator's.> It ends a run the iterator had
+going, so L</next> returns nothing after, and L</ended> says how the
+C<|> or C<@{}> run ended, until L</reset>.
 
 =head1 DIAGNOSTICS
 
@@ -565,8 +566,8 @@ before executing this one.
 
 =head1 SEE ALSO
 
-L<DBIx::Squirrel>, L<DBIx::Squirrel::Context>,
-L<Ekorn::Pipeline>, L<Ekorn::Pipeline::Operators>
+L<DBIx::Squirrel>, L<DBIx::Squirrel::Context>, L<Ekorn::Pipeline>,
+L<Ekorn::Pipeline::Operators>
 
 =head1 AUTHOR
 
@@ -576,7 +577,7 @@ Iain Campbell E<lt>cpanic@cpan.orgE<gt>
 
 Copyright (c) 2024-2026 by Iain Campbell.
 
-This is free software; you can redistribute it and/or modify it under the
-same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

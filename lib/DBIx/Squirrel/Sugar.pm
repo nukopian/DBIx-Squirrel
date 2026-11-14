@@ -300,10 +300,10 @@ defines a database by that name. It gives the calling package a
 function of that name, and returns the function.
 
 A database defined with a database handle, in place of a data source,
-is a clone of it, as L<DBIx::Squirrel/connect> makes. The clone is made
-when the database is first used. The DBI makes a clone the way the
-handle was made. So a clone of a handle from C<connect_cached>, such
-as another database's, is that same handle.
+is a clone of it, as L<DBIx::Squirrel/connect> makes. The clone is
+made when the database is first used. The DBI makes a clone the way
+the handle was made. So a clone of a handle from C<connect_cached>,
+such as another database's, is that same handle.
 
 A database is defined once in a program, by a name that can be a
 function's. The package can't have a function of that name already.
@@ -396,8 +396,8 @@ values instead, and isn't cached.
 
 =item Expected database or statement, not %s
 
-C<use DBIx::Squirrel::Sugar> was given something other than C<database>
-or C<statement> and their definitions.
+C<use DBIx::Squirrel::Sugar> was given something other than
+C<database> or C<statement> and their definitions.
 
 =item Expected the arguments to connect to %s in an ARRAY
 
@@ -454,7 +454,7 @@ Iain Campbell E<lt>cpanic@cpan.orgE<gt>
 
 Copyright (c) 2024-2026 by Iain Campbell.
 
-This is free software; you can redistribute it and/or modify it under the
-same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

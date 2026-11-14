@@ -7,8 +7,8 @@ DBI, minus the boilerplate, plus a pipeline.
 
 With DBIx::Squirrel, you still write SQL, as you do with the DBI. It
 takes away the friction around it: placeholders in whatever style you
-like, iterators over results, and a pipeline of stages written
-beside the query. It never hides the SQL, and it isn't an ORM.
+like, iterators over results, and a pipeline of stages written beside
+the query. It never hides the SQL, and it isn't an ORM.
 
     my @names = $dbh->iterate(
         'SELECT name FROM track WHERE plays > :plays ORDER BY plays DESC',
@@ -41,8 +41,8 @@ DBIx::Squirrel does them for you.
     There's no fetch loop to write, and no array to push onto. The stages
     that map, filter and expand the rows sit beside the query. You can
     read what a result holds next to the SQL that makes it. Rows are
-    fetched in batches, so you can work through a large result a row at
-    a time without holding all of it in memory. Ready-made stages do the
+    fetched in batches, so you can work through a large result a row at a
+    time without holding all of it in memory. Ready-made stages do the
     common jobs, such as taking the first few rows, picking out a column,
     or handing rows out in batches.
 
@@ -80,8 +80,8 @@ fail, so there's no `or die` to write.
 
     my $album = $dbh->selectrow_hashref('SELECT * FROM album WHERE id = $1', 2);
 
-`?`, `?1`, `:1`, `$1`, `:name` and `$name` are each rewritten
-as `?` for the DBI. A numbered or named placeholder takes one value,
+`?`, `?1`, `:1`, `$1`, `:name` and `$name` are each rewritten as
+`?` for the DBI. A numbered or named placeholder takes one value,
 wherever it appears. `do` and the select methods need no `undef`
 before the values.
 
@@ -98,10 +98,10 @@ A placeholder with `...` before it takes a list. It's written as a
         say "$row->[0] ($row->[1])";
     }
 
-Rows are fetched in batches, and the statement is finished when they run
-out. `all` takes the rest at once, nearly as quickly as plain DBI.
-`first` takes the next one, and `single` the only one, warning if
-there's another.
+Rows are fetched in batches, and the statement is finished when they
+run out. `all` takes the rest at once, nearly as quickly as plain
+DBI. `first` takes the next one, and `single` the only one, warning
+if there's another.
 
 ### 4. Add stages.
 
@@ -114,8 +114,8 @@ there's another.
 Each row goes through the stages, given as `$_`. A stage returns
 nothing to drop the row, one value in its place, or several. It can
 also stop the iteration early. A stage made with `gather` can hold
-rows, and give them out at the end, in batches or as one value. `pipe`
-runs anything else through stages the same way.
+rows, and give them out at the end, in batches or as one value.
+`pipe` runs anything else through stages the same way.
 
 Ready-made stages come with it, for jobs that come up again and again.
 They're in four modules: `take` and `drop` in
@@ -141,14 +141,15 @@ module, by tags, as `:stages` and `:sinks`, or `:all`:
 
     my $hits = $dbh->iterate('SELECT * FROM track WHERE plays > ?', 6000, count_items);
 
-Where [Ekorn::Pipeline::Operators](https://metacpan.org/pod/Ekorn%3A%3APipeline%3A%3AOperators) is in scope, `|` chains them
-too, as in `$it | count_items`. The reference says how to write your
-own stages to work alongside them.
+Where [Ekorn::Pipeline::Operators](https://metacpan.org/pod/Ekorn%3A%3APipeline%3A%3AOperators) is in scope, `|` chains them too,
+as in `$it | count_items`. The reference says how to write your own
+stages to work alongside them.
 
-The pipeline is [Ekorn::Pipeline](https://github.com/nukopian/Ekorn-Pipeline).
-It began here, and is now a distribution of its own, so that any
-function can take stages from its caller. DBIx::Squirrel uses it as it
-is, and keeps its own names for its modules of functions, such as
+The pipeline is
+[Ekorn::Pipeline](https://github.com/nukopian/Ekorn-Pipeline). It
+began here, and is now a distribution of its own, so that any function
+can take stages from its caller. DBIx::Squirrel uses it as it is, and
+keeps its own names for its modules of functions, such as
 `DBIx::Squirrel::Stop`. The stages that need a database, such as
 `pluck`, are DBIx::Squirrel's own.
 
@@ -180,8 +181,8 @@ iterator over the results, or, with a sink last, the sink's result.
 [The reference](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AReference) describes every
 feature in detail, with examples.
 [The user guide](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AHowTo) is a tour of the
-package, a layer at a time, from the DBI underneath to the shortcuts on
-top, with recipes that work. Each module's POD, starting with
+package, a layer at a time, from the DBI underneath to the shortcuts
+on top, with recipes that work. Each module's POD, starting with
 [DBIx::Squirrel](https://metacpan.org/pod/DBIx%3A%3ASquirrel), says the same more briefly.
 
 ## Installing
@@ -198,10 +199,11 @@ says otherwise. Most code written for 2.x runs as it did, and
 [Upgrading from 2.x](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AReference#Upgrading-from-2.x),
 in the reference, lists what changes.
 
-Version 2 was a rewrite. Code written for 1.x needs changes to run, and
+Version 2 was a rewrite. Code written for 1.x needs changes to run,
+and
 [Upgrading from 1.x](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AReference#Upgrading-from-1.x)
-lists them. To stay on 1.x, which also runs on older
-Perls, install its last version:
+lists them. To stay on 1.x, which also runs on older Perls, install
+its last version:
 
     cpanm DBIx::Squirrel@1.6.5
 
@@ -210,14 +212,14 @@ Its code is in the archived
 repository.
 
 The repository was called DBIx-Squirrel-2 while version 2 was in
-development. It took the original name, DBIx-Squirrel, before its first
-release.
+development. It took the original name, DBIx-Squirrel, before its
+first release.
 
 ## Licence
 
-Copyright (c) 2024-2026 by Iain Campbell. This is free software; you can
-redistribute it and/or modify it under the same terms as the Perl 5
-programming language system itself. See the file `LICENSE`.
+Copyright (c) 2024-2026 by Iain Campbell. This is free software; you
+can redistribute it and/or modify it under the same terms as the Perl
+5 programming language system itself. See the file `LICENSE`.
 
 ## Acknowledgements
 
