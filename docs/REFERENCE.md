@@ -1383,9 +1383,10 @@ my @stages  = $p->stages;
 A pipeline is an object that can be called as a code reference. Called
 with values, it returns what comes out of the last stage: every value
 in list context; in scalar context, a sink's result, if a sink is last,
-or how many values came out. `iterator` returns a closure handing out
-those values one per call, from a source; a DBIx::Squirrel iterator is
-a source ([15. Protocols](#the-iterator-as-a-source)). `stages` returns
+or how many values came out. `iterator` returns an iterator, an object
+called as a code reference, handing out those values one per call,
+from a source; a DBIx::Squirrel iterator is a source
+([15. Protocols](#the-iterator-as-a-source)). `stages` returns
 the pipeline's stages, in order, a pipeline given as a stage appearing
 as the stages it was made of.
 

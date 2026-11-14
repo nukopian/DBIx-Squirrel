@@ -188,16 +188,17 @@ DBIx::Squirrel - DBI, minus the boilerplate, plus a pipeline
 
 With DBIx::Squirrel, you still write SQL, as you do with the L<DBI>. It
 takes away the friction around it: placeholders in whatever style you
-like, iterators over results, and a pipeline of transformations written
+like, iterators over results, and a pipeline of stages written
 beside the query.
 
 It's a subclass of the DBI, so everything the DBI does still works.
 Where the two do the same thing, they give the same result. This page
 notes where they differ.
 
-This is version 2, a rewrite of DBIx::Squirrel 1.x for Perl 5.36 or
-later. Code written for 1.x needs changes to run, and the reference's
-"Upgrading from 1.x" lists them. To stay on 1.x, install its last
+This is version 3, built on L<Ekorn::Pipeline>. Version 2 was a
+rewrite of DBIx::Squirrel 1.x for Perl 5.36 or later. Code written for
+either needs changes to run, and the reference's "Upgrading from 2.x"
+and "Upgrading from 1.x" list them. To stay on 1.x, install its last
 version, C<cpanm DBIx::Squirrel@1.6.5>.
 
 The database handle's own methods are in L<DBIx::Squirrel::db>, and the

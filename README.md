@@ -7,7 +7,7 @@ DBI, minus the boilerplate, plus a pipeline.
 
 With DBIx::Squirrel, you still write SQL, as you do with the DBI. It
 takes away the friction around it: placeholders in whatever style you
-like, iterators over results, and a pipeline of transformations written
+like, iterators over results, and a pipeline of stages written
 beside the query. It never hides the SQL, and it isn't an ORM.
 
     my @names = $dbh->iterate(
