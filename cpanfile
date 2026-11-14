@@ -7,7 +7,6 @@ requires 'Ekorn::Pipeline', '>= v0.2.0, < v0.3.0';
 requires 'Exporter';
 requires 'List::Util';
 requires 'Ref::Util';
-requires 'Scalar::Util';
 requires 'Sub::Util';
 requires 'experimental';
 requires 'namespace::clean';
