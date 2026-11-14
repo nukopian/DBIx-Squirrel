@@ -194,7 +194,9 @@ subtest 'ends at program exit are quiet' => sub {
     my $warned = do { local $/ = undef; <$err> };
     waitpid $pid, 0;
     my $status = $? >> 8;
-    is $said,   "ran\n", 'a program leaving an iterator part-read';
+    # Windows writes the child's text with "\r\n".
+    is $said =~ s( \r\n )(\n)gxr, "ran\n",
+        'a program leaving an iterator part-read';
     is $warned, '',      'ends without warnings';
     is $status, 0,       'or errors';
 };

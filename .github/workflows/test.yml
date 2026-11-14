@@ -11,6 +11,8 @@ permissions:
 jobs:
   # The tests on Perl 5.36, the floor, to the newest on Linux, and the
   # newest on macOS. --with-develop brings yath and UUID with the rest.
+  # A dependency that fails to install prints cpanm's build log, as it
+  # stays on the runner otherwise.
   perl:
     name: perl ${{ matrix.perl }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -28,7 +30,10 @@ jobs:
         with:
           perl-version: ${{ matrix.perl }}
       - name: dependencies
-        run: cpanm --notest --installdeps --with-develop .
+        shell: bash
+        run: >-
+          cpanm --notest --installdeps --with-develop . ||
+          { cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"; exit 1; }
       - name: yath
         run: yath test
 
@@ -67,7 +72,10 @@ jobs:
         with:
           perl-version: ${{ matrix.perl }}
       - name: dependencies
-        run: cpanm --notest --installdeps .
+        shell: bash
+        run: >-
+          cpanm --notest --installdeps . ||
+          { cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"; exit 1; }
       - name: prove
         run: prove -l t
 
@@ -87,7 +95,10 @@ jobs:
       - name: DBI 1.643
         run: cpanm --notest TIMB/DBI-1.643.tar.gz
       - name: dependencies
-        run: cpanm --notest --installdeps --with-develop .
+        shell: bash
+        run: >-
+          cpanm --notest --installdeps --with-develop . ||
+          { cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"; exit 1; }
       - name: check the DBI
         run: perl -MDBI -e 'die "DBI is $DBI::VERSION, not 1.643\n" unless $DBI::VERSION eq "1.643"; print "DBI $DBI::VERSION\n"'
       - name: yath
@@ -103,7 +114,10 @@ jobs:
         with:
           perl-version: "5.44"
       - name: dependencies
-        run: cpanm --notest --installdeps --with-develop .
+        shell: bash
+        run: >-
+          cpanm --notest --installdeps --with-develop . ||
+          { cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"; exit 1; }
       - name: perlcritic
         run: perlcritic lib
       - name: perltidy
@@ -125,7 +139,10 @@ jobs:
         with:
           perl-version: "5.36"
       - name: dependencies
-        run: cpanm --notest --installdeps --with-develop .
+        shell: bash
+        run: >-
+          cpanm --notest --installdeps --with-develop . ||
+          { cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"; exit 1; }
       - name: coverage
         run: scripts/coverage
 
