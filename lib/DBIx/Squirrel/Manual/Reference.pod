@@ -2662,7 +2662,11 @@ Something passed as a stage to a pipeline, C<pipe> or C<tap> wasn't one. No stag
 
 =item C<Expected a code reference>
 
-The block given to C<gather>, C<take_while>, C<drop_while>, C<take_if>, C<drop_if>, C<collect> or C<peek>, or the source given to a pipeline's C<iterator>, wasn't a code reference.
+The block given to C<gather>, C<take_while>, C<drop_while>, C<take_if>, C<drop_if>, C<collect> or C<peek> wasn't a code reference.
+
+=item C<Expected a source: a code reference, or an object offering EKORN_SOURCE>
+
+A pipeline's C<iterator> was given something it can't read.
 
 =item C<Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end>
 

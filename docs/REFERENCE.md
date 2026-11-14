@@ -2179,7 +2179,8 @@ caller's line. Those starting "Expected" say what was expected.
 | Message | Cause |
 |---|---|
 | `Expected stage #%d to be a code reference or a pipeline` | Something passed as a stage to a pipeline, `pipe` or `tap` wasn't one. No stage runs. |
-| `Expected a code reference` | The block given to `gather`, `take_while`, `drop_while`, `take_if`, `drop_if`, `collect` or `peek`, or the source given to a pipeline's `iterator`, wasn't a code reference. |
+| `Expected a code reference` | The block given to `gather`, `take_while`, `drop_while`, `take_if`, `drop_if`, `collect` or `peek` wasn't a code reference. |
+| `Expected a source: a code reference, or an object offering EKORN_SOURCE` | A pipeline's `iterator` was given something it can't read. |
 | `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end` | The block given to `gather` for that stage returned something else. |
 | `Pipeline stage #%s failed at %s line %d:` | A stage, or its flush, died. The message it died with follows, indented. See [When a stage dies](#when-a-stage-dies). |
 | `Pipeline end of stage #%s failed at %s line %d:` | A stage's end died, in a run that hadn't died already. |
