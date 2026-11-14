@@ -806,9 +806,10 @@ when the iterator goes:
     # Sunshine of Your Love
 
 Behind the scenes, rows are fetched a few at a time: 2 at first, then
-twice as many each time a batch is used up, up to 64. So a short read
-fetches very little, and a long one doesn't make a trip to the
-database for every row, or hold the whole result in memory.
+twice as many each time a batch is used up, up to 64, where a bigger
+batch reads hardly any faster. So a short read fetches very little,
+and a long one doesn't call the driver for every row, or hold more
+than 64 rows of its own.
 
 =head2 Take the first row, or the only one
 
@@ -944,7 +945,7 @@ B<With an iterator:> C<single>, which warns at a second
 
 B<With the DBI:> C<selectall_*> holds every row
 
-B<With an iterator:> a few rows at a time, up to 64
+B<With an iterator:> a few rows at a time, up to 64, though the driver may hold more
 
 =back
 
@@ -2322,6 +2323,18 @@ is fetched. Only C<all>, C<keep_all> and the like hold every result,
 because that's what you asked for. To process a large table, read it
 with C<next>, or with a sink such as C<count_items> or C<to_file>, which
 holds nothing.
+
+The driver may hold the whole result, though. DBD::SQLite reads rows
+as they're fetched, but DBD::Pg and DBD::mysql receive every row when
+the statement is executed: a 200 MB result took about 200 MB with
+either. With MySQL, give the C<mysql_use_result> attribute, and the
+driver reads rows as they're fetched:
+
+    my $it = $mysql->iterate('SELECT * FROM big_table', {mysql_use_result => 1});
+
+It ties up the connection until every row is read, or the statement
+is finished. With PostgreSQL, declare a cursor in your SQL, and fetch
+from it a batch at a time.
 
 =head2 Does it write SQL for me?
 

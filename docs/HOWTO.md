@@ -669,9 +669,10 @@ while (my($row) = $it->next) {
 ```
 
 Behind the scenes, rows are fetched a few at a time: 2 at first, then
-twice as many each time a batch is used up, up to 64. So a short read
-fetches very little, and a long one doesn't make a trip to the
-database for every row, or hold the whole result in memory.
+twice as many each time a batch is used up, up to 64, where a bigger
+batch reads hardly any faster. So a short read fetches very little,
+and a long one doesn't call the driver for every row, or hold more
+than 64 rows of its own.
 
 ### Take the first row, or the only one
 
@@ -799,7 +800,7 @@ say $two->next->[0];    # Abba
 | some rows, then stop | a loop, a counter, and `finish` | `next` and `last`; the statement is finished for you |
 | the first row | `selectrow_arrayref`, which reads it and finishes | `first`, which reads at most two rows |
 | exactly one row | a loop that checks for a second | `single`, which warns at a second |
-| memory | `selectall_*` holds every row | a few rows at a time, up to 64 |
+| memory | `selectall_*` holds every row | a few rows at a time, up to 64, though the driver may hold more |
 
 The iterator's real strength shows in the next chapter: whatever you'd
 do to each row in the loop can go beside the query instead, as stages.
@@ -2174,6 +2175,21 @@ is fetched. Only `all`, `keep_all` and the like hold every result,
 because that's what you asked for. To process a large table, read it
 with `next`, or with a sink such as `count_items` or `to_file`, which
 holds nothing.
+
+The driver may hold the whole result, though. DBD::SQLite reads rows
+as they're fetched, but DBD::Pg and DBD::mysql receive every row when
+the statement is executed: a 200 MB result took about 200 MB with
+either. With MySQL, give the `mysql_use_result` attribute, and the
+driver reads rows as they're fetched:
+
+<!-- not run -->
+```perl
+my $it = $mysql->iterate('SELECT * FROM big_table', {mysql_use_result => 1});
+```
+
+It ties up the connection until every row is read, or the statement
+is finished. With PostgreSQL, declare a cursor in your SQL, and fetch
+from it a batch at a time.
 
 ### Does it write SQL for me?
 

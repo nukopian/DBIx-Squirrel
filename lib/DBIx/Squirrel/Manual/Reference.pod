@@ -1034,8 +1034,16 @@ the iterator is let go.
 
 Rows are fetched with the DBI's C<fetchall_arrayref>, 2 at first, the
 least that tells whether there's a second, then twice as many each
-time a fetch fills its batch, up to 64. So reading one row fetches no
-more than two, and a large result is never held all at once.
+time a fetch fills its batch, up to 64. Past 64, each fetch's cost is
+spread so thin that a bigger batch reads hardly any faster, and holds
+more of a wide row's data. So reading one row fetches no more than
+two, and DBIx::Squirrel holds no more than 64 rows of a result.
+
+The driver may hold more. DBD::SQLite reads rows as they're fetched,
+but DBD::Pg and DBD::mysql receive the whole result when the
+statement is executed. With MySQL, the C<mysql_use_result> attribute
+makes the driver read rows as they're fetched. With PostgreSQL, a
+cursor does, declared and fetched from in your SQL.
 
 Without stages, C<all> takes what's left of the batch and fetches the
 rest at once. That's nearly as quick as the DBI's own
