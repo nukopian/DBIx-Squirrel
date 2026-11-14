@@ -71,11 +71,15 @@ jobs:
       - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
         with:
           perl-version: ${{ matrix.perl }}
+      # PowerShell, the default here: Git's bash would find Git's own perl.
       - name: dependencies
-        shell: bash
-        run: >-
-          cpanm --notest --installdeps . ||
-          { cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"; exit 1; }
+        run: |
+          cpanm --notest --installdeps .
+          if ($LASTEXITCODE -ne 0) {
+            $work = Get-ChildItem "$HOME\.cpanm\work" -Directory | Sort-Object LastWriteTime | Select-Object -Last 1
+            Get-Content (Join-Path $work.FullName 'build.log')
+            exit 1
+          }
       - name: prove
         run: prove -l t
 
