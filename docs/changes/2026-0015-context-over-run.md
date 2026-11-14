@@ -1,6 +1,6 @@
 # 2026-0015. Context over Ekorn's run
 
-**Status:** shipped, unreleased, on `pipeline-experimental`
+**Status:** shipped in v3.0.2
 
 **Decisions:** None open. They're 2026-0013's: D3, `result_number`
 and `result_original` kept; D13, `pluck` and `as_hash` croak with no

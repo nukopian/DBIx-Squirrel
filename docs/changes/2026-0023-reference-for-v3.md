@@ -1,6 +1,6 @@
 # 2026-0023. The reference, rewritten for v3
 
-**Status:** shipped, unreleased, on `pipeline-experimental`
+**Status:** shipped in v3.0.2
 
 **Decisions:** All settled: D1, its own item, now; D2, in the user
 guide's layer order; D3, its examples run and checked; D4, upgrading

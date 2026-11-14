@@ -1,6 +1,6 @@
 # 2026-0018. Pipelines named in the Sugar's definitions
 
-**Status:** shipped, unreleased, on `pipeline-experimental`
+**Status:** shipped in v3.0.2
 
 **Decisions:** None open. The design's section 8, approved with it on
 2026-11-13, and Ekorn's D36: a definition's strings after the statement

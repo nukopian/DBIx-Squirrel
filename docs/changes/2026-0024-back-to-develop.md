@@ -1,6 +1,6 @@
 # 2026-0024. pipeline-experimental back to develop
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.0.2
 
 **Decisions:** D1 settled: merge without `docs/design/`, kept by an
 archive tag. D2 settled: no TRIAL of Ekorn; test against its

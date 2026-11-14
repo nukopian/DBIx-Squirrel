@@ -1,6 +1,6 @@
 # 2026-0014. The iterator as a source
 
-**Status:** shipped, unreleased, on `pipeline-experimental`
+**Status:** shipped in v3.0.2
 
 **Decisions:** None open. They're 2026-0013's: D4, a fresh run from
 `ekorn_source`; D22 and D23, `all`, `first` and `single` as Ekorn's

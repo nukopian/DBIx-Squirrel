@@ -1,6 +1,6 @@
 # 2026-0020. The how-to's tests check what its examples print
 
-**Status:** shipped, unreleased, on `pipeline-experimental`
+**Status:** shipped in v3.0.2
 
 **Decisions:** None. Iain decided on 2026-11-13 that it be done
 before 2026-0021, so the user guide is written against it.

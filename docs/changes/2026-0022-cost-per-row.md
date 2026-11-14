@@ -1,6 +1,6 @@
 # 2026-0022. Trim DBIx::Squirrel's cost per row
 
-**Status:** shipped, unreleased, on `pipeline-experimental`
+**Status:** shipped in v3.0.2
 
 **Decisions:** None open.
 

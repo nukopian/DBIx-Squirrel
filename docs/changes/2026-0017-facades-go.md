@@ -1,6 +1,6 @@
 # 2026-0017. The facades go
 
-**Status:** shipped, unreleased, on `pipeline-experimental`
+**Status:** shipped in v3.0.2
 
 **Decisions:** None open. They're 2026-0013's: D1, DBIx::Squirrel::Pipeline
 goes; D6, DBIx::Squirrel::Pipes goes, and Gather, Stop and the

@@ -81,31 +81,31 @@ Steps, Done when.
 Newest id first.
 
 - [A sweep of the docs](2026-0026-docs-sweep.md),
-  from a task of Ekorn-Pipeline's: shipped, unreleased.
+  from a task of Ekorn-Pipeline's: shipped in v3.0.2.
 - [DBIx::Squirrel::Tooling](2026-0025-tooling.md),
-  roadmap 2026-0025: shipped, unreleased.
+  roadmap 2026-0025: shipped in v3.0.2.
 - [DBIx::Squirrel v3.0.0](2026-0019-v3-0-0.md),
-  roadmap 2026-0019: in progress.
+  roadmap 2026-0019: shipped in v3.0.2.
 - [pipeline-experimental back to develop](2026-0024-back-to-develop.md),
-  from Ekorn-Pipeline's messages: done.
+  from Ekorn-Pipeline's messages: shipped in v3.0.2.
 - [The reference, rewritten for v3](2026-0023-reference-for-v3.md),
-  roadmap 2026-0023: shipped, unreleased.
+  roadmap 2026-0023: shipped in v3.0.2.
 - [Trim DBIx::Squirrel's cost per row](2026-0022-cost-per-row.md),
-  roadmap 2026-0022: shipped, unreleased.
+  roadmap 2026-0022: shipped in v3.0.2.
 - [The how-to as a user guide](2026-0021-user-guide.md),
-  roadmap 2026-0021: shipped, unreleased.
+  roadmap 2026-0021: shipped in v3.0.2.
 - [The how-to's tests check what its examples print](2026-0020-howto-output-checked.md),
-  roadmap 2026-0020: shipped, unreleased.
+  roadmap 2026-0020: shipped in v3.0.2.
 - [Pipelines named in the Sugar's definitions](2026-0018-sugar-names-pipelines.md),
-  roadmap 2026-0018: shipped, unreleased.
+  roadmap 2026-0018: shipped in v3.0.2.
 - [The facades go](2026-0017-facades-go.md),
-  roadmap 2026-0017: shipped, unreleased.
+  roadmap 2026-0017: shipped in v3.0.2.
 - [Runs that end in a sink](2026-0016-runs-ending-in-a-sink.md),
-  roadmap 2026-0016: shipped, unreleased.
+  roadmap 2026-0016: shipped in v3.0.2.
 - [Context over Ekorn's run](2026-0015-context-over-run.md),
-  roadmap 2026-0015: shipped, unreleased.
+  roadmap 2026-0015: shipped in v3.0.2.
 - [The iterator as a source](2026-0014-iterator-as-source.md),
-  roadmap 2026-0014: shipped, unreleased.
+  roadmap 2026-0014: shipped in v3.0.2.
 - [DBIx::Squirrel on Ekorn as it is: one design](2026-0013-one-design.md),
   from a task of Ekorn-Pipeline's: split into 2026-0014 to 2026-0019.
 - [Export Ekorn's pipeline()](2026-0009-export-pipeline.md),

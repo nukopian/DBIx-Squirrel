@@ -1,6 +1,6 @@
 # 2026-0021. The how-to as a user guide
 
-**Status:** shipped, unreleased, on `pipeline-experimental`
+**Status:** shipped in v3.0.2
 
 **Decisions:** All settled: D1, its own item, written now on
 `pipeline-experimental`, following the outline below; D2, Ekorn's

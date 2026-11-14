@@ -1,6 +1,6 @@
 # 2026-0016. Runs that end in a sink
 
-**Status:** shipped, unreleased, on `pipeline-experimental`
+**Status:** shipped in v3.0.2
 
 **Decisions:** None open. They're 2026-0013's: D16, a sink given last
 says what comes back, and DBIx::Squirrel's calls give an iterator

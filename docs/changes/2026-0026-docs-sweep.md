@@ -1,6 +1,6 @@
 # 2026-0026. A sweep of the docs, as Ekorn-Pipeline's for v0.3.0
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.0.2
 
 **Decisions:** None: the criteria are Iain's, given to Ekorn-Pipeline
 and sent here as a task.
