@@ -2254,9 +2254,11 @@ change. These are the changes most code meets first.
   as a stage, to count as you go.
 - **`single` warns at a second result,** and gives the first, where it
   used to croak.
-- **DBIx::Squirrel::Pipeline is gone.** Make pipelines with
-  `Ekorn::Pipeline->new`. DBIx::Squirrel::Stop still exports `Stop`,
-  but to throw a stop as a method, use `Ekorn::Pipeline::Stop->throw`.
+- **DBIx::Squirrel::Pipeline is no longer shipped.** Make pipelines
+  with `Ekorn::Pipeline->new`. A copy that version 2 installed still
+  loads, until it's deleted, as installing never removes a file.
+  DBIx::Squirrel::Stop still exports `Stop`, but to throw a stop as a
+  method, use `Ekorn::Pipeline::Stop->throw`.
 - **A `gather` block's second part is its flush,** what version 2
   called the end function. It works as before. An end, told how the
   run ended, can follow it.

@@ -3182,7 +3182,7 @@ B<How to move:> check for the warning, or keep the croak with a stage of your ow
 
 =item C<< DBIx::Squirrel::Pipeline->new(...) >>
 
-B<What happens now:> fails: the module is gone
+B<What happens now:> fails on a fresh install, as the module is no longer shipped; a copy that 2.x installed still loads, until it's deleted
 
 B<How to move:> C<< Ekorn::Pipeline->new(...) >>, or C<pipeline(...)> from Ekorn::Pipeline::Factories
 

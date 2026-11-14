@@ -1,6 +1,7 @@
 use v5.36;
 use Test2::V0;
 use Test2::Plugin::NoWarnings;
+use FindBin qw($Bin);
 
 use DBIx::Squirrel;
 use DBIx::Squirrel::Errors;
@@ -159,9 +160,13 @@ subtest 'the facades follow Ekorn::Pipeline' => sub {
                 "$ours\'s $function is $theirs\'s";
         }
     }
+    # The distribution doesn't ship them. A copy that version 2 installed
+    # stays where it was, as installing never removes a file, so this
+    # looks in the distribution, not @INC, where requiring one succeeds.
     for my $gone (qw(Pipeline Pipes)) {
-        my $file = "DBIx/Squirrel/$gone.pm";
-        ok dies { require $file }, "DBIx::Squirrel::$gone is gone";
+        my @shipped
+            = grep { -e "$Bin/../$_/DBIx/Squirrel/$gone.pm" } qw(lib blib/lib);
+        is \@shipped, [], "DBIx::Squirrel::$gone is no longer shipped";
     }
     ok !DBIx::Squirrel::Stop->isa('Ekorn::Pipeline::Stop'),
         'and Stop is no subclass of Ekorn\'s';

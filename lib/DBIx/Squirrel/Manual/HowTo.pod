@@ -2415,9 +2415,11 @@ used to croak.
 
 =item *
 
-B<DBIx::Squirrel::Pipeline is gone.> Make pipelines with
-C<< Ekorn::Pipeline->new >>. DBIx::Squirrel::Stop still exports C<Stop>,
-but to throw a stop as a method, use C<< Ekorn::Pipeline::Stop->throw >>.
+B<DBIx::Squirrel::Pipeline is no longer shipped.> Make pipelines
+with C<< Ekorn::Pipeline->new >>. A copy that version 2 installed still
+loads, until it's deleted, as installing never removes a file.
+DBIx::Squirrel::Stop still exports C<Stop>, but to throw a stop as a
+method, use C<< Ekorn::Pipeline::Stop->throw >>.
 
 =item *
 

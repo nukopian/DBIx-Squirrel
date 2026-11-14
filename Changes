@@ -14,8 +14,8 @@ Unreleased
     select methods take stages too (roadmap 2026-0016). first is new,
     and single and all give what's left of a run. DBIx::Squirrel uses
     Ekorn::Pipeline as it is, so its own Pipeline and Pipes modules
-    are gone (roadmap 2026-0017), and a Sugar statement's definition
-    can name Ekorn's named pipelines (roadmap 2026-0018).
+    are no longer shipped (roadmap 2026-0017), and a Sugar statement's
+    definition can name Ekorn's named pipelines (roadmap 2026-0018).
     DBIx::Squirrel::Stages::Flow passes on five more of Ekorn's
     stages, and a gather has a flush and an end.
     DBIx::Squirrel::Tooling exports every stage, sink and word a
@@ -75,9 +75,12 @@ Unreleased
       what the DBI gives through them: every value that comes out, or,
       for one value, a sink's result, or how many. selectall_array
       pushes each row.
-    - DBIx::Squirrel::Pipeline is gone: make a pipeline with
-      Ekorn::Pipeline->new. DBIx::Squirrel::Pipes is gone: the handles
-      take pipe and tap from Ekorn::Pipeline::Pipes.
+    - DBIx::Squirrel::Pipeline is no longer shipped: make a pipeline
+      with Ekorn::Pipeline->new. DBIx::Squirrel::Pipes is no longer
+      shipped: the handles take pipe and tap from
+      Ekorn::Pipeline::Pipes. Installing never removes a file, so a
+      copy that 2.x installed still loads until it's deleted, and code
+      using it runs as it did.
     - DBIx::Squirrel::Stop still exports Stop, but is no longer a
       class: throw with Ekorn::Pipeline::Stop->throw, and subclass
       Ekorn::Pipeline::Stop.

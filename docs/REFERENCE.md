@@ -2487,7 +2487,7 @@ the changes code written for 2.x meets, and how to move:
 | `my $n = $it->all`, for a count | an array reference | `count_items` given last |
 | `$it->single`, after `next` | the next result, not a fresh run's only one | `$it->reset->single` |
 | `$it->single`, at a second result | a warning, and the first, not a croak | check for the warning, or keep the croak with a stage of your own |
-| `DBIx::Squirrel::Pipeline->new(...)` | fails: the module is gone | `Ekorn::Pipeline->new(...)`, or `pipeline(...)` from Ekorn::Pipeline::Factories |
+| `DBIx::Squirrel::Pipeline->new(...)` | fails on a fresh install, as the module is no longer shipped; a copy that 2.x installed still loads, until it's deleted | `Ekorn::Pipeline->new(...)`, or `pipeline(...)` from Ekorn::Pipeline::Factories |
 | `$x isa 'DBIx::Squirrel::Pipeline'` | false | `$x isa 'Ekorn::Pipeline'` |
 | `DBIx::Squirrel::Stop->throw`, or a subclass of DBIx::Squirrel::Stop | fails: it's no longer a class | `Ekorn::Pipeline::Stop->throw`, and subclass `Ekorn::Pipeline::Stop` |
 | `ref $stage eq 'CODE'`, or `is_coderef($stage)`, for a stage made by `take`, `gather` and the like | false: they're objects now, called as code references | `is_stage($stage)`, from Ekorn::Pipeline |
