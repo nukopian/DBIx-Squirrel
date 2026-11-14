@@ -147,6 +147,7 @@ DBIx::Squirrel's own:
 | `:context` | `iterator`, `result_number` and `result_original` | DBIx::Squirrel::Context |
 | `:sources` | `from_array`, `from_file`, `from_fh` and `counter` | Ekorn::Pipeline::Sources |
 | `:sinks` | `count_items`, `keep_all`, `keep_first`, `to_file` and the rest | Ekorn::Pipeline::Sinks |
+| `:json` | `from_json`, `from_jsonl`, `to_json` and `to_jsonl` | Ekorn::Pipeline::JSON |
 | `:words` | `pipeline`, `stage`, `source`, `generator`, `sink_one` and the rest | Ekorn::Pipeline::Factories |
 | `:all` | all of the above | |
 
@@ -165,14 +166,18 @@ package My::Report {
 ```
 
 Each name is the very sub its own module exports, so it makes no
-difference which you import it from, and where DBIx::Squirrel and
-Ekorn::Pipeline both export a name, it's the same sub. Three things
-Tooling leaves out: what's for extending DBIx::Squirrel rather than
-using it, such as `croakf`, which you import from its own module when
-chapter 14 needs it; the Sugar, whose `use` makes functions for your
-databases and statements, as chapter 12 explains; and `|`, which only
-`use Ekorn::Pipeline::Operators` puts in force, in its own scope, as
-chapter 11 explains.
+difference which you import it from. Where DBIx::Squirrel and
+Ekorn::Pipeline both export a name, it's the same sub.
+
+Tooling leaves three things out:
+
+- what's for extending DBIx::Squirrel rather than using it, such as
+  `croakf`, which you import from its own module when chapter 14 needs
+  it;
+- the Sugar, whose `use` makes functions for your databases and
+  statements, as chapter 12 explains;
+- `|`, which only `use Ekorn::Pipeline::Operators` puts in force, in
+  its own scope, as chapter 11 explains.
 
 ## 1. Still the DBI
 
@@ -1410,9 +1415,9 @@ The iterator's methods and the sinks overlap, on purpose:
 
 Use a method when you have an iterator in hand, or have already read
 some of it: the methods take whatever's left. Use a sink when the call
-should say, all at once, what it gives: it's the only way to have a
-count, and it's what a function or named statement taking stages from
-its caller can be given ([chapter
+should say, all at once, what it gives. It's the only way to have a
+count. It's also what you give a function, or a named statement, that
+takes stages from its caller ([chapter
 12](#12-a-function-for-each-database-and-statement), [chapter
 14](#14-functions-that-take-stages-and-stages-for-others)). `all`
 without stages is quicker, as it fetches every row in one go.
@@ -1518,7 +1523,6 @@ say join ', ', $dbh->iterate(
     take(2),
 )->all;
 # Dancing Queen, Sunshine of Your Love
-
 ```
 
 Its stages run in its place, as if written out there, with more stages

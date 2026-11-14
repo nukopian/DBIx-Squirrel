@@ -319,6 +319,12 @@ B<What it gives you:> C<count_items>, C<keep_all>, C<keep_first>, C<to_file> and
 
 B<Made in:> Ekorn::Pipeline::Sinks
 
+=item C<:json>
+
+B<What it gives you:> C<from_json>, C<from_jsonl>, C<to_json> and C<to_jsonl>
+
+B<Made in:> Ekorn::Pipeline::JSON
+
 =item C<:words>
 
 B<What it gives you:> C<pipeline>, C<stage>, C<source>, C<generator>, C<sink_one> and the rest
@@ -344,14 +350,30 @@ Ask for what you need, by tag or by name. Nothing comes by default:
     }
 
 Each name is the very sub its own module exports, so it makes no
-difference which you import it from, and where DBIx::Squirrel and
-Ekorn::Pipeline both export a name, it's the same sub. Three things
-Tooling leaves out: what's for extending DBIx::Squirrel rather than
-using it, such as C<croakf>, which you import from its own module when
-chapter 14 needs it; the Sugar, whose C<use> makes functions for your
-databases and statements, as chapter 12 explains; and C<|>, which only
-C<use Ekorn::Pipeline::Operators> puts in force, in its own scope, as
-chapter 11 explains.
+difference which you import it from. Where DBIx::Squirrel and
+Ekorn::Pipeline both export a name, it's the same sub.
+
+Tooling leaves three things out:
+
+=over 4
+
+=item *
+
+what's for extending DBIx::Squirrel rather than using it, such as
+C<croakf>, which you import from its own module when chapter 14 needs
+it;
+
+=item *
+
+the Sugar, whose C<use> makes functions for your databases and
+statements, as chapter 12 explains;
+
+=item *
+
+C<|>, which only C<use Ekorn::Pipeline::Operators> puts in force, in
+its own scope, as chapter 11 explains.
+
+=back
 
 =head1 1. Still the DBI
 
@@ -1535,9 +1557,9 @@ B<A sink, given last:> C<to_file($path)>
 
 Use a method when you have an iterator in hand, or have already read
 some of it: the methods take whatever's left. Use a sink when the call
-should say, all at once, what it gives: it's the only way to have a
-count, and it's what a function or named statement taking stages from
-its caller can be given (L<chapter
+should say, all at once, what it gives. It's the only way to have a
+count. It's also what you give a function, or a named statement, that
+takes stages from its caller (L<chapter
 12|/"12. A function for each database and statement">, L<chapter
 14|/"14. Functions that take stages, and stages for others">). C<all>
 without stages is quicker, as it fetches every row in one go.
@@ -1634,7 +1656,6 @@ you use often can be made once, named, and used everywhere.
         take(2),
     )->all;
     # Dancing Queen, Sunshine of Your Love
-
 
 Its stages run in its place, as if written out there, with more stages
 before or after it.

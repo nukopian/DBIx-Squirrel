@@ -690,10 +690,10 @@ field, is taken as the attributes only if it's a hash reference or
 that's `undef`, need the attributes, or `undef`, in front.
 
 **Given stages after the bind values,** each pushes what the DBI's
-method returns through them, as a pipeline called with values does,
-and returns what comes out of the last: every value; or, where one
-value is asked for, a sink's result, if a sink is last, and otherwise
-how many values came out. `selectrow_array` pushes the row's values,
+method returns through them, as a pipeline called with values does. It
+returns every value that comes out of the last. Where one value is
+asked for, it returns a sink's result, if a sink is last, or else how
+many values came out. `selectrow_array` pushes the row's values,
 `selectall_array` each row, and the others their one reference. As a
 pushed run has no statement as its source, the stages can't use
 `pluck` by a name for an array row, or `as_hash`.
@@ -1191,8 +1191,9 @@ returns:
   `single` finishes it. What the end returns is dropped.
 
 The parts can be given as a list, in that order, with `undef` for a
-flush left out before an end, or by name, as one hash reference with
-the keys `step`, `flush` and `end`, giving only those the stage has.
+flush left out before an end. Or they can be given by name, in one
+hash reference with the keys `step`, `flush` and `end`, giving only
+those the stage has.
 
 ```perl
 # Each value, then, once they run out, how many there were
@@ -1254,7 +1255,6 @@ say $dbh->iterate(
     collect { join '+', @_ },
 )->first;
 # Abba+Blur+Cream
-
 ```
 
 ## 8. Sinks
@@ -1288,6 +1288,10 @@ use Ekorn::Pipeline::Sinks qw(keep_all keep_first keep_last keep_single keep cou
 A sink of many, `keep_all` or `keep`, never gives a count: for that,
 use `count_items`. An empty result is an empty array reference, which
 is true, so test it with `@$rows`.
+
+Ekorn::Pipeline::JSON's `to_json` and `to_jsonl`, from Tooling's
+[`:json`](#importing-dbixsquirreltooling), are sinks too, given a
+`file` or an `fh`: they write each result as JSON, and give how many.
 
 ```perl
 my @names = $dbh->iterate(
@@ -1523,7 +1527,6 @@ say join ', ', $dbh->iterate(
     take(1),
 )->all;
 # Dancing Queen
-
 ```
 
 Make a stage that counts or remembers with
@@ -1732,9 +1735,9 @@ a name and the arguments `connect` takes, it defines a database by
 that name, gives the calling package a function of that name, and
 returns the function. A database defined with a database handle, in
 place of a data source, is a clone of it, as `connect` makes, made
-when the database is first used. A database is defined once in a
-program, by a name that can be a function's, which the package hasn't
-a function of already.
+when the database is first used. Each database is defined once in a
+program. Its name must be one a function can have, and the package
+mustn't have a function of that name already.
 
 ### The function a database is given
 
@@ -1768,7 +1771,6 @@ say join ' ', music(
     keep_all,
 );
 # Abba Blur Cream
-
 ```
 
 ### statement
@@ -2024,9 +2026,9 @@ Ekorn](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#de
 ### The iterator as a source
 
 A `DBIx::Squirrel::Iterator`, and so a result set, is a source, as
-Ekorn::Pipeline takes one: it offers `EKORN_SOURCE`, the role method a
-pipeline's `iterator`, a chain made with `|` and `@{}` call. You don't
-call it yourself. Each call starts a fresh run of the statement, from
+Ekorn::Pipeline takes one: it offers `EKORN_SOURCE`, the role method
+that a pipeline's `iterator`, a chain made with `|`, and `@{}` call.
+You don't call it yourself. Each call starts a fresh run of the statement, from
 its first row:
 
 - the statement is executed again, finishing it first if it's active,
@@ -2076,8 +2078,8 @@ gives its values, which come from every row, not one,
 
 ```perl
 my $columns = sub ($row) {
-    my $context = Ekorn::Pipeline::run_context();
-    return join ', ', map {"$_=$row->[$_ eq 'id' ? 0 : 1]"} @{ $context->{columns} };
+    my $names = Ekorn::Pipeline::run_context()->{columns};
+    return join ', ', map {"$names->[$_]=$row->[$_]"} keys @$names;
 };
 say join '; ', $dbh->iterate('SELECT id, name FROM artist ORDER BY id', $columns)->all;    # id=1, name=Abba; id=2, name=Blur; id=3, name=Cream
 ```
@@ -2088,11 +2090,11 @@ own, which has no row unless it too reads a statement.
 ### What a call takes as stages
 
 `iterate`, `results`, an iterator's `reset`, the select methods,
-`pipe`, `tap` and the Sugar's functions take as stages, at the end of
-their arguments, whatever Ekorn::Pipeline's `is_stage` is true of:
-code references, pipelines, and Ekorn's stage objects, among them
-stages made with `gather`, Ekorn's words and the canned stages, and
-its sinks. Anything else is a bind value, so an object of your own
+`pipe`, `tap` and the Sugar's functions take stages at the end of
+their arguments. A stage is whatever Ekorn::Pipeline's `is_stage` is
+true of: a code reference, a pipeline, or one of Ekorn's stage
+objects. Those include stages made with `gather`, Ekorn's words and
+the canned stages, and its sinks. Anything else is a bind value, so an object of your own
 given as a value stays one. A sink, if one is last, says what the call
 gives (see [8. Sinks](#8-sinks)). Only a Sugar statement's definition
 takes pipelines' names, as strings.
@@ -2183,7 +2185,8 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected a source: a code reference, or an object offering EKORN_SOURCE` | A pipeline's `iterator` was given something it can't read. |
 | `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end` | The block given to `gather` for that stage returned something else. |
 | `Pipeline stage #%s failed at %s line %d:` | A stage, or its flush, died. The message it died with follows, indented. See [When a stage dies](#when-a-stage-dies). |
-| `Pipeline end of stage #%s failed at %s line %d:` | A stage's end died, in a run that hadn't died already. |
+| `Pipeline end of %s failed at %s line %d:` | An end died, in a run that hadn't died already: the source's, as `the source`, or a stage's, as `stage #2`. |
+| `The end of %s died while the run was already dying: %s` | A warning: an end died in a run that had died already. The run's own error is the one thrown. |
 | `Stop used outside a pipeline` | `Stop` was called where no pipeline was running to catch it. |
 | `No pipeline named %s` | A name, in a Sugar statement's definition or given to `pipeline`, has no pipeline. |
 
@@ -2217,11 +2220,11 @@ caller's line. Those starting "Expected" say what was expected.
 ## Making each kind of part
 
 This section is for developers making parts for DBIx::Squirrel's
-users: what a statement's run gives each piece of a part, and a worked
-example of each kind DBIx::Squirrel adds to, made with a word and as a
-class of your own. The protocol itself, what each piece is called
-with, what it returns, and the rules every part keeps, is
-Ekorn::Pipeline's, and its reference has it in full, in [Making each
+users. It says what a statement's run gives each piece of a part. Then
+it works through an example of each kind DBIx::Squirrel adds to, made
+with a word and as a class of your own. The protocol itself, what each
+piece is called with, what it returns, and the rules every part keeps,
+is Ekorn::Pipeline's, and its reference has it in full, in [Making each
 kind of part](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#making-each-kind-of-part).
 Each example runs against the examples' database, and its comments say
 what it prints.
@@ -2605,7 +2608,7 @@ distributions of their own.
 | `DBIx::Squirrel::Transform::JSON::Syck` and `DBIx::Squirrel::Transform::YAML::Syck`. | For JSON, `from_json` and `to_json`, from Ekorn::Pipeline::JSON, by Tooling's [`:json`](#importing-dbixsquirreltooling). For YAML, a stage of your own calling a YAML module: see [Stages for others](#stages-for-others). |
 | `get_file_contents`, `slurp`, `uncompress`, `unmarshal` and `utf8decode`, from DBIx::Squirrel::util. | Path::Tiny, IO::Uncompress::Bunzip2, a JSON module, and Encode. |
 | `load_tuples`, on a database handle. | `prepare` and `execute`, in a loop. |
-| `statement_digest`, `statement_normalise`, `statement_study` and `statement_trim`, on a statement handle. | `study_sql` and `trim_sql`, from DBIx::Squirrel::Placeholders. |
+| `statement_digest`, `statement_normalise`, `statement_study` and `statement_trim`, on a statement handle. | Gone. DBIx::Squirrel::Placeholders has `study_sql` and `trim_sql`, but they're internal, and may change. |
 
 ## The modules
 
@@ -2631,6 +2634,8 @@ distributions of their own.
 | `DBIx::Squirrel::Util` | Helpers the modules share: `canonical`, `install_sub`, `is_name`, `iterator_going`, `shift_attrs`, `split_attrs`, `split_stages` and `unwrap_values`. Internal: they may change without notice. |
 | `DBIx::Squirrel::Manual::Reference` and `DBIx::Squirrel::Manual::HowTo` | This reference and the user guide, as POD, for MetaCPAN. |
 
-Pipelines, the operators and the sinks are Ekorn::Pipeline's own:
-`Ekorn::Pipeline`, `Ekorn::Pipeline::Operators`,
-`Ekorn::Pipeline::Sinks` and `Ekorn::Pipeline::Factories`.
+Pipelines, the operators, the sources, the sinks and the JSON parts
+are Ekorn::Pipeline's own: `Ekorn::Pipeline`,
+`Ekorn::Pipeline::Operators`, `Ekorn::Pipeline::Sources`,
+`Ekorn::Pipeline::Sinks`, `Ekorn::Pipeline::JSON` and
+`Ekorn::Pipeline::Factories`.
