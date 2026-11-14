@@ -50,13 +50,14 @@ Nothing.
 **Added:** 2026-11-14. **Size:** M (3)
 
 What: profile `DBIx::Squirrel::db` and `DBIx::Squirrel::st`, with
-Devel::NYTProf against the gazetteer's SQLite tables and their copies
-in PostgreSQL and MySQL, and make the gains that measure as real:
-`prepare`, `execute` and binding, as 2026-0022 did for reading rows.
-Among the candidates, a statement's placeholders kept in an array, by
-position, rather than a hash, which timed `_binds` 20% quicker, though
-that's under a microsecond a statement and `study_sql`'s result is
-documented as a hash.
+Devel::NYTProf against the gazetteer's tables in SQLite, PostgreSQL
+and MySQL, and make the gains that measure as real. First, the setup
+of an `iterate`, which reading one row takes 73 µs against plain
+DBI's 9 µs; then a statement given attributes, which is studied twice
+in full; then, if they measure, the smaller points of a review by
+GitHub Copilot. Its [record](docs/changes/2026-0028-handles-gains.md)
+has the timings, each point with what was found of it, and three
+decisions open.
 Why: Iain asked, after v3.0.2, to see where real gains could be
 measured and made in the two handles.
 Done when: each change is measured before and after, kept only if it
