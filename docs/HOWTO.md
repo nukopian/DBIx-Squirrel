@@ -521,8 +521,9 @@ $dbh->rollback;
 ```
 
 The attributes can still be given, as a hash reference, or `undef`,
-straight after the statement. Only a hash reference or `undef` there
-is taken for them, so named values given in a hash reference need the
+straight after the statement. Only an unblessed hash reference or
+`undef` there is taken for them, and an object is a bind value, as it
+is to the DBI, so named values given in a hash reference need the
 attributes, or `undef`, in front.
 
 ### Fetch with the select methods

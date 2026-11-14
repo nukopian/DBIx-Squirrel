@@ -383,9 +383,9 @@ say "@$two";    # Abba Blur
 - **A list has at least one plain value.** An empty list croaks, as
   `IN ()` isn't SQL, so the empty case is left to you:
   `Expected at least one value in a list (...:ids)`. So does a plain
-  value or `undef` in place of a list. So does a list holding a
-  reference, such as `[[1, 2, 3]]` to a statement whose one value is a
-  list.
+  value or `undef` in place of a list. So does a list holding an
+  unblessed reference, such as `[[1, 2, 3]]` to a statement whose one
+  value is a list. An object in a list is a value.
 - **A placeholder takes a list everywhere it's used, or nowhere.**
   Used twice, it takes its list in both places.
 - **Its handle is for lists of the lengths it was prepared for.** The
@@ -583,6 +583,10 @@ A single array reference stands for the values in it, so
 `$sth->bind([1, 2])` is `$sth->bind(1, 2)`. The same goes for
 `execute`, `do` and the select methods.
 
+An object is a value, as it is to the DBI, whatever it's made of: a
+blessed array isn't unwrapped, and a blessed hash isn't taken for
+the attributes.
+
 There are two exceptions, each for a statement taking one value:
 
 - To a statement whose one value is a [list](#lists), the array
@@ -640,10 +644,11 @@ of rows affected, `0E0` for none, or `undef` on an error without
 `DBD::SQLite::db do failed: ...`.
 
 Unlike the DBI's, the attributes may be left out. The first argument
-after the statement is taken as the attributes only if it's a hash
-reference or `undef`. An array reference there stands for the [values
-in it](#an-array-reference-of-values). Any other reference croaks:
-`Expected a reference to a HASH or ARRAY`.
+after the statement is taken as the attributes only if it's an
+unblessed hash reference or `undef`. An array reference there stands
+for the [values in it](#an-array-reference-of-values). Any other
+unblessed reference croaks: `Expected a reference to a HASH or ARRAY`.
+An object there is a bind value, as it is to the DBI.
 
 ```perl
 $dbh->begin_work;
@@ -685,8 +690,8 @@ does.
 
 As with [`do`](#do), the attributes may be left out. The first
 argument after the statement, or after `selectall_hashref`'s key
-field, is taken as the attributes only if it's a hash reference or
-`undef`. So named values given in a hash reference, or a first value
+field, is taken as the attributes only if it's an unblessed hash
+reference or `undef`. So named values given in a hash reference, or a first value
 that's `undef`, need the attributes, or `undef`, in front.
 
 **Given stages after the bind values,** each pushes what the DBI's
@@ -1756,7 +1761,7 @@ $it      = music($statement, @bind_values, @stages);
 | a statement and bind values | prepares the statement, executes it, and returns the statement handle, or nothing if it couldn't be executed. |
 | those, and stages at the end | returns what `iterate` does: an iterator over the results, or, if the last stage is a sink, the sink's result. |
 
-A hash reference or `undef` straight after the statement is the
+An unblessed hash reference or `undef` straight after the statement is the
 attributes to prepare it with. The statement can be a statement
 handle, which is itself executed, or iterated over.
 
@@ -2152,7 +2157,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected one placeholder style, not several (%s)` | The statement mixed styles, such as `?` and `:name`. Each is listed as an example. |
 | `Expected placeholders numbered from 1 (%s)` | A numbered placeholder such as `$0`. |
 | `Expected ekorn_slice to be a reference to an ARRAY or HASH` | `ekorn_slice` was something else. |
-| `Expected a reference to a HASH or ARRAY` | The first argument after the statement in `do`, `iterate`, `results` or a select method was a reference, but not to a hash or an array. |
+| `Expected a reference to a HASH or ARRAY` | The first argument after the statement in `do`, `iterate`, `results` or a select method was an unblessed reference, but not to a hash or an array. An object there is a bind value. |
 | `Expected %d bind values, not %d` | A statement with numbered placeholders was given more or fewer values than its highest number. |
 | `Expected names and values in pairs` | A statement with named placeholders was given an odd number of values. |
 | `Expected a placeholder of the statement (%s)` | A value was given for a placeholder the statement doesn't have. |
@@ -2162,7 +2167,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected no list placeholder with pg_placeholder_dollaronly (%s)` | A `$1` placeholder took a list under DBD::Pg's `pg_placeholder_dollaronly`. |
 | `Expected a reference to an ARRAY for a list (%s)` | A list placeholder was given a plain value, `undef`, or a reference to something other than an array. |
 | `Expected at least one value in a list (%s)` | A list placeholder was given an empty list. |
-| `Expected plain values in a list (%s)` | A list held a reference, as `[[1, 2]]` does to a statement whose one value is a list. |
+| `Expected plain values in a list (%s)` | A list held an unblessed reference, as `[[1, 2]]` does to a statement whose one value is a list. |
 | `Expected %d values in a list, as prepared, not %d (%s)` | The handle of a statement taking a list was executed or bound with a list of another length. |
 
 #### Iterators and result sets

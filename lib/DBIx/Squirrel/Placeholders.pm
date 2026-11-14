@@ -3,8 +3,8 @@ use v5.36;
 package DBIx::Squirrel::Placeholders;
 
 use Exporter   qw(import);
-use List::Util qw(any         max        uniq);
-use Ref::Util  qw(is_arrayref is_hashref is_plain_ref);
+use List::Util qw(any         max              uniq);
+use Ref::Util  qw(is_arrayref is_plain_hashref is_plain_ref);
 
 use DBIx::Squirrel::Errors qw(croakf);
 
@@ -166,7 +166,7 @@ sub values_for ($binds, @args) {
         return map { ($_ => $args[$_ - 1]) } keys %$binds;
     }
     my %values;
-    if (@args == 1 && is_hashref($args[0])) {
+    if (@args == 1 && is_plain_hashref($args[0])) {
         %values = %{ $args[0] };
     }
     else {

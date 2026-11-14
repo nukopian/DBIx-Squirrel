@@ -122,6 +122,12 @@ Unreleased
     - A gather's block can return its parts by name, as one hash
       reference with the keys step, flush and end, giving only those
       it has, as Ekorn::Pipeline v0.3.0 allows.
+    - An object given as a bind value is a value, as the DBI binds it,
+      whatever it's made of. A blessed hash first, such as a DateTime,
+      was taken for the attributes, so nothing was bound and the query
+      quietly found nothing; a blessed array was unwrapped as a list of
+      values; and a blessed scalar croaked "Expected a reference to a
+      HASH or ARRAY".
 
 v2.1.0 2026-11-10
 

@@ -774,8 +774,9 @@ DBD::Pg as written, so a C<$1> placeholder can't take a list.
 =item Expected a reference to a HASH or ARRAY
 
 The first argument after the statement in L</do>, L</iterate>,
-L</results> or a select method was a reference, but not to a hash or
-an array.
+L</results> or a select method was an unblessed reference, but not to
+a hash or an array. An object there is a bind value, as it is to the
+DBI.
 
 =back
 

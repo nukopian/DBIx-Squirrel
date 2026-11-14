@@ -4,7 +4,7 @@ package DBIx::Squirrel::st;
 
 use DBI        qw();
 use List::Util qw(pairs);
-use Ref::Util  qw(is_arrayref);
+use Ref::Util  qw(is_plain_arrayref);
 
 use DBIx::Squirrel::Errors       qw(at_caller croakf);
 use DBIx::Squirrel::Iterator     qw();
@@ -115,7 +115,7 @@ sub results ($self, @args) {
 # through the handles' attributes.
 sub _unwrap ($self, @args) {
     return @args
-        unless @args == 1 && is_arrayref($args[0]);
+        unless @args == 1 && is_plain_arrayref($args[0]);
     my $state = $self->{private_ekorn};
     return unwrap_values(
         $self->{Database}{Driver}{Name},
@@ -248,7 +248,8 @@ the sigil. There must be a value for each name, and no other:
 =back
 
 A single array reference stands for the values in it, so
-C<< $sth->bind([1, 2]) >> is C<< $sth->bind(1, 2) >>. There are two
+C<< $sth->bind([1, 2]) >> is C<< $sth->bind(1, 2) >>. An object is a
+value, as it is to the DBI, whatever it's made of. There are two
 exceptions, each for a statement taking one value:
 
 =over
@@ -368,8 +369,9 @@ so the caller must deal with an empty list.
 
 =item Expected plain values in a list (%s)
 
-A list held a reference, such as an array reference inside the one
-given, as in C<[[1, 2]]> to a statement whose one value is a list.
+A list held an unblessed reference, such as an array reference inside
+the one given, as in C<[[1, 2]]> to a statement whose one value is a
+list.
 
 =item Expected %d values in a list, as prepared, not %d (%s)
 

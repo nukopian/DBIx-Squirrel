@@ -588,9 +588,9 @@ C<Expected bind values with a statement taking a list (...:ids)>.
 B<A list has at least one plain value.> An empty list croaks, as
 C<IN ()> isn't SQL, so the empty case is left to you:
 C<Expected at least one value in a list (...:ids)>. So does a plain
-value or C<undef> in place of a list. So does a list holding a
-reference, such as C<[[1, 2, 3]]> to a statement whose one value is a
-list.
+value or C<undef> in place of a list. So does a list holding an
+unblessed reference, such as C<[[1, 2, 3]]> to a statement whose one
+value is a list. An object in a list is a value.
 
 =item *
 
@@ -840,6 +840,10 @@ A single array reference stands for the values in it, so
 C<< $sth->bind([1, 2]) >> is C<< $sth->bind(1, 2) >>. The same goes for
 C<execute>, C<do> and the select methods.
 
+An object is a value, as it is to the DBI, whatever it's made of: a
+blessed array isn't unwrapped, and a blessed hash isn't taken for
+the attributes.
+
 There are two exceptions, each for a statement taking one value:
 
 =over 4
@@ -913,10 +917,11 @@ C<RaiseError>. An error names C<do>, as the DBI's does:
 C<DBD::SQLite::db do failed: ...>.
 
 Unlike the DBI's, the attributes may be left out. The first argument
-after the statement is taken as the attributes only if it's a hash
-reference or C<undef>. An array reference there stands for the L<values
-in it|/"An array reference of values">. Any other reference croaks:
-C<Expected a reference to a HASH or ARRAY>.
+after the statement is taken as the attributes only if it's an
+unblessed hash reference or C<undef>. An array reference there stands
+for the L<values in it|/"An array reference of values">. Any other
+unblessed reference croaks: C<Expected a reference to a HASH or ARRAY>.
+An object there is a bind value, as it is to the DBI.
 
     $dbh->begin_work;
     say $dbh->do('UPDATE artist SET name = :name WHERE id = :id', name => 'BLUR', id => 2);    # 1
@@ -953,8 +958,8 @@ does.
 
 As with L<C<do>|/"do">, the attributes may be left out. The first
 argument after the statement, or after C<selectall_hashref>'s key
-field, is taken as the attributes only if it's a hash reference or
-C<undef>. So named values given in a hash reference, or a first value
+field, is taken as the attributes only if it's an unblessed hash
+reference or C<undef>. So named values given in a hash reference, or a first value
 that's C<undef>, need the attributes, or C<undef>, in front.
 
 B<Given stages after the bind values,> each pushes what the DBI's
@@ -2142,7 +2147,7 @@ returns what C<iterate> does: an iterator over the results, or, if the last stag
 
 =back
 
-A hash reference or C<undef> straight after the statement is the
+An unblessed hash reference or C<undef> straight after the statement is the
 attributes to prepare it with. The statement can be a statement
 handle, which is itself executed, or iterated over.
 
@@ -2576,7 +2581,7 @@ C<ekorn_slice> was something else.
 
 =item C<Expected a reference to a HASH or ARRAY>
 
-The first argument after the statement in C<do>, C<iterate>, C<results> or a select method was a reference, but not to a hash or an array.
+The first argument after the statement in C<do>, C<iterate>, C<results> or a select method was an unblessed reference, but not to a hash or an array. An object there is a bind value.
 
 =item C<Expected %d bind values, not %d>
 
@@ -2616,7 +2621,7 @@ A list placeholder was given an empty list.
 
 =item C<Expected plain values in a list (%s)>
 
-A list held a reference, as C<[[1, 2]]> does to a statement whose one value is a list.
+A list held an unblessed reference, as C<[[1, 2]]> does to a statement whose one value is a list.
 
 =item C<Expected %d values in a list, as prepared, not %d (%s)>
 
