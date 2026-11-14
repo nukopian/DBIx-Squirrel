@@ -2263,19 +2263,19 @@ distributions of their own.
 | `DBIx::Squirrel::st` | The statement handle class; a subclass of `DBI::st`, with `pipe` and `tap` too. |
 | `DBIx::Squirrel::Iterator` | An iterator over a statement's results, and a source for Ekorn::Pipeline. |
 | `DBIx::Squirrel::Results` | An iterator handing out rows as objects. |
-| `DBIx::Squirrel::Result` | The base class of row objects. |
+| `DBIx::Squirrel::Result` | The base class of row objects. Its `class_for`, which makes the row classes, is internal. |
 | `DBIx::Squirrel::Stop` | Exports Ekorn::Pipeline's `Stop`, which ends a pipeline early. |
 | `DBIx::Squirrel::Gather` | Exports Ekorn::Pipeline's `gather`, which makes a stage afresh for each run. |
 | `DBIx::Squirrel::Stages::Flow` | Canned stages taking or dropping values: `take`, `drop`, `take_first`, `take_last`, `take_single`, `take_while`, `drop_while`, `take_if`, `drop_if`. |
 | `DBIx::Squirrel::Stages::Rows` | Canned stages reshaping rows: `pluck`, `as_hash`. |
 | `DBIx::Squirrel::Stages::Batch` | Canned stages gathering values: `batch`, `collect`. |
 | `DBIx::Squirrel::Stages::Taps` | Canned stages run for their side effects: `peek`, `count_into`, `dump_to`. |
-| `DBIx::Squirrel::Context` | What a stage can ask about the result it's making. |
+| `DBIx::Squirrel::Context` | What a stage can ask about the result it's making. Its `within` and `statement_context` are internal, for the iterators and the stages for rows. |
 | `DBIx::Squirrel::Tooling` | Exports what callers use to do work, from one place, by tags: see [Importing](#importing-dbixsquirreltooling). |
 | `DBIx::Squirrel::Sugar` | A function for each database and statement. |
-| `DBIx::Squirrel::Placeholders` | Finds the placeholders in a statement, and matches values to them. |
-| `DBIx::Squirrel::Errors` | Reports errors at the caller's line. Internal, apart from `croakf` and `@INTERNAL`, which a module of stages uses. See [Stages for others](#stages-for-others). |
-| `DBIx::Squirrel::Util` | Helpers the modules share. Internal. |
+| `DBIx::Squirrel::Placeholders` | Finds the placeholders in a statement, and matches values to them. Internal: `trim_sql`, `study_sql`, `key_of`, `is_numbered`, `values_taken`, `values_for`, `expand_lists` and `place_values` are for the handles. |
+| `DBIx::Squirrel::Errors` | Reports errors at the caller's line. Internal, apart from `croakf` and `@INTERNAL`, which a module of stages uses: `at_caller`, `in_method` and `failed` are for the handles. See [Stages for others](#stages-for-others). |
+| `DBIx::Squirrel::Util` | Helpers the modules share: `canonical`, `install_sub`, `is_name`, `iterator_going`, `shift_attrs`, `split_attrs`, `split_stages` and `unwrap_values`. Internal: they may change without notice. |
 | `DBIx::Squirrel::Manual::Reference` and `DBIx::Squirrel::Manual::HowTo` | This reference and the user guide, as POD, for MetaCPAN. |
 
 Pipelines, the operators and the sinks are Ekorn::Pipeline's own:

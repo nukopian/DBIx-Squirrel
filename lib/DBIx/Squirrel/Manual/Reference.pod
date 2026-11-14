@@ -3083,7 +3083,7 @@ An iterator handing out rows as objects.
 
 =item C<DBIx::Squirrel::Result>
 
-The base class of row objects.
+The base class of row objects. Its C<class_for>, which makes the row classes, is internal.
 
 =item C<DBIx::Squirrel::Stop>
 
@@ -3111,7 +3111,7 @@ Canned stages run for their side effects: C<peek>, C<count_into>, C<dump_to>.
 
 =item C<DBIx::Squirrel::Context>
 
-What a stage can ask about the result it's making.
+What a stage can ask about the result it's making. Its C<within> and C<statement_context> are internal, for the iterators and the stages for rows.
 
 =item C<DBIx::Squirrel::Tooling>
 
@@ -3123,15 +3123,15 @@ A function for each database and statement.
 
 =item C<DBIx::Squirrel::Placeholders>
 
-Finds the placeholders in a statement, and matches values to them.
+Finds the placeholders in a statement, and matches values to them. Internal: C<trim_sql>, C<study_sql>, C<key_of>, C<is_numbered>, C<values_taken>, C<values_for>, C<expand_lists> and C<place_values> are for the handles.
 
 =item C<DBIx::Squirrel::Errors>
 
-Reports errors at the caller's line. Internal, apart from C<croakf> and C<@INTERNAL>, which a module of stages uses. See L<Stages for others|/"Stages for others">.
+Reports errors at the caller's line. Internal, apart from C<croakf> and C<@INTERNAL>, which a module of stages uses: C<at_caller>, C<in_method> and C<failed> are for the handles. See L<Stages for others|/"Stages for others">.
 
 =item C<DBIx::Squirrel::Util>
 
-Helpers the modules share. Internal.
+Helpers the modules share: C<canonical>, C<install_sub>, C<is_name>, C<iterator_going>, C<shift_attrs>, C<split_attrs>, C<split_stages> and C<unwrap_values>. Internal: they may change without notice.
 
 =item C<DBIx::Squirrel::Manual::Reference> and C<DBIx::Squirrel::Manual::HowTo>
 
