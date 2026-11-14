@@ -68,6 +68,13 @@ Unreleased
       before. Its message for anything else is now "Expected only
       code references, pipelines or their names after the statement
       for %s".
+    - The README, the user guide, the reference and the modules' POD
+      are swept, as Ekorn::Pipeline's were for its v0.3.0: the
+      reference names every function the modules document, older
+      terms are gone, paragraphs are filled to 70 columns, examples
+      give a pipeline a stage to a line, and the reference has a
+      section for developers, Making each kind of part, with worked
+      examples of a stage for rows and a sink into a table.
     - The reference is rewritten for version 3, in the user guide's
       order, with every example run, the protocols other code can rely
       on, the run's context among them, and upgrading from 2.x
