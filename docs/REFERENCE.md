@@ -44,6 +44,7 @@ written for earlier versions.
 - [14. Writing stages, and functions that take them](#14-writing-stages-and-functions-that-take-them)
 - [15. Protocols](#15-protocols)
 - [16. Errors and diagnostics](#16-errors-and-diagnostics)
+- [Making each kind of part](#making-each-kind-of-part)
 - [Differences from plain DBI](#differences-from-plain-dbi)
 - [Upgrading from 2.x](#upgrading-from-2x)
 - [Upgrading from 1.x](#upgrading-from-1x)
@@ -2207,6 +2208,226 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected a database and a statement for %s` | A statement's definition didn't name its database, or have its SQL. |
 | `Expected only code references, pipelines or their names after the statement for %s` | A statement's definition had something other than stages, which are code references, pipelines or pipelines' names, after the statement and its attributes. |
 | `Expected no function of the name in %s already (%s)` | The package has a function of that name already, such as a sink it imported. |
+
+## Making each kind of part
+
+This section is for developers making parts for DBIx::Squirrel's
+users: what a statement's run gives each piece of a part, and a worked
+example of each kind DBIx::Squirrel adds to, made with a word and as a
+class of your own. The protocol itself, what each piece is called
+with, what it returns, and the rules every part keeps, is
+Ekorn::Pipeline's, and its reference has it in full, in [Making each
+kind of part](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#making-each-kind-of-part).
+Each example runs against the examples' database, and its comments say
+what it prints.
+
+### What a statement's run gives each piece
+
+A part reading a statement, through `iterate`, `results`, a Sugar
+function, `|`, or a pipeline of yours reading an iterator, finds the
+statement in the [run's context](#the-runs-context). What each piece
+finds there, and what [Context](#context)'s functions give it:
+
+| Piece | `Ekorn::Pipeline::run_context()` | `result_original` | `result_number`, in an iterator's own run |
+|---|---|---|---|
+| **set-up** | nothing: the run hasn't read the statement yet | `undef` | `undef` |
+| a stage's **step** | `statement`, `columns`, and the `row` this value came from | the row | the number of the result being made |
+| a stage's **flush** | `statement` and `columns`; `ending()` is true, and the row is no value's | `undef` | the number of the first value it gives |
+| a sink's **step** | `statement`, `columns` and `row`, as for a stage | the row | not the value's number, which has been counted: a sink counts for itself |
+| a sink's **flush** | as for a stage's flush | `undef` | not used |
+| an **end** | `statement` and `columns`; the `row` is `undef` | `undef` | not used |
+
+So a stage that needs the statement's columns reads them in its step,
+the first time it's called in the run, and keeps them in a variable of
+the set-up, as `pluck` and `as_hash` do. It can't read them in the
+set-up, which runs before the statement does.
+
+### A stage for rows, with the word `gather`
+
+A stage that gives each row, an array, as its columns and values, and
+says how many rows there were once they run out. It croaks if what it
+reads isn't a statement, in a module of stages, as [Stages for
+others](#stages-for-others) says, so the message names the caller's
+line:
+
+```perl
+package My::Stages {
+    use DBIx::Squirrel::Errors qw(croakf);
+    use DBIx::Squirrel::Tooling qw(gather);
+
+    our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
+
+    sub labelled () {
+        return gather {
+            my($columns, $n) = (undef, 0);    # this run's
+            return {
+                step => sub ($row) {
+                    $columns //= do {
+                        my $context = Ekorn::Pipeline::run_context();
+                        croakf 'Expected a statement to read, for its columns'
+                            unless ref $context eq 'HASH'
+                            && $context->{statement} isa 'DBIx::Squirrel::st';
+                        $context->{columns};
+                    };
+                    $n++;
+                    return join ', ', map {"$columns->[$_]=$row->[$_]"} 0 .. $#$columns;
+                },
+                flush => sub () {"($n rows)"},
+            };
+        };
+    }
+}
+
+say for $dbh->iterate(
+    'SELECT id, name FROM artist ORDER BY id',
+    My::Stages::labelled,
+)->all;
+# id=1, name=Abba
+# id=2, name=Blur
+# id=3, name=Cream
+# (3 rows)
+
+say for $dbh->iterate(
+    'SELECT id, name FROM artist ORDER BY id',
+    My::Stages::labelled,
+    take(1),
+)->all;
+# id=1, name=Abba
+
+eval { Ekorn::Pipeline->new(My::Stages::labelled)->([1, 'Abba']) };
+print $@;
+# Pipeline stage #1 failed at ... line ...:
+#     Expected a statement to read, for its columns at ... line ...
+```
+
+In the second run, `take(1)`, after it, stopped the run while rows
+were still to come, so its flush wasn't called, as Ekorn's rules say.
+Called with values, the pipeline reads no statement, so the stage
+croaks.
+
+### The same stage, as a class
+
+A class of your own can be the same stage, by offering `EKORN_STAGE`,
+called at the start of each run with the object, and returning the
+pieces, as the set-up did. The object keeps its settings, and each run
+its own columns:
+
+```perl
+package My::Labelled {
+    sub new ($class, %options) { bless {between => $options{between} // ', '}, $class }
+
+    sub EKORN_STAGE ($self) {
+        my $columns;    # this run's
+        return {
+            step => sub ($row) {
+                $columns //= Ekorn::Pipeline::run_context()->{columns};
+                return join $self->{between}, map {"$columns->[$_]=$row->[$_]"} 0 .. $#$columns;
+            },
+        };
+    }
+}
+
+say for $dbh->iterate(
+    'SELECT id, name FROM artist ORDER BY id',
+    My::Labelled->new(between => ' '),
+)->all;
+# id=1 name=Abba
+# id=2 name=Blur
+# id=3 name=Cream
+```
+
+### A sink into a table, with the word `sink_one`
+
+A sink that inserts each value into a table, and gives how many it
+inserted. Its set-up begins a transaction, and its end commits it only
+if the run ended `done`, so a run that dies, or is stopped, leaves the
+table as it was:
+
+```perl
+sub into ($dbh, $table) {
+    return sink_one {
+        my $n = 0;
+        $dbh->begin_work;
+        my $sth = $dbh->prepare("INSERT INTO $table (name) VALUES (?)");
+        return {
+            step  => sub ($name) { $sth->execute($name); $n++ },
+            flush => sub ()      {$n},
+            end   => sub ($how)  { $how eq 'done' ? $dbh->commit : $dbh->rollback },
+        };
+    };
+}
+
+$dbh->do('CREATE TEMP TABLE copy (name TEXT)');
+
+say $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck('name'),
+    into($dbh, 'copy'),
+);
+# 3
+
+eval {
+    $dbh->iterate(
+        'SELECT name FROM artist ORDER BY id',
+        pluck('name'),
+        sub { die "no Cream\n" if $_ eq 'Cream'; $_ },
+        into($dbh, 'copy'),
+    );
+};
+print $@;
+# Pipeline stage #2 failed at ... line ...:
+#     no Cream
+
+say $dbh->selectrow_array('SELECT COUNT(*) FROM copy');    # 3
+```
+
+The second run inserted Abba and Blur, then died at Cream, so the sink's
+end was told `died`, and rolled them back: the table has the first
+run's three rows.
+
+### The same sink, as a class
+
+A class offers `EKORN_SINK_ONE` for a sink of one result, or
+`EKORN_SINK_MANY` for a sink of many, returning the same pieces:
+
+```perl
+package My::Into {
+    sub new ($class, $dbh, $table) { bless {dbh => $dbh, table => $table}, $class }
+
+    sub EKORN_SINK_ONE ($self) {
+        my($dbh, $n) = ($self->{dbh}, 0);
+        $dbh->begin_work;
+        my $sth = $dbh->prepare("INSERT INTO $self->{table} (name) VALUES (?)");
+        return {
+            step  => sub ($name) { $sth->execute($name); $n++ },
+            flush => sub ()      {$n},
+            end   => sub ($how)  { $how eq 'done' ? $dbh->commit : $dbh->rollback },
+        };
+    }
+}
+
+say $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck('name'),
+    take(2),
+    My::Into->new($dbh, 'copy'),
+);
+# 2
+
+say $dbh->selectrow_array('SELECT COUNT(*) FROM copy');    # 5
+$dbh->do('DROP TABLE copy');
+```
+
+`take(2)` stopped the run, but before the sink, so the sink got every
+value it was going to get: its end was told `done`, and it committed.
+
+### Row classes and functions that take stages
+
+A row class of your own, for `results`, is a subclass of
+DBIx::Squirrel::Result with methods of your own: see [Methods of your
+own](#methods-of-your-own). A function that takes stages from its
+caller hands them to `iterate`: see [A function that takes
+stages](#a-function-that-takes-stages). Neither has pieces of its own.
 
 ## Differences from plain DBI
 
