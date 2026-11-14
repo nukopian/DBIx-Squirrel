@@ -332,9 +332,17 @@ logs, Term::ANSIColor, IO::Pager, Email::Stuffer). Devel::NYTProf
   raised with `croakf` from DBIx::Squirrel::Errors, a `sprintf` format
   and its arguments, as in `croakf 'Expected a column of the row (%s)',
   $column`, so each message is one plain string, matching its
-  DIAGNOSTICS entry. `croak` is for what we pass on: the DBI's own
-  messages, which can hold a `%`, and objects, such as a stop. A `%` in
-  a message of our own is written `%%`.
+  DIAGNOSTICS entry. `croak` is for the messages we pass on, such as
+  the DBI's own, which can hold a `%`. A `%` in a message of our own
+  is written `%%`.
+- **An object is thrown with `die`, never `croak`,** as Iain decided
+  on 2026-11-14: a stop, or an error passed on unchanged, with
+  `## no critic (ErrorHandling::RequireCarping)`. Given an object,
+  `croak` adds no location, as only a string takes one, but it does
+  Carp's work first: Ekorn's `Stop->throw` cost about 1.4 µs with
+  `croak`, against 0.42 µs with `die`, until Ekorn-Pipeline v0.3.1
+  changed it. An object that should say where it was thrown records
+  that itself, with `caller`.
 - **Two blank lines between subs, or one above a sub's comment.** A sub
   without a comment above it has two blank lines before it, to make the
   gap between subs plain; one with a comment has one, above the
