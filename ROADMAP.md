@@ -50,8 +50,8 @@ v0.3.1 on CPAN
 
 The release on Ekorn::Pipeline v0.3.1, as the design's sections 10,
 11 and 15 have it. The docs and the `cpanfile`'s range are done; left
-are Ekorn's release, CI taking Ekorn from CPAN, `Changes`' v3.0.0
-entry, a trial and the release. Its
+are Ekorn's release, CI taking Ekorn from CPAN, a trial and the
+release. Its
 [record](docs/changes/2026-0019-v3-0-0.md) has the plan.
 
 ## Next

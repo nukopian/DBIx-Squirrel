@@ -2,22 +2,40 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    Version 3: a statement is a source for Ekorn::Pipeline, and a sink
+    given last turns it into a result.
+
     An iterator is a source for Ekorn::Pipeline, reading only as many
     rows as it needs, with Ekorn's | and @{}, and saying how its run
-    ended. Its stages' Context, pluck and as_hash work wherever a
-    statement is read. A call taking stages gives a sink's result when
-    a sink is last, and otherwise an iterator, the Sugar's statements
-    included. DBIx::Squirrel uses Ekorn::Pipeline as it is, so its own
-    Pipeline and Pipes modules are gone, and a Sugar statement's
-    definition can name Ekorn's named pipelines.
-    DBIx::Squirrel::Stages::Flow passes on three more of Ekorn's
+    ended (roadmap 2026-0014). Its stages' Context, pluck and as_hash
+    work wherever a statement is read (roadmap 2026-0015). A call
+    taking stages, the Sugar's statements included, gives a sink's
+    result when a sink is last, and otherwise an iterator, and the
+    select methods take stages too (roadmap 2026-0016). first is new,
+    and single and all give what's left of a run. DBIx::Squirrel uses
+    Ekorn::Pipeline as it is, so its own Pipeline and Pipes modules
+    are gone (roadmap 2026-0017), and a Sugar statement's definition
+    can name Ekorn's named pipelines (roadmap 2026-0018).
+    DBIx::Squirrel::Stages::Flow passes on five more of Ekorn's
     stages, and a gather has a flush and an end.
-    DBIx::Squirrel::Tooling exports every stage, sink and word a caller
-    uses, from one module (roadmap 2026-0025). This is work towards
-    v3.0.0 (roadmap 2026-0014 to 2026-0018), and breaks code that uses
-    count, relies on single croaking, takes a gather for a code
-    reference, reads a Sugar statement given stages as a list or a
-    count, or uses DBIx::Squirrel::Pipeline.
+    DBIx::Squirrel::Tooling exports every stage, sink and word a
+    caller uses, from one module (roadmap 2026-0025). Rows are fetched
+    in batches that grow, as in version 1, so reading one row of wide
+    rows is about 20 times quicker (roadmap 2026-0014), and next is
+    about 17% quicker (roadmap 2026-0022). An object given as a bind
+    value is bound as a value. The how-to is rewritten as a user guide
+    (roadmap 2026-0021), and the reference for version 3 (roadmap
+    2026-0023).
+
+    Most code written for 2.x runs as it did. It breaks where it uses
+    count, reads all for a count, relies on single croaking at a
+    second result or running the statement again, takes a stage for a
+    code reference, reads a Sugar statement given stages as a list or
+    a count, or uses DBIx::Squirrel::Pipeline, or DBIx::Squirrel::Stop
+    as a class. "Upgrading from 2.x", in
+    DBIx::Squirrel::Manual::Reference, lists each change and how to
+    move. To stay on 2.x, install its last version:
+    cpanm DBIx::Squirrel@2.1.0.
 
     - DBIx::Squirrel::Tooling, new: everything a caller uses to do
       work, from one module, by Ekorn::Pipeline::Tooling's tags, :core,
