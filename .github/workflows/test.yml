@@ -27,13 +27,6 @@ jobs:
       - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
         with:
           perl-version: ${{ matrix.perl }}
-      # Ekorn::Pipeline from its develop, until v0.3.1 is on CPAN: this
-      # code needs v0.3.0 or later, and develop says v0.3.1, within the
-      # cpanfile's range, so installdeps keeps it. Only trials are on
-      # CPAN, which installdeps can't find. TODO.md has the task to
-      # remove it.
-      - name: Ekorn::Pipeline from GitHub
-        run: cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop
       - name: dependencies
         run: cpanm --notest --installdeps --with-develop .
       - name: yath
@@ -54,8 +47,6 @@ jobs:
           perl-version: "5.36"
       - name: DBI 1.643
         run: cpanm --notest TIMB/DBI-1.643.tar.gz
-      - name: Ekorn::Pipeline from GitHub
-        run: cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop
       - name: dependencies
         run: cpanm --notest --installdeps --with-develop .
       - name: check the DBI
@@ -72,8 +63,6 @@ jobs:
       - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
         with:
           perl-version: "5.44"
-      - name: Ekorn::Pipeline from GitHub
-        run: cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop
       - name: dependencies
         run: cpanm --notest --installdeps --with-develop .
       - name: perlcritic
@@ -96,8 +85,6 @@ jobs:
       - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
         with:
           perl-version: "5.36"
-      - name: Ekorn::Pipeline from GitHub
-        run: cpanm --notest https://github.com/nukopian/Ekorn-Pipeline.git@develop
       - name: dependencies
         run: cpanm --notest --installdeps --with-develop .
       - name: coverage

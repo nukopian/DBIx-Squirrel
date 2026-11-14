@@ -46,12 +46,11 @@ dropped is deleted, and the commit that drops it names its id.
 **Added:** 2026-11-13. **Size:** L (5). **Split from:** 2026-0013.
 **Depends on:** 2026-0014, 2026-0015, 2026-0016, 2026-0017,
 2026-0018, 2026-0021, 2026-0023, 2026-0025, and Ekorn::Pipeline
-v0.3.1 on CPAN
+v0.3.1 on CPAN, released 2026-11-14
 
 The release on Ekorn::Pipeline v0.3.1, as the design's sections 10,
-11 and 15 have it. The docs and the `cpanfile`'s range are done; left
-are Ekorn's release, CI taking Ekorn from CPAN, a trial and the
-release. Its
+11 and 15 have it. The docs, the `cpanfile`'s range, and CI taking
+Ekorn from CPAN are done; left are a trial and the release. Its
 [record](docs/changes/2026-0019-v3-0-0.md) has the plan.
 
 ## Next
