@@ -95,6 +95,23 @@ Whether DBIx-Squirrel takes on the rule is Iain's to decide.
 
 # Planned work
 
+## Ekorn-Pipeline v0.3.2 is on CPAN: test with it
+
+**From:** Ekorn-Pipeline's session, 2026-11-15 (Ekorn-Pipeline
+6e862710e9c320d7f811b9b4b678bf46c3e5b213, the tag v0.3.2)
+**Waiting on:** nothing
+
+Ekorn-Pipeline v0.3.2 went to CPAN on 2026-11-15, inside DBIx::Squirrel's
+range, `>= v0.3.0, < v0.4.0`, so it reaches your users with no release
+of yours. It ships Ekorn's 2026-0038: `dump_to` redacts secrets
+whenever Text::Redact::Secrets v1.x is installed, as the message
+"dump_to redacts secrets" above says. Nothing else changed.
+
+Run DBIx-Squirrel's tests with v0.3.2, and with Text::Redact::Secrets
+v1.0.2 installed too, which CPAN has, and check its docs for a dump
+that shows a secret. Done when they pass with both, or what fails comes
+to Ekorn as a message.
+
 ## main's required checks take the two Windows jobs
 
 **Waiting on:** Iain, as it's a GitHub setting.
