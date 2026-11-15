@@ -241,5 +241,61 @@ The parts, timed on their own:
 - **`at_caller` costs 0.7 µs a call,** and an `all` makes two (the
   columns' names, and the fetch).
 
-Still to do in step 1: break down `reset` and `all`, profile the
-gazetteer, PostgreSQL and MySQL, and write Ekorn's task.
+### Step 1, finished 2026-11-15
+
+**`reset`, broken down,** on a positional statement, per call:
+
+| | Time |
+|---|---|
+| `Ekorn::Pipeline->new->iterator(_statement(...))`, then `finish` | 33.0 µs |
+| of which the source's set-up: `execute`, the columns' names through `at_caller` | 5.8 µs |
+| `iterator_going`, `split_stages`, `_finish`, `_slice`, the fresh state, `_statement`, `Ekorn::Pipeline->new` | 0.4 to 1.3 µs each, about 5 µs together |
+| `reset`, then `_finish` | 38.9 µs |
+| `reset`, then `all` | 45.6 µs |
+
+So `reset`'s own work is about 5 µs, and `all` adds about 7 µs
+(`Context::within`, Ekorn's `all`, the fetch). The 18 µs of the first
+results was mostly Ekorn's `finish` and the source's set-up.
+
+**Ekorn's run, with no stages,** on Perl 5.36.3 and 5.44.0:
+
+| | 5.36.3 | 5.44.0 |
+|---|---|---|
+| `iterator($source)` of a `source { ... }`, let go | 17.5 µs | 16.0 µs |
+| the same, read with `all` | 20.0 µs | 18.3 µs |
+| `iterator($code)` of a code reference, let go | 14.7 µs | 13.3 µs |
+| `_source_run`, `_make_run`, `_end_all` of one end | 1.9, 0.3, 0.6 µs | 1.8, 0.3, 0.6 µs |
+| a model: 12 closures over 20 lexicals | 4.8 µs | 4.6 µs |
+
+NYTProf's lines put about a third of `_iterator` in making its dozen
+closures, `$next` the largest (Pipeline.pm:785) and the iterator's
+(:813 to :822), and about as much again in leaving scopes: the
+`return`s of `$finish` (:610), `$end_run` (:811), `_end_all` (:423) and
+`_make_run` (:503). It's Ekorn's, so it went to its session as a task.
+
+**Lookups by primary key,** 2,000 in a shuffled order, the best of five
+runs, in µs a lookup: SQLite on the gazetteer's `places`; PostgreSQL
+and MySQL on 2,000 rows of `bench_places`, copied into a temporary
+table with a primary key, as `bench_places` has none on PostgreSQL:
+
+| | SQLite | PostgreSQL | MySQL |
+|---|---|---|---|
+| DBI `prepare_cached`, `execute`, fetch | 5.4 | 36.1 | 25.9 |
+| DBI `selectrow_array` | 9.8 | 54.5 | 28.9 |
+| Squirrel `selectrow_array` | 20.0 | 65.8 | 40.7 |
+| Squirrel, prepared, `execute`, fetch | 7.1 | 41.9 | 27.7 |
+| Squirrel, prepared, `iterate($id)->first` | 49.7 | 92.3 | 71.1 |
+| the same, named, `iterate(id => $id)->first` | 53.4 | 95.9 | 74.9 |
+| Squirrel `iterate($sql, $id)->first` | 62.9 | 114.6 | 82.8 |
+
+- **An iterator's run costs about the same on every driver,** 43 to
+  50 µs over `execute` and a fetch on the same handle, so it's a
+  third to two thirds of a lookup on a local server, and nine tenths
+  on SQLite. A server's round trip narrows the ratio, not the gap.
+- **The handles themselves cost little:** a prepared statement's
+  `execute` and fetch take 2 to 6 µs over the DBI's.
+- **Of the iterator's run,** about 27 µs is Ekorn's, 6 µs the source's
+  set-up (`execute` and the columns' names), 5 µs `reset`'s own work,
+  and 7 µs `all` or `first`.
+- **A named placeholder** costs about 3.6 µs a lookup with one, and
+  9 µs an `execute` with five.
