@@ -964,7 +964,9 @@ say "@names, from $seen rows";
 
 `dump_to`, from the same module on request, writes each value with
 Data::Dumper, to STDERR or a filehandle you give: handy while you
-debug, and to be taken out before the code goes live.
+debug, and to be taken out before the code goes live. With
+Text::Redact::Secrets installed, it redacts the secrets it finds, as
+the reference's [Canned stages](REFERENCE.md#canned-stages) says.
 
 ### Compared with `map` over every row
 
