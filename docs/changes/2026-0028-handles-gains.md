@@ -1,6 +1,6 @@
 # 2026-0028. Measured gains in the handles, for v3.0.3
 
-**Status:** open
+**Status:** in progress
 
 **Decisions:** D1 settled: `_prepare_as` passes its study on. D2
 settled: an array inside the handles, `study_sql` keeps its hash. D3
@@ -164,15 +164,30 @@ the iterator.
 
 ## The plan
 
-Written when work starts. Its order, as proposed on 2026-11-14:
+Written 2026-11-15, as work starts. Each change is timed before and
+after, on Perl 5.36.3 and DBD::SQLite unless it says otherwise, as the
+best of several runs, and kept only if it gains beyond the noise
+between runs (D5). Each lands as its own commit on `develop`, with the
+tests and coverage passing, and Iain reviews the code before it's
+committed.
 
-1. Profile an `iterate` setup with Devel::NYTProf, against the
-   gazetteer's tables in SQLite, PostgreSQL and MySQL, for the time
-   over plain DBI.
-2. Study a statement given attributes once (D1).
-3. The cache's eviction, against a workload that reaches it (D3).
-4. The smaller gains, Copilot's 1, 2, 4 and 8, each kept if it
-   measures as a gain, however small (D5).
+1. **Profile an `iterate`'s setup** with Devel::NYTProf, reading one
+   row from SQLite in memory and from the gazetteer, then from
+   `bench_places` on PostgreSQL and MySQL, to find where the 64 µs over
+   plain DBI goes: in `db.pm` and `st.pm`, in the iterator, or in
+   Ekorn::Pipeline. What's Ekorn's goes to its session as a task, with
+   the profile and a way to check it (D4).
+2. **Study a statement given attributes once** (D1): `_prepare_as`
+   passes its study on to `prepare` and `prepare_cached`.
+3. **The gains step 1 finds** in DBIx::Squirrel's own code, costliest
+   first.
+4. **The smaller gains,** Copilot's 1, 2, 4 and 8, the placeholders in
+   an array inside the handles only (D2).
+5. **v3.0.3,** with what was kept, through docs/MAINTAINING.md's
+   release.
+
+The cache's eviction, step 3 of the plan as proposed, isn't in it:
+2026-0030 measures it later (D3).
 
 ## What happened
 

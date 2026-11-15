@@ -41,27 +41,19 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing.
+### 2026-0028. Measured gains in the handles, for v3.0.3
+
+**Size:** M (3)
+
+Profiling the setup of an `iterate`, which reading one row takes 73 µs
+against plain DBI's 9 µs, then studying a statement given attributes
+once, and the smaller gains, each kept only if it measures as one. Its
+[record](docs/changes/2026-0028-handles-gains.md) has the plan, the
+timings and the decisions.
 
 ## Next
 
-### 2026-0028. Measured gains in the handles, for v3.0.3
-
-**Added:** 2026-11-14. **Size:** M (3)
-
-What: profile `DBIx::Squirrel::db` and `DBIx::Squirrel::st`, with
-Devel::NYTProf against the gazetteer's tables in SQLite, PostgreSQL
-and MySQL, and make the gains that measure as real. First, the setup
-of an `iterate`, which reading one row takes 73 µs against plain
-DBI's 9 µs; then a statement given attributes, which is studied twice
-in full; then, if they measure, the smaller points of a review by
-GitHub Copilot. Its [record](docs/changes/2026-0028-handles-gains.md)
-has the timings, each point with what was found of it, and its
-decisions, all settled.
-Why: Iain asked, after v3.0.2, to see where real gains could be
-measured and made in the two handles.
-Done when: each change is measured before and after, kept only if it
-gains, and v3.0.3 is on CPAN with them.
+Nothing.
 
 ## Later
 
