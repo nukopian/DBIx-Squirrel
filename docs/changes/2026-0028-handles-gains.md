@@ -191,4 +191,55 @@ The cache's eviction, step 3 of the plan as proposed, isn't in it:
 
 ## What happened
 
-Nothing yet.
+### Step 1, profiling, begun 2026-11-15
+
+On Perl 5.36.3, DBD::SQLite in memory, the five-column table of one
+row, five named placeholders; Ekorn-Pipeline's working copy at its
+v0.3.2 tag (6e86271); the best of five runs, per call:
+
+| | Time |
+|---|---|
+| DBI `prepare`, `execute`, fetch | 8.0 µs |
+| DBI `prepare_cached`, `execute`, fetch | 2.5 µs |
+| `iterate($sql, ...)->all` | 77.1 µs |
+| the same, with an attributes hash | 148.6 µs |
+| a prepared statement's `iterate(...)` alone | 1.9 µs |
+| a prepared statement's `iterate(...)->all` | 59.2 µs |
+| a prepared statement's `execute`, then `fetchall_arrayref` | 13.0 µs |
+| `selectrow_array` | 34.5 µs |
+
+The parts, timed on their own:
+
+| | Time |
+|---|---|
+| `Ekorn::Pipeline->new->iterator($source)`, no stages, a one-row source | 19.1 µs |
+| the same, read with `all` | 21.5 µs |
+| Ekorn's `source { ... }` alone | 0.4 µs |
+| `execute`, five named values | 12.2 µs |
+| `execute`, five positional values | 3.4 µs |
+| the DBI's own `execute`, five values | 3.3 µs |
+| `Iterator->new` | 1.1 µs |
+| `Iterator->new`, then `reset` | 40.9 µs |
+| `Iterator->new(...)->all`, positional | 47.9 µs |
+| `Iterator->new(...)->all`, named | 59.6 µs |
+| `at_caller { 1 }` | 0.67 µs |
+
+- **The setup is cheap; the run isn't.** Making the iterator takes
+  2 µs; reading it, about 57 µs more, against 13 µs for the DBI way on
+  the same handle.
+- **Ekorn's run costs 19 µs before a row is read,** with no stages:
+  a third of the whole. NYTProf puts most of it in `_iterator`,
+  `_source_run`, `Iterator::DESTROY` and the run's end
+  (Pipeline.pm:611 and :812). It's Ekorn's, so it goes to its session
+  as a task (D4).
+- **Named placeholders cost about 9 µs an `execute`,** over positional
+  ones: `Placeholders::values_for`, `key_of` and `st::_in_order`.
+  DBIx::Squirrel's own.
+- **`reset` costs about 18 µs** beyond Ekorn's run and the `execute`,
+  and `Iterator::all` shows a share of its own in the profile; not yet
+  broken down.
+- **`at_caller` costs 0.7 µs a call,** and an `all` makes two (the
+  columns' names, and the fetch).
+
+Still to do in step 1: break down `reset` and `all`, profile the
+gazetteer, PostgreSQL and MySQL, and write Ekorn's task.
