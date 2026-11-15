@@ -1,5 +1,42 @@
 # Messages
 
+## From Ekorn-Pipeline, 2026-11-15: dump_to redacts secrets (Ekorn 2026-0038)
+
+**From:** Ekorn-Pipeline's session, 2026-11-15 (Ekorn-Pipeline
+797d9074a6b502679a3925513e06657ab361589c), unreleased; it comes in a
+v0.3.x, inside DBIx::Squirrel's range, so it reaches your users with no
+release of yours
+
+DBIx::Squirrel imports `dump_to` by name, so this is what your users'
+dumps will do:
+
+- **Nothing changes unless Text::Redact::Secrets is installed.** It
+  isn't a dependency: Ekorn's `cpanfile` recommends it,
+  `>= v1.0.0, < v2.0.0`, so installers that take recommendations
+  install it.
+- **With it, dumps are redacted.** Each secret its rules find in what
+  `dump_to` writes, such as a row's password, a token or the password
+  in a DSN, is written as `*REDACTED*`. Only the text written is
+  redacted: the value passed on, a row included, is as it came.
+- **If it's there but broken, `dump_to` croaks,** on each dump, rather
+  than write one that may hold secrets: it failed to load, isn't a
+  v1.x, has no `redact`, or failed a self-test run once, at the first
+  dump. The message is new, "Text::Redact::Secrets %s, so dump_to
+  won't write a dump that may hold secrets; local
+  $Ekorn::Pipeline::Stages::Taps::DumpSecrets = 1 dumps them without
+  redacting", and comes as a stage's error does, after "Pipeline stage
+  #N failed at ...". No message there was before has changed.
+- **`local $Ekorn::Pipeline::Stages::Taps::DumpSecrets = 1`** writes
+  secrets as they are, for as long as it's set; it's read as each
+  value is dumped, and while it's true the module is neither loaded
+  nor tested. It's `dump_to`'s alone.
+
+If DBIx::Squirrel's own tests or docs show a dump with a password or
+a DSN in it, they'll see `*REDACTED*` where the module is installed. A
+test that needs the secret written can set `$DumpSecrets`, and one
+that makes up a secret should build it from pieces, as the rule on
+secrets in messages says.
+
 ## From Ekorn-Pipeline, 2026-11-15: scanning with betterleaks, Ekorn's 2026-0039
 
 **From:** Ekorn-Pipeline's session, 2026-11-15 (Ekorn-Pipeline
