@@ -459,6 +459,14 @@ the redirect.
   Read messages at the start of a session, with the tasks; the session
   they're for removes each once read, in a commit saying what came of
   it, and the heading with the last one.
+- **A message or task never holds a secret whole,** made-up or not, as
+  Iain decided on 2026-11-15, taking Text-Redact-Secrets' rule: it's
+  built from pieces, as a test's is, such as `join '', 'AKIA',
+  'MADEUP', ...`, or left out. Once pushed, history keeps it, and
+  gitleaks fails CI on every push after. A full commit hash beside one
+  of gitleaks' keywords, such as a rule's name, can look like a secret
+  too: run `gitleaks dir .` before a docs commit (a finding only in the
+  git-ignored `cover_db/` isn't in history).
 
 Why: planned work survives between sessions in the open, where Iain
 reviews it like any other change, and a release never carries an
@@ -566,3 +574,12 @@ found.
 - gitleaks scans the whole history for secrets in CI on every push, and
   by hand before a tag. A leak stops the work like a failing test: once
   history is published, it can't be taken back.
+  If a secret, or something gitleaks takes for one, reaches published
+  history anyway, it isn't rewritten, which would mean resetting every
+  clone and changing every hash written since: a `.gitleaksignore` at
+  the top of the repository lists that one finding by its fingerprint
+  (commit, file, rule and line), from `gitleaks git --redact -f json -r
+  report.json .`, with a comment above it giving Iain's reason. Nothing
+  else is passed over, so a real secret still fails CI; CI's scan reads
+  the file too, and Minilla leaves dotfiles out of the tarball. A real
+  secret is revoked first, whatever else is done.
