@@ -48,6 +48,44 @@ several seconds of runs, per call:
   an array, `expand_lists`, run at each `execute` of a statement with
   a list placeholder, was 3 to 4% quicker.
 
+### Compared with DBI and DBIx::Class, 2026-11-15
+
+On Perl 5.36.3 and the gazetteer's SQLite file, read-only, with
+DBIx::Class 0.082844, installed apart from Iain's libraries; each the
+best of three runs. Reading every row, in µs a row, and times plain
+DBI's `fetchrow_arrayref`:
+
+| | `place_areas`, 297,848 narrow rows | `places`, 104,082 of 1.6 KB |
+|---|---|---|
+| DBI `fetchrow_arrayref` | 0.24 (1.0×) | 0.50 (1.0×) |
+| DBI `fetchrow_hashref` | 1.01 (4.2×) | 1.94 (3.9×) |
+| Squirrel `all`, arrays | 0.44 (1.8×) | 0.92 (1.9×) |
+| Squirrel `next`, arrays | 0.85 (3.5×) | 1.29 (2.6×) |
+| Squirrel `next`, hashes | 1.16 (4.8×) | 1.83 (3.7×) |
+| DBIx::Class `cursor->next`, arrays | 0.95 (3.9×) | 1.38 (2.8×) |
+| DBIx::Class HashRefInflator | 3.14 (12.9×) | 4.54 (9.1×) |
+| DBIx::Class row objects | 4.85 (19.9×) | 6.35 (12.8×) |
+
+2,000 lookups in `places` by primary key, in µs a lookup:
+
+| | Time |
+|---|---|
+| DBI `selectrow_array`, `prepare_cached` | 6.3 (1.0×) |
+| Squirrel `selectrow_array` | 22.0 (3.5×) |
+| Squirrel, prepared once, `iterate($id)->first` | 53.0 (8.4×) |
+| Squirrel `iterate($sql, $id)->first` | 65.9 (10.4×) |
+| DBIx::Class `find($id)->name` | 176.4 (27.9×) |
+| DBIx::Class `search(...)->get_column->first` | 191.0 (30.2×) |
+
+- **Reading rows,** DBIx::Squirrel's hashes cost about what the DBI's
+  `fetchrow_hashref` does, and it's 3 to 4 times quicker than
+  DBIx::Class's hashes and row objects.
+- **Looking one row up,** it's 3 to 8 times quicker than DBIx::Class,
+  but `iterate(...)->first` takes about 47 µs more than its own
+  `selectrow_array`, the setup of an iterator, which the plan's first
+  step profiles. Against a server, each lookup also pays a round trip,
+  of 50 to 200 µs, which narrows every gap.
+
 ### Copilot's review of db.pm, and what was found of it
 
 1. **`_binds` sorts the positions:** true, and under a microsecond a
