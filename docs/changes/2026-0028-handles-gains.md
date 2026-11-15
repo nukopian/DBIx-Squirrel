@@ -7,7 +7,8 @@ studied once. D2 open: whether `study_sql`'s placeholders become an
 array, as v3.0.3 is a patch release. D3 open: what replaces emptying
 the study cache at 1,000 statements, if anything. D4 settled: this
 session leads v3.0.3's optimisation, and Ekorn's changes go to its
-session as tasks.
+session as tasks. D5 settled: small gains count, as they add up, if
+each measures as a gain.
 
 **Origin:** Iain, 2026-11-14, as v3.0.2 went out: "Let's take that
 db.pm module and st.pm and see where real gains could be measured and
@@ -142,6 +143,13 @@ the iterator.
   this session changing Ekorn's code on a branch, which would have
   needed CLAUDE.md's rules on designing in each repository's session,
   and on the sessions talking only through `TODO.md`, changed in both.
+- [x] **D5.** Is a change worth making for a small gain? Yes, as Iain
+  said on 2026-11-15: "Even if changes result in small gains, they'll
+  be cumulative." So the smaller points, Copilot's 1, 2, 4 and 8, are
+  candidates like the rest, not left for last. Each is still measured
+  before and after, and kept only if it gains beyond the noise between
+  runs: a change under a microsecond can as easily cost as save, and
+  that adds up too.
 
 ## The plan
 
@@ -152,7 +160,8 @@ Written when work starts. Its order, as proposed on 2026-11-14:
    over plain DBI.
 2. Study a statement given attributes once (D1).
 3. The cache's eviction, against a workload that reaches it (D3).
-4. The smaller gains, Copilot's 1, 2, 4 and 8, only if they measure.
+4. The smaller gains, Copilot's 1, 2, 4 and 8, each kept if it
+   measures as a gain, however small (D5).
 
 ## What happened
 
