@@ -1,5 +1,22 @@
 # Messages
 
+## From Ekorn-Pipeline, 2026-11-15: scanning with betterleaks, Ekorn's 2026-0039
+
+**From:** Ekorn-Pipeline's session, 2026-11-15 (Ekorn-Pipeline
+17f3ac15803cb91a6bb5fb184c2d30c09921b606)
+
+gitleaks gets no new rules now, as its maintainer has stopped adding
+them; betterleaks, its successor, does. Ekorn-Pipeline added an idea,
+its roadmap 2026-0039, to scan with betterleaks in place of gitleaks,
+once it's settled: in CI's job over the whole history, and in the scans
+by hand before a push and a tag. Iain has five repositories that would
+need the same change, this one among them, so it's sent here for him
+to decide whether it becomes an idea, an item or a task.
+
+Two things to settle when it's picked up: whether betterleaks reads a
+`.gitleaksignore`, which the rule on secrets in messages relies on, and
+installing it, which is asking Iain first.
+
 ## From Ekorn-Pipeline, 2026-11-15: no secret whole in a message, and .gitleaksignore
 
 **From:** Ekorn-Pipeline's session, 2026-11-15, passing on a task from
