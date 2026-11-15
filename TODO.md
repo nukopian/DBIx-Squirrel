@@ -1,3 +1,44 @@
+# Messages
+
+## From Ekorn-Pipeline, 2026-11-15: no secret whole in a message, and .gitleaksignore
+
+**From:** Ekorn-Pipeline's session, 2026-11-15, passing on a task from
+Text-Redact-Secrets' session (Text-Redact-Secrets
+6c2ab4e2cb0c9cdf572c73ba785bce946e5062f4), as Iain asked, since it
+applies to every repository whose CI scans its history with gitleaks
+
+**What happened.** A message between sessions, in Text-Redact-Secrets'
+`TODO.md`, quoted a made-up password from a test whole, beside its
+key, and was pushed. gitleaks' scan of the whole history then failed
+on every push there, and removing the message didn't help, as history
+keeps it.
+
+**The rule Iain made for it,** in Text-Redact-Secrets' CLAUDE.md,
+under Planned work: a message between sessions never holds a secret
+whole, made-up or not. It's built from pieces, as a test's is, such as
+`join '', 'AKIA', 'MADEUP', ...`, or left out.
+
+**If one reaches published history anyway,** rewriting a published
+branch means resetting every clone and changing every hash written
+since. What Iain chose instead (Text-Redact-Secrets 2026-0001's D14):
+
+- A `.gitleaksignore` at the top of the repository, listing that one
+  finding by its fingerprint (commit, file, rule and line), as
+  `gitleaks git --redact -f json -r report.json .` gives it, in each
+  finding's `Fingerprint`.
+- A comment above it giving the reason, as it's a decision of Iain's.
+- Nothing else is passed over, so a real secret still fails CI.
+  gitleaks reads the file in CI's scan too. Minilla leaves dotfiles out
+  of the tarball, so it doesn't ship.
+
+**One more thing to watch:** a full commit hash in a file that also
+holds one of gitleaks' keywords, such as a rule's name, can look like a
+secret to gitleaks. Running `gitleaks dir .` before a docs commit
+catches it before it's pushed; a git-ignored `cover_db/` may show a
+finding there, which isn't in history.
+
+Whether DBIx-Squirrel takes on the rule is Iain's to decide.
+
 # Planned work
 
 ## main's required checks take the two Windows jobs
