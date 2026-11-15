@@ -5,7 +5,9 @@
 **Decisions:** D1 open: how a statement studied with attributes is
 studied once. D2 open: whether `study_sql`'s placeholders become an
 array, as v3.0.3 is a patch release. D3 open: what replaces emptying
-the study cache at 1,000 statements, if anything.
+the study cache at 1,000 statements, if anything. D4 settled: this
+session leads v3.0.3's optimisation, and Ekorn's changes go to its
+session as tasks.
 
 **Origin:** Iain, 2026-11-14, as v3.0.2 went out: "Let's take that
 db.pm module and st.pm and see where real gains could be measured and
@@ -130,6 +132,16 @@ the iterator.
 - [ ] **D3.** What replaces emptying the cache at 1,000 statements: an
   LRU, dropping the oldest, or nothing? Measured first against a
   workload with more than 1,000 statement texts.
+- [x] **D4.** How is v3.0.3's optimisation driven, as some gains may
+  be Ekorn::Pipeline's? From this session, as Iain decided on
+  2026-11-15, as the measurements are made here: this record sets the
+  order of work for both repositories. Ekorn-Pipeline's session still
+  makes Ekorn's changes, sent as tasks in its `TODO.md`, each with the
+  measurements and a way to check it, and this session checks them
+  against Ekorn's working copy, as the tests do. Iain chose that over
+  this session changing Ekorn's code on a branch, which would have
+  needed CLAUDE.md's rules on designing in each repository's session,
+  and on the sessions talking only through `TODO.md`, changed in both.
 
 ## The plan
 
