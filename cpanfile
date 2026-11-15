@@ -11,6 +11,11 @@ requires 'Sub::Util';
 requires 'experimental';
 requires 'namespace::clean';
 
+# Ekorn::Pipeline's dump_to redacts the secrets it finds when this is
+# installed (Ekorn 2026-0038); installers don't follow a dependency's
+# recommendations, so ours names it too.
+recommends 'Text::Redact::Secrets', '>= v1.0.0, < v2.0.0';
+
 on test => sub {
     requires 'DBD::SQLite';
     requires 'Test2::V0';

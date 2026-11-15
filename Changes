@@ -2,9 +2,14 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    Documentation: dump_to's notes say it redacts secrets where
-    Text::Redact::Secrets is installed, as Ekorn::Pipeline v0.3.2's
-    dump_to does, and how to turn that off.
+    dump_to redacts secrets where Text::Redact::Secrets is installed,
+    as Ekorn::Pipeline v0.3.2's dump_to does: DBIx::Squirrel now
+    recommends that module, and dump_to's notes say what it redacts
+    and how to turn that off.
+
+    - Text::Redact::Secrets v1.x is recommended, as Ekorn::Pipeline
+      recommends it, and installers that take recommendations install
+      it with DBIx::Squirrel.
 
     - dump_to's notes, in the reference, the user guide and
       DBIx::Squirrel::Stages::Taps, no longer say it writes secrets
