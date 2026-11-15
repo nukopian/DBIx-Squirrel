@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0028.
+Last id: 2026-0029.
 
 Items come in four groups:
 
@@ -89,3 +89,16 @@ After v3.0.0, as it only adds. **Origin:** a message from
 Ekorn-Pipeline, 2026-11-14 (its commit
 d5be2efc91490bfc9c4e94582a4b937fd2327dbd), whose details are in TODO.md at
 fb67c9ab896aff6d67e8a4a6d8d97b1389ae11b7.
+
+### 2026-0029. Scanning with betterleaks
+
+Added 2026-11-15. Scan for secrets with betterleaks, gitleaks'
+successor, in place of gitleaks, which gets no new rules now: in CI's
+job over the whole history (`.github/workflows/test.yml`) and in the
+scans by hand before a push and a tag (docs/MAINTAINING.md), as
+Ekorn-Pipeline's 2026-0039 does there. Two questions when it's taken
+up: whether betterleaks reads a `.gitleaksignore`, which the rule on
+secrets in messages relies on, and installing it, asking Iain first.
+**Origin:** a message from Ekorn-Pipeline, 2026-11-15 (its commit
+17f3ac15803cb91a6bb5fb184c2d30c09921b606), whose details are in TODO.md at
+62b4c63b98f1efdc8e518e5e4c070985abb8c3a5.
