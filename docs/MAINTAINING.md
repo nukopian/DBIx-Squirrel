@@ -191,76 +191,133 @@ precis, and takes the item off [ROADMAP.md](../ROADMAP.md).
 
 A trial puts a version on CPAN for CPAN Testers to test, on platforms
 CI doesn't cover, such as the BSDs and Solaris. CI has run on Windows
-since the v3.0.0 trial failed there. CPAN doesn't index it,
-so `cpanm DBIx::Squirrel` still installs the last release. PAUSE takes
-a tarball whose name ends `-TRIAL` as a trial. That's all Minilla's
-own `minil release --trial` does. There's no tag and no GitHub
-release, and `main` doesn't move. v2.0.0 had one, uploaded on
-2026-11-05, v2.0.1 and v2.0.2 one each, on 2026-11-06, and v2.1.0 one
-on 2026-11-10.
+since the v3.0.0 trial failed there. CPAN doesn't index a trial, so
+`cpanm DBIx::Squirrel` still installs the last release. PAUSE takes a
+tarball whose name ends `-TRIAL` as a trial. That's all Minilla's own
+`minil release --trial` does, and `minil dist` has no `--trial`, so we
+rename the tarball by hand. The `META.json` inside still says
+`"release_status" : "stable"`; PAUSE and MetaCPAN go by the name.
+There's no tag and no GitHub release, `main` doesn't move, and
+`Changes` keeps its Unreleased heading. v2.0.0 had a trial, uploaded
+on 2026-11-05, v2.0.1 and v2.0.2 one each, on 2026-11-06, v2.1.0 one
+on 2026-11-10, and v3.0.0, v3.0.1 and v3.0.2 one each, on 2026-11-14.
 
 PAUSE never takes the same file name twice. So each trial has a
 version of its own, and the release takes the version of its last
-trial. A second trial moves the version on. Gather changed the
-pipeline after v2.0.0's trial, so the next trial was v2.0.1. List
-placeholders came after that one, so the next, and the release, were
-v2.0.2. Don't use an underscore version, such as `v2.0.0_1`, for a
-trial of v2.0.0. `version.pm` reads it as v2.0.1, so it would rank
-above the release it was a trial of.
+trial. A change to code or tests after a trial moves the version on.
+Gather changed the pipeline after v2.0.0's trial, so the next trial
+was v2.0.1. List placeholders came after that one, so the next, and
+the release, were v2.0.2. v3.0.0's trial failed to install over
+v2.1.0, and v3.0.1's on Windows, so the release was v3.0.2. Don't use
+an underscore version, such as `v2.0.0_1`, for a trial of v2.0.0.
+`version.pm` reads it as v2.0.1, so it would rank above the release
+it was a trial of.
+
+The commands below are for v3.0.2's trial. For another version,
+change the first line of each.
 
 1. **Check `develop`,** as in step 1 of
    [Making a release](#making-a-release), with the working tree clean.
-   Then the tarball is built from a commit CI has passed.
+   Then the tarball is built from a commit CI has passed. Unlike a
+   release, a trial doesn't wait for `TODO.md` to go, as `minil.toml`
+   leaves it out of the tarball. But a task that changes code is done
+   first, or the trial tests something other than what's released.
 
-2. **Set the version, if it has had a trial.** The version is the one
-   in the main module. If PAUSE already has a trial of it, set the next
-   on the first line. Then commit and push, and wait for CI to pass on
-   the commit before going on:
+2. **Set the version,** unless the main module has it already: for a
+   new version's first trial, as v3.0.0's was set from v2.1.0, and for
+   each trial after one already on PAUSE. `minil prepare` writes it
+   into the main module, and regenerates `META.json`:
 
    ```sh
-   v=v2.0.2
+   v=v3.0.2
    cd ~/Git/github.com/nukopian/DBIx-Squirrel
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil prepare "$v" </dev/null
    git status --short
    ```
 
-   Commit what changed as `chore: version v2.0.2, for a trial`, with
-   the version.
+   Commit what changed as `chore: version v3.0.2, for a trial`, with
+   the version, push, and wait for CI to pass on the commit before
+   going on.
 
-3. **Build the tarball, and check its tests passed.** Set the version
-   on the first line:
+3. **Build the tarball, and check it.** `--skip-prepare` builds from
+   the files as committed, as a release does from its tag:
 
    ```sh
-   v=v2.0.2
+   v=v3.0.2
    cd ~/Git/github.com/nukopian/DBIx-Squirrel
-   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist > "$TMPDIR/dist-$v.log" 2>&1
+   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist --skip-prepare > "$TMPDIR/dist-$v.log" 2>&1
    grep '^Result:' "$TMPDIR/dist-$v.log"
+   tar -xOzf "DBIx-Squirrel-$v.tar.gz" "DBIx-Squirrel-$v/META.json" | jq -r .version
+   tar -tzf "DBIx-Squirrel-$v.tar.gz" | grep -E "^DBIx-Squirrel-$v/(CLAUDE|ROADMAP|TODO|docs/|scripts/)"
+   git status --short
    ```
 
-   It must print `Result: PASS`. `minil dist` exits 0 even when the
-   tests fail.
+   It must print `Result: PASS`, then the version, and nothing after:
+   `minil dist` exits 0, and writes the tarball, even when the tests
+   fail; no maintainers' file goes in the tarball; and git ignores the
+   tarball. On a failure, remove the tarball, fix the problem on
+   `develop`, and start again.
 
-4. **Rename it, and upload it:**
+   The build also runs Minilla's own tests, which CI doesn't, among
+   them a POD spelling test. A word it doesn't know, but that's right,
+   goes in the manuals' `<!-- stopwords: ... -->` comment at the top
+   of `docs/REFERENCE.md` or `docs/HOWTO.md`, which `scripts/manuals`
+   copies, or in a module's `=for stopwords` line. It caught "bitwise"
+   before v3.0.0's build.
+
+4. **Test it over the last release.** Installing never removes a
+   file, so code that relies on a module being gone can fail for
+   someone upgrading, where CI and CPAN Testers, in fresh
+   environments, don't see it. v3.0.0's trial failed that way, over
+   v2.1.0's `DBIx::Squirrel::Pipeline`. So run the tarball's tests in
+   a library that has the last release installed, such as Iain's
+   `perl-5.36.3@jdc-lab`. `--test-only` tests without installing:
 
    ```sh
-   v=v2.0.2
+   v=v3.0.2
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
+   perlbrew exec --with perl-5.36.3@jdc-lab perl -MDBIx::Squirrel -e 'print "installed: $DBIx::Squirrel::VERSION\n"'
+   perlbrew exec --with perl-5.36.3@jdc-lab cpanm --test-only "./DBIx-Squirrel-$v.tar.gz"
+   ```
+
+   It must end `Successfully tested`.
+
+5. **Rename it, and upload it.** `cpan-upload` reads the PAUSE account
+   from `~/.pause`:
+
+   ```sh
+   v=v3.0.2
    cd ~/Git/github.com/nukopian/DBIx-Squirrel
    mv "DBIx-Squirrel-$v.tar.gz" "DBIx-Squirrel-$v-TRIAL.tar.gz"
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpan-upload "DBIx-Squirrel-$v-TRIAL.tar.gz"
    rm "DBIx-Squirrel-$v-TRIAL.tar.gz"
    ```
 
-5. **Read the reports,** as they come in over the next few days. The
-   first command counts each version's reports by grade. The second
-   lists those that didn't pass, with a link to each:
+6. **Check that CPAN has it, as a trial.** PAUSE emails when it has
+   the upload. MetaCPAN lists it within minutes, and `developer` says
+   it's a trial:
+
+   ```sh
+   curl -sSf https://fastapi.metacpan.org/v1/release/versions/DBIx-Squirrel | jq -r '.releases[] | "\(.name) \(.maturity) \(.status) \(.date)"' | head -3
+   ```
+
+   The first line should name the trial, with `developer cpan`, and
+   the last release should still say `latest`.
+
+7. **Read the reports,** as they come in over the next few days, most
+   within the hour. The first command counts each version's reports
+   by grade. The second lists every report that didn't pass, of any
+   version, with a link to each:
 
    ```sh
    curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r 'group_by(.version)[] | group_by(.grade)[] | "\(.[0].version) \(.[0].grade): \(length)"'
-   curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r '.[] | select((.version | startswith("v2") or startswith("2")) and .grade != "pass") | "\(.version) \(.grade) \(.osname) perl \(.perl) https://www.cpantesters.org/cpan/report/\(.guid)"'
+   curl -sSf https://api.cpantesters.org/v3/summary/DBIx-Squirrel | jq -r '.[] | select(.grade != "pass") | "\(.version) \(.grade) \(.osname) perl \(.perl) https://www.cpantesters.org/cpan/report/\(.guid)"'
    ```
 
    A failure is fixed on `develop` before the release, and a new trial
-   uploaded, with a version of its own.
+   uploaded, with a version of its own. An `na` from a Perl older than
+   5.36 is expected, and needs nothing. Windows' testers report too:
+   v3.0.0's failed on Perl 5.36.3 and 5.42.3 within twenty minutes.
 
 ## Making a release
 
@@ -293,15 +350,18 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    version on the first line:
 
    ```sh
-   v=v2.0.2
+   v=v3.0.2
    cd ~/Git/github.com/nukopian/DBIx-Squirrel
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil prepare "$v" </dev/null
    git status --short
    ```
 
+   After a trial, the main module has its version already, so this
+   changes nothing, and `git status` prints nothing.
+
 3. **Turn Unreleased into the release** in [Changes](../Changes):
    - Rename the heading to the version and date, as
-     `v2.0.2 2026-10-22`.
+     `v3.0.2 2026-11-14`.
    - Start the entry with a sentence that sums it up. It becomes the
      tag's title.
    - Follow it with the precis of the roadmap items it ships, by id.
@@ -313,14 +373,15 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    ```text
    Unreleased
 
-   v2.0.2 2026-10-22
+   v3.0.2 2026-11-14
 
-       The successor to 1.6.5: a rewrite in modern Perl.
+       Version 3: a statement is a source for Ekorn::Pipeline, and a sink
+       given last turns it into a result.
 
-       - Requires Perl 5.36 or later.
+       - Requires Ekorn::Pipeline v0.3.0 or later, below v0.4.0.
    ```
 
-   Commit it with the version (`chore: release v2.0.2`), push, and wait
+   Commit it with the version (`chore: release v3.0.2`), push, and wait
    for CI.
 
 4. **Write the tag message from the entry,** and read it. The entry,
@@ -330,7 +391,7 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    line:
 
    ```sh
-   v=v2.0.2
+   v=v3.0.2
    cd ~/Git/github.com/nukopian/DBIx-Squirrel
    v=$v perl -0777 -ne 'print "$1\n" =~ s/^    //mgr if /^\Q$ENV{v}\E [^\n]*\n\n(.*?)\n*(?=^\S|\z)/ms' Changes > "$TMPDIR/notes-$v.txt"
    sed "1s/^/$v: /" "$TMPDIR/notes-$v.txt" > "$TMPDIR/tag-$v.txt"
@@ -355,7 +416,7 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    version on the first line:
 
    ```sh
-   v=v2.0.2
+   v=v3.0.2
    git switch main
    git pull --ff-only
    git merge --ff-only develop
@@ -375,20 +436,23 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    on the first line:
 
    ```sh
-   v=v2.0.2
+   v=v3.0.2
    cd ~/Git/github.com/nukopian/DBIx-Squirrel
    git switch --detach "$v"
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist --skip-prepare > "$TMPDIR/dist-$v.log" 2>&1
    grep '^Result:' "$TMPDIR/dist-$v.log"
+   tar -xOzf "DBIx-Squirrel-$v.tar.gz" "DBIx-Squirrel-$v/META.json" | jq -r .version
+   tar -tzf "DBIx-Squirrel-$v.tar.gz" | grep -E "^DBIx-Squirrel-$v/(CLAUDE|ROADMAP|TODO|docs/|scripts/)"
    ```
 
-   It must print `Result: PASS`. `minil dist` exits 0, and writes the
-   tarball, even when the tests fail. So read this line, not its exit
-   status. On a failure, the log says which test failed. Remove the
-   tarball, fix it on `develop`, and start again. Then upload:
+   It must print `Result: PASS`, then the version, and nothing after,
+   as for a trial. `minil dist` exits 0, and writes the tarball, even
+   when the tests fail. So read this line, not its exit status. On a
+   failure, the log says which test failed. Remove the tarball, fix it
+   on `develop`, and start again. Then upload:
 
    ```sh
-   v=v2.0.2
+   v=v3.0.2
    cd ~/Git/github.com/nukopian/DBIx-Squirrel
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpan-upload "DBIx-Squirrel-$v.tar.gz"
    git switch develop
@@ -503,7 +567,7 @@ and Ubuntu's DBI moves on, so does that job's.
   go on with step 6. Set the version on the first line:
 
   ```sh
-  v=v2.0.2
+  v=v3.0.2
   cd ~/Git/github.com/nukopian/DBIx-Squirrel
   git switch main
   git merge --ff-only "$v"
