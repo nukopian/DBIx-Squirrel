@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0029.
+Last id: 2026-0030.
 
 Items come in four groups:
 
@@ -56,8 +56,8 @@ of an `iterate`, which reading one row takes 73 µs against plain
 DBI's 9 µs; then a statement given attributes, which is studied twice
 in full; then, if they measure, the smaller points of a review by
 GitHub Copilot. Its [record](docs/changes/2026-0028-handles-gains.md)
-has the timings, each point with what was found of it, and three
-decisions open.
+has the timings, each point with what was found of it, and its
+decisions, all settled.
 Why: Iain asked, after v3.0.2, to see where real gains could be
 measured and made in the two handles.
 Done when: each change is measured before and after, kept only if it
@@ -102,3 +102,12 @@ secrets in messages relies on, and installing it, asking Iain first.
 **Origin:** a message from Ekorn-Pipeline, 2026-11-15 (its commit
 17f3ac15803cb91a6bb5fb184c2d30c09921b606), whose details are in TODO.md at
 62b4c63b98f1efdc8e518e5e4c070985abb8c3a5.
+
+### 2026-0030. A study cache that drops the oldest
+
+Added 2026-11-15. The handles' study cache empties when it reaches
+1,000 statement texts. An LRU, dropping the oldest instead, would keep
+a program with more texts than that from studying its common ones
+again, but adds work to every cache hit. Measure both against a
+workload with more than 1,000 texts first. Left out of v3.0.3 by
+2026-0028's D3.

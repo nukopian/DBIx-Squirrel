@@ -2,10 +2,9 @@
 
 **Status:** open
 
-**Decisions:** D1 open: how a statement studied with attributes is
-studied once. D2 open: whether `study_sql`'s placeholders become an
-array, as v3.0.3 is a patch release. D3 open: what replaces emptying
-the study cache at 1,000 statements, if anything. D4 settled: this
+**Decisions:** D1 settled: `_prepare_as` passes its study on. D2
+settled: an array inside the handles, `study_sql` keeps its hash. D3
+settled: nothing in v3.0.3, an LRU is idea 2026-0030. D4 settled: this
 session leads v3.0.3's optimisation, and Ekorn's changes go to its
 session as tasks. D5 settled: small gains count, as they add up, if
 each measures as a gain.
@@ -121,18 +120,30 @@ the iterator.
 
 ## Decisions
 
-- [ ] **D1.** How is a statement given attributes studied once? Pass
+- [x] **D1.** How is a statement given attributes studied once? Pass
   `_prepare_as`'s study on to `prepare` and `prepare_cached`, or cache
   studies with attributes too, keyed by them, or both. Passing it on
   keeps the cache as it is; caching by attributes helps every caller.
-- [ ] **D2.** Do `study_sql`'s placeholders become an array, by
+  **Settled 2026-11-15:** pass the study on, as Iain chose. It saves
+  the second full study, about 32 µs, needs no change to the cache,
+  and no key built from attributes, which can hold code references and
+  objects.
+- [x] **D2.** Do `study_sql`'s placeholders become an array, by
   position from 1? It's exported, and its POD says it returns a hash
   reference, so it changes an interface in a patch release, for under
   a microsecond a statement. Or keep the hash for `study_sql`, and use
   an array only inside the handles.
-- [ ] **D3.** What replaces emptying the cache at 1,000 statements: an
+  **Settled 2026-11-15:** an array only inside the handles, as Iain
+  chose; `study_sql` keeps returning a hash, so v3.0.3 changes no
+  interface. Kept only if it measures as a gain (D5).
+- [x] **D3.** What replaces emptying the cache at 1,000 statements: an
   LRU, dropping the oldest, or nothing? Measured first against a
   workload with more than 1,000 statement texts.
+  **Settled 2026-11-15:** nothing in v3.0.3, as Iain chose. Emptying
+  costs only programs with more than 1,000 statement texts, mostly SQL
+  built with literals, where caching helps little, and an LRU adds work
+  to every hit. Measuring one against such a workload is idea
+  2026-0030, so step 3 of the plan leaves this item.
 - [x] **D4.** How is v3.0.3's optimisation driven, as some gains may
   be Ekorn::Pipeline's? From this session, as Iain decided on
   2026-11-15, as the measurements are made here: this record sets the
