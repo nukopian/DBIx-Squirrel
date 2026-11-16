@@ -1,6 +1,6 @@
 # 2026-0028. Measured gains in the handles, for v3.0.3
 
-**Status:** in progress
+**Status:** shipped in v3.0.3
 
 **Decisions:** D1 settled: `_prepare_as` passes its study on. D2
 settled: an array inside the handles, `study_sql` keeps its hash. D3
@@ -599,4 +599,9 @@ Lookups by key gain 2 to 5 µs, on every driver: a prepared statement's
 96.0, on PostgreSQL; 73.6, not 75.3, on MySQL. With one value, there's
 little to gain in `execute`; most of a lookup is the iterator's run,
 and Ekorn's share of it reaches users with its v0.3.3.
+
+Released as v3.0.3 on 2026-11-16, requiring Ekorn::Pipeline v0.3.3 or
+later, unattended, as Iain asked before he slept: Ekorn v0.3.3's 63
+CPAN Testers reports were 55 passes and 8 na from Perls below 5.36,
+with no fails, and CI passed on every commit.
 

@@ -41,15 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0028. Measured gains in the handles, for v3.0.3
-
-**Size:** M (3)
-
-Profiling the setup of an `iterate`, which reading one row takes 73 µs
-against plain DBI's 9 µs, then studying a statement given attributes
-once, and the smaller gains, each kept only if it measures as one. Its
-[record](docs/changes/2026-0028-handles-gains.md) has the plan, the
-timings and the decisions.
+Nothing.
 
 ## Next
 

@@ -2,13 +2,16 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    Quicker handles: execute with named values takes a quarter to two
-    fifths of the time it did, a statement given attributes is
-    studied once, not twice, and iterators and result sets do less for
-    each run and each row (roadmap 2026-0028). dump_to redacts secrets
-    where Text::Redact::Secrets is installed, as Ekorn::Pipeline
-    v0.3.2's dump_to does, and DBIx::Squirrel now recommends that
-    module.
+v3.0.3 2026-11-16
+
+    Quicker handles, from execute to each row read.
+
+    With named values, execute takes a quarter to two fifths of the time
+    it did, a statement given attributes is studied once, not twice, and
+    iterators and result sets do less for each run and each row (roadmap
+    2026-0028). dump_to redacts secrets where Text::Redact::Secrets is
+    installed, as Ekorn::Pipeline v0.3.2's dump_to does, and
+    DBIx::Squirrel now recommends that module.
 
     - execute does less to put named or numbered values in order, and
       passes them on without copying them. On SQLite, with five named

@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [Measured gains in the handles, for v3.0.3](2026-0028-handles-gains.md),
-  roadmap 2026-0028: open.
+  roadmap 2026-0028: shipped in v3.0.3.
 - [A sweep of the docs](2026-0026-docs-sweep.md),
   from a task of Ekorn-Pipeline's: shipped in v3.0.2.
 - [DBIx::Squirrel::Tooling](2026-0025-tooling.md),
