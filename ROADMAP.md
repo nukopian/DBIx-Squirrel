@@ -41,16 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0027. A pipeline key for the Sugar
-
-**Size:** S (2)
-
-One `use DBIx::Squirrel::Sugar` names pipelines as well as databases
-and statements: a `pipeline` key, whose definitions go to
-Ekorn::Pipeline::Sugar's `import_into` (Ekorn-Pipeline 2026-0010)
-before any statement is defined, so a statement can name one given
-beside it. It installs no `pipeline` function, which is Ekorn's word.
-For v3.1.0. [Its record](docs/changes/2026-0027-sugar-pipeline-key.md).
+Nothing.
 
 ## Next
 

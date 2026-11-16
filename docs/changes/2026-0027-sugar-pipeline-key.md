@@ -1,6 +1,6 @@
 # 2026-0027. A pipeline key for the Sugar
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: pipelines are defined first, wherever
 they're given. D2 settled: `pipeline` takes what Ekorn's takes. D3
@@ -11,7 +11,9 @@ v3.1.0.
 (Ekorn-Pipeline d5be2efc91490bfc9c4e94582a4b937fd2327dbd), whose
 details are in TODO.md at fb67c9ab896aff6d67e8a4a6d8d97b1389ae11b7
 
-**Started:** 2026-11-16
+**Started:** 2026-11-16, in 7db6ca5
+
+**Finished:** 2026-11-16
 
 ## Background
 
@@ -77,3 +79,17 @@ pipelines, and a statement can name a pipeline defined beside it.
 coverage above its floors, and `xt/examples.t` runs the new example.
 
 ## What happened
+
+- **Outcome:** done as planned. `use DBIx::Squirrel::Sugar` takes
+  `pipeline`, passes each with what follows it to `import_into` before
+  any statement is defined, and installs no `pipeline` function. The
+  tests in `t/16-sugar.t` pass on Perl 5.36.3, 5.38.5, 5.40.5, 5.42.3
+  and 5.44.0 against Ekorn's working copy at 38a57ed, and on 5.36.3
+  against Ekorn v0.3.3 from CPAN; coverage stays above its floors, and
+  `xt/examples.t` runs the how-to's new example.
+- **Changes from the plan:** none to the code. The docs that named a
+  pipeline in a `BEGIN` block for a statement defined with `use`, the
+  reference's example and the Sugar's POD, use the key now, and say
+  `BEGIN` is still the way for a pipeline named with `named`. The
+  README's sixth step says the Sugar names pipelines too.
+- **What's left:** nothing. It ships in v3.1.0 (D4).

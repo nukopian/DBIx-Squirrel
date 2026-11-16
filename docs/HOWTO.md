@@ -1766,22 +1766,28 @@ anywhere in the program.
 
 ### Use a named pipeline in a definition
 
-A statement's definition can name a pipeline. The name is looked up as
-the statement is defined, so for a statement defined with `use`, name
-the pipeline in a `BEGIN` block above it. When the statement is
+A statement's definition can name a pipeline. Give the pipelines to
+the same `use`, after `pipeline`. They're named before any statement
+is defined, wherever they're given, so a statement can name one beside
+it. Each gets a function of its name too. When the statement is
 called, a string is always a value, never a name:
 
 ```perl
-use Ekorn::Pipeline;
-
-BEGIN { Ekorn::Pipeline->named(loud => sub { uc $_->[0] }) }
-
-use DBIx::Squirrel::Sugar statement => {
-    loud_titles => [music => 'SELECT title FROM album WHERE year < ? ORDER BY year', 'loud'],
-};
+use DBIx::Squirrel::Sugar
+    statement => {
+        loud_titles => [music => 'SELECT title FROM album WHERE year < ? ORDER BY year', 'loud'],
+    },
+    pipeline => {loud => [sub { uc $_->[0] }]};
 
 say join ', ', loud_titles(1990, keep_all);    # DISRAELI GEARS, ARRIVAL
+say loud(['Parklife']);                        # PARKLIFE
 ```
+
+`pipeline` takes what Ekorn::Pipeline::Sugar takes: a hash, or an
+array of names and stages in turn. A name is looked up as the
+statement is defined, so a pipeline named another way, with
+`Ekorn::Pipeline->named`, must be named in a `BEGIN` block above a
+statement defined with `use`.
 
 ### Mind the names you import
 

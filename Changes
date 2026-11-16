@@ -2,7 +2,20 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    A little less work for each row.
+    The Sugar names pipelines, and a little less work for each row.
+
+    One use of DBIx::Squirrel::Sugar names pipelines as well as
+    databases and statements, so a statement can name a pipeline
+    defined beside it (roadmap 2026-0027). pluck, as_hash and an
+    iterator's next do less for each row.
+
+    - DBIx::Squirrel::Sugar takes pipeline, followed by what
+      Ekorn::Pipeline::Sugar takes, and names each pipeline, with a
+      function of its name, before it defines any statement, wherever
+      it's given. It gives no pipeline function. Given anything else,
+      it now croaks "Expected database, pipeline or statement, not
+      ...", not "Expected database or statement, not ..." (roadmap
+      2026-0027).
 
     - pluck and as_hash read each row without a signature, saving
       about 10 ns a row of pluck's 420 or so.

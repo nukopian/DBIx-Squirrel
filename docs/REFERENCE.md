@@ -1570,7 +1570,8 @@ in the package that names it, unless the name is qualified, as
 makes a pipeline of stages and names, looked up in its caller's
 package as it's made. A name given alone gives the pipeline named, so
 its stages are numbered where it stands. The [Sugar's
-definitions](#statement) take names too. Ekorn's reference has the
+definitions](#statement) take names too, and the Sugar's
+[`pipeline`](#defining-them-on-use) names pipelines as well. Ekorn's reference has the
 rules, in [Named
 pipelines](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#named-pipelines).
 
@@ -1730,12 +1731,18 @@ use DBIx::Squirrel::Sugar statement => {
     artist_names => [music => 'SELECT name FROM artist', sub ($row) { $row->[0] }],
     artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
 };
+use DBIx::Squirrel::Sugar pipeline => {loud => [sub {uc}]};
 use DBIx::Squirrel::Sugar qw(database statement);
 ```
 
 Given a hash reference after `database` or `statement`, `use` defines
 each database or statement named in it, with its arguments in an array
-reference. It gives the package each function while the package is
+reference. After `pipeline`, it takes what Ekorn::Pipeline::Sugar
+takes, a hash reference, or an array reference of names and stages in
+turn, and names each pipeline, with a function of its name, as that
+module does. It names them before it defines any statement, wherever
+they're given, so a statement in the same `use` can name one; it gives
+no `pipeline` function, which is Ekorn's. It gives the package each function while the package is
 compiled, so the function can be called without parentheses. The
 arguments are worked out then too: the environment, literals, and what
 a `BEGIN` block has set are there, but a variable the program sets as
@@ -1814,8 +1821,9 @@ is looked up as the statement is defined, in the package defining it,
 unless it's qualified, as `My::Module::clean`, and stands in its place
 among the stages. So it must be defined first, and one that isn't
 croaks then: `No pipeline named main::clean`. On `use`, the definition
-is made as the program compiles, so define the name in a `BEGIN` block
-before it.
+is made as the program compiles, so give the pipeline after `pipeline`,
+in the same `use` or one before it, or name it in a `BEGIN` block
+above it.
 
 ### The function a statement is given
 
@@ -1835,15 +1843,13 @@ given. Stages given are for that call only. A string given is always a
 bind value, never a pipeline's name.
 
 ```perl
-use Ekorn::Pipeline;
-
-BEGIN { Ekorn::Pipeline->named(shouted => sub {uc}) }
-
-use DBIx::Squirrel::Sugar statement => {
-    artist_names => [music => 'SELECT name FROM artist ORDER BY id', sub { $_->[0] }],
-    loud_names   => [music => 'SELECT name FROM artist ORDER BY id', sub { $_->[0] }, 'shouted'],
-    artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
-};
+use DBIx::Squirrel::Sugar
+    statement => {
+        artist_names => [music => 'SELECT name FROM artist ORDER BY id', sub { $_->[0] }],
+        loud_names   => [music => 'SELECT name FROM artist ORDER BY id', sub { $_->[0] }, 'shouted'],
+        artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
+    },
+    pipeline => {shouted => [sub {uc}]};
 
 say ref artist_names;                            # DBIx::Squirrel::Iterator
 say join ' ', artist_names keep_all;             # Abba Blur Cream
@@ -2228,7 +2234,9 @@ caller's line. Those starting "Expected" say what was expected.
 
 | Message | Cause |
 |---|---|
-| `Expected database or statement, not %s` | `use DBIx::Squirrel::Sugar` was given something else. |
+| `Expected database, pipeline or statement, not %s` | `use DBIx::Squirrel::Sugar` was given something else. |
+| `Expected the pipelines after pipeline in a HASH or an ARRAY of pairs` | What came after `pipeline` was something else. This, and the other errors in the pipelines' definitions, are Ekorn::Pipeline::Sugar's. |
+| `Expected the pipelines after pipeline in pairs of a name and an ARRAY` | The array reference after `pipeline` had an odd number of items. |
 | `Expected the arguments to connect to %s in an ARRAY` | A database's definition, given to `use`, wasn't an array reference. |
 | `Expected the statement %s in an ARRAY` | A statement's definition, given to `use`, wasn't an array reference. |
 | `Expected a name for a database (%s)` | The name can't be a function's. |
