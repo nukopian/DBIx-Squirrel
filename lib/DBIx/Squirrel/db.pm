@@ -93,7 +93,7 @@ sub _for_values ($self, $normalised, $state, $dbi_attrs, @values) {
     );
     my($expanded, $binds, $lengths) = expand_lists(
         $state,
-        DBIx::Squirrel::Placeholders::_values_for($state->{Binds}, @values),    ## no critic (Subroutines::ProtectPrivateSubs)
+        DBIx::Squirrel::Placeholders::_values_for($state->{Binds}, \@values),    ## no critic (Subroutines::ProtectPrivateSubs)
     );
     my %kept = map { ($_ => $state->{$_}) }
         qw(Placeholders OriginalStatement Options Lists Pieces);

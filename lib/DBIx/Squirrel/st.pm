@@ -37,7 +37,7 @@ sub bind ($self, @args) {
 sub _bind ($self, $binds, @args) {
     my @placed;
     if ($binds) {
-        my $given = DBIx::Squirrel::Placeholders::_values_for($binds, @args);    ## no critic (Subroutines::ProtectPrivateSubs)
+        my $given = DBIx::Squirrel::Placeholders::_values_for($binds, \@args);    ## no critic (Subroutines::ProtectPrivateSubs)
         my $state = $self->{private_ekorn};
         @placed = @{ DBIx::Squirrel::Placeholders::_place_values($state, $given) };    ## no critic (Subroutines::ProtectPrivateSubs)
     }
@@ -91,11 +91,14 @@ sub execute ($self, @args) {
     my $state = $self->{private_ekorn};
     $self->finish
         if $state && $state->{Options}{ekorn_finish_active} && $self->{Active};
-    @args = _unwrap($self, @args);
+    # Only values in an array reference given alone need unwrapping, and
+    # most aren't: the call, copying them in and out, is left out for
+    # them (roadmap 2026-0028).
+    @args = _unwrap($self, @args) if @args == 1 && is_plain_arrayref($args[0]);
     my $binds = $state && $state->{Binds};
     if ($binds) {
         _check_bound($self) unless @args;
-        @args = _in_order($state, @args) if @args;
+        @args = _in_order($state, \@args) if @args;
         $state->{AllBound} = 1;
     }
     return at_caller { $self->SUPER::execute(@args) };
@@ -170,8 +173,8 @@ sub _check_bound ($self) {
 #
 # A statement without list placeholders keeps their order, so its values
 # are put in it with a slice (roadmap 2026-0028).
-sub _in_order ($state, @args) {
-    my $given = DBIx::Squirrel::Placeholders::_values_for($state->{Binds}, @args); ## no critic (Subroutines::ProtectPrivateSubs)
+sub _in_order ($state, $args) {
+    my $given = DBIx::Squirrel::Placeholders::_values_for($state->{Binds}, $args); ## no critic (Subroutines::ProtectPrivateSubs)
     if (my $order = $state->{Order}) {
         return @$given{@$order};
     }

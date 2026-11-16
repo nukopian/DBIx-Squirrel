@@ -4,7 +4,7 @@ Unreleased
 
     iterate and results, given attributes, are about 45 µs quicker a
     call, as their statement is studied once, not twice, and execute
-    with named or numbered values is about 6 µs quicker, and reading
+    with five named values is about 7.5 µs quicker, and reading
     every row with all, next or results is 5 to 7% quicker (roadmap
     2026-0028). dump_to redacts secrets where Text::Redact::Secrets is
     installed, as Ekorn::Pipeline v0.3.2's dump_to does:
@@ -23,6 +23,11 @@ Unreleased
       named as the statement names them, a value for each, are taken
       as they are. With five named values, on SQLite, execute takes
       about 6 µs, not 12 (roadmap 2026-0028).
+
+    - execute passes its values on without copying them: with five
+      named values on SQLite it takes about 4.8 µs, with twenty 8.5,
+      not 13.7, and with five positional ones 3.0, not 3.4 (roadmap
+      2026-0028).
 
     - An iterator without stages hands on the rows it fetches without
       copying them: all no longer copies every row left twice before

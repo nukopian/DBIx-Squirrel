@@ -166,30 +166,31 @@ sub values_taken ($binds) {
 # statement's map of its placeholders' numbers or names to their
 # positions.
 #
-# It has no signature, and passes its arguments on as they are, as
+# It has no signature, and passes its arguments on as a reference, as
 # copying them costs about 0.3 µs a call.
-sub values_for {
-    return %{ &_values_for };
+sub values_for {    ## no critic (Subroutines::RequireArgUnpacking)
+    my $binds = shift;
+    return %{ _values_for($binds, \@_) };
 }
 
-# Return what values_for does, as a hash reference, which the handles
-# use: returning the hash costs less than returning its pairs and making
-# another of them (roadmap 2026-0028).
-sub _values_for ($binds, @args) {
+# Return what values_for does, as a hash reference, given the values as
+# an array reference, which the handles use: a hash and its values passed
+# by reference cost less than as lists (roadmap 2026-0028).
+sub _values_for ($binds, $args) {
     if (is_numbered($binds)) {
         my $needed = values_taken($binds);
-        croakf 'Expected %d bind values, not %d', $needed, scalar @args
-            unless @args == $needed;
-        return {map { ($_ => $args[$_ - 1]) } keys %$binds};
+        croakf 'Expected %d bind values, not %d', $needed, scalar @$args
+            unless @$args == $needed;
+        return {map { ($_ => $args->[$_ - 1]) } keys %$binds};
     }
     my %values;
-    if (@args == 1 && is_plain_hashref($args[0])) {
-        %values = %{ $args[0] };
+    if (@$args == 1 && is_plain_hashref($args->[0])) {
+        %values = %{ $args->[0] };
     }
     else {
         croakf 'Expected names and values in pairs'
-            if @args % 2;
-        %values = @args;
+            if @$args % 2;
+        %values = @$args;
     }
     # The commonest case: a value for each placeholder, each named as the
     # statement keys it, so the values are as they were given.

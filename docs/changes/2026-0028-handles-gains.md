@@ -467,3 +467,19 @@ row:
 With a stage, rows go one at a time by `$step`'s first branch, which
 this doesn't touch.
 
+**`execute` passes its values on by reference.** `_in_order` and
+`_values_for` take them as an array reference, not a list, and
+`execute` calls `_unwrap` only for an array reference given alone, as
+it acts on nothing else; the public `values_for` passes `\@_` on, with
+a `## no critic` for RequireArgUnpacking, as unpacking is the copy it
+saves. Each copy grew with the values, so it gained more than the 0.4
+µs a call estimated. Three rounds, per call:
+
+| `execute` | Before | After |
+|---|---|---|
+| five named values | 6.18 to 6.20 µs | 4.71 to 4.80 µs |
+| twenty named values | 13.62 to 13.75 µs | 8.48 to 8.58 µs |
+| a list placeholder | 10.40 to 10.46 µs | 8.91 to 9.45 µs |
+| five positional values | 3.44 to 3.45 µs | 3.00 to 3.08 µs |
+| the public `values_for` | 1.90 to 1.93 µs | 1.76 to 1.79 µs |
+
