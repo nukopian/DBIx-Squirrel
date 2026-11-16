@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [DBIx::Squirrel::Context on Ekorn's, without the counting stage](2026-0032-context-on-ekorn.md),
+  roadmap 2026-0032: open.
 - [A study cache that evicts the least used](2026-0030-study-cache-eviction.md),
   roadmap 2026-0030: shipped in v3.1.0.
 - [Measured gains in the handles, for v3.0.3](2026-0028-handles-gains.md),

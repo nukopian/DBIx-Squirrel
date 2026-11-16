@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0031.
+Last id: 2026-0032.
 
 Items come in four groups:
 
@@ -49,7 +49,15 @@ Nothing.
 
 ## Later
 
-Nothing.
+### 2026-0032. DBIx::Squirrel::Context on Ekorn's, without the counting stage
+
+**Size:** S (2). **Depends on:** Ekorn-Pipeline 2026-0046, released.
+
+Once Ekorn::Pipeline::Context is out, build `result_number` and
+`result_original` on Ekorn's, and drop the stage every iterator with
+stages adds to count its results, 11 to 15% a row. Iain won't start
+it the week of 2026-11-16. Its questions are open, in [its
+record](docs/changes/2026-0032-context-on-ekorn.md).
 
 ## Ideas
 
