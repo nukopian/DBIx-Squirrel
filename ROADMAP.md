@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0030.
+Last id: 2026-0031.
 
 Items come in four groups:
 
@@ -95,3 +95,17 @@ a program with more texts than that from studying its common ones
 again, but adds work to every cache hit. Measure both against a
 workload with more than 1,000 texts first. Left out of v3.0.3 by
 2026-0028's D3.
+
+### 2026-0031. The iterator in the run's context, not a global
+
+Added 2026-11-16. `next` sets `local $DBIx::Squirrel::Context::ITERATOR`
+on each call, so stages can ask `result_number` and the like, at 18 to
+28 ns a row; `all` and `first` do the same through `within`. The
+`local` can't move out of the user's loop. The run's context, the
+hash stages already reach through Ekorn's `run_context`, could hold
+the iterator, weakly, so the Context functions read it from there, and
+neither needs the `local`. It touches each Context function, for 2 to
+3% of `next`'s 700 to 830 ns a row. Measure the whole change, as one
+lookup through `run_context` may cost what the `local` did.
+**Origin:** Iain, 2026-11-16, asking about `local` in tight loops;
+measured in 55c75af's message.
