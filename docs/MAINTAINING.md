@@ -521,6 +521,29 @@ to 5.40 for `try`/`catch`, the oldest jobs go, from the matrix and this
 list alike. The job on DBI 1.643 moves to the new floor. When Debian's
 and Ubuntu's DBI moves on, so does that job's.
 
+## CI's caches
+
+The Linux and macOS jobs, but the one on DBI 1.643, have their modules
+installed by actions-setup-perl, into `local/`, which it caches
+(roadmap 2026-0033). The cache is keyed on the Perl, `cpanfile`,
+cpanm's arguments and the modules named, and once made it isn't
+updated: a job keeps the versions it first installed until `cpanfile`
+changes. Ekorn::Pipeline is the exception: each job reinstalls the
+newest version in `cpanfile`'s range, so CI tests the release users
+get. That newest comes from cpanmetadb's history of the module, which
+can lag behind the rest of CPAN's indexes by an hour or more after a
+release: a run in that time installs the version before.
+
+To test against the newest of everything, delete the caches, and run
+CI again. The next run makes them afresh:
+
+```sh
+cd ~/Git/github.com/nukopian/DBIx-Squirrel
+gh cache list
+gh cache delete --all
+gh run rerun "$(gh run list --branch develop --limit 1 --json databaseId --jq '.[0].databaseId')"
+```
+
 ## When something goes wrong
 
 - **A bad commit pushed to `develop`:** fix it in a new commit, or

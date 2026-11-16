@@ -9,10 +9,23 @@ permissions:
   contents: read
 
 jobs:
+  # Each job's modules, but on Windows and with DBI 1.643, are installed
+  # by actions-setup-perl, into local/, which it caches, keyed on the
+  # Perl, the cpanfile, cpanm's arguments and the modules it's given by
+  # name; so a job installs almost nothing until the cpanfile changes
+  # (roadmap 2026-0033, from Ekorn-Pipeline's 2026-0047). The cache
+  # keeps the versions it was made with: to install the newest, delete
+  # the caches, as docs/MAINTAINING.md says. Ekorn::Pipeline is the
+  # exception, reinstalled at the newest version in the cpanfile's
+  # range, so the tests still run on the Ekorn release users get. A
+  # failed install prints cpanm's build log, as it stays on the runner
+  # otherwise.
+
   # The tests on Perl 5.36, the floor, to the newest on Linux, and the
-  # newest on macOS. --with-develop brings yath and UUID with the rest.
-  # A dependency that fails to install prints cpanm's build log, as it
-  # stays on the runner otherwise.
+  # newest on macOS. Of the develop modules, they need only yath, and
+  # UUID, which the cpanfile lists beside it, so those are named, and
+  # the rest left to the style and coverage jobs; naming them also keeps
+  # this job's cache apart from theirs.
   perl:
     name: perl ${{ matrix.perl }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -27,13 +40,23 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
+        id: perl
         with:
           perl-version: ${{ matrix.perl }}
-      - name: dependencies
+          install-modules-with: cpanm
+          install-modules: |
+            Test2::Harness
+            UUID
+      - name: Ekorn, the newest in range
+        id: ekorn
         shell: bash
         run: >-
-          cpanm --notest --installdeps --with-develop . ||
-          { cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"; exit 1; }
+          cpanm --notest --local-lib-contained local --reinstall
+          "Ekorn::Pipeline~$(perl -nE 'say $1 if m( \A requires \s+ .Ekorn::Pipeline. \s* , \s* .([^\x27]+). )x' cpanfile)"
+      - name: cpanm's build log
+        if: failure() && (steps.perl.outcome == 'failure' || steps.ekorn.outcome == 'failure')
+        shell: bash
+        run: cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"
       - name: yath
         run: yath test
 
@@ -81,7 +104,9 @@ jobs:
   # with Perl 5.36, the floor: a DBI older than CPAN's newest, as many
   # system Perls have. It's installed first, and checked after the rest,
   # as the cpanfile takes any DBI. The v2.0.3 trial failed on it, on
-  # CPAN Testers, where CI's newest DBI hadn't.
+  # CPAN Testers, where CI's newest DBI hadn't. It isn't cached:
+  # setup-perl would install the cpanfile's modules, against the newest
+  # DBI, before DBI 1.643 could go in.
   old-dbi:
     name: perl 5.36, DBI 1.643 (ubuntu-24.04)
     runs-on: ubuntu-24.04
@@ -109,13 +134,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
+        id: perl
         with:
           perl-version: "5.44"
-      - name: dependencies
+          install-modules-with: cpanm
+          install-modules-args: --with-develop
+      - name: cpanm's build log
+        if: failure() && steps.perl.outcome == 'failure'
         shell: bash
-        run: >-
-          cpanm --notest --installdeps --with-develop . ||
-          { cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"; exit 1; }
+        run: cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"
       - name: perlcritic
         run: perlcritic lib
       - name: perltidy
@@ -134,13 +161,21 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
+        id: perl
         with:
           perl-version: "5.36"
-      - name: dependencies
+          install-modules-with: cpanm
+          install-modules-args: --with-develop
+      - name: Ekorn, the newest in range
+        id: ekorn
         shell: bash
         run: >-
-          cpanm --notest --installdeps --with-develop . ||
-          { cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"; exit 1; }
+          cpanm --notest --local-lib-contained local --reinstall
+          "Ekorn::Pipeline~$(perl -nE 'say $1 if m( \A requires \s+ .Ekorn::Pipeline. \s* , \s* .([^\x27]+). )x' cpanfile)"
+      - name: cpanm's build log
+        if: failure() && (steps.perl.outcome == 'failure' || steps.ekorn.outcome == 'failure')
+        shell: bash
+        run: cat "$(ls -td ~/.cpanm/work/*/ | head -1)build.log"
       - name: coverage
         run: scripts/coverage
 

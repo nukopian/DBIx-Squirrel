@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [CI installs only what each job needs, and caches it](2026-0033-ci-installs.md),
+  from a task of Ekorn-Pipeline's: in progress.
 - [DBIx::Squirrel::Context on Ekorn's, without the counting stage](2026-0032-context-on-ekorn.md),
   roadmap 2026-0032: open.
 - [A study cache that evicts the least used](2026-0030-study-cache-eviction.md),
