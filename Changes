@@ -10,7 +10,10 @@ Unreleased
     defined beside it (roadmap 2026-0027). A handle with more than
     1,000 statements evicts those it uses least, rather than forgetting
     them all (roadmap 2026-0030). pluck, as_hash and an iterator's next
-    do less for each row.
+    do less for each row. Ekorn::Pipeline v0.3.4 makes stages a little
+    faster too: it comes with a new install, but where v0.3.3 is
+    installed already, it stays until you upgrade it yourself, as with
+    cpanm Ekorn::Pipeline.
 
     - DBIx::Squirrel::Sugar takes pipeline, followed by what
       Ekorn::Pipeline::Sugar takes, and names each pipeline, with a
