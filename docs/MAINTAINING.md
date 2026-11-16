@@ -15,8 +15,8 @@ release goes to CPAN.
 The working copy is `~/Git/github.com/nukopian/DBIx-Squirrel`. Perl
 commands run in the project's perlbrew library. It's named on each
 command, so they don't depend on the default Perl.
-[CLAUDE.md](../CLAUDE.md#perl) has the library, and how to build a Perl
-or the database drivers on Iain's Mac.
+[Iain's Mac](#iains-mac) has the libraries, and how to build a Perl
+or the database drivers there.
 
 ## Branches
 
@@ -36,7 +36,8 @@ or the database drivers on Iain's Mac.
   item has an id, such as 2026-0001.
   [docs/changes/](changes/README.md) keeps a record of each planned
   change. Both are public, on `main`, but not in the CPAN tarball.
-  [CLAUDE.md](../CLAUDE.md#the-roadmap) has the rules.
+  [ROADMAP.md](../ROADMAP.md) and
+  [docs/changes/](changes/README.md) say how they're kept.
 - A branch for a roadmap item, when there is one, is named for its id,
   as `experiment/2026-0001-manuals-on-metacpan`.
 - An experimental branch carrying work, if there is one, has its
@@ -608,3 +609,91 @@ gh api repos/nukopian/DBIx-Squirrel/secret-scanning/alerts --jq '.[] | select(.s
 
 `scripts/readme-pdf.sh` builds a PDF of the README, the reference, the
 how-to and this guide, for reading offline. The PDFs are git-ignored.
+
+## Iain's Mac
+
+What worked for building Perls and the drivers on Iain's Mac, kept here
+for when it's needed again.
+
+### The perlbrew libraries
+
+Each Perl CI covers has a library of the project's own, with the
+cpanfile's runtime, test and develop modules, made on 2026-11-05:
+`perl-5.36.3@dbix-squirrel-2`, `perl-5.38.5@dbix-squirrel-2`,
+`perl-5.40.5@dbix-squirrel-2`, `perl-5.42.3@dbix-squirrel-2` and
+`perl-5.44.0@dbix-squirrel-2`. The 5.36 library has the day-to-day
+tools: Minilla, CPAN::Uploader, Data::Dump, Perl::Critic, Perl::Tidy,
+yath with its helpers (Cpanel::JSON::XS, JSON::MaybeXS,
+Term::ANSIColor, IO::Pager, Email::Stuffer), Test2's optional plugins
+(Cover, IOEvents, DBIProfile, NoWarnings, MemUsage, UUID),
+Test2::Tools::Explain, Devel::Cover and Devel::NYTProf. The 5.44
+library has the two linters too.
+
+### Building a Perl
+
+On macOS 27.2, with Apple clang 21 and the macOS 27.2 SDK, a plain
+`perlbrew install` works: Perl 5.44.0 built that way on 2026-11-05.
+
+On macOS 26.7 with Xcode 27.1, every new Perl stopped at "Failed to
+build miniperl", with a segmentation fault, whatever the optimisation.
+Building against the older SDK worked, and is what to try if that ever
+comes back. XS modules installed with `cpanm` needed neither variable:
+
+```sh
+SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk MACOSX_DEPLOYMENT_TARGET=26.0 perlbrew install perl-5.42.3 --notest
+```
+
+### Net::SSLeay and OpenSSL 4
+
+Homebrew's `openssl` is OpenSSL 4, which made `ASN1_TIME` opaque, and
+Net::SSLeay 1.96 (which IO::Socket::SSL, and so `cpanm` over HTTPS,
+needs) fails against it with "incomplete definition of type
+'ASN1_TIME'". Point it at Homebrew's OpenSSL 3 instead, until a
+Net::SSLeay release supports 4:
+
+```sh
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 sh -c 'OPENSSL_PREFIX=/opt/homebrew/opt/openssl@3 cpanm IO::Socket::SSL'
+```
+
+### DBD::mysql and DBD::Pg
+
+Each is built so that every library in one Perl process uses OpenSSL 3.
+
+DBD::mysql builds against Oracle's MySQL 8.4 in `/usr/local/mysql`.
+MySQL's bundled OpenSSL libraries record bare install names, so
+DBD::mysql's library check can't run against them; and MakeMaker joins
+rpaths with colons, which macOS reads as one directory. So take
+OpenSSL from Homebrew's `openssl@3`, and add the rpath through
+`LDDLFLAGS`, starting from Perl's own. `-Wl,-rpath` can't go in
+`--libs`, as Devel::CheckLib's check fails on it:
+
+```sh
+F=$(perlbrew exec --quiet --with perl-5.36.3@dbix-squirrel-2 perl -MConfig -e 'print $Config{lddlflags}')
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpanm --configure-args="--libs='-L/opt/homebrew/opt/openssl@3/lib -L/usr/local/mysql/lib -lmysqlclient -lssl -lcrypto -lresolv' LDDLFLAGS='$F -Wl,-rpath,/usr/local/mysql/lib'" DBD::mysql
+```
+
+DBD::Pg builds against Postgres.app's `libpq`, not Homebrew's
+PostgreSQL 18, whose `libpq` links to OpenSSL 4. It links to that
+`libpq` by full path, so Postgres.app must stay installed:
+
+```sh
+A=/Applications/Postgres.app/Contents/Versions/latest
+POSTGRES_HOME=$A PATH=$A/bin:$PATH perlbrew exec --with perl-5.36.3@dbix-squirrel-2 cpanm DBD::Pg
+```
+
+### The test databases
+
+Each server has a test account that reaches only its own database,
+`dbix_squirrel_test`: `dbix_squirrel@localhost` on MySQL 8.4, whose
+password is in `~/.config/dbix-squirrel/my.cnf` (mode 600, never in
+the repository), and the role `dbix_squirrel` on Postgres.app's
+PostgreSQL 18, which trusts local connections. `mysql
+--login-path=root` is root, for setting up accounts, not for tests. To
+run every test against both:
+
+```sh
+export DBIX_SQUIRREL_TEST_MYSQL="dbi:mysql:mysql_read_default_file=${HOME}/.config/dbix-squirrel/my.cnf;mysql_read_default_group=dbix_squirrel"
+export DBIX_SQUIRREL_TEST_PG='dbi:Pg:dbname=dbix_squirrel_test;host=localhost;user=dbix_squirrel'
+cd ~/Git/github.com/nukopian/DBIx-Squirrel
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test -L
+```
