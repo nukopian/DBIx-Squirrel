@@ -30,7 +30,7 @@ sub pluck ($column) {
         my $key;    # the array index or hash key, found once a run
 
         # Without a signature, as it's called for each row: one costs
-        # about 19 ns a call, about 1% of a stage's.
+        # about 19 ns a call.
         return sub {
             return $_[0]->get_column($column)
                 if $_[0] isa 'DBIx::Squirrel::Result';

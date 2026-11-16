@@ -30,9 +30,11 @@ nuke the entire cache." He asked for an LRU evicting the oldest of the
 least used, a number at a time.
 
 A hit costs about 0.9 µs, most of it copying what the statement handle
-keeps; a full study, 32 µs with attributes, a few µs without. Emptying
-costs, over time, a study again of each statement in use after each
-emptying, once in each 1,000 misses.
+keeps; a full study, 32 µs with attributes, as 2026-0028 measured it,
+and about 17 µs without, for the short statements measured below
+(corrected in the wash-up of 2026-11-16, where it said a few µs).
+Emptying costs, over time, a study again of each statement in use after
+each emptying, once in each 1,000 misses.
 
 ## Decisions
 
