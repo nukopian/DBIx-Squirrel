@@ -29,6 +29,12 @@ Unreleased
       not 13.7, and with five positional ones 3.0, not 3.4 (roadmap
       2026-0028).
 
+    - An iterator keeps its pipeline from run to run, until reset is
+      given other stages, and reads its statement handle's state once
+      a run: reset takes about 3.5 µs less on an iterator run again,
+      and an iterator reading one row about 1.5 µs less (roadmap
+      2026-0028).
+
     - A row object's column accessors, and the making of each row
       object by results, have no signature, which cost about 20 ns a
       call: reading a column takes about 121 ns, not 143, and results

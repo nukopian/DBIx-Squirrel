@@ -566,6 +566,8 @@ subtest "prepare_cached and DBIx::Squirrel's own attributes" => sub {
     ref_is $dbh->prepare_cached($sql, undef, 2), $sth,
         'a handle, cached, as it is';
     ref_is iterator_going($sth), $it, 'keeps the iterator using it';
+    $it->all;
+    is [iterator_going($sth)], [], 'which is going until it ends';
     weaken(my $gone = $it);
     undef $it;
     ok !$gone, 'without keeping it from being freed';

@@ -14,8 +14,8 @@ use Ekorn::Pipeline::Factories qw(source);
 use Ekorn::Pipeline::Operators qw();
 
 use DBIx::Squirrel::Context qw();
-use DBIx::Squirrel::Errors  qw(at_caller      croakf);
-use DBIx::Squirrel::Util    qw(iterator_going split_stages);
+use DBIx::Squirrel::Errors  qw(at_caller croakf);
+use DBIx::Squirrel::Util    qw(split_stages);
 
 use namespace::clean;
 
@@ -111,20 +111,29 @@ sub single ($self) {
 # those given to new. Both are kept until others are given. A statement
 # with list placeholders is prepared again, on a new statement handle, if
 # a list has a different number of values.
+#
+# It's called for each run, so it reads the statement handle's state, a
+# tied fetch, once, and keeps its pipeline until its stages change, as
+# each run of a pipeline has its own state (roadmap 2026-0028).
 sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my $other = iterator_going($self->{sth});
+    my $sth   = $self->{sth};
+    my $state = $sth->{private_ekorn};
+    my $other = $state->{Iterator};
     croakf "Expected the statement handle's other iterator to be finished"
-        if $other && $other != $self;
+        if $other && !$other->{done} && $other != $self;
 
-    my @stages = split_stages(\@args);
-    $self->{stages}        = [@{ $self->{stages_initial} }, @stages] if @stages;
+    if (@args) {
+        my @stages = split_stages(\@args);
+        if (@stages) {
+            $self->{stages} = [@{ $self->{stages_initial} }, @stages];
+            delete $self->{pipeline};
+        }
+        $self->{bind_values} = \@args if @args;
+    }
     $self->{stages}      //= [@{ $self->{stages_initial} }];
-    $self->{bind_values}   = \@args if @args;
     $self->{bind_values} //= [@{ $self->{bind_values_initial} }];
 
     _finish($self);
-    my $sth   = $self->{sth};
-    my $state = $sth->{private_ekorn};
     if ($state->{Lists}) {
         my $again = DBIx::Squirrel::db::_prepare_again(    ## no critic (Subroutines::ProtectPrivateSubs)
             $sth->{Database}, $sth, @{ $self->{bind_values} },
@@ -140,19 +149,23 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
     # DBI takes its slower way given one, so it's given none.
     my $slice = $self->_slice;
     $slice = undef if is_plain_arrayref($slice) && !@$slice;
-    my %fresh = (
-        executed     => 1,
-        done         => 0,
-        ended        => undef,
-        produced     => 0,
-        column_names => [],
-        slice        => $slice,
-    );
-    @$self{keys %fresh} = values %fresh;
-    # The source's set-up executes the statement, as the run starts. The
-    # stages, if any, are followed by one counting the results, for
-    # DBIx::Squirrel::Context: before the last, if it's a sink, whose
-    # result is the run's, so its results are counted too.
+    @$self{qw(executed done ended produced column_names slice)}
+        = (1, 0, undef, 0, [], $slice);
+    # The source's set-up executes the statement, as the run starts.
+    $self->{pipeline} //= _pipeline($self);
+    $self->{run}        = $self->{pipeline}->iterator(_statement($self));
+    # The run's code reference, taken once, as Ekorn's iterator suggests
+    # for a loop, so next doesn't pay its &{} overload on each call. It
+    # doesn't keep the run, which the iterator holds.
+    $self->{pull} = \&{ $self->{run} };
+    return $self;
+}
+
+# Return the pipeline of the iterator's stages, if any, followed by one
+# counting the results, for DBIx::Squirrel::Context: before the last, if
+# it's a sink, whose result is the run's, so its results are counted too.
+# It holds the iterator weakly, so the iterator can keep it.
+sub _pipeline ($self) {
     my @counted = @{ $self->{stages} };
     if (@counted) {
         my $counter = $self;
@@ -160,12 +173,7 @@ sub reset ($self, @args) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms
         my $at = Ekorn::Pipeline::is_sink($counted[-1]) ? $#counted : @counted;
         splice @counted, $at, 0, sub ($result) { $counter->{produced}++; $result };
     }
-    $self->{run} = Ekorn::Pipeline->new(@counted)->iterator(_statement($self));
-    # The run's code reference, taken once, as Ekorn's iterator suggests
-    # for a loop, so next doesn't pay its &{} overload on each call. It
-    # doesn't keep the run, which the iterator holds.
-    $self->{pull} = \&{ $self->{run} };
-    return $self;
+    return Ekorn::Pipeline->new(@counted);
 }
 
 # Return how the last run ended, as Ekorn's iterator says: done, stopped

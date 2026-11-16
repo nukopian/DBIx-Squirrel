@@ -496,3 +496,28 @@ documented or tested that. On `place_areas`, three rounds, per row:
 | one column read on a row object | 142 to 146 ns | 120 to 122 ns |
 | `results->all` | 539 to 551 ns | 512 to 524 ns |
 
+### Step 4, `reset`'s own work, 2026-11-16
+
+`reset` did about 5 µs of work of its own, in half a dozen small
+calls. Now it reads the statement handle's `private_ekorn`, a tied
+fetch of about 0.3 µs, once, where `iterator_going`, `reset` and
+`_slice` each read it; it calls `split_stages` only when given
+arguments; it sets the fresh state with a slice, not a hash copied
+into one; and it keeps its pipeline, made by a new `_pipeline`, until
+it's given other stages, rather than making one for each run, as each
+run of a pipeline has its own state, as Ekorn's documentation says.
+Tests in `t/14-iterate.t` run a kept pipeline twice: the count starts
+again from 1, and a gather's batch is new for each run; they pass
+before the change too. `iterator_going`'s finished case lost the call
+that covered it, so `t/09-db.t` tests it directly.
+
+Three rounds, Ekorn at 83c2ac2, per call, on SQLite in memory:
+
+| | Before | After |
+|---|---|---|
+| `reset`, then `_finish`, an iterator run again | 32.5 to 33.0 µs | 29.3 to 29.8 µs |
+| `reset`, then `all`, an iterator run again | 38.5 to 39.0 µs | 35.1 to 35.8 µs |
+| a new iterator, `new` then `all` | 40.8 to 41.0 µs | 39.3 to 39.8 µs |
+| a prepared statement's `iterate(...)->all` | 44.6 to 45.3 µs | 43.2 to 43.7 µs |
+| `iterate($sql, ...)->all` | 61.0 to 61.8 µs | 59.1 to 59.8 µs |
+
