@@ -1362,6 +1362,15 @@ my $nobody = $dbh->iterate('SELECT name FROM artist WHERE id = ?', 9, keep_singl
 say defined $nobody ? 'found' : 'none';    # none
 ```
 
+`keep_last` still fetches every row, as a database hands them over in
+order, from the first. For the last row, ask the database: reverse the
+`ORDER BY`, and add `LIMIT 1`. Without an `ORDER BY`, a query's rows
+come in no order, so none of them is the last:
+
+```perl
+say $dbh->selectrow_array('SELECT name FROM track ORDER BY plays ASC LIMIT 1');    # Country House
+```
+
 ### Keep the first few
 
 `keep(N)` keeps the first N results, and stops the run once it has

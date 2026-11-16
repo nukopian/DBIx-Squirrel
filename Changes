@@ -2,6 +2,13 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    The user guide on the last row.
+
+    - The user guide's "Get the first, the last, or the only one" says
+      keep_last fetches every row, and shows the database's way to the
+      last: the ORDER BY reversed, with LIMIT 1. Without an ORDER BY,
+      no row is the last.
+
 v3.1.0 2026-11-16
 
     The Sugar names pipelines, a handle keeps the statements it uses,

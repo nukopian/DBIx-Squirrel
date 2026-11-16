@@ -1480,6 +1480,13 @@ C<undef> if there are none:
     my $nobody = $dbh->iterate('SELECT name FROM artist WHERE id = ?', 9, keep_single);
     say defined $nobody ? 'found' : 'none';    # none
 
+C<keep_last> still fetches every row, as a database hands them over in
+order, from the first. For the last row, ask the database: reverse the
+C<ORDER BY>, and add C<LIMIT 1>. Without an C<ORDER BY>, a query's rows
+come in no order, so none of them is the last:
+
+    say $dbh->selectrow_array('SELECT name FROM track ORDER BY plays ASC LIMIT 1');    # Country House
+
 =head2 Keep the first few
 
 C<keep(N)> keeps the first N results, and stops the run once it has
