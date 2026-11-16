@@ -346,3 +346,38 @@ prepared statement's `iterate($id)->first`, within the noise on
 PostgreSQL and MySQL. It reaches users with Ekorn v0.3.3. Skipping
 Ekorn for an iterator with no stages would now save about 18 µs a run,
 not 27.
+
+### Step 3, named placeholders, 2026-11-16
+
+A named `execute` cost about 9 µs over a positional one: `values_for`
+ran each name through `key_of`, a substitution and a match, and
+looked for missing names with a sort, and `_in_order` built two more
+hashes through `place_values` to put the values in order. Now:
+
+- **The order is kept.** `_study_afresh` keeps, as `Order`, the number
+  or name of the placeholder at each position, an array inside the
+  handles only, as D2 says, for a statement with numbered or named
+  placeholders and no list. `_in_order` puts the values in order with
+  a slice of it, without `place_values`. A list placeholder's
+  statement goes the way it went, as its positions change with its
+  lists.
+- **`values_for` takes the commonest case first:** as many values as
+  placeholders, each named as the statement keys it, are returned as
+  given. Otherwise a name the statement keys as given skips `key_of`,
+  and as many keys as the statement has are all of them, so the
+  search for missing ones is skipped.
+
+Before and after, on Perl 5.36.3, DBD::SQLite in memory, five named
+placeholders, Ekorn at 83c2ac2, three rounds, the best of five each:
+
+| | Before | After |
+|---|---|---|
+| `values_for` | 4.21 to 4.23 µs | 1.87 to 1.92 µs |
+| `_in_order` | 7.61 to 7.69 µs | 2.55 to 2.58 µs |
+| `execute`, five named values | 12.19 to 12.31 µs | 6.80 to 6.96 µs |
+| `execute`, five positional values | 3.44 to 3.59 µs | 3.40 to 3.45 µs |
+| `Iterator->new(...)->all`, named | 50.96 to 51.21 µs | 44.83 to 45.67 µs |
+
+Tried and left out: walking the pairs in place, rather than copying
+them into a hash first, measured no gain (2.68 µs against 2.64).
+

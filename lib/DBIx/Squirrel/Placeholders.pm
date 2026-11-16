@@ -174,15 +174,23 @@ sub values_for ($binds, @args) {
             if @args % 2;
         %values = @args;
     }
+    # The commonest case: a value for each placeholder, each named as the
+    # statement keys it, so the values are as they were given.
+    return %values
+        if keys %values == keys %$binds
+        && !grep { !exists $binds->{$_} } keys %values;
     my(%given, @unknown);
     for my $name (keys %values) {
-        my $key = key_of($name);
+        # A name as the statement keys it, as most are, is its own key.
+        my $key = exists $binds->{$name} ? $name : key_of($name);
         $given{$key} = $values{$name};
         push @unknown, $name unless $binds->{$key};
     }
-    @unknown = sort @unknown;
-    croakf 'Expected a placeholder of the statement (%s)', join ', ', @unknown
+    croakf 'Expected a placeholder of the statement (%s)', join ', ', sort @unknown
         if @unknown;
+    # Each key given is the statement's, so as many as it has are all of
+    # them.
+    return %given if keys %given == keys %$binds;
     my @missing = sort grep { !exists $given{$_} } keys %$binds;
     croakf 'Expected a value for each placeholder (none for %s)',
         join(', ', @missing)

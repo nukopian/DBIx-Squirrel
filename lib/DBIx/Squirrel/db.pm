@@ -442,7 +442,21 @@ sub _study_afresh ($self, $statement, $attrs) {
     );
     @state{qw(Lists Pieces)} = (_lists($placeholders, $lists), $pieces)
         if $lists;
+    $state{Order} = _order($state{Binds})
+        if $state{Binds} && !$lists;
     return $normalised, \%state, split_attrs($attrs);
+}
+
+# Return the number or name of the placeholder at each position, in
+# order, given a statement's map of its placeholders' numbers or names to
+# their positions, so its values can be put in order with a slice
+# (roadmap 2026-0028).
+sub _order ($binds) {
+    my @order;
+    for my $key (keys %$binds) {
+        $order[$_ - 1] = $key for @{ $binds->{$key} };
+    }
+    return \@order;
 }
 
 # Return a map of each number or name a statement's placeholders use to

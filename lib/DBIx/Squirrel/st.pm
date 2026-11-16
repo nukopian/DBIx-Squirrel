@@ -162,7 +162,14 @@ sub _check_bound ($self) {
 # them, in the order of their positions, each as often as it's used, and
 # each value in a list at a position of its own, given what the statement
 # handle keeps about the statement.
+#
+# A statement without list placeholders keeps their order, so its values
+# are put in it with a slice (roadmap 2026-0028).
 sub _in_order ($state, @args) {
+    if (my $order = $state->{Order}) {
+        my %given = values_for($state->{Binds}, @args);
+        return @given{@$order};
+    }
     my %placed = place_values($state, values_for($state->{Binds}, @args));
     return @placed{1 .. keys %placed};
 }
