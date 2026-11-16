@@ -354,7 +354,11 @@ logs, Term::ANSIColor, IO::Pager, Email::Stuffer). Devel::NYTProf
   4%; `pluck` gained 4 to 12 ns. What's lost costs nothing here: the
   signature's count of arguments guards a call only the pipeline
   makes, and `$_[0]` aliases a value the pipeline holds itself, which
-  the stage's result replaces. Other subs keep their signatures
+  the stage's result replaces. A step that hands the value to its
+  caller's code keeps its signature, as Ekorn's `take_if`, `peek` and
+  the like do, from Ekorn-Pipeline's 64c40cc: without the copy, a
+  block that changes `$_[0]`, as by chomping it, would change what's
+  passed on. Other subs keep their signatures
   unless a measurement shows a gain, and the docs' examples keep
   theirs, as users copy them.
 - **Two blank lines between subs, or one above a sub's comment.** A sub
