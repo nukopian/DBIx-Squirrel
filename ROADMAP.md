@@ -74,17 +74,3 @@ secrets in messages relies on, and installing it, asking Iain first.
 **Origin:** a message from Ekorn-Pipeline, 2026-11-15 (its commit
 17f3ac15803cb91a6bb5fb184c2d30c09921b606), whose details are in TODO.md at
 62b4c63b98f1efdc8e518e5e4c070985abb8c3a5.
-
-### 2026-0031. The iterator in the run's context, not a global
-
-Added 2026-11-16. `next` sets `local $DBIx::Squirrel::Context::ITERATOR`
-on each call, so stages can ask `result_number` and the like, at 18 to
-28 ns a row; `all` and `first` do the same through `within`. The
-`local` can't move out of the user's loop. The run's context, the
-hash stages already reach through Ekorn's `run_context`, could hold
-the iterator, weakly, so the Context functions read it from there, and
-neither needs the `local`. It touches each Context function, for 2 to
-3% of `next`'s 700 to 830 ns a row. Measure the whole change, as one
-lookup through `run_context` may cost what the `local` did.
-**Origin:** Iain, 2026-11-16, asking about `local` in tight loops;
-measured in 55c75af's message.
