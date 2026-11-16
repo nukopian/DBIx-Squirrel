@@ -433,3 +433,37 @@ rounds, against the step before:
 Within the noise with five; with twenty, a gain each round, so it's
 kept (D5).
 
+### Signatures and copies on the hot paths, 2026-11-16
+
+Iain asked whether other subs on the hot paths had signatures costing
+cycles. A signature costs about 20 ns a call; a slurpy `@args` copies
+each argument, about 15 ns each, and as much again if they're
+returned, while an array reference costs the same whatever it holds.
+On Perl 5.36, a call with 11 arguments: 77 ns without a signature,
+238 ns with `($self, @args)`, 349 ns returning them, and 114 ns given
+a reference. Four places were found worth a change, each its own
+commit: `Iterator::_statement`'s `$made`, per batch, which for `all`
+without stages is every row left; the chain from `execute` through
+`_unwrap`, `_in_order` and `_values_for`, per `execute`; the row
+objects' column accessors, per column read; and the `Results` row
+maker, per row.
+
+**`$made` takes an array of rows.** It made them in place, rather
+than taking and returning a list; `all` without stages gives it the
+array fetched, rather than copying every row into another first; and
+a whole batch goes to it as fetched, not through `@buffer`. With
+nothing left in `@buffer` when `all` reads at once, as there never
+is, its `if` went, a branch no test could reach. On the gazetteer's
+`place_areas`, 297,848 rows, Ekorn at 83c2ac2, three runs each, per
+row:
+
+| | Before | After |
+|---|---|---|
+| `all`, no stages | 443 to 462 ns | 416 to 425 ns |
+| `next`, no stages | 866 to 877 ns | 817 to 833 ns |
+| `results->all` | 635 to 648 ns | 596 to 599 ns |
+| `all`, one stage | 1681 to 1735 ns | 1701 to 1727 ns |
+
+With a stage, rows go one at a time by `$step`'s first branch, which
+this doesn't touch.
+

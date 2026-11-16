@@ -273,10 +273,13 @@ sub _statement ($self) {
                     : undef;
             };
         };
-        my $made = sub (@rows) {
-            @rows           = map { $row->($_) } @rows if $row;
-            $context->{row} = $rows[-1]                if @rows;
-            return @rows;
+        # Given an array of rows, it makes each in place: given every row
+        # left, by all, a list of them would be copied in and out, about
+        # 16 ns a row (roadmap 2026-0028).
+        my $made = sub ($rows) {
+            @$rows          = map { $row->($_) } @$rows if $row;
+            $context->{row} = $rows->[-1]               if @$rows;
+            return @$rows;
         };
         my $step = sub () {
             # A row at a time from the batch, as stages or a pipeline read
@@ -289,11 +292,13 @@ sub _statement ($self) {
             }
             return if $done;
             if ($self && $self->{all_at_once}) {
-                my @rows = splice @buffer;
-                my $rest = $fetch->(undef);
-                push @rows, @$rest if $rest;
+                # The rows fetched are the run's own, so anything left of the
+                # batch goes in front of them, not they after it; without
+                # stages, a step gives a whole batch, so nothing is.
+                my $rows = $fetch->(undef) // [];
+                unshift @$rows, splice @buffer;
                 $done = 1;
-                return $made->(@rows);
+                return $made->($rows);
             }
             # The batch is used up here, as a whole batch is given at once,
             # and a row at a time is given above while any are left.
@@ -302,9 +307,10 @@ sub _statement ($self) {
                 $done = 1;
                 return;
             }
-            $batch  = min($batch * 2, $BATCH_LIMIT) if @$rows >= $batch;
+            $batch = min($batch * 2, $BATCH_LIMIT) if @$rows >= $batch;
+            return $made->($rows)                  if $whole;
             @buffer = @$rows;
-            return $made->($whole ? splice @buffer : shift @buffer);
+            return $made->([shift @buffer]);
         };
         my $end = sub ($how) {
             @buffer = ();

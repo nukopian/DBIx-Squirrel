@@ -4,7 +4,8 @@ Unreleased
 
     iterate and results, given attributes, are about 45 µs quicker a
     call, as their statement is studied once, not twice, and execute
-    with named or numbered values is about 6 µs quicker (roadmap
+    with named or numbered values is about 6 µs quicker, and reading
+    every row with all, next or results is 5 to 7% quicker (roadmap
     2026-0028). dump_to redacts secrets where Text::Redact::Secrets is
     installed, as Ekorn::Pipeline v0.3.2's dump_to does:
     DBIx::Squirrel now recommends that module, and dump_to's notes say
@@ -22,6 +23,12 @@ Unreleased
       named as the statement names them, a value for each, are taken
       as they are. With five named values, on SQLite, execute takes
       about 6 µs, not 12 (roadmap 2026-0028).
+
+    - An iterator without stages hands on the rows it fetches without
+      copying them: all no longer copies every row left twice before
+      giving them, nor each batch into another. Reading 297,848 rows
+      on SQLite, all takes about 420 ns a row, not 445, next 830, not
+      870, and results 597, not 645 (roadmap 2026-0028).
 
     - Text::Redact::Secrets v1.x is recommended, as Ekorn::Pipeline
       recommends it, and installers that take recommendations install
