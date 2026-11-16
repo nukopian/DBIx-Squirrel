@@ -41,7 +41,17 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing.
+### 2026-0030. A study cache that evicts the least used
+
+**Size:** S (2)
+
+Each handle keeps what it found studying up to 1,000 statements, and
+empties the cache at the 1,001st. Instead, it keeps a count of each
+one's uses, and evicts 125 at a time, the least used and, among
+equals, the first studied, halving the counts left, so a program with
+more statements than that keeps the ones it uses. Measured first
+against emptying, and dropped if it isn't a gain. [Its
+record](docs/changes/2026-0030-study-cache-eviction.md).
 
 ## Next
 
@@ -74,15 +84,6 @@ secrets in messages relies on, and installing it, asking Iain first.
 **Origin:** a message from Ekorn-Pipeline, 2026-11-15 (its commit
 17f3ac15803cb91a6bb5fb184c2d30c09921b606), whose details are in TODO.md at
 62b4c63b98f1efdc8e518e5e4c070985abb8c3a5.
-
-### 2026-0030. A study cache that drops the oldest
-
-Added 2026-11-15. The handles' study cache empties when it reaches
-1,000 statement texts. An LRU, dropping the oldest instead, would keep
-a program with more texts than that from studying its common ones
-again, but adds work to every cache hit. Measure both against a
-workload with more than 1,000 texts first. Left out of v3.0.3 by
-2026-0028's D3.
 
 ### 2026-0031. The iterator in the run's context, not a global
 
