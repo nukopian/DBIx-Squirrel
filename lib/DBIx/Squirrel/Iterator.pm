@@ -171,7 +171,9 @@ sub _pipeline ($self) {
         my $counter = $self;
         weaken $counter;
         my $at = Ekorn::Pipeline::is_sink($counted[-1]) ? $#counted : @counted;
-        splice @counted, $at, 0, sub ($result) { $counter->{produced}++; $result };
+
+        # Without a signature, as it's called for each result.
+        splice @counted, $at, 0, sub { $counter->{produced}++; $_[0] };
     }
     return Ekorn::Pipeline->new(@counted);
 }

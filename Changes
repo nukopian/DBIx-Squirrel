@@ -7,6 +7,10 @@ Unreleased
     - pluck and as_hash read each row without a signature, saving
       about 10 ns a row of pluck's 420 or so.
 
+    - An iterator with stages counts its results without a signature:
+      reading a table through one stage takes about 25 to 50 ns a row
+      less, of about 1.8 µs.
+
 v3.0.3 2026-11-16
 
     Quicker handles, from execute to each row read.
