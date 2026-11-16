@@ -483,3 +483,16 @@ saves. Each copy grew with the values, so it gained more than the 0.4
 | five positional values | 3.44 to 3.45 µs | 3.00 to 3.08 µs |
 | the public `values_for` | 1.90 to 1.93 µs | 1.76 to 1.79 µs |
 
+**Row objects without signatures.** Each column accessor,
+`sub ($row) { $row->[$n] }`, became `sub { $_[0][$n] }`, and the
+`Results` row maker, `sub ($row) { bless $row, $class }`, became
+`sub { bless $_[0], $class }`, each with a comment saying why. An
+accessor given an argument by mistake, as `$row->name('x')`, now
+ignores it, where the signature died "Too many arguments"; nothing
+documented or tested that. On `place_areas`, three rounds, per row:
+
+| | Before | After |
+|---|---|---|
+| one column read on a row object | 142 to 146 ns | 120 to 122 ns |
+| `results->all` | 539 to 551 ns | 512 to 524 ns |
+

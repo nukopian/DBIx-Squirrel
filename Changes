@@ -29,6 +29,12 @@ Unreleased
       not 13.7, and with five positional ones 3.0, not 3.4 (roadmap
       2026-0028).
 
+    - A row object's column accessors, and the making of each row
+      object by results, have no signature, which cost about 20 ns a
+      call: reading a column takes about 121 ns, not 143, and results
+      reading 297,848 rows about 518 ns a row, not 545 (roadmap
+      2026-0028).
+
     - An iterator without stages hands on the rows it fetches without
       copying them: all no longer copies every row left twice before
       giving them, nor each batch into another. Reading 297,848 rows
