@@ -535,3 +535,20 @@ reading one row gained 0.5 to 1.2 µs a round, within the noise
 through a whole `iterate`. Iain dropped it: the gain was marginal for
 a second `try` in `at_caller`, which is simpler as it is.
 
+### Copilot's smaller points, left, 2026-11-16
+
+Steps 3 and 4 end here. Copilot's remaining points are off the paths
+that run for each call or row, and `at_caller`'s change, gaining about
+a microsecond a run, was judged marginal, so Iain agreed to leave them
+unmeasured:
+
+- **1, `_binds`' sort,** and **8, arrays for integer-keyed hashes:**
+  once for each new statement text, about 0.7 µs, as the study cache
+  keeps the rest.
+- **2, `_values_taken` building lists:** only for `do` with `?`
+  placeholders, through a callback.
+- **4, the cache key joined:** only for DBD::Pg, from three options.
+
+What's left is step 5, v3.0.3, which waits for Ekorn-Pipeline's
+v0.3.3, with its run's shorter way (its 2026-0040).
+
