@@ -299,3 +299,50 @@ table with a primary key, as `bench_places` has none on PostgreSQL:
   and 7 µs `all` or `first`.
 - **A named placeholder** costs about 3.6 µs a lookup with one, and
   9 µs an `execute` with five.
+
+### Step 2, a statement given attributes studied once (D1), 2026-11-15
+
+`_prepare_as` hands what it studied to the `prepare` or
+`prepare_cached` it calls, in `$DBIx::Squirrel::db::HANDED`, set with
+`local` while it calls it, as a subclass's method may stand between
+them and can't be passed another argument. `_study` takes it once, and
+only for the same handle, statement text and attributes hash: a
+subclass changing either has its statement studied afresh. A
+statement given as a reference isn't handed on, as code given as the
+statement is called each time it's studied.
+
+Before and after, on Perl 5.36.3 and DBD::SQLite in memory, the best
+of five runs, Ekorn v0.3.2:
+
+| | Before | After |
+|---|---|---|
+| `iterate($sql, $attrs, ...)->all`, a quiet machine | 169 to 175 µs | 125 to 127 µs |
+| the same, a busy one, three rounds | 284 to 315 µs | 211 to 249 µs |
+| `iterate($sql, ...)->all`, no attributes | within the noise | |
+
+It saves more than the one study of 32 µs measured on its own: about
+45 µs, quiet. Without attributes, the second study was a cache hit
+already, about 1 µs, too little to see.
+
+
+### Ekorn's run, halved, 2026-11-16
+
+Ekorn-Pipeline took the task from step 1 as its 2026-0040, committed as
+its 83c2ac2: a run with no flush, stage's end or sink takes a shorter
+way, with 4 closures, not 13, and `$p->iterator($code)` costs about
+8 µs, not 15. Checked here against its working copy at 83c2ac2, with
+step 2's change: the tests pass on Perl 5.36 and 5.44; against Ekorn
+v0.3.2, two rounds, on SQLite in memory:
+
+| | Ekorn v0.3.2 | Ekorn 83c2ac2 |
+|---|---|---|
+| a prepared statement's `iterate(...)->all` | 61.6, 61.9 µs | 53.8, 54.1 µs |
+| `iterate($sql, ...)->all` | 80.0, 80.4 µs | 70.8, 71.6 µs |
+| `iterate($sql, ...)->first` | 77.0, 77.7 µs | 69.7, 70.0 µs |
+| `iterate($sql, $attrs, ...)->all` | 120.2, 121.6 µs | 110.0, 111.0 µs |
+
+Lookups by key gain 2 to 5 µs: 49.7 to 47.3 µs on SQLite for a
+prepared statement's `iterate($id)->first`, within the noise on
+PostgreSQL and MySQL. It reaches users with Ekorn v0.3.3. Skipping
+Ekorn for an iterator with no stages would now save about 18 µs a run,
+not 27.
