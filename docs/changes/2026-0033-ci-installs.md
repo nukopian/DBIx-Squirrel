@@ -1,6 +1,6 @@
 # 2026-0033. CI installs only what each job needs, and caches it
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: Ekorn reinstalled at the newest in range.
 D2 settled: the DBI 1.643 job stays uncached. D3 settled: Windows
@@ -11,7 +11,9 @@ build log.
 (Ekorn-Pipeline ace1c4266093b47fba654ce6708e1cfabf0ac1c0, its roadmap
 2026-0047)
 
-**Started:** 2026-11-16
+**Started:** 2026-11-16, in 922669ccf43334ce83ed21c27467e5abeda582ab
+
+**Finished:** 2026-11-16
 
 ## Background
 
@@ -77,15 +79,32 @@ and the timings before and after are below.
 
 ## What happened
 
+- **Outcome:** done. CI passed on 922669c both on the run that made
+  the caches and on the one that used them, 43921648608, attempts 1
+  and 2. Every cached job found its cache on the second, and each test
+  and coverage job reinstalled Ekorn at the newest in range: v0.3.4,
+  as cpanmetadb's history didn't list v0.3.5 yet, though its package
+  endpoint, MetaCPAN and 02packages did. That lag is in
+  MAINTAINING.md's CI's caches.
+- **Changes from the plan:** none.
 - **Measurements,** each job as GitHub timed it, without the wait for
   a runner. Before: three uncached runs of 43909983275, on
-  fd5c2b4bbcf509af801a367b1e1477c8fec7de86, 2026-11-16.
+  fd5c2b4bbcf509af801a367b1e1477c8fec7de86. Making the caches: the
+  first attempt of 43921648608. After: its second, using them.
 
-| Job | Before | After |
-|---|---|---|
-| perl 5.36 to 5.44 (ubuntu-24.04) | 1m 28s to 2m 14s | |
-| perl 5.44 (macos-26) | 2m 57s to 3m 14s | |
-| style | 1m 43s to 2m 32s | |
-| coverage | 1m 52s to 2m 25s | |
-| perl 5.36, DBI 1.643 (ubuntu-24.04), uncached | 1m 48s to 2m 13s | |
-| windows-2025, uncached | 56s to 1m 32s | |
+| Job | Before | Making the caches | After |
+|---|---|---|---|
+| perl 5.36 to 5.44 (ubuntu-24.04) | 1m 28s to 2m 14s | 1m 5s to 1m 23s | 13 to 24 s |
+| perl 5.44 (macos-26) | 2m 57s to 3m 14s | 1m 16s | 22 s |
+| style | 1m 43s to 2m 32s | 2m 7s | 31 s |
+| coverage | 1m 52s to 2m 25s | 3m 39s | 1m 47s |
+| perl 5.36, DBI 1.643 (ubuntu-24.04), uncached | 1m 48s to 2m 13s | 1m 50s | 1m 37s |
+| windows-2025, uncached | 56s to 1m 32s | 1m 13s to 1m 18s | 1m 20s to 1m 30s |
+
+  The test jobs were faster even making their caches, installing only
+  yath and UUID of the develop modules. `coverage` is now most of its
+  time running the tests under Devel::Cover. The uncached jobs, about
+  1.5 minutes, now set CI's wall time.
+- **What's left:** nothing. Caching the DBI 1.643 job by hand (D2)
+  would bring CI's wall time to about 1m 47s, set by `coverage`, if
+  it's ever worth a cache step of our own.
