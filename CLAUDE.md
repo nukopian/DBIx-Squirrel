@@ -343,6 +343,20 @@ logs, Term::ANSIColor, IO::Pager, Email::Stuffer). Devel::NYTProf
   `croak`, against 0.42 µs with `die`, until Ekorn-Pipeline v0.3.1
   changed it. An object that should say where it was thrown records
   that itself, with `caller`.
+- **A closure run for each value reads `$_[0]`, without a signature,**
+  as Iain decided on 2026-11-16: those our stages, sources and sinks
+  return, and the row objects' accessors. A comment says why, so no
+  one puts the signature back. Measured that day, on 5.36 and 5.44, a
+  one-argument signature costs about 19 ns a call, and copying
+  `$_[0]` into a `my` variable costs as much, so it's read where it's
+  used; an empty `sub ()` costs about 6 ns more than `sub`. Through
+  Ekorn, a bare stage costs about 475 ns a value on 5.36, so that's
+  4%; `pluck` gained 4 to 12 ns. What's lost costs nothing here: the
+  signature's count of arguments guards a call only the pipeline
+  makes, and `$_[0]` aliases a value the pipeline holds itself, which
+  the stage's result replaces. Other subs keep their signatures
+  unless a measurement shows a gain, and the docs' examples keep
+  theirs, as users copy them.
 - **Two blank lines between subs, or one above a sub's comment.** A sub
   without a comment above it has two blank lines before it, to make the
   gap between subs plain; one with a comment has one, above the
