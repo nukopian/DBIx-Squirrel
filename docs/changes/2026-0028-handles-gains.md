@@ -552,3 +552,51 @@ unmeasured:
 What's left is step 5, v3.0.3, which waits for Ekorn-Pipeline's
 v0.3.3, with its run's shorter way (its 2026-0040).
 
+### The outcome, 2026-11-16
+
+Against Done when: each change was measured before and after, and kept
+only where it gained; the one that didn't gain enough, `at_caller`'s,
+was dropped. v3.0.3 is still to go to CPAN, after Ekorn-Pipeline's
+v0.3.3.
+
+Kept, in order: 67d2755 (D1, a statement given attributes studied
+once), 0f92a92 (named values put in order with less work), 6648907
+(values as references; `is_numbered` taking one key), 34bd86e (rows
+handed on without copying), 58f2606 (`execute` passing its values by
+reference), 05d16b5 and d6b0faf (row objects without signatures), and
+5cc66ea (`reset` keeping its pipeline). Ekorn-Pipeline's 83c2ac2 (its
+2026-0040) halved a run's set-up.
+
+v3.0.2 against `develop` at 7c8fc24, measured together on 2026-11-16,
+Perl 5.36.3, two rounds, per call, on SQLite in memory unless it says
+otherwise; with Ekorn v0.3.2, as users have it now, and with Ekorn at
+83c2ac2, as v0.3.3 will have it:
+
+| | v3.0.2, Ekorn v0.3.2 | now, Ekorn v0.3.2 | now, Ekorn 83c2ac2 |
+|---|---|---|---|
+| `iterate($sql, $attrs, ...)->all` | 149 µs | 107 to 116 µs | 98 to 104 µs |
+| `iterate($sql, ...)->all` | 77 µs | 69 to 70 µs | 59 to 63 µs |
+| a prepared statement's `iterate(...)->all` | 59 to 60 µs | 50 to 51 µs | 43 to 45 µs |
+| `selectrow_array` | 33 to 34 µs | 31 µs | 30 to 32 µs |
+| `execute`, five named values | 11.8 to 12.2 µs | 4.7 to 4.9 µs | |
+| `execute`, twenty named values | 33.0 to 33.5 µs | 8.5 to 8.8 µs | |
+| `execute`, a list placeholder | 13.2 to 13.3 µs | 9.2 to 9.7 µs | |
+| `execute`, five positional values | 3.5 to 3.6 µs | 3.0 to 3.1 µs | |
+
+Reading all 297,848 rows of the gazetteer's `place_areas`, per row,
+with Ekorn v0.3.2:
+
+| | v3.0.2 | now |
+|---|---|---|
+| `all`, no stages | 475 to 476 ns | 435 to 445 ns |
+| `next`, no stages | 908 to 922 ns | 872 to 876 ns |
+| `results->all` | 670 to 672 ns | 612 to 613 ns |
+| a column read on a row object | 148 to 149 ns | 126 to 127 ns |
+| `all`, one stage | 1822 to 1840 ns | 1828 to 1831 ns |
+
+Lookups by key gain 2 to 5 µs, on every driver: a prepared statement's
+`iterate($id)->first` takes 50.9 µs, not 52.6, on SQLite; 93.5, not
+96.0, on PostgreSQL; 73.6, not 75.3, on MySQL. With one value, there's
+little to gain in `execute`; most of a lookup is the iterator's run,
+and Ekorn's share of it reaches users with its v0.3.3.
+

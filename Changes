@@ -2,50 +2,43 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    iterate and results, given attributes, are about 45 µs quicker a
-    call, as their statement is studied once, not twice, and execute
-    with five named values is about 7.5 µs quicker, and reading
-    every row with all, next or results is 5 to 7% quicker (roadmap
-    2026-0028). dump_to redacts secrets where Text::Redact::Secrets is
-    installed, as Ekorn::Pipeline v0.3.2's dump_to does:
-    DBIx::Squirrel now recommends that module, and dump_to's notes say
-    what it redacts and how to turn that off.
+    Quicker handles: execute with named values takes a quarter to two
+    fifths of the time it did, a statement given attributes is
+    studied once, not twice, and iterators and result sets do less for
+    each run and each row (roadmap 2026-0028). dump_to redacts secrets
+    where Text::Redact::Secrets is installed, as Ekorn::Pipeline
+    v0.3.2's dump_to does, and DBIx::Squirrel now recommends that
+    module.
+
+    - execute does less to put named or numbered values in order, and
+      passes them on without copying them. On SQLite, with five named
+      values it takes about 4.8 µs, not 12; with twenty, 8.5, not 33;
+      with a list placeholder, 9.5, not 13; and with five positional
+      values, 3.0, not 3.5 (roadmap 2026-0028).
 
     - iterate, results and the Sugar's statements study a statement
       given attributes once: they studied it in full, then the prepare
-      they call studied it again, at about 32 µs each on SQLite. A
-      subclass's prepare that changes the statement or the attributes
-      has them studied afresh, as before, as is a statement given as
-      code, an array or a handle (roadmap 2026-0028).
-
-    - execute puts named and numbered values in order with less work:
-      a statement keeps the order of its placeholders, and values
-      named as the statement names them, a value for each, are taken
-      as they are. With five named values, on SQLite, execute takes
-      about 6 µs, not 12 (roadmap 2026-0028).
-
-    - execute passes its values on without copying them: with five
-      named values on SQLite it takes about 4.8 µs, with twenty 8.5,
-      not 13.7, and with five positional ones 3.0, not 3.4 (roadmap
+      they call studied it again. iterate with attributes takes about
+      110 µs, not 149. A subclass's prepare that changes the statement
+      or the attributes has them studied afresh, as before (roadmap
       2026-0028).
 
-    - An iterator keeps its pipeline from run to run, until reset is
-      given other stages, and reads its statement handle's state once
-      a run: reset takes about 3.5 µs less on an iterator run again,
-      and an iterator reading one row about 1.5 µs less (roadmap
+    - An iterator keeps its pipeline from run to run, until it's
+      given other stages, and hands on the rows it fetches without
+      copying them. A prepared statement's iterate(...)->all, reading
+      one row, takes about 50 µs, not 59. Reading 297,848 rows, all
+      takes about 440 ns a row, not 475, and next 875, not 915 (roadmap
       2026-0028).
 
-    - A row object's column accessors, and the making of each row
-      object by results, have no signature, which cost about 20 ns a
-      call: reading a column takes about 121 ns, not 143, and results
-      reading 297,848 rows about 518 ns a row, not 545 (roadmap
-      2026-0028).
+    - A result set makes its row objects, and their column accessors
+      read a column, without a signature: results reading 297,848 rows
+      takes about 612 ns a row, not 671, and a column read about 126
+      ns, not 148. An accessor given an argument by mistake ignores it,
+      where it died before (roadmap 2026-0028).
 
-    - An iterator without stages hands on the rows it fetches without
-      copying them: all no longer copies every row left twice before
-      giving them, nor each batch into another. Reading 297,848 rows
-      on SQLite, all takes about 420 ns a row, not 445, next 830, not
-      870, and results 597, not 645 (roadmap 2026-0028).
+    - With Ekorn::Pipeline v0.3.3, within DBIx::Squirrel's range, each
+      iterator takes about 8 µs less again, as its run's set-up is
+      halved.
 
     - Text::Redact::Secrets v1.x is recommended, as Ekorn::Pipeline
       recommends it, and installers that take recommendations install
