@@ -521,3 +521,17 @@ Three rounds, Ekorn at 83c2ac2, per call, on SQLite in memory:
 | a prepared statement's `iterate(...)->all` | 44.6 to 45.3 µs | 43.2 to 43.7 µs |
 | `iterate($sql, ...)->all` | 61.0 to 61.8 µs | 59.1 to 59.8 µs |
 
+### `at_caller`, tried and dropped, 2026-11-16
+
+`at_caller` costs about 0.69 µs a call, most of it making `%SIG`'s
+`__WARN__` local, about 280 ns, and `(caller)[1]`, about 160 ns. Tried:
+a nested `at_caller` setting neither `$OUTER` nor the handler, as the
+outer one's are in place, and the iterator's source executing and
+reading the columns' names within one, so `execute`'s own ran nested.
+With `local ... if` for both `local`s, the outermost cost about 50 ns
+more; with the nested case a path of its own, and the error handling
+shared in a `_raise_at`, it cost what it did, and a new iterator
+reading one row gained 0.5 to 1.2 µs a round, within the noise
+through a whole `iterate`. Iain dropped it: the gain was marginal for
+a second `try` in `at_caller`, which is simpler as it is.
+
