@@ -153,4 +153,29 @@ dropped.
     queue's, but it was 1 to 2% slower under pressure, and no cheaper
     on a hit: Perl's `shift` only moves the array's start, in C, where
     the ring's `%` and lookups are Perl's.
+- **Does the queue's size matter?** Iain asked, after it shipped.
+  `shift` and `push` cost the same at any length: `shift` moves the
+  array's start, and a `push` out of room moves the elements back,
+  rarely. The queue holds a second copy of each key, about 200 KB a
+  handle at 1,000 statements of 200 bytes. The walk is what grows: a
+  study with a count of c survives about log2(c) + 1 passes, so when
+  nearly every study is in use, one eviction may go round the queue
+  many times. One eviction of 125 from 1,000 studies, every one with
+  the count given, on Perl 5.36, best of 20:
+
+  | Every study's count | That eviction | The next one |
+  |---|---|---|
+  | 0 | 26 µs | 26 µs |
+  | 1 | 214 µs | 27 µs |
+  | 100 | 1,343 µs | 27 µs |
+  | 10,000 | 2,526 µs | 26 µs |
+  | 1,000,000 | 3,603 µs | 26 µs |
+
+  A count of c takes c hits to build, and about log2(c) + 1 steps to
+  bring down, so the walk costs a small share of the hits that made it
+  long: the 3.6 ms comes after a billion hits, about 20 minutes of
+  them. The eviction after it is back to 26 µs. The longest walk grows
+  with the size, so a cache of 10,000 would make it about ten times
+  as long; at 1,000, fixed (D4), it doesn't matter. If the size ever
+  becomes a setting, its docs should say so.
 - **What's left:** nothing.
