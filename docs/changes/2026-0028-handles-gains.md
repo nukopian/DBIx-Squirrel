@@ -381,3 +381,55 @@ placeholders, Ekorn at 83c2ac2, three rounds, the best of five each:
 Tried and left out: walking the pairs in place, rather than copying
 them into a hash first, measured no gain (2.68 µs against 2.64).
 
+### Step 3, values as references, 2026-11-16
+
+Iain asked whether `_in_order`'s copy of `place_values`' pairs into a
+hash was the cheapest way, or a reference was quicker. Measured with
+stand-ins, a hash returned by reference, rather than as its pairs made
+into another hash, saved 0.36 µs with 5 values and 1.9 µs with 20, on
+5.36 and 5.44 alike. `values_for` and `place_values` are exported and
+documented as returning lists, so, as D2 decided for `study_sql`,
+private versions return references: `_values_for` a hash reference,
+and `_place_values` an array reference of its pairs, given its values
+as a hash reference. The handles use them; the public functions wrap
+them. For a list placeholder's statement, `_in_order` puts the pairs
+in order in an array, without a hash.
+
+`values_for` as a wrapper with a signature cost 0.45 µs more a call
+than before, copying its arguments; without a signature, passing `@_`
+on with `&_values_for`, it costs 0.05 to 0.1 µs more.
+
+Before and after, five named placeholders, two rounds:
+
+| | Before | After |
+|---|---|---|
+| `_in_order` | 2.57 to 2.66 µs | 2.16 to 2.20 µs |
+| `execute` | 6.52 to 6.75 µs | 6.05 to 6.22 µs |
+| `_in_order`, with a list placeholder | 6.49 to 6.56 µs | 5.96 to 5.98 µs |
+| `execute`, with a list placeholder | 10.91 µs | 10.38 to 10.63 µs |
+| the public `values_for` | 1.92 to 1.94 µs | 1.99 to 2.03 µs |
+
+### Step 3, `is_numbered` takes one key, 2026-11-16
+
+Iain asked whether `$key !~ m( \A \D \z )xa` was faster than
+`is_numbered`'s `m( \A \d+ \z )xa`. It isn't the same test: `\A \D \z`
+matches only one non-digit, so a name of two or more characters, such
+as `artist_id`, would be taken as numbered. Its correct form, `!~
+m( \D )xa`, was about 20 ns quicker on a number and 5 ns slower on a
+name, the commoner kind, so the regex stays.
+
+Most of `is_numbered`'s 250 ns was `my($key) = keys %$binds`, making a
+list of every key to take one. Taking it with `each`, the iterator
+reset with `keys` in void context before and after, cost 203 ns
+against 288 with 5 keys, and 208 against 592 with 20, on 5.36; 179
+against 252 and 180 against 527 on 5.44. Through `execute`, three
+rounds, against the step before:
+
+| | `keys` | `each` |
+|---|---|---|
+| `execute`, five named values | 6.08 to 6.23 µs | 6.04 to 6.22 µs |
+| `execute`, twenty named values | 13.83 to 14.14 µs | 13.41 to 13.64 µs |
+
+Within the noise with five; with twenty, a gain each round, so it's
+kept (D5).
+

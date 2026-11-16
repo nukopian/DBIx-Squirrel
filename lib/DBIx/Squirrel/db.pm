@@ -11,7 +11,7 @@ use Ekorn::Pipeline qw(is_stage);
 
 use DBIx::Squirrel::Errors       qw(at_caller croakf failed in_method);
 use DBIx::Squirrel::Placeholders qw(
-    expand_lists key_of study_sql values_for values_taken
+    expand_lists key_of study_sql values_taken
 );
 use Ekorn::Pipeline::Pipes qw();
 use DBIx::Squirrel::Util   qw(
@@ -91,8 +91,10 @@ sub _for_values ($self, $normalised, $state, $dbi_attrs, @values) {
         sub { values_taken($state->{Binds}) },
         $state->{Lists}, @values,
     );
-    my($expanded, $binds, $lengths)
-        = expand_lists($state, {values_for($state->{Binds}, @values)});
+    my($expanded, $binds, $lengths) = expand_lists(
+        $state,
+        DBIx::Squirrel::Placeholders::_values_for($state->{Binds}, @values),    ## no critic (Subroutines::ProtectPrivateSubs)
+    );
     my %kept = map { ($_ => $state->{$_}) }
         qw(Placeholders OriginalStatement Options Lists Pieces);
     return $expanded, {

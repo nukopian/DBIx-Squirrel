@@ -4,7 +4,7 @@ Unreleased
 
     iterate and results, given attributes, are about 45 µs quicker a
     call, as their statement is studied once, not twice, and execute
-    with named or numbered values is about 5 µs quicker (roadmap
+    with named or numbered values is about 6 µs quicker (roadmap
     2026-0028). dump_to redacts secrets where Text::Redact::Secrets is
     installed, as Ekorn::Pipeline v0.3.2's dump_to does:
     DBIx::Squirrel now recommends that module, and dump_to's notes say
@@ -21,7 +21,7 @@ Unreleased
       a statement keeps the order of its placeholders, and values
       named as the statement names them, a value for each, are taken
       as they are. With five named values, on SQLite, execute takes
-      about 7 µs, not 12 (roadmap 2026-0028).
+      about 6 µs, not 12 (roadmap 2026-0028).
 
     - Text::Redact::Secrets v1.x is recommended, as Ekorn::Pipeline
       recommends it, and installers that take recommendations install

@@ -142,8 +142,15 @@ sub key_of ($placeholder, $position = undef) {
 
 # Return true if a statement's placeholders are numbered, not named,
 # given its map of their numbers or names to their positions.
+#
+# It takes one key with each, not a list of every key, which costs more
+# with each key the statement has (roadmap 2026-0028). The hash's
+# iterator is reset before and after, with keys in void context, which
+# makes no list, so nothing else finds it moved.
 sub is_numbered ($binds) {
-    my($key) = keys %$binds;
+    keys %$binds;    # resets the iterator, for each
+    my $key = each %$binds;
+    keys %$binds;    # and again, leaving it as it was found
     return $key =~ m( \A \d+ \z )xa;
 }
 
@@ -158,12 +165,22 @@ sub values_taken ($binds) {
 # croaking unless there's a value for each, and no other, given the
 # statement's map of its placeholders' numbers or names to their
 # positions.
-sub values_for ($binds, @args) {
+#
+# It has no signature, and passes its arguments on as they are, as
+# copying them costs about 0.3 µs a call.
+sub values_for {
+    return %{ &_values_for };
+}
+
+# Return what values_for does, as a hash reference, which the handles
+# use: returning the hash costs less than returning its pairs and making
+# another of them (roadmap 2026-0028).
+sub _values_for ($binds, @args) {
     if (is_numbered($binds)) {
         my $needed = values_taken($binds);
         croakf 'Expected %d bind values, not %d', $needed, scalar @args
             unless @args == $needed;
-        return map { ($_ => $args[$_ - 1]) } keys %$binds;
+        return {map { ($_ => $args[$_ - 1]) } keys %$binds};
     }
     my %values;
     if (@args == 1 && is_plain_hashref($args[0])) {
@@ -176,7 +193,7 @@ sub values_for ($binds, @args) {
     }
     # The commonest case: a value for each placeholder, each named as the
     # statement keys it, so the values are as they were given.
-    return %values
+    return \%values
         if keys %values == keys %$binds
         && !grep { !exists $binds->{$_} } keys %values;
     my(%given, @unknown);
@@ -190,12 +207,12 @@ sub values_for ($binds, @args) {
         if @unknown;
     # Each key given is the statement's, so as many as it has are all of
     # them.
-    return %given if keys %given == keys %$binds;
+    return \%given if keys %given == keys %$binds;
     my @missing = sort grep { !exists $given{$_} } keys %$binds;
     croakf 'Expected a value for each placeholder (none for %s)',
         join(', ', @missing)
         if @missing;
-    return %given;
+    return \%given;
 }
 
 # Return a statement with list placeholders, as a statement handle keeps
@@ -225,21 +242,28 @@ sub expand_lists ($state, $values) {
 # positions take the values in its list in turn, and the list must have
 # as many as the statement was prepared for.
 sub place_values ($state, %values) {
+    return @{ _place_values($state, \%values) };
+}
+
+# Return what place_values does, as an array reference of its pairs,
+# given the values as a hash reference, which the handles use (roadmap
+# 2026-0028).
+sub _place_values ($state, $values) {
     my($binds, $lists, $lengths) = @$state{qw(Binds Lists Lengths)};
     my @placed;
-    for my $key (keys %values) {
+    for my $key (keys %$values) {
         my $positions = $binds->{$key};
         unless ($lists && $lists->{$key}) {
-            push @placed, map { ($_ => $values{$key}) } @$positions;
+            push @placed, map { ($_ => $values->{$key}) } @$positions;
             next;
         }
-        my @list = _list($lists->{$key}, $values{$key});
+        my @list = _list($lists->{$key}, $values->{$key});
         croakf 'Expected %d values in a list, as prepared, not %d (%s)',
             $lengths->{$key}, scalar @list, $lists->{$key}
             unless @list == $lengths->{$key};
         push @placed, map { ($positions->[$_] => $list[$_ % @list]) } keys @$positions;
     }
-    return @placed;
+    return \@placed;
 }
 
 # Return the values in a list given for a list placeholder, named as it's
