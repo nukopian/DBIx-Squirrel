@@ -2,7 +2,7 @@
 
 ## From Ekorn-Pipeline, 2026-11-16: Ekorn will count a run's results, in Ekorn::Pipeline::Context
 
-**From:** Ekorn-Pipeline 57c4d503905951dcb62557bf19c726d1c9d5d568
+**From:** Ekorn-Pipeline 5ff0ea15ada5f95207001e740889614f32c574ff
 (its roadmap 2026-0046, and the record
 `docs/changes/2026-0046-context.md`, with every decision)
 
@@ -16,11 +16,13 @@ Ekorn::Pipeline::Tooling's tags, in a v0.3.x, inside your range:
   being a value leaving the last stage or reaching a sink. Each run
   counts its own, so a pipeline run inside a stage doesn't move its
   caller's count. undef outside a stage.
-- **`result_original`** means what yours does: the value as the first
-  source gave it, before any stage changed it, carried through
-  iterators read as sources, as your row is through chains; the same
-  for each value a stage returns in place of one; undef in a flush and
-  the stages after it. A pushed value is its own original.
+- **`result_original`** is the value the run's own source gave, or
+  that was pushed, before any stage changed it; the same for each
+  value a stage returns in place of one; undef in a flush and the
+  stages after it. It differs from yours in a chain: a run reading an
+  iterator gets the value the iterator handed out, not the row behind
+  it, as nothing is carried from one run to another. Your shadow keeps
+  the row through chains, as now, from the statement's context.
 - A run whose stages read neither costs nothing to measure against
   v0.3.4.
 
