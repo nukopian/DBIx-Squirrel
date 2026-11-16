@@ -1,6 +1,6 @@
 # 2026-0027. A pipeline key for the Sugar
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.1.0
 
 **Decisions:** D1 settled: pipelines are defined first, wherever
 they're given. D2 settled: `pipeline` takes what Ekorn's takes. D3
@@ -92,4 +92,4 @@ coverage above its floors, and `xt/examples.t` runs the new example.
   reference's example and the Sugar's POD, use the key now, and say
   `BEGIN` is still the way for a pipeline named with `named`. The
   README's sixth step says the Sugar names pipelines too.
-- **What's left:** nothing. It ships in v3.1.0 (D4).
+- **What's left:** nothing. It shipped in v3.1.0 (D4).

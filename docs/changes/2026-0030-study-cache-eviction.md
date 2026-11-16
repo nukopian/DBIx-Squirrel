@@ -1,6 +1,6 @@
 # 2026-0030. A study cache that evicts the least used
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.1.0
 
 **Decisions:** D1 settled: a count is halved as the walk passes it
 (revised). D2 settled: 125 evicted at a time, the first found unused

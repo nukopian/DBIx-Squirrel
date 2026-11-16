@@ -2,6 +2,8 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+v3.1.0 2026-11-16
+
     The Sugar names pipelines, a handle keeps the statements it uses,
     and a little less work for each row.
 
