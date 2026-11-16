@@ -36,9 +36,9 @@ Unreleased
       ns, not 148. An accessor given an argument by mistake ignores it,
       where it died before (roadmap 2026-0028).
 
-    - With Ekorn::Pipeline v0.3.3, within DBIx::Squirrel's range, each
-      iterator takes about 8 µs less again, as its run's set-up is
-      halved.
+    - Requires Ekorn::Pipeline v0.3.3 or later, below v0.4.0, whose
+      runs set up in about half the time, so each iterator takes about
+      8 µs less again.
 
     - Text::Redact::Secrets v1.x is recommended, as Ekorn::Pipeline
       recommends it, and installers that take recommendations install
