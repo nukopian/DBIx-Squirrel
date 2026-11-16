@@ -41,17 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0030. A study cache that evicts the least used
-
-**Size:** S (2)
-
-Each handle keeps what it found studying up to 1,000 statements, and
-empties the cache at the 1,001st. Instead, it keeps a count of each
-one's uses, and evicts 125 at a time, the least used and, among
-equals, the first studied, halving the counts left, so a program with
-more statements than that keeps the ones it uses. Measured first
-against emptying, and dropped if it isn't a gain. [Its
-record](docs/changes/2026-0030-study-cache-eviction.md).
+Nothing.
 
 ## Next
 

@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [A study cache that evicts the least used](2026-0030-study-cache-eviction.md),
-  roadmap 2026-0030: in progress.
+  roadmap 2026-0030: shipped, unreleased.
 - [Measured gains in the handles, for v3.0.3](2026-0028-handles-gains.md),
   roadmap 2026-0028: shipped in v3.0.3.
 - [A pipeline key for the Sugar](2026-0027-sugar-pipeline-key.md),
