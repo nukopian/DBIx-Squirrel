@@ -11,6 +11,10 @@ Unreleased
       reading a table through one stage takes about 25 to 50 ns a row
       less, of about 1.8 µs.
 
+    - An iterator's next takes about 10 to 35 ns a row less: it takes
+      the result without an array to hold it, and its source's step
+      has no signature.
+
 v3.0.3 2026-11-16
 
     Quicker handles, from execute to each row read.

@@ -61,12 +61,14 @@ sub next ($self) {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->reset unless $self->{executed};
     return       if $self->{done};
     local $DBIx::Squirrel::Context::ITERATOR = $self;
-    my @result = $self->{pull}->();
-    unless (@result) {
+
+    # A list assignment, in scalar context, counts the values given, so
+    # an undefined result counts, without an array to hold it.
+    (my($result) = $self->{pull}->()) or do {
         _finish($self);
         return;
-    }
-    return $result[0];
+    };
+    return $result;
 }
 
 # Return the results still to come, reading the run to its end: as a
@@ -291,7 +293,8 @@ sub _statement ($self) {
             $context->{row} = $rows->[-1]               if @$rows;
             return @$rows;
         };
-        my $step = sub () {
+        # Without a signature, as it's called for each row.
+        my $step = sub {
             # A row at a time from the batch, as stages or a pipeline read
             # it: the commonest case, so it's done here, without a call
             # of $made for each row.
