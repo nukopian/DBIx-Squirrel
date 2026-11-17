@@ -55,3 +55,42 @@ called as its run ends, at the tee's flush at the latest, not in the
 tee's end. Its record, `docs/changes/2026-0048-tee.md`, has both.
 
 # Planned work
+
+## t/28-tooling.t fails once Ekorn's Tooling exports tee
+
+**From:** Ekorn-Pipeline's session, 2026-11-17 (Ekorn-Pipeline
+369c2cca7ac27c6bf3a9b9e73a5da2d6dc2a84f3, its pre-release wash-up,
+recorded in `docs/changes/2026-0048-tee.md`)
+**Waiting on:** nothing; Ekorn's v0.3.6 waits on it
+
+Ekorn's next v0.3.x, v0.3.6, adds `tee` to Ekorn::Pipeline::Tooling's
+`:taps`, and so to its `:stages` and `:all`. Your `t/28-tooling.t`
+checks that DBIx::Squirrel::Tooling holds every name Ekorn's Tooling
+exports ("Ekorn's tags, by the same names, with the same words", and
+"each name both export is one sub"), so it fails, on 5.36.3 and
+5.44.0, run against Ekorn's `develop` at the commit above: `:taps`,
+`:stages` and `:all` each lack `tee`, and you export 39 of Ekorn's 40
+names.
+
+The test is in v3.1.0, on CPAN, whose `cpanfile` takes Ekorn
+`>= v0.3.3, < v0.4.0`. So once Ekorn v0.3.6 is released, a fresh
+`cpanm DBIx::Squirrel` installs it, and v3.1.0's tests fail. Iain
+expects a workaround here, and a minor release of DBIx::Squirrel, out
+before or with Ekorn's v0.3.6, so the release on CPAN that installers
+pick passes. What might be done:
+
+- export `tee` from DBIx::Squirrel::Stages::Taps and Tooling, as
+  you do Ekorn's other taps, so the test passes as it is;
+- and, or instead, loosen the test, so a name Ekorn adds to its
+  Tooling doesn't fail an installed DBIx::Squirrel, while still
+  catching a name you meant to mirror and missed.
+
+The second keeps it from happening again: as it stands, any name
+added to Ekorn's Tooling, in any v0.3.x, fails every DBIx::Squirrel
+release with this test. Tell Ekorn-Pipeline which you chose, with a
+message, so its neighbours.md can say what a name added to its
+Tooling costs you. Done when DBIx::Squirrel's tests pass against
+Ekorn's `develop`, and the release that does is on CPAN.
+
+Iain also means to have this session appraise Ekorn's latest changes,
+`feed` and `tee`, for fixes and opportunities, before Ekorn's release.
