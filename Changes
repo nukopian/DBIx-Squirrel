@@ -2,7 +2,15 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    The user guide on the last row.
+    The user guide on the last row, and an install that passes its
+    tests when Ekorn::Pipeline adds a name.
+
+    - An installed DBIx::Squirrel no longer fails its tests when a
+      later Ekorn::Pipeline v0.3.x adds a name to its Tooling, as
+      v0.3.6 will with tee: t/28-tooling.t checked that
+      DBIx::Squirrel::Tooling holds every name Ekorn's does, which a
+      release can't promise for names added after it. That check is
+      now an author test (roadmap 2026-0034).
 
     - The user guide's "Get the first, the last, or the only one" says
       keep_last fetches every row, and shows the database's way to the

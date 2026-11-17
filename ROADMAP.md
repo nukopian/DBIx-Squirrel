@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0033.
+Last id: 2026-0035.
 
 Items come in four groups:
 
@@ -45,7 +45,13 @@ Nothing.
 
 ## Next
 
-Nothing.
+### 2026-0035. tee, from DBIx::Squirrel::Stages::Taps and Tooling
+
+**Size:** XS (1). **Depends on:** Ekorn::Pipeline v0.3.6, released.
+
+Export Ekorn's new tap, `tee`, on request, as `dump_to` is, and in
+Tooling's `:taps`, requiring Ekorn v0.3.6, in v3.2.0. Built on a
+branch meanwhile. [Its record](docs/changes/2026-0035-tee.md).
 
 ## Later
 
