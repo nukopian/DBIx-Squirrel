@@ -1,6 +1,6 @@
 # 2026-0033. CI installs only what each job needs, and caches it
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.1.1
 
 **Decisions:** D1 settled: Ekorn reinstalled at the newest in range.
 D2 settled: the DBI 1.643 job stays uncached. D3 settled: Windows

@@ -2,8 +2,17 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    The user guide on the last row, and an install that passes its
-    tests when Ekorn::Pipeline adds a name.
+v3.1.1 2026-11-17
+
+    An install that passes its tests when Ekorn::Pipeline adds a name,
+    and the user guide on the last row.
+
+    Ekorn::Pipeline v0.3.6 adds tee to its Tooling; v3.1.0's tests
+    would fail on a fresh install with it, and not install. This
+    release passes with any Ekorn::Pipeline v0.3.x, v0.3.6 included
+    (roadmap 2026-0034). Exporting tee from DBIx::Squirrel follows in
+    v3.2.0, once Ekorn::Pipeline v0.3.6 is out. Requires
+    Ekorn::Pipeline >= v0.3.3, < v0.4.0, as before.
 
     - An installed DBIx::Squirrel no longer fails its tests when a
       later Ekorn::Pipeline v0.3.x adds a name to its Tooling, as

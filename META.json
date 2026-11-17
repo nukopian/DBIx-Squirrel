@@ -90,7 +90,7 @@
          "web" : "https://github.com/nukopian/DBIx-Squirrel"
       }
    },
-   "version" : "v3.1.0",
+   "version" : "v3.1.1",
    "x_serialization_backend" : "JSON::PP version 4.18",
    "x_static_install" : 1
 }

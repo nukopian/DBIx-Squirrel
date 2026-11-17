@@ -1,6 +1,6 @@
 # 2026-0034. A name Ekorn adds to its Tooling fails only our CI
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.1.1
 
 **Decisions:** D1 settled: the completeness checks become an author
 test; the same-sub checks stay. D2 settled: two releases, v3.1.1 for
@@ -62,6 +62,7 @@ v3.1.1 is on CPAN.
 - **Outcome:** against Ekorn 9b206d0, `t/28-tooling.t` passes on
   5.36.3 and 5.44.0, and `xt/ekorn-tooling.t` fails for `:taps`,
   `:stages` and `:all`, lacking `tee`. Against Ekorn v0.3.5, from
-  CPAN, the whole suite passes on both, 33 files. v3.1.1 is to come.
+  CPAN, the whole suite passes on both, 33 files. Released in v3.1.1,
+  2026-11-17.
 - **Changes from the plan:** none.
-- **What's left:** v3.1.1; then 2026-0035.
+- **What's left:** 2026-0035.
