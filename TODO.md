@@ -48,9 +48,10 @@ about 1.7 µs a value through a branch of one plain stage, against
 
 You import Taps' `peek`, `count_into` and `dump_to` by name, so `tee`
 reaches DBIx::Squirrel's users only if you add it to that list; nothing
-else changes. Two of its details may still change before the release,
-as Iain decides: how a death in the branch is named, and when the
-branch's ends are called. Its record,
-`docs/changes/2026-0048-tee.md`, has both.
+else changes. Iain settled two of its details as built, on the same
+day: a death in the branch is named nested, not `#1.2`, as the dotted
+names are for pipelines spliced inline; and the branch's ends are
+called as its run ends, at the tee's flush at the latest, not in the
+tee's end. Its record, `docs/changes/2026-0048-tee.md`, has both.
 
 # Planned work
