@@ -30,4 +30,27 @@ will. Its record, `docs/changes/2026-0044-fed-runs.md`, has the
 decisions and measurements; the user guide's chapters 2, 9 and 10 show
 it in use.
 
+## From Ekorn-Pipeline, 2026-11-17: tee, a tap that takes a pipeline
+
+**From:** Ekorn-Pipeline's session, 2026-11-17 (Ekorn-Pipeline
+8324858d70742206c98be2fe0e2b34eada7c2fae, its roadmap 2026-0048,
+unreleased; the next v0.3.x, with `feed`)
+
+Ekorn::Pipeline::Stages::Taps has a fourth tap, `tee(@stages)`,
+exported on request and in `:all`: it runs each value through a branch
+of the stages, one run of its own beside the main run, fed by a feed,
+and passes the value on unchanged. A stop in the branch ends only the
+branch; a death kills the run, its message nested, the tee's stage,
+then the branch's within it; its flushes are called in the tee's
+flush; it takes whatever `new` takes, a sink last included. It costs
+about 1.7 µs a value through a branch of one plain stage, against
+`peek`'s 0.4, so it's for side jobs and debugging.
+
+You import Taps' `peek`, `count_into` and `dump_to` by name, so `tee`
+reaches DBIx::Squirrel's users only if you add it to that list; nothing
+else changes. Two of its details may still change before the release,
+as Iain decides: how a death in the branch is named, and when the
+branch's ends are called. Its record,
+`docs/changes/2026-0048-tee.md`, has both.
+
 # Planned work
