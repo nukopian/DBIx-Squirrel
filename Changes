@@ -2,6 +2,15 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    tee, a tap that takes stages.
+
+    - DBIx::Squirrel::Stages::Taps exports tee on request, as
+      Ekorn::Pipeline's does, and in :all, and DBIx::Squirrel::Tooling
+      has it in :taps, :stages and :all. tee(@stages) runs each value
+      through a branch of stages, beside the pipeline, and passes it on
+      unchanged; pluck and as_hash work in the branch on a statement's
+      rows. Requires Ekorn::Pipeline v0.3.6 (roadmap 2026-0035).
+
 v3.1.1 2026-11-17
 
     An install that passes its tests when Ekorn::Pipeline adds a name,

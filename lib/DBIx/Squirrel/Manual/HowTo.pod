@@ -287,7 +287,7 @@ B<Made in:> DBIx::Squirrel::Stages::Batch
 
 =item C<:taps>
 
-B<What it gives you:> C<peek>, C<count_into> and C<dump_to>
+B<What it gives you:> C<peek>, C<count_into>, C<dump_to> and C<tee>
 
 B<Made in:> DBIx::Squirrel::Stages::Taps
 
@@ -1100,6 +1100,23 @@ Data::Dumper, to STDERR or a filehandle you give: handy while you
 debug, and to be taken out before the code goes live. With
 Text::Redact::Secrets installed, it redacts the secrets it finds, as
 the reference's L<Canned stages|DBIx::Squirrel::Manual::Reference/"Canned stages"> says.
+
+C<tee>, on request too, is a tap of any shape: it runs each row through
+stages of its own, beside the pipeline, and passes the row on as it
+came. Its stages can pick out some rows, stop early, or use C<pluck>,
+as the pipeline's can:
+
+    my @first_two;
+    my $count = $dbh->iterate(
+        'SELECT name FROM artist ORDER BY name',
+        tee(take(2), pluck('name'), sub { push @first_two, $_; () }),
+        count_items,
+    );
+    say "@first_two, of $count";    # Abba Blur, of 3
+
+A stop in C<tee>'s stages, such as C<take(2)>'s, ends only them: the
+pipeline reads on. It costs a good deal more than C<peek>, so keep it
+for side jobs and debugging.
 
 =head2 Compared with C<map> over every row
 

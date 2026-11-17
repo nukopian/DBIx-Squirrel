@@ -459,7 +459,7 @@ rows of any shape;
 =item * L<DBIx::Squirrel::Stages::Batch>: C<batch> and C<collect>;
 
 =item * L<DBIx::Squirrel::Stages::Taps>: C<peek> and C<count_into>,
-with C<dump_to> on request.
+with C<dump_to> and C<tee> on request.
 
 =back
 

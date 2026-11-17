@@ -137,7 +137,7 @@ place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
 | `:core` | `Stop`, `gather` | [Stop](#6-stopping-a-pipeline), [Gather](#7-gathering-stages-made-for-each-run) |
 | `:flow` | `take`, `take_first`, `take_last`, `take_single`, `take_if`, `take_while`, `drop`, `drop_if`, `drop_while` | [Stages::Flow](#taking-and-dropping) |
 | `:batch` | `batch`, `collect` | [Stages::Batch](#batching-and-collecting) |
-| `:taps` | `peek`, `count_into`, `dump_to` | [Stages::Taps](#canned-stages) |
+| `:taps` | `peek`, `count_into`, `dump_to`, `tee` | [Stages::Taps](#canned-stages) |
 | `:rows` | `pluck`, `as_hash` | [Stages::Rows](#canned-stages) |
 | `:stages` | `:flow`, `:batch`, `:taps` and `:rows` | |
 | `:context` | `iterator`, `result_number`, `result_original` | [Context](#context) |
@@ -977,7 +977,7 @@ use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while);
 | `DBIx::Squirrel::Stages::Flow` | `take($n)`, `drop($n)` | `take_first`, `take_last`, `take_single`, `take_while { ... }`, `drop_while { ... }`, `take_if { ... }`, `drop_if { ... }` |
 | `DBIx::Squirrel::Stages::Rows` | `pluck($column)`, `as_hash` | |
 | `DBIx::Squirrel::Stages::Batch` | `batch($n)`, `collect`, `collect { ... }` | |
-| `DBIx::Squirrel::Stages::Taps` | `peek { ... }`, `count_into(\$n)` | `dump_to($fh)` |
+| `DBIx::Squirrel::Stages::Taps` | `peek { ... }`, `count_into(\$n)` | `dump_to($fh)`, `tee(@stages)` |
 
 Flow's are described in [6. Stopping a
 pipeline](#6-stopping-a-pipeline), and Batch's in [7.
@@ -996,6 +996,7 @@ called, not on each value.
 | `peek { ... }` | Calls the block with each value, and passes the value on. |
 | `count_into(\$n)` | Counts the values into `$n`, from 0 on each run, and passes them on. |
 | `dump_to($fh)` | Writes each value, with Data::Dumper, to `$fh` or STDERR, and passes it on. |
+| `tee(@stages)` | Runs each value through a branch of `@stages`, a run of its own beside the main run, and passes it on. A stop in the branch ends only the branch; a death kills the run. The branch shares the run's context, so `pluck` and `as_hash` work in it. |
 
 ```perl
 my $read  = 0;
@@ -2655,7 +2656,7 @@ distributions of their own.
 | `DBIx::Squirrel::Stages::Flow` | Canned stages taking or dropping values: `take`, `drop`, `take_first`, `take_last`, `take_single`, `take_while`, `drop_while`, `take_if`, `drop_if`. |
 | `DBIx::Squirrel::Stages::Rows` | Canned stages reshaping rows: `pluck`, `as_hash`. |
 | `DBIx::Squirrel::Stages::Batch` | Canned stages gathering values: `batch`, `collect`. |
-| `DBIx::Squirrel::Stages::Taps` | Canned stages run for their side effects: `peek`, `count_into`, `dump_to`. |
+| `DBIx::Squirrel::Stages::Taps` | Canned stages run for their side effects: `peek`, `count_into`, `dump_to`, `tee`. |
 | `DBIx::Squirrel::Context` | What a stage can ask about the result it's making. Its `within` and `statement_context` are internal, for the iterators and the stages for rows. |
 | `DBIx::Squirrel::Tooling` | Exports what callers use to do work, from one place, by tags: see [Importing](#importing-dbixsquirreltooling). |
 | `DBIx::Squirrel::Sugar` | A function for each database and statement. |

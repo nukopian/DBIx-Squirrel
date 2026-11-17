@@ -141,7 +141,7 @@ DBIx::Squirrel's own:
 | `:core` | `Stop` and `gather` | DBIx::Squirrel::Stop and ::Gather |
 | `:flow` | `take`, `drop`, `take_if`, `take_while` and the rest | DBIx::Squirrel::Stages::Flow |
 | `:batch` | `batch` and `collect` | DBIx::Squirrel::Stages::Batch |
-| `:taps` | `peek`, `count_into` and `dump_to` | DBIx::Squirrel::Stages::Taps |
+| `:taps` | `peek`, `count_into`, `dump_to` and `tee` | DBIx::Squirrel::Stages::Taps |
 | `:rows` | `pluck` and `as_hash` | DBIx::Squirrel::Stages::Rows |
 | `:stages` | `:flow`, `:batch`, `:taps` and `:rows` | |
 | `:context` | `iterator`, `result_number` and `result_original` | DBIx::Squirrel::Context |
@@ -967,6 +967,25 @@ Data::Dumper, to STDERR or a filehandle you give: handy while you
 debug, and to be taken out before the code goes live. With
 Text::Redact::Secrets installed, it redacts the secrets it finds, as
 the reference's [Canned stages](REFERENCE.md#canned-stages) says.
+
+`tee`, on request too, is a tap of any shape: it runs each row through
+stages of its own, beside the pipeline, and passes the row on as it
+came. Its stages can pick out some rows, stop early, or use `pluck`,
+as the pipeline's can:
+
+```perl
+my @first_two;
+my $count = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY name',
+    tee(take(2), pluck('name'), sub { push @first_two, $_; () }),
+    count_items,
+);
+say "@first_two, of $count";    # Abba Blur, of 3
+```
+
+A stop in `tee`'s stages, such as `take(2)`'s, ends only them: the
+pipeline reads on. It costs a good deal more than `peek`, so keep it
+for side jobs and debugging.
 
 ### Compared with `map` over every row
 
