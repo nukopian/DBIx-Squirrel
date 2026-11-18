@@ -41,20 +41,17 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing.
-
-## Next
-
 ### 2026-0041. A synopsis and a fuller description for each name in the index
 
 **Size:** M (3).
 
-**Depends on:** 2026-0040.
-
 Each name in the reference's index gets a synopsis of all its forms,
 one or two paragraphs, and its link to the section 2026-0040 gives
-it, with `xt/reference-index.t` checking both. Its decisions are
-settled, in [its record](docs/changes/2026-0041-index-synopses.md).
+it, with `xt/reference-index.t` checking both. Its
+[record](docs/changes/2026-0041-index-synopses.md) has the plan and
+the decisions.
+
+## Next
 
 ### 2026-0037. execute_array and execute_for_fetch, for every placeholder style
 

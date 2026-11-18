@@ -15,12 +15,12 @@ synopses, which are 2026-0041.
 ## Background
 
 The reference's index (2026-0039) links each name to where it's
-described. For 39 of its 77 names, that's a row of a table or a section
-shared with others, not a section of the name's own: the iterator's
-methods (`all`, `column_names`, `EKORN_SOURCE`, `ended`, `first`,
-`new`, `next`, `single`, `sth`), Context's functions (`iterator`,
-`result_number`, `result_original`), `croakf`, the handles' `pipe`
-and `tap`, the seven select methods, and the canned stages in Flow,
+described. For 41 of its 59 entries, 39 names, that's a row of a table
+or a section shared with others, not a section of the name's own: the
+iterator's methods (`all`, `column_names`, `EKORN_SOURCE`, `ended`,
+`first`, `new`, `next`, `single`, `sth`), Context's functions
+(`iterator`, `result_number`, `result_original`), `croakf`, the
+handles' `pipe` and `tap`, the seven select methods, and the canned stages in Flow,
 Batch, Rows and Taps (17). Iain asked for each index entry to have a
 synopsis of all its forms, a paragraph or two, and a link to a fuller
 description, written where there isn't one.
