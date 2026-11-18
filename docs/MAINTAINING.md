@@ -396,8 +396,20 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    cd ~/Git/github.com/nukopian/DBIx-Squirrel
    v=$v perl -0777 -ne 'print "$1\n" =~ s/^    //mgr if /^\Q$ENV{v}\E [^\n]*\n\n(.*?)\n*(?=^\S|\z)/ms' Changes > "$TMPDIR/notes-$v.txt"
    sed "1s/^/$v: /" "$TMPDIR/notes-$v.txt" > "$TMPDIR/tag-$v.txt"
+   perl -pi -e 's( (?<! [`\w] ) ( \@ [A-Za-z] [\w-]* ) )(`$1`)xg' "$TMPDIR/notes-$v.txt"
    cat "$TMPDIR/tag-$v.txt"
+   grep -n '@' "$TMPDIR/notes-$v.txt"
    ```
+
+   The third line puts each `@name` in the notes in backticks, after
+   the tag message is made from them, which stays plain text. GitHub
+   reads a bare `@name` in a release's notes as a mention: it lists
+   that account among the release's contributors, and notifies it.
+   Perl in an entry, such as `tee(@stages)`, would name a real
+   account. An `@` after a letter or digit, as in an email address or
+   `DBIx::Squirrel@2.1.0`, is left alone, as is one in `@{...}` or
+   `@$it`. The last line shows each `@` left in the notes: read it.
+   After the release, step 5 checks it has no mentions.
 
 5. **Move `main` and tag it.** First check that every check run on the
    commit has completed successfully. `gh run watch` can report a run
@@ -424,8 +436,13 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    git tag -s "$v" -F "$TMPDIR/tag-$v.txt"
    git push origin main "$v"
    gh release create "$v" --verify-tag --title "$(git tag -l --format='%(contents:subject)' "$v")" --notes-file "$TMPDIR/notes-$v.txt"
+   gh api "repos/nukopian/DBIx-Squirrel/releases/tags/$v" --jq '.mentions_count // 0'
    git switch develop
    ```
+
+   The `gh api` line prints how many accounts the notes mention. It
+   must print 0. If not, edit the release's notes on GitHub, putting
+   each `@name` in backticks.
 
    `--verify-tag` refuses to make a tag of its own if the push didn't
    happen. If the merge says it can't fast-forward, `main` has a commit
@@ -597,6 +614,7 @@ gh run rerun "$(gh run list --branch develop --limit 1 --json databaseId --jq '.
   git merge --ff-only "$v"
   git push origin main
   gh release create "$v" --verify-tag --title "$(git tag -l --format='%(contents:subject)' "$v")" --notes-file "$TMPDIR/notes-$v.txt"
+  gh api "repos/nukopian/DBIx-Squirrel/releases/tags/$v" --jq '.mentions_count // 0'
   git switch develop
   ```
 
