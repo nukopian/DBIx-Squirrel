@@ -2,8 +2,15 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+v3.3.2 2026-11-18
+
     The reference's index is laid out as Ekorn::Pipeline's is.
 
+    A docs release, with Ekorn::Pipeline v0.3.7, whose reference has an
+    index laid out the same way. Requires Ekorn::Pipeline >= v0.3.7,
+    < v0.4.0.
+
+    - Requires Ekorn::Pipeline v0.3.7 or later, below v0.4.0.
     - Each name in the reference's index has a heading of its own,
       under its module's, with what it does, whether it's exported by
       default or on request, and a link to where it's described, as in
