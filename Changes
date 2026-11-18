@@ -2,6 +2,15 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    The reference's index is laid out as Ekorn::Pipeline's is.
+
+    - Each name in the reference's index has a heading of its own,
+      under its module's, with what it does, whether it's exported by
+      default or on request, and a link to where it's described, as in
+      Ekorn::Pipeline's reference. The operators, the Sugar's use forms
+      and Tooling's tags are in their module's paragraph (roadmap
+      2026-0039).
+
 v3.3.1 2026-11-18
 
     The reference has an index, by module.
