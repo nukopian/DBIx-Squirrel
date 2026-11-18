@@ -2,6 +2,14 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    The reference has an index, by module.
+
+    - The reference ends with an index in place of "The modules": each
+      module, A to Z, says what it is, then lists what callers use from
+      it, A to Z, each in a line, linked to where the reference
+      describes it. Internal modules have a line each (roadmap
+      2026-0039).
+
 v3.3.0 2026-11-18
 
     pluck with no column gives the only one; the Sugar's pipelines,

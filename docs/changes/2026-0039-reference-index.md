@@ -1,6 +1,6 @@
 # 2026-0039. An index of the reference, by module
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: it replaces "The modules". D2 settled: every
 name our modules export, re-exports from Ekorn included, linked to our
@@ -10,6 +10,8 @@ functions. D4 settled: a test in `xt/` keeps it in step with the code.
 **Origin:** roadmap, added 2026-11-18, Iain's idea
 
 **Started:** 2026-11-18
+
+**Finished:** 2026-11-18
 
 ## Background
 
@@ -69,3 +71,24 @@ in one place.
 **Done when:** the suite, `xt/` included, passes on 5.36.3 and 5.44.0;
 the new test fails when a name is taken out of the index; Perl::Critic
 and Perl::Tidy are clean on 5.44.0.
+
+## What happened
+
+- **Outcome:** done as planned. The index has 20 modules and 77 names,
+  each linked to its section; `scripts/manuals` resolves every link,
+  and the POD manual has it as `=head1 Index`. The suite, `xt/`
+  included, passes on 5.36.3 and 5.44.0, 34 files, 2,363 assertions,
+  against Ekorn's working copy at
+  ec074f666af950b9f7f1c46e4d8881b125a8d7cc. Perl::Tidy is clean on
+  the new test, and Perl::Critic on `lib`, which is all CI runs it on.
+- **The test bites:** `xt/reference-index.t` failed, as it should, for
+  a name taken out (`ended`), a name the module hasn't (`take_any`),
+  two rows out of order, and a module's entry taken out.
+- **Changes from the plan:** A to Z ignores case, with a name starting
+  with a symbol, such as `@INTERNAL` or the operators, last; the test
+  checks the order too. Tooling is listed by its tags, not the names
+  they hold. The Sugar's `use` forms and the iterator's operators are
+  rows of their own, which the test passes over as not names. The
+  records list in `docs/changes/README.md` also had 2026-0038 as open,
+  fixed in the commit starting this.
+- **What's left:** nothing.

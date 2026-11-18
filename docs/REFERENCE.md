@@ -48,7 +48,7 @@ written for earlier versions.
 - [Differences from plain DBI](#differences-from-plain-dbi)
 - [Upgrading from 2.x](#upgrading-from-2x)
 - [Upgrading from 1.x](#upgrading-from-1x)
-- [The modules](#the-modules)
+- [Index](#index)
 
 ## The examples' database
 
@@ -2677,29 +2677,228 @@ distributions of their own.
 | `load_tuples`, on a database handle. | `prepare` and `execute`, in a loop. |
 | `statement_digest`, `statement_normalise`, `statement_study` and `statement_trim`, on a statement handle. | Gone. DBIx::Squirrel::Placeholders has `study_sql` and `trim_sql`, but they're internal, and may change. |
 
-## The modules
+## Index
 
-| Module | What it is |
+Each module, A to Z, says what it is, then lists what callers use from
+it, A to Z, each with a link to where this reference describes it. A
+function is listed under the module that exports it; a method, under
+the class it's called on. A module marked internal is for
+DBIx::Squirrel's own use, and may change without notice.
+
+### DBIx::Squirrel
+
+The class you connect with; a subclass of `DBI`.
+
+| Name | What it is |
 |---|---|
-| `DBIx::Squirrel` | The class you connect with; a subclass of `DBI`. |
-| `DBIx::Squirrel::db` | The database handle class; a subclass of `DBI::db`, with Ekorn::Pipeline::Pipes' `pipe` and `tap`. |
-| `DBIx::Squirrel::st` | The statement handle class; a subclass of `DBI::st`, with `pipe` and `tap` too. |
-| `DBIx::Squirrel::Iterator` | An iterator over a statement's results, and a source for Ekorn::Pipeline. |
-| `DBIx::Squirrel::Results` | An iterator handing out rows as objects. |
-| `DBIx::Squirrel::Result` | The base class of row objects. Its `class_for`, which makes the row classes, is internal. |
-| `DBIx::Squirrel::Stop` | Exports Ekorn::Pipeline's `Stop`, which ends a pipeline early. |
-| `DBIx::Squirrel::Gather` | Exports Ekorn::Pipeline's `gather`, which makes a stage afresh for each run. |
-| `DBIx::Squirrel::Stages::Flow` | Canned stages taking or dropping values: `take`, `drop`, `take_first`, `take_last`, `take_single`, `take_while`, `drop_while`, `take_if`, `drop_if`. |
-| `DBIx::Squirrel::Stages::Rows` | Canned stages reshaping rows: `pluck`, `as_hash`. |
-| `DBIx::Squirrel::Stages::Batch` | Canned stages gathering values: `batch`, `collect`. |
-| `DBIx::Squirrel::Stages::Taps` | Canned stages run for their side effects: `peek`, `count_into`, `dump_to`, `tee`. |
-| `DBIx::Squirrel::Context` | What a stage can ask about the result it's making. Its `within` and `statement_context` are internal, for the iterators and the stages for rows. |
-| `DBIx::Squirrel::Tooling` | Exports what callers use to do work, from one place, by tags: see [Importing](#importing-dbixsquirreltooling). |
-| `DBIx::Squirrel::Sugar` | A function for each database and statement. |
-| `DBIx::Squirrel::Placeholders` | Finds the placeholders in a statement, and matches values to them. Internal: `trim_sql`, `study_sql`, `key_of`, `is_numbered`, `values_taken`, `values_for`, `expand_lists` and `place_values` are for the handles. |
-| `DBIx::Squirrel::Errors` | Reports errors at the caller's line. Internal, apart from `croakf` and `@INTERNAL`, which a module of stages uses: `at_caller`, `in_method` and `failed` are for the handles. See [Stages for others](#stages-for-others). |
-| `DBIx::Squirrel::Util` | Helpers the modules share: `canonical`, `install_sub`, `is_name`, `iterator_going`, `shift_attrs`, `split_attrs`, `split_stages` and `unwrap_values`. Internal: they may change without notice. |
-| `DBIx::Squirrel::Manual::Reference` and `DBIx::Squirrel::Manual::HowTo` | This reference and the user guide, as POD, for MetaCPAN. |
+| [`connect`](#connect) | Connects to a database, or makes a new connection like an existing handle's, and returns a `DBIx::Squirrel::db`. |
+| [`connect_cached`](#connect_cached) | As `connect`, but gives the same handle for the same arguments, as the DBI's does. |
+| [`use DBIx::Squirrel qw(...)`](#importing) | Imports what the DBI exports, such as `:sql_types`. |
+
+### DBIx::Squirrel::Context
+
+What a stage can ask about the result it's making. Nothing is exported
+by default.
+
+| Name | What it is |
+|---|---|
+| [`iterator`](#context) | The iterator running the stage, in its own stages. |
+| [`result_number`](#context) | The number of the result being made, from 1. |
+| [`result_original`](#context) | The row the result is being made from, as it was fetched. |
+
+### DBIx::Squirrel::db
+
+The database handle class; a subclass of `DBI::db`.
+
+| Name | What it is |
+|---|---|
+| [`do`](#do) | Prepares and executes a statement, with placeholders in any style. |
+| [`iterate`](#iterate) | Prepares a statement and returns an iterator over its results, or a sink's result. |
+| [`pipe`](#pipe-and-tap) | Runs the handle through stages, and returns what comes out. |
+| [`prepare`](#prepare) | Prepares a statement, with placeholders in any style. |
+| [`prepare_cached`](#prepare_cached) | As `prepare`, cached for the handle, as the DBI's is. |
+| [`results`](#results) | As `iterate`, its rows objects with a method for each column. |
+| [`selectall_array`](#the-select-methods) | As the DBI's, with placeholders in any style and stages after the values. |
+| [`selectall_arrayref`](#the-select-methods) | As the DBI's, with placeholders in any style and stages after the values. |
+| [`selectall_hashref`](#the-select-methods) | As the DBI's, with placeholders in any style and stages after the values. |
+| [`selectcol_arrayref`](#the-select-methods) | As the DBI's, with placeholders in any style and stages after the values. |
+| [`selectrow_array`](#the-select-methods) | As the DBI's, with placeholders in any style and stages after the values. |
+| [`selectrow_arrayref`](#the-select-methods) | As the DBI's, with placeholders in any style and stages after the values. |
+| [`selectrow_hashref`](#the-select-methods) | As the DBI's, with placeholders in any style and stages after the values. |
+| [`tap`](#pipe-and-tap) | Runs the handle through stages for their side effects, and returns the handle. |
+
+### DBIx::Squirrel::Errors
+
+Reports errors at the caller's line. Internal, apart from what a
+module of stages uses.
+
+| Name | What it is |
+|---|---|
+| [`croakf`](#stages-for-others) | Croaks with a message made by `sprintf`, at the caller's line. |
+| [`@INTERNAL`](#stages-for-others) | The packages whose frames an error passes over, for a module's `@CARP_NOT`. |
+
+### DBIx::Squirrel::Gather
+
+Exports Ekorn::Pipeline's `gather` by default.
+
+| Name | What it is |
+|---|---|
+| [`gather { ... }`](#gather) | Makes a stage afresh at the start of each run, with an optional flush and end. |
+
+### DBIx::Squirrel::Iterator
+
+An iterator over a statement's results, and a source for Ekorn::Pipeline.
+
+| Name | What it is |
+|---|---|
+| [`all`](#the-iterators-methods) | Returns the results still to come, and finishes the statement. |
+| [`column_names`](#the-iterators-methods) | Returns the names of the statement's columns, as `fetchrow_hashref` keys them. |
+| [`EKORN_SOURCE`](#the-iterator-as-a-source) | Makes the iterator a source for a pipeline. Called by Ekorn::Pipeline, not by you. |
+| [`ended`](#the-iterators-methods) | Returns how the last run ended: `done`, `stopped` or `died`. |
+| [`first`](#the-iterators-methods) | Returns the next result, or `undef`, and finishes the statement. |
+| [`new`](#iterate) | Makes an iterator over a statement handle, without executing it, as `iterate` does. |
+| [`next`](#the-iterators-methods) | Returns the next result, or an empty list when there are no more. |
+| [`reset`](#reset) | Runs the statement again, from its first row, and returns the iterator. |
+| [`single`](#the-iterators-methods) | Returns the one result, warning if there's another, and finishes the statement. |
+| [`sth`](#the-iterators-methods) | Returns the statement handle. |
+| [`\|` and `@{}`](#11-operators--and-) | Runs the iterator through a sink or stages, or gives every result, where `use Ekorn::Pipeline::Operators` is in force. |
+
+### DBIx::Squirrel::Manual::HowTo
+
+The user guide, as POD, for MetaCPAN.
+
+### DBIx::Squirrel::Manual::Reference
+
+This reference, as POD, for MetaCPAN.
+
+### DBIx::Squirrel::Placeholders
+
+Finds the placeholders in a statement, and matches values to them.
+Internal: its functions are for the handles.
+
+### DBIx::Squirrel::Result
+
+The base class of row objects. A row also has a method for each
+column, as [Row objects](#row-objects) says, and can have methods of
+your own (see [Methods of your own](#methods-of-your-own)).
+
+| Name | What it is |
+|---|---|
+| [`get_column`](#get_column) | Returns a column's value, by its name, in any case, or its position, from 0. |
+
+### DBIx::Squirrel::Results
+
+A result set: an iterator handing out rows as objects, with the
+iterator's methods and no others. `results` makes one (see
+[results](#results)).
+
+### DBIx::Squirrel::st
+
+The statement handle class; a subclass of `DBI::st`.
+
+| Name | What it is |
+|---|---|
+| [`bind`](#bind) | Binds values to the placeholders, by position or name. |
+| [`bind_param`](#bind_param) | As the DBI's, taking a placeholder by its name or number. |
+| [`execute`](#execute) | Executes the statement, binding the values given. |
+| [`iterate`](#iterate) | Returns an iterator over the statement's results, or a sink's result. |
+| [`pipe`](#pipe-and-tap) | Runs the handle through stages, and returns what comes out. |
+| [`results`](#results) | As `iterate`, its rows objects with a method for each column. |
+| [`tap`](#pipe-and-tap) | Runs the handle through stages for their side effects, and returns the handle. |
+
+### DBIx::Squirrel::Stages::Batch
+
+Canned stages gathering values, exported by default.
+
+| Name | What it is |
+|---|---|
+| [`batch($n)`](#batching-and-collecting) | Passes values on in batches of `$n`, each an array. |
+| [`collect`](#batching-and-collecting) | Passes on an array of every value, or what a block makes of them, once they run out. |
+
+### DBIx::Squirrel::Stages::Flow
+
+Canned stages taking or dropping values. `take` and `drop` are
+exported by default, the others on request.
+
+| Name | What it is |
+|---|---|
+| [`drop($n)`](#taking-and-dropping) | Drops the first `$n` values, and passes on the rest. |
+| [`drop_if { ... }`](#taking-and-dropping) | Passes on each value the block is false of. |
+| [`drop_while { ... }`](#taking-and-dropping) | Drops values while the block is true of them, then passes on the rest. |
+| [`take($n)`](#taking-and-dropping) | Passes on the first `$n` values, then stops the run. |
+| [`take_first`](#taking-and-dropping) | Passes on the first value, then stops the run. |
+| [`take_if { ... }`](#taking-and-dropping) | Passes on each value the block is true of. |
+| [`take_last`](#taking-and-dropping) | Passes on the last value, once there are no more. |
+| [`take_single`](#taking-and-dropping) | Passes on the one value, warning and stopping at a second. |
+| [`take_while { ... }`](#taking-and-dropping) | Passes on values while the block is true of them, then stops the run. |
+
+### DBIx::Squirrel::Stages::Rows
+
+Canned stages reshaping rows, exported by default.
+
+| Name | What it is |
+|---|---|
+| [`as_hash`](#canned-stages) | Makes each row a hash, as `fetchrow_hashref` would. |
+| [`pluck`](#canned-stages) | Gives one column of each row, by name or position, or, given none, its only column. |
+
+### DBIx::Squirrel::Stages::Taps
+
+Canned stages run for their side effects. `peek` and `count_into` are
+exported by default, `dump_to` and `tee` on request.
+
+| Name | What it is |
+|---|---|
+| [`count_into(\$n)`](#canned-stages) | Counts the values into `$n`, and passes them on. |
+| [`dump_to($fh)`](#canned-stages) | Writes each value, with Data::Dumper, and passes it on. For debugging. |
+| [`peek { ... }`](#canned-stages) | Calls the block with each value, and passes the value on. |
+| [`tee(@stages)`](#canned-stages) | Runs each value through a branch of stages, and passes it on. |
+
+### DBIx::Squirrel::Stop
+
+Exports Ekorn::Pipeline's `Stop` by default.
+
+| Name | What it is |
+|---|---|
+| [`Stop`](#stop) | Called from a stage, ends the run early and quietly. |
+
+### DBIx::Squirrel::Sugar
+
+A function for each database and statement, which runs it with the
+values and stages it's given (see [The function a database is
+given](#the-function-a-database-is-given) and [The function a
+statement is given](#the-function-a-statement-is-given)).
+
+| Name | What it is |
+|---|---|
+| [`database`](#database) | Returns a database's handle, by its name, or defines a database. |
+| [`statement`](#statement) | Defines a statement on a database, by name. |
+| [`use DBIx::Squirrel::Sugar database => {...}`](#defining-them-on-use) | Defines databases as the program compiles. |
+| [`use DBIx::Squirrel::Sugar pipeline => {...}`](#the-sugars-pipelines) | Names pipelines as the program compiles, each with a function. |
+| [`use DBIx::Squirrel::Sugar statement => {...}`](#defining-them-on-use) | Defines statements as the program compiles. |
+
+### DBIx::Squirrel::Tooling
+
+Exports what callers use to do work, from one place, by tags. Nothing
+is exported by default.
+
+| Name | What it is |
+|---|---|
+| [`:all`](#importing-dbixsquirreltooling) | Every tag below. |
+| [`:batch`](#importing-dbixsquirreltooling) | Stages::Batch's stages. |
+| [`:context`](#importing-dbixsquirreltooling) | Context's functions. |
+| [`:core`](#importing-dbixsquirreltooling) | `Stop` and `gather`. |
+| [`:flow`](#importing-dbixsquirreltooling) | Stages::Flow's stages. |
+| [`:json`](#importing-dbixsquirreltooling) | Ekorn::Pipeline::JSON's sources, sinks and stages. |
+| [`:rows`](#importing-dbixsquirreltooling) | Stages::Rows' stages. |
+| [`:sinks`](#importing-dbixsquirreltooling) | Ekorn::Pipeline::Sinks' sinks, such as `keep_all` and `count_items`. |
+| [`:sources`](#importing-dbixsquirreltooling) | Ekorn::Pipeline::Sources' sources. |
+| [`:stages`](#importing-dbixsquirreltooling) | `:flow`, `:batch`, `:taps` and `:rows`. |
+| [`:taps`](#importing-dbixsquirreltooling) | Stages::Taps' stages. |
+| [`:words`](#importing-dbixsquirreltooling) | Ekorn::Pipeline::Factories' words, such as `pipeline` and `stage`. |
+
+### DBIx::Squirrel::Util
+
+Helpers the modules share. Internal: they may change without notice.
 
 Pipelines, the operators, the sources, the sinks and the JSON parts
 are Ekorn::Pipeline's own: `Ekorn::Pipeline`,

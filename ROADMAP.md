@@ -41,17 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0039. An index of the reference, by module
-
-**Size:** M (3).
-
-An index at the end of the reference, in place of "The modules": each
-module, A to Z, then what callers use from it, A to Z, each described
-in a line and linked to its section. Re-exports from Ekorn included,
-internal modules in a line each, and a test in `xt/` keeping it in
-step with the code. Its
-[record](docs/changes/2026-0039-reference-index.md) has the plan and
-the decisions.
+Nothing.
 
 ## Next
 

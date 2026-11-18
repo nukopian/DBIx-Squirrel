@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [An index of the reference, by module](2026-0039-reference-index.md),
-  roadmap 2026-0039: in progress.
+  roadmap 2026-0039: shipped, unreleased.
 - [pluck with no column gives the only one](2026-0038-pluck-only-column.md),
   roadmap 2026-0038: shipped in v3.3.0.
 - [execute_array and execute_for_fetch, for every placeholder style](2026-0037-execute-array.md),

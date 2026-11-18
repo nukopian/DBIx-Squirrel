@@ -130,7 +130,7 @@ L<Upgrading from 1.x|/"Upgrading from 1.x">
 
 =item *
 
-L<The modules|/"The modules">
+L<Index|/"Index">
 
 =back
 
@@ -3545,87 +3545,474 @@ Gone. DBIx::Squirrel::Placeholders has C<study_sql> and C<trim_sql>, but they're
 
 =back
 
-=head1 The modules
+=head1 Index
 
-=over 4
+Each module, A to Z, says what it is, then lists what callers use from
+it, A to Z, each with a link to where this reference describes it. A
+function is listed under the module that exports it; a method, under
+the class it's called on. A module marked internal is for
+DBIx::Squirrel's own use, and may change without notice.
 
-=item C<DBIx::Squirrel>
+=head2 DBIx::Squirrel
 
 The class you connect with; a subclass of C<DBI>.
 
-=item C<DBIx::Squirrel::db>
+=over 4
 
-The database handle class; a subclass of C<DBI::db>, with Ekorn::Pipeline::Pipes' C<pipe> and C<tap>.
+=item L<C<connect>|/"connect">
 
-=item C<DBIx::Squirrel::st>
+Connects to a database, or makes a new connection like an existing handle's, and returns a C<DBIx::Squirrel::db>.
 
-The statement handle class; a subclass of C<DBI::st>, with C<pipe> and C<tap> too.
+=item L<C<connect_cached>|/"connect_cached">
 
-=item C<DBIx::Squirrel::Iterator>
+As C<connect>, but gives the same handle for the same arguments, as the DBI's does.
+
+=item L<C<use DBIx::Squirrel qw(...)>|/"Importing">
+
+Imports what the DBI exports, such as C<:sql_types>.
+
+=back
+
+=head2 DBIx::Squirrel::Context
+
+What a stage can ask about the result it's making. Nothing is exported
+by default.
+
+=over 4
+
+=item L<C<iterator>|/"Context">
+
+The iterator running the stage, in its own stages.
+
+=item L<C<result_number>|/"Context">
+
+The number of the result being made, from 1.
+
+=item L<C<result_original>|/"Context">
+
+The row the result is being made from, as it was fetched.
+
+=back
+
+=head2 DBIx::Squirrel::db
+
+The database handle class; a subclass of C<DBI::db>.
+
+=over 4
+
+=item L<C<do>|/"do">
+
+Prepares and executes a statement, with placeholders in any style.
+
+=item L<C<iterate>|/"iterate">
+
+Prepares a statement and returns an iterator over its results, or a sink's result.
+
+=item L<C<pipe>|/"pipe and tap">
+
+Runs the handle through stages, and returns what comes out.
+
+=item L<C<prepare>|/"prepare">
+
+Prepares a statement, with placeholders in any style.
+
+=item L<C<prepare_cached>|/"prepare_cached">
+
+As C<prepare>, cached for the handle, as the DBI's is.
+
+=item L<C<results>|/"results">
+
+As C<iterate>, its rows objects with a method for each column.
+
+=item L<C<selectall_array>|/"The select methods">
+
+As the DBI's, with placeholders in any style and stages after the values.
+
+=item L<C<selectall_arrayref>|/"The select methods">
+
+As the DBI's, with placeholders in any style and stages after the values.
+
+=item L<C<selectall_hashref>|/"The select methods">
+
+As the DBI's, with placeholders in any style and stages after the values.
+
+=item L<C<selectcol_arrayref>|/"The select methods">
+
+As the DBI's, with placeholders in any style and stages after the values.
+
+=item L<C<selectrow_array>|/"The select methods">
+
+As the DBI's, with placeholders in any style and stages after the values.
+
+=item L<C<selectrow_arrayref>|/"The select methods">
+
+As the DBI's, with placeholders in any style and stages after the values.
+
+=item L<C<selectrow_hashref>|/"The select methods">
+
+As the DBI's, with placeholders in any style and stages after the values.
+
+=item L<C<tap>|/"pipe and tap">
+
+Runs the handle through stages for their side effects, and returns the handle.
+
+=back
+
+=head2 DBIx::Squirrel::Errors
+
+Reports errors at the caller's line. Internal, apart from what a
+module of stages uses.
+
+=over 4
+
+=item L<C<croakf>|/"Stages for others">
+
+Croaks with a message made by C<sprintf>, at the caller's line.
+
+=item L<C<@INTERNAL>|/"Stages for others">
+
+The packages whose frames an error passes over, for a module's C<@CARP_NOT>.
+
+=back
+
+=head2 DBIx::Squirrel::Gather
+
+Exports Ekorn::Pipeline's C<gather> by default.
+
+=over 4
+
+=item L<C<gather { ... }>|/"gather">
+
+Makes a stage afresh at the start of each run, with an optional flush and end.
+
+=back
+
+=head2 DBIx::Squirrel::Iterator
 
 An iterator over a statement's results, and a source for Ekorn::Pipeline.
 
-=item C<DBIx::Squirrel::Results>
+=over 4
 
-An iterator handing out rows as objects.
+=item L<C<all>|/"The iterator's methods">
 
-=item C<DBIx::Squirrel::Result>
+Returns the results still to come, and finishes the statement.
 
-The base class of row objects. Its C<class_for>, which makes the row classes, is internal.
+=item L<C<column_names>|/"The iterator's methods">
 
-=item C<DBIx::Squirrel::Stop>
+Returns the names of the statement's columns, as C<fetchrow_hashref> keys them.
 
-Exports Ekorn::Pipeline's C<Stop>, which ends a pipeline early.
+=item L<C<EKORN_SOURCE>|/"The iterator as a source">
 
-=item C<DBIx::Squirrel::Gather>
+Makes the iterator a source for a pipeline. Called by Ekorn::Pipeline, not by you.
 
-Exports Ekorn::Pipeline's C<gather>, which makes a stage afresh for each run.
+=item L<C<ended>|/"The iterator's methods">
 
-=item C<DBIx::Squirrel::Stages::Flow>
+Returns how the last run ended: C<done>, C<stopped> or C<died>.
 
-Canned stages taking or dropping values: C<take>, C<drop>, C<take_first>, C<take_last>, C<take_single>, C<take_while>, C<drop_while>, C<take_if>, C<drop_if>.
+=item L<C<first>|/"The iterator's methods">
 
-=item C<DBIx::Squirrel::Stages::Rows>
+Returns the next result, or C<undef>, and finishes the statement.
 
-Canned stages reshaping rows: C<pluck>, C<as_hash>.
+=item L<C<new>|/"iterate">
 
-=item C<DBIx::Squirrel::Stages::Batch>
+Makes an iterator over a statement handle, without executing it, as C<iterate> does.
 
-Canned stages gathering values: C<batch>, C<collect>.
+=item L<C<next>|/"The iterator's methods">
 
-=item C<DBIx::Squirrel::Stages::Taps>
+Returns the next result, or an empty list when there are no more.
 
-Canned stages run for their side effects: C<peek>, C<count_into>, C<dump_to>, C<tee>.
+=item L<C<reset>|/"reset">
 
-=item C<DBIx::Squirrel::Context>
+Runs the statement again, from its first row, and returns the iterator.
 
-What a stage can ask about the result it's making. Its C<within> and C<statement_context> are internal, for the iterators and the stages for rows.
+=item L<C<single>|/"The iterator's methods">
 
-=item C<DBIx::Squirrel::Tooling>
+Returns the one result, warning if there's another, and finishes the statement.
 
-Exports what callers use to do work, from one place, by tags: see L<Importing|/"Importing: DBIx::Squirrel::Tooling">.
+=item L<C<sth>|/"The iterator's methods">
 
-=item C<DBIx::Squirrel::Sugar>
+Returns the statement handle.
 
-A function for each database and statement.
+=item L<C<E<verbar>> and C<@{}>|/"11. Operators: E<verbar> and @{}">
 
-=item C<DBIx::Squirrel::Placeholders>
-
-Finds the placeholders in a statement, and matches values to them. Internal: C<trim_sql>, C<study_sql>, C<key_of>, C<is_numbered>, C<values_taken>, C<values_for>, C<expand_lists> and C<place_values> are for the handles.
-
-=item C<DBIx::Squirrel::Errors>
-
-Reports errors at the caller's line. Internal, apart from C<croakf> and C<@INTERNAL>, which a module of stages uses: C<at_caller>, C<in_method> and C<failed> are for the handles. See L<Stages for others|/"Stages for others">.
-
-=item C<DBIx::Squirrel::Util>
-
-Helpers the modules share: C<canonical>, C<install_sub>, C<is_name>, C<iterator_going>, C<shift_attrs>, C<split_attrs>, C<split_stages> and C<unwrap_values>. Internal: they may change without notice.
-
-=item C<DBIx::Squirrel::Manual::Reference> and C<DBIx::Squirrel::Manual::HowTo>
-
-This reference and the user guide, as POD, for MetaCPAN.
+Runs the iterator through a sink or stages, or gives every result, where C<use Ekorn::Pipeline::Operators> is in force.
 
 =back
+
+=head2 DBIx::Squirrel::Manual::HowTo
+
+The user guide, as POD, for MetaCPAN.
+
+=head2 DBIx::Squirrel::Manual::Reference
+
+This reference, as POD, for MetaCPAN.
+
+=head2 DBIx::Squirrel::Placeholders
+
+Finds the placeholders in a statement, and matches values to them.
+Internal: its functions are for the handles.
+
+=head2 DBIx::Squirrel::Result
+
+The base class of row objects. A row also has a method for each
+column, as L<Row objects|/"Row objects"> says, and can have methods of
+your own (see L<Methods of your own|/"Methods of your own">).
+
+=over 4
+
+=item L<C<get_column>|/"get_column">
+
+Returns a column's value, by its name, in any case, or its position, from 0.
+
+=back
+
+=head2 DBIx::Squirrel::Results
+
+A result set: an iterator handing out rows as objects, with the
+iterator's methods and no others. C<results> makes one (see
+L<results|/"results">).
+
+=head2 DBIx::Squirrel::st
+
+The statement handle class; a subclass of C<DBI::st>.
+
+=over 4
+
+=item L<C<bind>|/"bind">
+
+Binds values to the placeholders, by position or name.
+
+=item L<C<bind_param>|/"bind_param">
+
+As the DBI's, taking a placeholder by its name or number.
+
+=item L<C<execute>|/"execute">
+
+Executes the statement, binding the values given.
+
+=item L<C<iterate>|/"iterate">
+
+Returns an iterator over the statement's results, or a sink's result.
+
+=item L<C<pipe>|/"pipe and tap">
+
+Runs the handle through stages, and returns what comes out.
+
+=item L<C<results>|/"results">
+
+As C<iterate>, its rows objects with a method for each column.
+
+=item L<C<tap>|/"pipe and tap">
+
+Runs the handle through stages for their side effects, and returns the handle.
+
+=back
+
+=head2 DBIx::Squirrel::Stages::Batch
+
+Canned stages gathering values, exported by default.
+
+=over 4
+
+=item L<C<batch($n)>|/"Batching and collecting">
+
+Passes values on in batches of C<$n>, each an array.
+
+=item L<C<collect>|/"Batching and collecting">
+
+Passes on an array of every value, or what a block makes of them, once they run out.
+
+=back
+
+=head2 DBIx::Squirrel::Stages::Flow
+
+Canned stages taking or dropping values. C<take> and C<drop> are
+exported by default, the others on request.
+
+=over 4
+
+=item L<C<drop($n)>|/"Taking and dropping">
+
+Drops the first C<$n> values, and passes on the rest.
+
+=item L<C<drop_if { ... }>|/"Taking and dropping">
+
+Passes on each value the block is false of.
+
+=item L<C<drop_while { ... }>|/"Taking and dropping">
+
+Drops values while the block is true of them, then passes on the rest.
+
+=item L<C<take($n)>|/"Taking and dropping">
+
+Passes on the first C<$n> values, then stops the run.
+
+=item L<C<take_first>|/"Taking and dropping">
+
+Passes on the first value, then stops the run.
+
+=item L<C<take_if { ... }>|/"Taking and dropping">
+
+Passes on each value the block is true of.
+
+=item L<C<take_last>|/"Taking and dropping">
+
+Passes on the last value, once there are no more.
+
+=item L<C<take_single>|/"Taking and dropping">
+
+Passes on the one value, warning and stopping at a second.
+
+=item L<C<take_while { ... }>|/"Taking and dropping">
+
+Passes on values while the block is true of them, then stops the run.
+
+=back
+
+=head2 DBIx::Squirrel::Stages::Rows
+
+Canned stages reshaping rows, exported by default.
+
+=over 4
+
+=item L<C<as_hash>|/"Canned stages">
+
+Makes each row a hash, as C<fetchrow_hashref> would.
+
+=item L<C<pluck>|/"Canned stages">
+
+Gives one column of each row, by name or position, or, given none, its only column.
+
+=back
+
+=head2 DBIx::Squirrel::Stages::Taps
+
+Canned stages run for their side effects. C<peek> and C<count_into> are
+exported by default, C<dump_to> and C<tee> on request.
+
+=over 4
+
+=item L<C<count_into(\$n)>|/"Canned stages">
+
+Counts the values into C<$n>, and passes them on.
+
+=item L<C<dump_to($fh)>|/"Canned stages">
+
+Writes each value, with Data::Dumper, and passes it on. For debugging.
+
+=item L<C<peek { ... }>|/"Canned stages">
+
+Calls the block with each value, and passes the value on.
+
+=item L<C<tee(@stages)>|/"Canned stages">
+
+Runs each value through a branch of stages, and passes it on.
+
+=back
+
+=head2 DBIx::Squirrel::Stop
+
+Exports Ekorn::Pipeline's C<Stop> by default.
+
+=over 4
+
+=item L<C<Stop>|/"Stop">
+
+Called from a stage, ends the run early and quietly.
+
+=back
+
+=head2 DBIx::Squirrel::Sugar
+
+A function for each database and statement, which runs it with the
+values and stages it's given (see L<The function a database is
+given|/"The function a database is given"> and L<The function a
+statement is given|/"The function a statement is given">).
+
+=over 4
+
+=item L<C<database>|/"database">
+
+Returns a database's handle, by its name, or defines a database.
+
+=item L<C<statement>|/"statement">
+
+Defines a statement on a database, by name.
+
+=item L<C<< use DBIx::Squirrel::Sugar database => {...} >>|/"Defining them on use">
+
+Defines databases as the program compiles.
+
+=item L<C<< use DBIx::Squirrel::Sugar pipeline => {...} >>|/"The Sugar's pipelines">
+
+Names pipelines as the program compiles, each with a function.
+
+=item L<C<< use DBIx::Squirrel::Sugar statement => {...} >>|/"Defining them on use">
+
+Defines statements as the program compiles.
+
+=back
+
+=head2 DBIx::Squirrel::Tooling
+
+Exports what callers use to do work, from one place, by tags. Nothing
+is exported by default.
+
+=over 4
+
+=item L<C<:all>|/"Importing: DBIx::Squirrel::Tooling">
+
+Every tag below.
+
+=item L<C<:batch>|/"Importing: DBIx::Squirrel::Tooling">
+
+Stages::Batch's stages.
+
+=item L<C<:context>|/"Importing: DBIx::Squirrel::Tooling">
+
+Context's functions.
+
+=item L<C<:core>|/"Importing: DBIx::Squirrel::Tooling">
+
+C<Stop> and C<gather>.
+
+=item L<C<:flow>|/"Importing: DBIx::Squirrel::Tooling">
+
+Stages::Flow's stages.
+
+=item L<C<:json>|/"Importing: DBIx::Squirrel::Tooling">
+
+Ekorn::Pipeline::JSON's sources, sinks and stages.
+
+=item L<C<:rows>|/"Importing: DBIx::Squirrel::Tooling">
+
+Stages::Rows' stages.
+
+=item L<C<:sinks>|/"Importing: DBIx::Squirrel::Tooling">
+
+Ekorn::Pipeline::Sinks' sinks, such as C<keep_all> and C<count_items>.
+
+=item L<C<:sources>|/"Importing: DBIx::Squirrel::Tooling">
+
+Ekorn::Pipeline::Sources' sources.
+
+=item L<C<:stages>|/"Importing: DBIx::Squirrel::Tooling">
+
+C<:flow>, C<:batch>, C<:taps> and C<:rows>.
+
+=item L<C<:taps>|/"Importing: DBIx::Squirrel::Tooling">
+
+Stages::Taps' stages.
+
+=item L<C<:words>|/"Importing: DBIx::Squirrel::Tooling">
+
+Ekorn::Pipeline::Factories' words, such as C<pipeline> and C<stage>.
+
+=back
+
+=head2 DBIx::Squirrel::Util
+
+Helpers the modules share. Internal: they may change without notice.
 
 Pipelines, the operators, the sources, the sinks and the JSON parts
 are Ekorn::Pipeline's own: C<Ekorn::Pipeline>,
