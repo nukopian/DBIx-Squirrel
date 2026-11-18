@@ -2842,10 +2842,11 @@ $it = iterator();
 ```
 
 Returns the iterator running the stage, in an iterator's or result
-set's own stages; elsewhere, and outside a stage, `undef`. Through
-it a stage can reach the rest: its `sth` is the statement handle, the
+set's own stages; elsewhere, and outside a stage, `undef`. Through it
+a stage can reach the rest: its `sth` is the statement handle, the
 statement handle's `Database` is the database handle, and its
-[column_names](#column_names) are the statement's columns. On request.
+[column_names](#column_names) are the statement's columns. Exported on
+request.
 
 See [Context](#context).
 
@@ -2860,7 +2861,7 @@ Returns the number of the result being made, from 1. It counts
 results, not rows: while a stage drops rows, the number stays the
 same, and each value a stage returns in place of one row is a result
 of its own. In a flush of a stage made with [gather](#gather), it's
-the number of the first value the flush returns. On request.
+the number of the first value the flush returns. Exported on request.
 
 See [Context](#context).
 
@@ -2874,8 +2875,8 @@ $row = result_original();
 Returns the row the result is being made from, as it was fetched,
 before any stage changed it; for a result set, the row object. In a
 flush of a stage made with [gather](#gather), and the stages after it,
-it's `undef`, as what a flush gives comes from every row, not one. On
-request.
+it's `undef`, as what a flush gives comes from every row, not one.
+Exported on request.
 
 See [Context](#context).
 
@@ -3130,7 +3131,7 @@ Croaks with a message made by `sprintf` from a format and its values,
 reported at the line `croak` would report it at. With `@CARP_NOT` set
 to `@DBIx::Squirrel::Errors::INTERNAL`, that's the line that called
 DBIx::Squirrel. It's the one function of DBIx::Squirrel::Errors for
-others: the rest are for the handles. On request.
+others: the rest are for the handles. Exported on request.
 
 See [Stages for others](#stages-for-others).
 
@@ -3156,7 +3157,7 @@ block, so whatever the block declares is fresh each time. A run is
 each execution of an iterator or result set, including after `reset`,
 each call of a Sugar statement, and each call of a pipeline. The block
 returns the stage, and optionally a flush, called once the values run
-out, and an end, told how the run ended. By default.
+out, and an end, told how the run ended. Exported by default.
 
 See [gather](#gather).
 
@@ -3501,7 +3502,7 @@ the values run out, the last batch goes on, which may be shorter.
 There's never an empty batch: with no values, there's no batch at all.
 It holds no more than one batch at a time, so it suits loading or
 sending rows in groups. It croaks, `Expected a batch size of 1 or
-more`, if `$n` isn't a whole number above 0. By default.
+more`, if `$n` isn't a whole number above 0. Exported by default.
 
 See [Batching and collecting](#batching-and-collecting).
 
@@ -3521,7 +3522,7 @@ value, or several, as a stage does. The block is called even with no
 values, so `collect` always gives a result. It holds every value until
 the end, so the whole result is in memory at once. It croaks,
 `Expected a code reference`, if it's given something other than a
-block or code reference. By default.
+block or code reference. Exported by default.
 
 See [Batching and collecting](#batching-and-collecting).
 
@@ -3540,7 +3541,7 @@ drop($n)
 Drops the first `$n` values, and passes on the rest. With `take`, it
 gives a page: `drop(20), take(10)` passes on the 21st to the 30th. It
 croaks, `Expected a count of 0 or more`, if `$n` isn't a whole number.
-By default.
+Exported by default.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3555,7 +3556,7 @@ drop_if(\&code)
 Drops each value the block is true of, and passes on the rest:
 `take_if`'s opposite. The block gets each value in `$_` and as its
 argument. It croaks, `Expected a code reference`, if it isn't given a
-block or code reference. On request.
+block or code reference. Exported on request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3571,7 +3572,7 @@ Drops values while the block is true of them, then passes on the rest,
 from the first it's false of. After that, the block isn't called again
 on that run. The block gets each value in `$_` and as its argument. It
 croaks, `Expected a code reference`, if it isn't given a block or code
-reference. On request.
+reference. Exported on request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3586,7 +3587,7 @@ Passes on the first `$n` values, then stops the run, so the statement
 is finished and no more rows are fetched. The last value it passes on
 goes with the stop. If there are fewer values, it passes them all on.
 It croaks, `Expected a count of 0 or more`, if `$n` isn't a whole
-number. By default.
+number. Exported by default.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3598,7 +3599,7 @@ take_first
 ```
 
 Passes on the first value, then stops the run: `take(1)`, named as the
-stage of the sink `keep_first`. On request.
+stage of the sink `keep_first`. Exported on request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3615,7 +3616,7 @@ every one, as `grep` does; it never stops the run. The block gets each
 value in `$_` and as its argument. A plain stage ending in a test
 passes on what the test returns, true or false; `take_if` passes on
 the value. It croaks, `Expected a code reference`, if it isn't given a
-block or code reference. On request.
+block or code reference. Exported on request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3628,7 +3629,7 @@ take_last
 
 Passes on the last value, once there are no more, reading every one to
 find it; nothing if there were none. If a stage before it stops the
-run, it passes on the last value to reach it. On request.
+run, it passes on the last value to reach it. Exported on request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3642,7 +3643,7 @@ take_single
 Passes on the one value. At a second, it warns, `Expected only one
 item, but there were more`, and stops the run, so only the first goes
 on: for a statement meant to give one row, whose limit was forgotten.
-On request.
+Exported on request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3659,7 +3660,7 @@ false of, it stops the run, and doesn't pass that value on. Unlike
 `take_if`, it reads no further, so it suits rows in an order the test
 follows. The block gets each value in `$_` and as its argument. It
 croaks, `Expected a code reference`, if it isn't given a block or code
-reference. On request.
+reference. Exported on request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3682,7 +3683,8 @@ a new hash; a hash row is passed on unchanged. As with
 `fetchrow_hashref`, of two columns with the same name, the hash has
 one. It finds the names in the [run's context](#the-runs-context), so
 it needs a statement to be what the run reads; elsewhere it croaks,
-`Expected a statement to read, for the column names`. By default.
+`Expected a statement to read, for the column names`. Exported by
+default.
 
 See [Reshaping rows](#reshaping-rows).
 
@@ -3705,7 +3707,7 @@ pluck, not 2`, rather than give the first, which would go wrong
 silently when a query gains a column; `pluck(0)` gives the first. A
 column the row hasn't got croaks, `Expected a column of the row
 (age)`, and `pluck(undef)` or `pluck('')` croaks, `Expected a column,
-by name or position`. By default.
+by name or position`. Exported by default.
 
 See [Reshaping rows](#reshaping-rows).
 
@@ -3724,7 +3726,7 @@ count_into(\$n)
 Counts the values into `$n`, and passes them on. It sets `$n` to 0 at
 the start of each run, so after a run it holds how many values went
 by, even if none did. It croaks, `Expected a reference to a scalar`,
-if it isn't given one. By default.
+if it isn't given one. Exported by default.
 
 See [Taps](#taps).
 
@@ -3738,7 +3740,7 @@ dump_to
 
 Writes each value to `$fh`, or to STDERR, with Data::Dumper, keys
 sorted and indented by two, and passes it on. It croaks, `Expected an
-open filehandle`, if `$fh` isn't one. On request.
+open filehandle`, if `$fh` isn't one. Exported on request.
 
 It's for debugging. Where Text::Redact::Secrets v1.x is installed, it
 writes each secret that module's rules find as `*REDACTED*`, in the
@@ -3765,7 +3767,7 @@ peek(\&code)
 Calls the block with each value, in `$_` and as its argument, and
 passes the value on, whatever the block returns: for logging, or
 looking. It croaks, `Expected a code reference`, if it isn't given a
-block or code reference. By default.
+block or code reference. Exported by default.
 
 See [Taps](#taps).
 
@@ -3780,7 +3782,7 @@ Runs each value through a branch of `@stages`, for what they do on the
 side, and passes the value on unchanged. What comes out of the branch
 is dropped. The branch is a run of its own beside the main run, so its
 stages keep their state across the values, and each main run gets a
-fresh branch. On request.
+fresh branch. Exported on request.
 
 See [Taps](#taps).
 
@@ -3799,8 +3801,8 @@ Stop(@values);
 Ekorn::Pipeline::Stop->throw(@values);
 ```
 
-Called from a stage, `Stop` ends the run early and quietly. By
-default.
+Called from a stage, `Stop` ends the run early and quietly. Exported
+by default.
 
 See [Stop](#stop).
 

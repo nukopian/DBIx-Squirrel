@@ -3600,10 +3600,11 @@ each on request, and in Tooling's C<:context>.
     $it = iterator();
 
 Returns the iterator running the stage, in an iterator's or result
-set's own stages; elsewhere, and outside a stage, C<undef>. Through
-it a stage can reach the rest: its C<sth> is the statement handle, the
+set's own stages; elsewhere, and outside a stage, C<undef>. Through it
+a stage can reach the rest: its C<sth> is the statement handle, the
 statement handle's C<Database> is the database handle, and its
-L<column_names|/"column_names"> are the statement's columns. On request.
+L<column_names|/"column_names"> are the statement's columns. Exported on
+request.
 
 See L<Context|/"Context">.
 
@@ -3615,7 +3616,7 @@ Returns the number of the result being made, from 1. It counts
 results, not rows: while a stage drops rows, the number stays the
 same, and each value a stage returns in place of one row is a result
 of its own. In a flush of a stage made with L<gather|/"gather">, it's
-the number of the first value the flush returns. On request.
+the number of the first value the flush returns. Exported on request.
 
 See L<Context|/"Context">.
 
@@ -3626,8 +3627,8 @@ See L<Context|/"Context">.
 Returns the row the result is being made from, as it was fetched,
 before any stage changed it; for a result set, the row object. In a
 flush of a stage made with L<gather|/"gather">, and the stages after it,
-it's C<undef>, as what a flush gives comes from every row, not one. On
-request.
+it's C<undef>, as what a flush gives comes from every row, not one.
+Exported on request.
 
 See L<Context|/"Context">.
 
@@ -3837,7 +3838,7 @@ Croaks with a message made by C<sprintf> from a format and its values,
 reported at the line C<croak> would report it at. With C<@CARP_NOT> set
 to C<@DBIx::Squirrel::Errors::INTERNAL>, that's the line that called
 DBIx::Squirrel. It's the one function of DBIx::Squirrel::Errors for
-others: the rest are for the handles. On request.
+others: the rest are for the handles. Exported on request.
 
 See L<Stages for others|/"Stages for others">.
 
@@ -3860,7 +3861,7 @@ block, so whatever the block declares is fresh each time. A run is
 each execution of an iterator or result set, including after C<reset>,
 each call of a Sugar statement, and each call of a pipeline. The block
 returns the stage, and optionally a flush, called once the values run
-out, and an end, told how the run ended. By default.
+out, and an end, told how the run ended. Exported by default.
 
 See L<gather|/"gather">.
 
@@ -4148,7 +4149,7 @@ the values run out, the last batch goes on, which may be shorter.
 There's never an empty batch: with no values, there's no batch at all.
 It holds no more than one batch at a time, so it suits loading or
 sending rows in groups. It croaks, C<Expected a batch size of 1 or
-more>, if C<$n> isn't a whole number above 0. By default.
+more>, if C<$n> isn't a whole number above 0. Exported by default.
 
 See L<Batching and collecting|/"Batching and collecting">.
 
@@ -4165,7 +4166,7 @@ value, or several, as a stage does. The block is called even with no
 values, so C<collect> always gives a result. It holds every value until
 the end, so the whole result is in memory at once. It croaks,
 C<Expected a code reference>, if it's given something other than a
-block or code reference. By default.
+block or code reference. Exported by default.
 
 See L<Batching and collecting|/"Batching and collecting">.
 
@@ -4181,7 +4182,7 @@ the others on request; all in Tooling's C<:flow>.
 Drops the first C<$n> values, and passes on the rest. With C<take>, it
 gives a page: C<drop(20), take(10)> passes on the 21st to the 30th. It
 croaks, C<Expected a count of 0 or more>, if C<$n> isn't a whole number.
-By default.
+Exported by default.
 
 See L<Taking and dropping|/"Taking and dropping">.
 
@@ -4193,7 +4194,7 @@ See L<Taking and dropping|/"Taking and dropping">.
 Drops each value the block is true of, and passes on the rest:
 C<take_if>'s opposite. The block gets each value in C<$_> and as its
 argument. It croaks, C<Expected a code reference>, if it isn't given a
-block or code reference. On request.
+block or code reference. Exported on request.
 
 See L<Taking and dropping|/"Taking and dropping">.
 
@@ -4206,7 +4207,7 @@ Drops values while the block is true of them, then passes on the rest,
 from the first it's false of. After that, the block isn't called again
 on that run. The block gets each value in C<$_> and as its argument. It
 croaks, C<Expected a code reference>, if it isn't given a block or code
-reference. On request.
+reference. Exported on request.
 
 See L<Taking and dropping|/"Taking and dropping">.
 
@@ -4218,7 +4219,7 @@ Passes on the first C<$n> values, then stops the run, so the statement
 is finished and no more rows are fetched. The last value it passes on
 goes with the stop. If there are fewer values, it passes them all on.
 It croaks, C<Expected a count of 0 or more>, if C<$n> isn't a whole
-number. By default.
+number. Exported by default.
 
 See L<Taking and dropping|/"Taking and dropping">.
 
@@ -4227,7 +4228,7 @@ See L<Taking and dropping|/"Taking and dropping">.
     take_first
 
 Passes on the first value, then stops the run: C<take(1)>, named as the
-stage of the sink C<keep_first>. On request.
+stage of the sink C<keep_first>. Exported on request.
 
 See L<Taking and dropping|/"Taking and dropping">.
 
@@ -4241,7 +4242,7 @@ every one, as C<grep> does; it never stops the run. The block gets each
 value in C<$_> and as its argument. A plain stage ending in a test
 passes on what the test returns, true or false; C<take_if> passes on
 the value. It croaks, C<Expected a code reference>, if it isn't given a
-block or code reference. On request.
+block or code reference. Exported on request.
 
 See L<Taking and dropping|/"Taking and dropping">.
 
@@ -4251,7 +4252,7 @@ See L<Taking and dropping|/"Taking and dropping">.
 
 Passes on the last value, once there are no more, reading every one to
 find it; nothing if there were none. If a stage before it stops the
-run, it passes on the last value to reach it. On request.
+run, it passes on the last value to reach it. Exported on request.
 
 See L<Taking and dropping|/"Taking and dropping">.
 
@@ -4262,7 +4263,7 @@ See L<Taking and dropping|/"Taking and dropping">.
 Passes on the one value. At a second, it warns, C<Expected only one
 item, but there were more>, and stops the run, so only the first goes
 on: for a statement meant to give one row, whose limit was forgotten.
-On request.
+Exported on request.
 
 See L<Taking and dropping|/"Taking and dropping">.
 
@@ -4276,7 +4277,7 @@ false of, it stops the run, and doesn't pass that value on. Unlike
 C<take_if>, it reads no further, so it suits rows in an order the test
 follows. The block gets each value in C<$_> and as its argument. It
 croaks, C<Expected a code reference>, if it isn't given a block or code
-reference. On request.
+reference. Exported on request.
 
 See L<Taking and dropping|/"Taking and dropping">.
 
@@ -4296,7 +4297,8 @@ a new hash; a hash row is passed on unchanged. As with
 C<fetchrow_hashref>, of two columns with the same name, the hash has
 one. It finds the names in the L<run's context|/"The run's context">, so
 it needs a statement to be what the run reads; elsewhere it croaks,
-C<Expected a statement to read, for the column names>. By default.
+C<Expected a statement to read, for the column names>. Exported by
+default.
 
 See L<Reshaping rows|/"Reshaping rows">.
 
@@ -4316,7 +4318,7 @@ pluck, not 2>, rather than give the first, which would go wrong
 silently when a query gains a column; C<pluck(0)> gives the first. A
 column the row hasn't got croaks, C<Expected a column of the row
 (age)>, and C<pluck(undef)> or C<pluck('')> croaks, C<Expected a column,
-by name or position>. By default.
+by name or position>. Exported by default.
 
 See L<Reshaping rows|/"Reshaping rows">.
 
@@ -4332,7 +4334,7 @@ default, C<dump_to> and C<tee> on request; all in Tooling's C<:taps>.
 Counts the values into C<$n>, and passes them on. It sets C<$n> to 0 at
 the start of each run, so after a run it holds how many values went
 by, even if none did. It croaks, C<Expected a reference to a scalar>,
-if it isn't given one. By default.
+if it isn't given one. Exported by default.
 
 See L<Taps|/"Taps">.
 
@@ -4343,7 +4345,7 @@ See L<Taps|/"Taps">.
 
 Writes each value to C<$fh>, or to STDERR, with Data::Dumper, keys
 sorted and indented by two, and passes it on. It croaks, C<Expected an
-open filehandle>, if C<$fh> isn't one. On request.
+open filehandle>, if C<$fh> isn't one. Exported on request.
 
 It's for debugging. Where Text::Redact::Secrets v1.x is installed, it
 writes each secret that module's rules find as C<*REDACTED*>, in the
@@ -4367,7 +4369,7 @@ See L<Taps|/"Taps">.
 Calls the block with each value, in C<$_> and as its argument, and
 passes the value on, whatever the block returns: for logging, or
 looking. It croaks, C<Expected a code reference>, if it isn't given a
-block or code reference. By default.
+block or code reference. Exported by default.
 
 See L<Taps|/"Taps">.
 
@@ -4379,7 +4381,7 @@ Runs each value through a branch of C<@stages>, for what they do on the
 side, and passes the value on unchanged. What comes out of the branch
 is dropped. The branch is a run of its own beside the main run, so its
 stages keep their state across the values, and each main run gets a
-fresh branch. On request.
+fresh branch. Exported on request.
 
 See L<Taps|/"Taps">.
 
@@ -4395,8 +4397,8 @@ Ends a pipeline early: Ekorn's C<Stop>, by default.
     Stop(@values);
     Ekorn::Pipeline::Stop->throw(@values);
 
-Called from a stage, C<Stop> ends the run early and quietly. By
-default.
+Called from a stage, C<Stop> ends the run early and quietly. Exported
+by default.
 
 See L<Stop|/"Stop">.
 
