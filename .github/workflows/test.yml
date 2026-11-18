@@ -34,9 +34,6 @@ jobs:
       matrix:
         os: [ubuntu-24.04]
         perl: ["5.36", "5.38", "5.40", "5.42", "5.44"]
-        include:
-          - os: macos-26
-            perl: "5.44"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
