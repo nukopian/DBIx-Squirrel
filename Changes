@@ -2,8 +2,23 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    The Sugar's pipelines, and sinks, are documented.
+    pluck with no column gives the only one; the Sugar's pipelines,
+    and sinks, are documented.
 
+    pluck(), or pluck written bare, gives each row's only column, so a
+    one-column query gives plain values without sub { $_->[0] }
+    (roadmap 2026-0038). A minor release.
+
+    - DBIx::Squirrel::Stages::Rows: pluck with no column gives each
+      row's only column, counted from the row: an array of one element,
+      a hash of one key, a row object of one column. So it needs no
+      statement, and works in a select method's stages. A row of more
+      columns, or none, croaks, "Expected one column to pluck, not 2",
+      rather than give the first; pluck(0) gives the first.
+      pluck(undef) and pluck('') still croak. It has no prototype, so
+      pluck(@cols) is unchanged (roadmap 2026-0038).
+    - The docs' examples over a one-column query use pluck, where the
+      stage did nothing else (roadmap 2026-0038).
     - DBIx::Squirrel::Sugar's POD, and the reference's Sugar chapter,
       have a section on pipelines: calling the function each gets, and
       giving one to a single call with pipeline('name'). Both say the

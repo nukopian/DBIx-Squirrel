@@ -2,6 +2,9 @@ use v5.36;
 
 package DBIx::Squirrel::Stages::Rows;
 
+use experimental qw(builtin);
+
+use builtin   qw(refaddr);
 use Exporter  qw(import);
 use Ref::Util qw(is_plain_arrayref is_plain_hashref);
 
@@ -19,10 +22,18 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 # Croak at the line that called DBIx::Squirrel.
 our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
+# The column pluck has when it's given none: a reference no caller can
+# give, so pluck() is told from pluck(undef), which croaks, while the
+# signature still croaks for more than one.
+my $ONLY = \'the only column';
+
+
 # Return a stage giving one column of each row, by its name, in any
 # case, or its position, from 0, whether the row is an array, a hash or
-# a row object.
-sub pluck ($column) {
+# a row object; or, given none, each row's only column.
+sub pluck ($column = $ONLY) {
+    return _pluck_only()
+        if ref $column && refaddr($column) == refaddr($ONLY);
     croakf 'Expected a column, by name or position'
         unless defined $column && length $column;
     my $by_position = $column =~ m( \A \d+ \z )xa;
@@ -48,6 +59,27 @@ sub pluck ($column) {
         };
     };
 }
+
+# Return a stage giving each row's only column, counted from the row, so
+# it needs no statement; a row of more columns croaks.
+sub _pluck_only () {
+    # Without a signature, as it's called for each row, as for pluck. A
+    # row object is an array too.
+    return sub {
+        if (is_plain_arrayref($_[0]) || $_[0] isa 'DBIx::Squirrel::Result') {
+            croakf 'Expected one column to pluck, not %d', scalar @{ $_[0] }
+                unless @{ $_[0] } == 1;
+            return $_[0][0];
+        }
+        if (is_plain_hashref($_[0])) {
+            croakf 'Expected one column to pluck, not %d', scalar keys %{ $_[0] }
+                unless keys %{ $_[0] } == 1;
+            return (values %{ $_[0] })[0];
+        }
+        croakf 'Expected a row: an array, a hash or a row object';
+    };
+}
+
 
 # Return a stage making each row a hash, keyed by the column names as
 # fetchrow_hashref keys them: arrays and row objects are made into one,
@@ -148,12 +180,25 @@ Both are exported by default, and with C<:all>.
 
     pluck($name)
     pluck($position)
+    pluck
 
 Gives one column of each row, by its name, in any case, or by its
 position, from 0, as a row object's C<get_column> does. A name for an
 array row, or a position for a hash row, is found from the column
 names. So it needs to be in a run reading a statement. A column the
 row hasn't got croaks.
+
+Given no column, it gives each row's only column, so a one-column
+query gives plain values:
+
+    my @names = $dbh->iterate('SELECT name FROM artist', pluck)->all;
+
+The columns are counted from each row: an array of one element, a hash
+of one key, or a row object of one column. So it needs no statement,
+and a row of more columns croaks, rather than giving the first, which
+would go wrong silently when a query gains a column. C<pluck(0)> gives
+the first. C<pluck(undef)> and C<pluck('')> still croak, as an unset
+variable is more likely a mistake.
 
 =head2 as_hash
 
@@ -173,11 +218,16 @@ names.
 
 =item Expected a column, by name or position
 
-C<pluck> was given no column, or an empty name.
+C<pluck> was given an undefined column, or an empty name.
 
 =item Expected a column of the row (%s)
 
 A row hasn't got the column C<pluck> was given.
+
+=item Expected one column to pluck, not %d
+
+C<pluck>, given no column, had a row of more than one column, or of
+none. Name the column, or select only one.
 
 =item Expected a statement to read, for the column names
 

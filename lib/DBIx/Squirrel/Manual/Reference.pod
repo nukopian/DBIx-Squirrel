@@ -973,7 +973,7 @@ C<pluck> by a name for an array row, or C<as_hash>.
 
     my @names = $dbh->selectall_array(
         'SELECT name FROM artist ORDER BY id',
-        sub { $_->[0] },
+        pluck,
         sub {uc},
     );
     say "@names";    # ABBA BLUR CREAM
@@ -1018,7 +1018,7 @@ B<A sink given last says what comes back.> If the last stage is one
 of Ekorn::Pipeline's L<sinks|/"8. Sinks">, C<iterate> reads the run to its
 end and returns the sink's result, not an iterator.
 
-    my $it = $dbh->iterate('SELECT name FROM artist WHERE name LIKE :pattern ORDER BY id', pattern => '%r%', sub { $_->[0] });
+    my $it = $dbh->iterate('SELECT name FROM artist WHERE name LIKE :pattern ORDER BY id', pattern => '%r%', pluck);
     while (my($name) = $it->next) {
         say $name;
     }
@@ -1098,14 +1098,14 @@ context, as below, rather than testing whether what it returns is
 defined. C<all>, C<first> and C<single> take what's left of the run, so
 after C<next> they start from the next result:
 
-    my $it = $dbh->iterate('SELECT name FROM artist ORDER BY id', sub { $_->[0] });
+    my $it = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck);
     my($abba) = $it->next;
     say $abba;                  # Abba
     say join ' ', $it->all;     # Blur Cream
     say $it->ended;             # done
 
-    say $dbh->iterate('SELECT name FROM artist ORDER BY id', sub { $_->[0] })->first;    # Abba
-    say $dbh->iterate('SELECT COUNT(*) FROM track', sub { $_->[0] })->single;          # 6
+    say $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck)->first;    # Abba
+    say $dbh->iterate('SELECT COUNT(*) FROM track', pluck)->single;            # 6
     say join ', ', $dbh->iterate('SELECT id, title AS Album FROM album')->column_names;    # id, Album
 
 C<ended> is C<done> when the rows ran out, C<stopped> when the run was
@@ -1126,7 +1126,7 @@ given replace those given before. Stages given are added to those
 given when the iterator was made. Both are kept until others are
 given:
 
-    my $it = $dbh->iterate('SELECT name FROM artist WHERE id > ? ORDER BY id', 0, sub { $_->[0] });
+    my $it = $dbh->iterate('SELECT name FROM artist WHERE id > ? ORDER BY id', 0, pluck);
     say join ' ', $it->all;                      # Abba Blur Cream
     say join ' ', $it->reset(1)->all;            # Blur Cream
     say join ' ', $it->reset(sub {lc})->all;     # blur cream
@@ -1270,7 +1270,7 @@ B<On request:> C<take_first>, C<take_last>, C<take_single>, C<take_while { ... }
 
 =item C<DBIx::Squirrel::Stages::Rows>
 
-B<Exported by default:> C<pluck($column)>, C<as_hash>
+B<Exported by default:> C<pluck($column)>, C<pluck>, C<as_hash>
 
 =item C<DBIx::Squirrel::Stages::Batch>
 
@@ -1299,6 +1299,10 @@ called, not on each value.
 =item C<pluck($column)>
 
 Gives one column of each row, by its name, in any case, or its position, from 0, whether the row is an array, a hash or a row object.
+
+=item C<pluck>
+
+Gives each row's only column, counted from the row, so it needs no statement. A row of more columns croaks.
 
 =item C<as_hash>
 
@@ -1338,7 +1342,8 @@ context|/"The run's context">, which a statement gives it: an iterator's
 or result set's own stages, or a chain made with C<|>, or a pipeline of
 yours, reading one. So a name for an array row, or C<as_hash>, needs a
 statement to be what the run reads. C<pluck> by name for a hash row
-reads the hash's own keys, and works anywhere.
+reads the hash's own keys, and C<pluck> with no column counts each
+row's own columns, so both work anywhere.
 
 **C<pluck> reads the statement's columns, not the row's.** After a
 stage that reshapes rows, a name or position for an array row picks
@@ -1501,7 +1506,7 @@ Passes on each value the block is false of, testing every one.
 
     my @page = $dbh->iterate(
         'SELECT name FROM track ORDER BY id',
-        sub { $_->[0] },
+        pluck,
         drop(2),
         take(2),
     )->all;
@@ -1517,7 +1522,7 @@ Passes on each value the block is false of, testing every one.
     my @newest = $dbh->iterate(
         'SELECT title FROM album ORDER BY year',
         take_last,
-        sub { $_->[0] },
+        pluck,
     )->all;
     say "@newest";    # The Great Escape
 
@@ -1590,7 +1595,7 @@ those the stage has.
 
     my $it = $dbh->iterate(
         'SELECT name FROM artist ORDER BY id',
-        sub { $_->[0] },
+        pluck,
         and_count,
     );
     say join ' ', $it->all;           # Abba Blur Cream (3)
@@ -1916,7 +1921,7 @@ the stages it was made of.
     );
     say join ' ', $shout->('hello', 'world');    # HELLO! WORLD!
 
-    my $next  = Ekorn::Pipeline->new(sub { $_->[0] })->iterator($dbh->iterate('SELECT name FROM artist ORDER BY id'));
+    my $next  = Ekorn::Pipeline->new(pluck)->iterator($dbh->iterate('SELECT name FROM artist ORDER BY id'));
     my @names;
     while (my($name) = $next->()) { push @names, $name }
     say "@names";    # Abba Blur Cream
@@ -2115,7 +2120,7 @@ which runs it with the bind values and any stages given.
         music => [$data_source, $username, $password, \%attr],
     };
     use DBIx::Squirrel::Sugar statement => {
-        artist_names => [music => 'SELECT name FROM artist', sub ($row) { $row->[0] }],
+        artist_names => [music => 'SELECT name FROM artist', pluck],
         artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
     };
     use DBIx::Squirrel::Sugar pipeline => {loud => [sub {uc}]};
@@ -2184,10 +2189,10 @@ handle, which is itself executed, or iterated over.
     use DBIx::Squirrel::Sugar database => {music => ['dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1}]};
 
     say music('SELECT name FROM artist WHERE id = ?', 1)->fetchrow_arrayref->[0];    # Abba
-    say ref music('SELECT name FROM artist', sub { $_->[0] });                        # DBIx::Squirrel::Iterator
+    say ref music('SELECT name FROM artist', pluck);                                 # DBIx::Squirrel::Iterator
     say join ' ', music(
         'SELECT name FROM artist ORDER BY id',
-        sub { $_->[0] },
+        pluck,
         keep_all,
     );
     # Abba Blur Cream
@@ -2229,8 +2234,8 @@ bind value, never a pipeline's name.
 
     use DBIx::Squirrel::Sugar
         statement => {
-            artist_names => [music => 'SELECT name FROM artist ORDER BY id', sub { $_->[0] }],
-            loud_names   => [music => 'SELECT name FROM artist ORDER BY id', sub { $_->[0] }, 'shouted'],
+            artist_names => [music => 'SELECT name FROM artist ORDER BY id', pluck],
+            loud_names   => [music => 'SELECT name FROM artist ORDER BY id', pluck, 'shouted'],
             artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
         },
         pipeline => {shouted => [sub {uc}]};
@@ -2310,9 +2315,9 @@ that's active, with no iterator, is finished, after a warning, unless
 C<$if_active> says otherwise.
 
     my $sql   = 'SELECT name FROM artist ORDER BY id';
-    my $first = $dbh->prepare_cached($sql)->iterate(sub { $_->[0] });
+    my $first = $dbh->prepare_cached($sql)->iterate(pluck);
     $first->next;
-    my $second = $dbh->prepare_cached($sql)->iterate(sub { $_->[0] });
+    my $second = $dbh->prepare_cached($sql)->iterate(pluck);
     say $first->sth == $second->sth ? 'shared' : 'a handle each';    # a handle each
     say join ' ', $second->all;    # Abba Blur Cream
     say join ' ', $first->all;     # Blur Cream
@@ -2426,7 +2431,7 @@ for the result, not inside DBIx::Squirrel:
 
     say join ' ', $dbh->iterate(
         'SELECT name FROM artist ORDER BY id',
-        sub { $_->[0] },
+        pluck,
         My::Stages::prefixed('#'),
     )->all;
     # #Abba #Blur #Cream
@@ -2512,7 +2517,7 @@ go first, and finishes the statement when it ends.
 
     use Ekorn::Pipeline;
 
-    my $it   = $dbh->iterate('SELECT name FROM artist ORDER BY id', sub { $_->[0] });
+    my $it   = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck);
     my $next = Ekorn::Pipeline->new(sub {uc})->iterator($it);
     undef $it;
     my @names;
@@ -2773,7 +2778,11 @@ C<batch> was given something other than a whole number above 0.
 
 =item C<Expected a column, by name or position>
 
-C<pluck> was given no column, or an empty name.
+C<pluck> was given an undefined column, or an empty name.
+
+=item C<Expected one column to pluck, not %d>
+
+C<pluck>, given no column, had a row of more than one column, or of none.
 
 =item C<Expected a statement to read, for the column names>
 
@@ -3346,7 +3355,7 @@ A statement's function returns the statement handle, or, with stages, an iterato
     # Now
     use DBIx::Squirrel::Sugar
         database  => {db => [$ENV{DSN}, $ENV{USER}, $ENV{PASS}]},
-        statement => {artist_id => [db => 'SELECT ArtistId FROM artists WHERE Name = ?', sub ($row) { $row->[0] }]};
+        statement => {artist_id => [db => 'SELECT ArtistId FROM artists WHERE Name = ?', pluck]};
     use Ekorn::Pipeline::Sinks qw(keep_single);
     my $id = artist_id('Aerosmith', keep_single);
 

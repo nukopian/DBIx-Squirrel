@@ -235,19 +235,19 @@ DBIx::Squirrel::Sugar - a function for each database, and each statement
     my $sth = music 'SELECT * FROM artist WHERE id = ?', 1;   # executed
     say $sth->fetchrow_hashref->{name};
 
-    use Ekorn::Pipeline::Sinks qw(keep_all);
+    use DBIx::Squirrel::Tooling qw(pluck keep_all);
 
     my $it = music 'SELECT name FROM artist',          # an iterator
-        sub ($row) { $row->[0] };
+        pluck;
     my @names = music 'SELECT name FROM artist',       # a sink's result
-        sub ($row) { $row->[0] }, keep_all;
+        pluck, keep_all;
 
     # Anywhere in the program
     my $handle = database('music');
 
     # Statements, with stages of their own
     use DBIx::Squirrel::Sugar statement => {
-        artist_names => [music => 'SELECT name FROM artist', sub ($row) { $row->[0] }],
+        artist_names => [music => 'SELECT name FROM artist', pluck],
         artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
     };
 
@@ -259,7 +259,7 @@ DBIx::Squirrel::Sugar - a function for each database, and each statement
     # Pipelines, which a statement can name
     use DBIx::Squirrel::Sugar
         statement => {loud_names => [music => 'SELECT name FROM artist', 'loud']},
-        pipeline  => {loud => [sub ($row) { $row->[0] }, sub { uc }]};
+        pipeline  => {loud => [pluck, sub { uc }]};
 
     # Or defined as the program runs
     use DBIx::Squirrel::Sugar qw(database statement);
@@ -358,7 +358,7 @@ the pipeline after C<pipeline>, in the same C<use> or one before it,
 or with C<named> in a C<BEGIN> block above it.
 
     use DBIx::Squirrel::Sugar
-        statement => {titles => [music => 'SELECT title FROM album', sub { $_->[0] }, 'trimmed']},
+        statement => {titles => [music => 'SELECT title FROM album', pluck, 'trimmed']},
         pipeline  => {trimmed => [sub { s( \A \s+ | \s+ \z )()xgr }]};
 
 =head2 The function a database is given

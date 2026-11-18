@@ -41,16 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0038. pluck with no column gives the only one
-
-**Size:** S (2).
-
-`pluck()`, or `pluck` written bare, gives a row's only column, and
-croaks for a row of more than one: so `sub { $_->[0] }` over a
-one-column query becomes `pluck`. Counted from each row, so it works
-without a statement. A minor release, and no prototype. Its
-[record](docs/changes/2026-0038-pluck-only-column.md) has the plan and
-the decisions.
+Nothing.
 
 ## Next
 

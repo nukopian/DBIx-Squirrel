@@ -830,7 +830,7 @@ say for @titles;
 # Parklife (1994)
 # The Great Escape (1995)
 
-my @names = $dbh->iterate('SELECT name FROM artist ORDER BY id', sub { $_->[0] })->all;
+my @names = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck)->all;
 say "@names";    # Abba Blur Cream
 ```
 
@@ -1043,7 +1043,7 @@ so no more rows are fetched:
 ```perl
 my @page = $dbh->iterate(
     'SELECT name FROM track ORDER BY id',
-    sub { $_->[0] },
+    pluck,
     sub { m( \s )x ? $_ : () },    # names of more than one word
     drop(1),                       # the second and third of them
     take(2),
@@ -1224,7 +1224,7 @@ sub and_count () {
 
 my @lines = $dbh->iterate(
     'SELECT name FROM artist ORDER BY name',
-    sub { $_->[0] },
+    pluck,
     and_count,
 )->all;
 say "@lines";    # Abba Blur Cream (3)
@@ -1790,7 +1790,7 @@ say ref music;    # DBIx::Squirrel::db
 my $sth = music 'SELECT name FROM artist WHERE id = ?', 1;
 say $sth->fetchrow_arrayref->[0];    # Abba
 
-my @names = music 'SELECT name FROM artist ORDER BY id', sub { $_->[0] }, keep_all;
+my @names = music 'SELECT name FROM artist ORDER BY id', pluck, keep_all;
 say "@names";    # Abba Blur Cream
 ```
 
@@ -1802,7 +1802,7 @@ only:
 
 ```perl
 use DBIx::Squirrel::Sugar statement => {
-    titles_by => [music => 'SELECT title FROM album WHERE artist_id = :artist ORDER BY year', sub { $_->[0] }],
+    titles_by => [music => 'SELECT title FROM album WHERE artist_id = :artist ORDER BY year', pluck],
     album     => [music => 'SELECT * FROM album WHERE id = ?'],
 };
 
@@ -1834,7 +1834,7 @@ runs, from configuration, say:
 use DBIx::Squirrel::Sugar qw(database statement);
 
 database(archive => 'dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1});
-statement(artist_count => archive => 'SELECT COUNT(*) FROM artist', sub { $_->[0] });
+statement(artist_count => archive => 'SELECT COUNT(*) FROM artist', pluck);
 
 say artist_count(keep_single);    # 3
 say ref database('archive');      # DBIx::Squirrel::db
@@ -1888,11 +1888,11 @@ its place:
 
 ```perl
 my $sql   = 'SELECT name FROM artist ORDER BY id';
-my $first = $dbh->prepare_cached($sql)->iterate(sub { $_->[0] });
+my $first = $dbh->prepare_cached($sql)->iterate(pluck);
 my($name) = $first->next;
 say $name;    # Abba
 
-my $second = $dbh->prepare_cached($sql)->iterate(sub { $_->[0] });
+my $second = $dbh->prepare_cached($sql)->iterate(pluck);
 say join ' ', $second->all;    # Abba Blur Cream
 say join ' ', $first->all;     # Blur Cream
 ```
@@ -2053,7 +2053,7 @@ package My::Stages {
 
 my $chart = $dbh->iterate(
     'SELECT name FROM artist ORDER BY id',
-    sub { $_->[0] },
+    pluck,
     My::Stages::numbered_from(1),
 );
 say join ', ', $chart->all;           # 1. Abba, 2. Blur, 3. Cream
@@ -2352,7 +2352,7 @@ change. These are the changes most code meets first.
 
 ```perl
 use DBIx::Squirrel::Sugar statement => {
-    every_artist => [music => 'SELECT name FROM artist ORDER BY id', sub { $_->[0] }],
+    every_artist => [music => 'SELECT name FROM artist ORDER BY id', pluck],
 };
 
 my @names = every_artist(keep_all);         # version 2: every_artist()
@@ -2384,7 +2384,7 @@ say artist('Blur')->single->Id;
 
 ```perl
 use DBIx::Squirrel::Sugar statement => {
-    artist_id => [music => 'SELECT id FROM artist WHERE name = ? LIMIT 1', sub { $_->[0] }],
+    artist_id => [music => 'SELECT id FROM artist WHERE name = ? LIMIT 1', pluck],
 };
 
 say artist_id('Blur', keep_single);    # 2

@@ -1,6 +1,6 @@
 # 2026-0038. pluck with no column gives the only one
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: only when the row has one column, else a
 croak. D2 settled: decided from each row, not the statement. D3
@@ -11,6 +11,8 @@ still croak.
 **Origin:** roadmap, added 2026-11-18, Iain's idea
 
 **Started:** 2026-11-18
+
+**Finished:** 2026-11-18
 
 ## Background
 
@@ -86,3 +88,30 @@ stage in the docs, and `sub { $_->[0] }` says how, not what.
 **Done when:** the suite, `xt/` included, passes on 5.36.3 and 5.44.0
 against Ekorn's working copy, and under `prove -l t` on 5.36.3;
 Perl::Critic and Perl::Tidy are clean on 5.44.0.
+
+## What happened
+
+- **Outcome:** done as planned. The suite, `xt/` included, passes on
+  5.36.3 and 5.44.0, 2,306 assertions, against Ekorn's working copy
+  at ec074f666af950b9f7f1c46e4d8881b125a8d7cc, and `prove -l t` passes
+  on 5.36.3.
+  Perl::Critic and Perl::Tidy are clean on 5.44.0, and coverage is
+  above every floor: `Stages/Rows.pm` is at 100% for statements and
+  branches.
+- **Changes from the plan:** the signature isn't `(@column)` but
+  `($column = $ONLY)`, a default no caller can give, a reference
+  compared by address. So `pluck()` is told from `pluck(undef)`, and
+  more than one column still dies in Perl's own check, "Too many
+  arguments", with no check of ours. The step is a plain sub, not a
+  `gather`, as it keeps nothing between rows.
+- **The docs:** 40 examples became `pluck`: 11 in the how-to, 20 in
+  the reference, 2 in the README and 7 in the POD (Sugar's, db's,
+  Iterator's). Those kept: the multi-column queries, which a
+  `pluck()` would croak on; the how-to's first taste of stages, and
+  DBIx::Squirrel's SYNOPSIS, which show what a stage is; a `gather`
+  step; a pipeline named `first_column`, and Sugar's `first`, which
+  are that sub by definition; and the how-to's method in
+  `My::Squirrel::db`, a package without `pluck`. The reference's
+  select methods example now shows `pluck` working in a pushed run,
+  where `pluck` by name for an array row can't.
+- **What's left:** nothing.
