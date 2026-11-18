@@ -2,12 +2,15 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+v3.3.0 2026-11-18
+
     pluck with no column gives the only one; the Sugar's pipelines,
     and sinks, are documented.
 
     pluck(), or pluck written bare, gives each row's only column, so a
     one-column query gives plain values without sub { $_->[0] }
-    (roadmap 2026-0038). A minor release.
+    (roadmap 2026-0038). Still requires Ekorn::Pipeline >= v0.3.6,
+    < v0.4.0.
 
     - DBIx::Squirrel::Stages::Rows: pluck with no column gives each
       row's only column, counted from the row: an array of one element,

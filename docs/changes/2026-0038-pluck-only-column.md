@@ -1,6 +1,6 @@
 # 2026-0038. pluck with no column gives the only one
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.3.0
 
 **Decisions:** D1 settled: only when the row has one column, else a
 croak. D2 settled: decided from each row, not the statement. D3
@@ -114,4 +114,5 @@ Perl::Critic and Perl::Tidy are clean on 5.44.0.
   `My::Squirrel::db`, a package without `pluck`. The reference's
   select methods example now shows `pluck` working in a pushed run,
   where `pluck` by name for an array row can't.
+- **Released** in v3.3.0, 2026-11-18.
 - **What's left:** nothing.
