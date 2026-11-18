@@ -104,4 +104,8 @@ run; the suite, `xt/` included, passes on 5.36.3 and 5.44.0.
   empty, it shares, and `ekorn_slice` keeps handles apart. The section
   says so; making `connect_cached` take the shortcut is code, so it's
   for Iain to decide.
+- **Fixed the same day,** at Iain's word, in the `fix:` commit after
+  this one: `DBIx::Squirrel->connect_cached` takes its arguments as
+  `connect` does, and the section's advice to give empty credentials
+  went.
 - **What's left:** nothing here.

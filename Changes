@@ -2,13 +2,14 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    The reference's index says how to use each name; the reference text
-    shows it in context.
+    The reference's index says how to use each name, and the text shows
+    it in context; connect_cached takes its arguments as connect does.
 
     The index and the reference text now divide the work: the index
     gives each name's synopsis and what it's for, and the text
     discusses it in context, with examples (roadmap 2026-0040,
-    2026-0041, 2026-0042).
+    2026-0041, 2026-0042). connect_cached, given the attributes
+    straight after the data source, shares its connection again.
 
     - Each entry in the reference's index has a synopsis of all the
       name's forms, a paragraph or two saying what it does and how
@@ -22,10 +23,12 @@ Unreleased
       of tables that only defined them; the Sugar's database and
       statement, in "Defining them as the program runs" (roadmap
       2026-0040, 2026-0042).
-    - connect_cached's section says to give it the username and
-      password, even empty: given the attributes straight after the
-      data source, as connect takes them, it makes a new connection
-      each time.
+    - DBIx::Squirrel->connect_cached takes its arguments as connect
+      does. Given the attributes straight after the data source, it
+      made a new connection each time: the DBI's connect_cached read
+      them as the username, and passed connect attributes of its own,
+      which connect, finding the shortcut, didn't read. 1.x had a
+      connect_cached of its own; this one restores the shortcut.
 
 v3.3.2 2026-11-18
 

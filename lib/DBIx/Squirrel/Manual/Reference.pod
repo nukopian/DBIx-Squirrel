@@ -2306,17 +2306,15 @@ C<$if_active> says otherwise.
 =head2 connect_cached
 
 Code that connects in several places, such as a function for each
-request, shares one connection by connecting with C<connect_cached>,
-the DBI's own. It calls C<connect> when it needs a new connection, so
-it croaks on failure too. DBIx::Squirrel's own attributes are part of
-its key, so a handle made to fetch rows as hashes isn't handed to code
-expecting arrays. Give it the username and password, even empty: the
-attributes straight after the data source, which C<connect> takes, make
-a new connection each time.
+request, shares one connection by connecting with C<connect_cached>.
+It takes its arguments as C<connect> does, and calls C<connect> when it
+needs a new connection, so it croaks on failure too. DBIx::Squirrel's
+own attributes are part of its key, so a handle made to fetch rows as
+hashes isn't handed to code expecting arrays:
 
-    my $one   = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1});
-    my $two   = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1});
-    my $hashy = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1, ekorn_slice => {}});
+    my $one   = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', {RaiseError => 1});
+    my $two   = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', {RaiseError => 1});
+    my $hashy = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', {RaiseError => 1, ekorn_slice => {}});
     say $one == $two   ? 'shared' : 'apart';    # shared
     say $one == $hashy ? 'shared' : 'apart';    # apart
 
@@ -3579,13 +3577,16 @@ See L<connect|/"connect">.
 
 =head3 connect_cached
 
-    $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password, \%attr);
     $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password);
+    $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password, \%attr);
+    $dbh = DBIx::Squirrel->connect_cached($data_source, \%attr);
 
-C<connect_cached> is the DBI's own. It calls C<connect> when it needs a
-new connection, so it croaks on failure too. DBIx::Squirrel's own
-attributes are part of the cache's key. Two calls with the same
-attributes have the same handle, and calls with different ones don't.
+As the DBI's C<connect_cached>: it returns the handle it connected with
+before, given the same arguments, or connects, and keeps the handle.
+It takes its arguments as C<connect> does, and croaks on failure, as
+C<connect> does. DBIx::Squirrel's own attributes are part of the
+cache's key, so a handle with other C<ekorn_> attributes is another
+connection.
 
 See L<connect_cached|/"connect_cached">.
 

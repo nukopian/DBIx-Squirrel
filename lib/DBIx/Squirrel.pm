@@ -48,6 +48,19 @@ sub connect ($class, $source, @args) {
     return _discern_dialect($dbh);
 }
 
+# Return the handle of a cached connection to the requested data source,
+# as the DBI's connect_cached does, given its arguments as connect takes
+# them. Given the attributes straight after a data source, the username
+# and password go in front of them: the DBI's connect_cached would take
+# the attributes for the username, and give connect attributes of its
+# own, which connect, finding the shortcut, wouldn't read, so it would
+# connect afresh each time. A handle is given as it is.
+sub connect_cached ($class, $source, @args) {
+    unshift @args, undef, undef if !ref $source && is_hashref($args[0]);
+    return $class->SUPER::connect_cached($source, @args);
+}
+
+
 # Return the handle of a new connection using the same parameters as
 # another connection.
 sub _connect_dbh ($class, $dbh, @args) {
@@ -220,12 +233,14 @@ does. The DBI exports them:
 
     $dbh = DBIx::Squirrel->connect($data_source, $username, $password);
     $dbh = DBIx::Squirrel->connect($data_source, $username, $password, \%attr);
+    $dbh = DBIx::Squirrel->connect($data_source, \%attr);
     $dbh = DBIx::Squirrel->connect($dbh, \%attr);
 
 Connects to a data source, as the DBI's C<connect> does, and returns a
 database handle, a L<DBIx::Squirrel::db>. Its statement handles are
 L<DBIx::Squirrel::st>s. Both are subclasses of the DBI's own, so they
-do everything the DBI's handles do.
+do everything the DBI's handles do. The username and password can be
+left out, with the attributes straight after the data source.
 
 Unlike the DBI's C<connect>, it B<always croaks> if the connection
 fails, whatever C<RaiseError> is set to. The DBI returns C<undef>
@@ -303,10 +318,20 @@ first. It doesn't share the first one's transaction, temporary tables
 or session settings. An in-memory SQLite database, for example, gives
 a new, empty database.
 
-=head3 connect_cached
+=head2 connect_cached
 
-C<connect_cached> is the DBI's own, unchanged. It calls C<connect>
-when it needs a new connection, so it croaks on failure too.
+    $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password);
+    $dbh = DBIx::Squirrel->connect_cached($data_source, $username, $password, \%attr);
+    $dbh = DBIx::Squirrel->connect_cached($data_source, \%attr);
+
+As the DBI's C<connect_cached>: it returns the handle it connected
+with before, given the same arguments, or connects, and keeps the
+handle. It takes its arguments as L</connect> does, so the username
+and password can be left out, with the attributes straight after the
+data source. It calls C<connect> when it needs a new connection, so it
+croaks on failure too. DBIx::Squirrel's own attributes are part of the
+cache's key, so a handle with other C<ekorn_> attributes is another
+connection.
 
 =head1 HANDLE METHODS
 
