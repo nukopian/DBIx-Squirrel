@@ -77,5 +77,10 @@ link; the test fails without each; the suite, `xt/` included, passes on
   `gather`), and were rewritten to stand alone; `dump_to` said "On
   request" twice. The plan said 77 entries; the index has 59, as
   2026-0040's corrected record says.
+- **Changed by 2026-0042,** the same day, before a release: the
+  per-name sections folded back into connected discussion, and no
+  section the index links to repeats its synopsis or definition. The
+  index keeps the synopses and descriptions, linking each name to the
+  section that discusses it.
 - **What's left:** nothing; Ekorn-Pipeline's index has the task sent
   in 2026-0040.

@@ -1,6 +1,6 @@
 # 2026-0042. The index says how to use a name; the reference text shows it in context
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: every section the index links to drops its
 synopsis and definition. D2 settled: the sections 2026-0040 gave each
@@ -10,6 +10,8 @@ name fold back into connected discussion, which the index links to.
 2026-0040 and 2026-0041 together
 
 **Started:** 2026-11-18
+
+**Finished:** 2026-11-18
 
 ## Background
 
@@ -70,3 +72,36 @@ the text answers "how is it used", without repeating the first.
 **Done when:** no section the index links to repeats its synopsis or
 definition; each keeps or gains discussion and an example the tests
 run; the suite, `xt/` included, passes on 5.36.3 and 5.44.0.
+
+## What happened
+
+- **Outcome:** done as planned. No section the index links to opens
+  with a synopsis, and none repeats the index's definition: each has
+  discussion in context, and examples `xt/examples.t` runs. The index
+  links each of its 59 entries to the section that discusses the
+  name. `xt/reference-index.t` checks each link reaches a section of
+  the reference, and that none of those opens with a synopsis; each
+  check failed, as it should, on a copy with a synopsis put back, a
+  link to a section that isn't there, and an entry's synopsis taken
+  out. Every link in the reference, and the user guide's into it,
+  resolves. The suite, `xt/` included, passes on 5.36.3 and 5.44.0,
+  2,493 assertions, against Ekorn::Pipeline v0.3.7 as installed from
+  CPAN.
+- **The sections:** 2026-0040's per-name sections rejoined "The select
+  methods", "pipe and tap", "The iterator's methods", "Context",
+  "Taking and dropping" (by place, then by a test), "Batching and
+  collecting", "Canned stages" (as "Reshaping rows" and "Taps"),
+  "Stages for others" and "The iterator as a source". The older
+  sections, from `connect` to `gather`, lost their synopsis and
+  defining paragraph, and opened instead on when or why to use the
+  name. `database` and `statement` became "Defining them as the
+  program runs", with an example; `connect_cached`, left empty, gained
+  a discussion and an example.
+- **Found on the way:** `connect_cached`, given the attributes straight
+  after the data source, as `connect` takes them, makes a new
+  connection each time: the example written to show two calls sharing
+  a handle printed `apart`. With the username and password, even
+  empty, it shares, and `ekorn_slice` keeps handles apart. The section
+  says so; making `connect_cached` take the shortcut is code, so it's
+  for Iain to decide.
+- **What's left:** nothing here.

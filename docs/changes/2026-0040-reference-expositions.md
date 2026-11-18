@@ -84,5 +84,10 @@ synopsis and a run example; the index links each to it; the suite,
   give the same.
 - **The Ekorn task** went to Ekorn-Pipeline's `TODO.md` in
   6437537ecbb3ab0a03b3d13038b1b14b8bdeb7e3.
+- **Changed by 2026-0042,** the same day, before a release: the
+  per-name sections folded back into connected discussion, and no
+  section the index links to repeats its synopsis or definition. The
+  index keeps the synopses and descriptions, linking each name to the
+  section that discusses it.
 - **What's left:** 2026-0041, the index's synopses and descriptions,
   which this unblocks.

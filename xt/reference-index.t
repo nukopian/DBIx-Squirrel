@@ -8,10 +8,10 @@ use Test2::Plugin::NoWarnings;
 # name a public module exports, and each public method it defines, is
 # listed, but for those named internal below; each name listed is one
 # the module can call; each has a synopsis, says "By default." or "On
-# request." as it's exported, and ends with a link to a section headed
-# by its name (2026-0041); Tooling names each of its tags; and an
-# internal module lists nothing. An author test, as the reference isn't
-# in the distribution.
+# request." as it's exported, and ends with a link to a section of the
+# reference, which doesn't open with the synopsis again (2026-0042);
+# Tooling names each of its tags; and an internal module lists nothing.
+# An author test, as the reference isn't in the distribution.
 
 use B          qw();
 use File::Find qw();
@@ -52,17 +52,26 @@ sub anchor ($heading) {
 }
 
 
-# Return the anchors of the reference's headings before the index, and
-# the index's entries, in order: each a module's name, the text saying
-# what it is, and its names, in order, each with its text.
+# Return the anchors of the reference's headings before the index, each
+# true if its section opens with a synopsis, and the index's entries, in
+# order: each a module's name, the text saying what it is, and its
+# names, in order, each with its text.
 sub index_entries () {
     open my $in, '<', $REFERENCE or die "Can't read $REFERENCE: $!";
     my $text = do { local $/; <$in> };
     close $in;
     my($body, $index) = $text =~ m( \A (.*?) ^\#\#\ Index\n (.*) \z )xms
         or die "No index in $REFERENCE";
-    $body =~ s( ^``` .*? ^``` )()xmsg;    # a comment in code isn't a heading
-    my %anchors = map { anchor($_) => 1 } $body =~ m( ^ \#+ \  (.+) $ )xmg;
+    my @lines = split m( \n )x, $body;
+    my(%anchors, $in_code);
+    for my $i (0 .. $#lines) {
+        $in_code = !$in_code if $lines[$i] =~ m( \A ``` )x;
+        next if $in_code || $lines[$i] !~ m( \A \#+ \  (.+) \z )x;    # a comment in code isn't a heading
+        my $anchor = anchor($1);
+        next if exists $anchors{$anchor};
+        my($next) = grep { $lines[$_] =~ m( \S )x } $i + 1 .. $#lines;
+        $anchors{$anchor} = $lines[$next // $i] =~ m( \A <!--\ not\ run\ --> )x ? 1 : 0;
+    }
     my @entries;
     for my $block (split m( (?= ^\#\#\#\  ) )xm, $index) {
         my($module, $about, $rest)
@@ -123,22 +132,23 @@ for my $entry (@entries) {
         ],
         [], "$module: each name ends with a link to where it's described";
 
-    # Its synopsis, all its forms, as code; and its link goes to a section
-    # headed by its name, not a table or a section shared with others.
+    # Its synopsis, all its forms, as code, is here; its link goes to a
+    # section of the reference text that shows it in use, which doesn't
+    # repeat the synopsis (2026-0042).
     is [
         map  { $_->[0] }
         grep { $_->[1] !~ m( ^```perl\n .+? ^```$ )xms } @{ $entry->{names} }
         ],
         [], "$module: each name has a synopsis";
-    is [
-        map { $_->[0] }
-        grep {
-            my($to)
-                = $_->[1] =~ m( \s See \s+ \[ [^\]]+ \] \( \# ([^\)]+) \) \. \s* \z )xs;
-            !defined $to || $to ne anchor($_->[0]) || !$anchors->{$to}
-        } @{ $entry->{names} }
-        ],
-        [], "$module: each name links to a section headed by it";
+    my %to = map {
+        my($to)
+            = $_->[1] =~ m( \s See \s+ \[ [^\]]+ \] \( \# ([^\)]+) \) \. \s* \z )xs;
+        ($_->[0] => $to)
+    } @{ $entry->{names} };
+    is [grep { !defined $to{$_} || !exists $anchors->{$to{$_}} } sort keys %to],
+        [], "$module: each name links to a section of the reference";
+    is [grep { defined $to{$_} && $anchors->{$to{$_}} } sort keys %to],
+        [], "$module: no section it links to opens with a synopsis";
 }
 
 for my $entry (@entries) {

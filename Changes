@@ -2,21 +2,30 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    The reference's index shows how each name is called, and each has a
-    section of its own.
+    The reference's index says how to use each name; the reference text
+    shows it in context.
+
+    The index and the reference text now divide the work: the index
+    gives each name's synopsis and what it's for, and the text
+    discusses it in context, with examples (roadmap 2026-0040,
+    2026-0041, 2026-0042).
 
     - Each entry in the reference's index has a synopsis of all the
-      name's forms, a paragraph or two from its section saying what it
-      does and how it's exported, and a link to the section headed by
-      the name (roadmap 2026-0041).
-
-    - The reference gives each of 39 names a section headed by the
-      name, with a synopsis of all its forms, what it does, and an
-      example the tests run: the iterator's methods, Context's
-      functions, croakf, the handles' pipe and tap, the seven select
-      methods, and the canned stages. The tables that were their only
-      description now list them, each linking to its section, and the
-      index links each name to it (roadmap 2026-0040).
+      name's forms, a paragraph or two saying what it does and how
+      it's exported, and a link to the section that shows it in use
+      (roadmap 2026-0041).
+    - The sections the index links to no longer repeat a name's
+      synopsis or definition: they discuss it in context, with
+      examples the tests run. The iterator's methods, Context's
+      functions, the select methods, pipe and tap, and the canned
+      stages are discussed together, with examples of each, in place
+      of tables that only defined them; the Sugar's database and
+      statement, in "Defining them as the program runs" (roadmap
+      2026-0040, 2026-0042).
+    - connect_cached's section says to give it the username and
+      password, even empty: given the attributes straight after the
+      data source, as connect takes them, it makes a new connection
+      each time.
 
 v3.3.2 2026-11-18
 
