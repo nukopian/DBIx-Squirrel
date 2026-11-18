@@ -45,6 +45,16 @@ Nothing.
 
 ## Next
 
+### 2026-0038. pluck with no column gives the only one
+
+**Size:** S (2).
+
+`pluck()`, or `pluck` written bare, gives a row's only column, and
+croaks for a row of more than one: so `sub { $_->[0] }` over a
+one-column query becomes `pluck`. Counted from each row, so it works
+without a statement. A minor release. Its decisions are settled, in
+[its record](docs/changes/2026-0038-pluck-only-column.md).
+
 ### 2026-0037. execute_array and execute_for_fetch, for every placeholder style
 
 **Size:** M (3).
@@ -72,16 +82,6 @@ rows, such as callbacks and a writer batching inserts, and send what's
 found as messages. Trying `feed` as a loader found 2026-0037.
 
 ## Later
-
-### 2026-0038. pluck with no column gives the only one
-
-**Size:** S (2).
-
-`pluck()`, or `pluck` written bare, gives a row's only column, and
-croaks for a row of more than one: so `sub { $_->[0] }` over a
-one-column query becomes `pluck`. Counted from each row, so it works
-without a statement. A minor release. Its decisions are settled, in
-[its record](docs/changes/2026-0038-pluck-only-column.md).
 
 ### 2026-0032. DBIx::Squirrel::Context on Ekorn's, without the counting stage
 
