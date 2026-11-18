@@ -45,15 +45,7 @@ Nothing.
 
 ## Next
 
-### 2026-0035. tee, from DBIx::Squirrel::Stages::Taps and Tooling
-
-**Size:** XS (1). **Depends on:** Ekorn::Pipeline v0.3.6, released.
-
-Export Ekorn's new tap, `tee`, on request, as `dump_to` is, and in
-Tooling's `:taps`, requiring Ekorn v0.3.6, in v3.2.0. Built on a
-branch meanwhile. [Its record](docs/changes/2026-0035-tee.md).
-
-### 2026-0036. Appraise Ekorn's feed and tee, before its v0.3.6
+### 2026-0036. Appraise Ekorn's feed and tee
 
 **Size:** S (2).
 
@@ -62,7 +54,7 @@ this one to appraise `$pipeline->feed`, a run fed values as they
 arrive (its 2026-0044, at 522fff32146ddabb5d668356c485aa419c2d350f),
 and `tee`, a tap that takes a pipeline (its 2026-0048, at
 8324858d70742206c98be2fe0e2b34eada7c2fae), for fixes and
-opportunities, before its release. Read its records and user guide,
+opportunities. Both shipped in its v0.3.6, on 2026-11-18. Read its records and user guide,
 try both against DBI's ways of handing over rows, such as callbacks
 and a writer batching inserts, and send what's found as messages.
 
