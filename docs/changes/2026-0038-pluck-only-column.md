@@ -1,13 +1,16 @@
 # 2026-0038. pluck with no column gives the only one
 
-**Status:** open
+**Status:** in progress
 
 **Decisions:** D1 settled: only when the row has one column, else a
 croak. D2 settled: decided from each row, not the statement. D3
-settled: a `(;$)` prototype, so it's written bare. D4 settled: a minor
-release.
+settled, revised: no prototype, as bare `pluck` parses without one. D4
+settled: a minor release. D5 settled: `pluck(undef)` and `pluck('')`
+still croak.
 
 **Origin:** roadmap, added 2026-11-18, Iain's idea
+
+**Started:** 2026-11-18
 
 ## Background
 
@@ -31,15 +34,55 @@ The DBI's `selectcol_arrayref` takes the first column of any query.
   `SELECT *` and rows reshaped by an earlier stage, the trap the
   reference warns of for `pluck` by name. A size check a row costs
   next to nothing. Iain, 2026-11-18.
-- [x] **D3.** Written bare, as `as_hash` is? Yes, with a `(;$)`
-  prototype, so `pluck, keep_all` doesn't take `keep_all` as its
-  column. It changes how an odd call parses, such as
-  `pluck $x || 'id'`, which the tests check. Iain, 2026-11-18.
+- [x] **D3.** Written bare, as `as_hash` is? Yes, and with no
+  prototype. Iain, 2026-11-18, revised the same day.
+  - First settled as a `(;$)` prototype, so `pluck, keep_all` wouldn't
+    take `keep_all` as its column. Tried before work started, that
+    reason didn't hold: with no prototype, `pluck, keep_all` already
+    parses as `pluck(), keep_all`, as a comma can't start an argument.
+    What the prototype does instead is give its argument scalar
+    context, so `pluck(@cols)` silently plucks the column at position
+    `scalar @cols`, and let `pluck 'name', keep_all` work without
+    parentheses, which without it dies loudly, "Too many arguments".
+    A silent wrong column is what D1 avoids, so: no prototype.
 - [x] **D4.** What release? Minor: it only adds. Iain, 2026-11-18.
+- [x] **D5.** Do `pluck(undef)` and `pluck('')` mean "the only
+  column", as `pluck()` does? No: they still croak, "Expected a
+  column, by name or position", as now. Only an empty argument list
+  asks for the only column; an undefined or empty variable is more
+  likely a mistake, and stays loud. Iain, 2026-11-18.
 
 ## The plan
 
-To be written when work starts: the stage, in
-`lib/DBIx/Squirrel/Stages/Rows.pm`; tests over every row shape and
-the prototype's parsing; DIAGNOSTICS and the reference; and the docs'
-`sub { $_->[0] }` examples, where `pluck()` reads better.
+**What:** `pluck` with no arguments gives each row's only column: an
+array of one element, a hash of one key, a row object of one column,
+counted from the row itself, so it needs no statement. A row of more
+than one column croaks, "Expected one column to pluck, not %d". The
+signature becomes `(@column)`, so it can tell no column from an
+undefined one; more than one argument croaks, as the signature does
+now. No prototype.
+
+**Why:** a one-column `SELECT` made into plain values is the commonest
+stage in the docs, and `sub { $_->[0] }` says how, not what.
+
+**Steps:**
+
+1. The stage, in `lib/DBIx/Squirrel/Stages/Rows.pm`, without a
+   signature on the step, as for `pluck` by column; its POD and
+   DIAGNOSTICS.
+2. Tests in `t/18-stages-rows.t`: each row shape with one column, and
+   with two, which croaks; without a statement, in a pipeline called
+   with values; `pluck, keep_all` written bare; `pluck(undef)`,
+   `pluck('')` and two columns still croaking; coverage above its
+   floors.
+3. The reference's Rows table and DIAGNOSTICS, then
+   `scripts/manuals`.
+4. The examples in the how-to, the reference, the README and the POD
+   that take the first column of a one-column `SELECT` with a stage
+   doing nothing else become `pluck`. Those showing how a stage is
+   written, or reading more than one column, stay.
+5. `Changes` under Unreleased; the item leaves the roadmap.
+
+**Done when:** the suite, `xt/` included, passes on 5.36.3 and 5.44.0
+against Ekorn's working copy, and under `prove -l t` on 5.36.3;
+Perl::Critic and Perl::Tidy are clean on 5.44.0.
