@@ -1482,7 +1482,7 @@ rows go on. A stage that stops the run stops the fetching too, so no
 more rows are read than are wanted.
 
 B<By place.> C<take> and C<drop> give a page: C<drop(20), take(10)>
-passes on the 21st to the 30th. C<take> stops the run at its last
+passes on values 21 to 30. C<take> stops the run at its last
 value, so the statement is finished then:
 
     my @page = $dbh->iterate(
@@ -4194,7 +4194,7 @@ the others on request; all in Tooling's C<:flow>.
     drop($n)
 
 Drops the first C<$n> values, and passes on the rest. With C<take>, it
-gives a page: C<drop(20), take(10)> passes on the 21st to the 30th. It
+gives a page: C<drop(20), take(10)> passes on values 21 to 30. It
 croaks, C<Expected a count of 0 or more>, if C<$n> isn't a whole number.
 Exported by default.
 

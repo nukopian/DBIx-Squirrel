@@ -1221,7 +1221,7 @@ rows go on. A stage that stops the run stops the fetching too, so no
 more rows are read than are wanted.
 
 **By place.** `take` and `drop` give a page: `drop(20), take(10)`
-passes on the 21st to the 30th. `take` stops the run at its last
+passes on values 21 to 30. `take` stops the run at its last
 value, so the statement is finished then:
 
 ```perl
@@ -3552,7 +3552,7 @@ drop($n)
 ```
 
 Drops the first `$n` values, and passes on the rest. With `take`, it
-gives a page: `drop(20), take(10)` passes on the 21st to the 30th. It
+gives a page: `drop(20), take(10)` passes on values 21 to 30. It
 croaks, `Expected a count of 0 or more`, if `$n` isn't a whole number.
 Exported by default.
 

@@ -2,6 +2,15 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    v3.4.0, never on CPAN, with a word its spelling test didn't know.
+
+    v3.4.0 was tagged, and released on GitHub, but its distribution
+    failed POD spelling in the reference manual, so it never reached
+    CPAN. This is v3.4.0, with that fixed.
+
+    - The reference says drop(20), take(10) passes on values 21 to 30,
+      not "the 21st to the 30th", which the spelling test didn't know.
+
 v3.4.0 2026-11-18
 
     as_hash takes the columns to keep; the reference's index says how to
