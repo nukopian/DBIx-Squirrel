@@ -7,8 +7,9 @@ use Test2::Plugin::NoWarnings;
 # This keeps it in step with the code: each module has an entry; each
 # name a public module exports, and each public method it defines, is
 # listed, but for those named internal below; each name listed is one
-# the module can call; each says "By default." or "On request." as it's
-# exported, and ends with a link; Tooling names each of its tags; and an
+# the module can call; each has a synopsis, says "By default." or "On
+# request." as it's exported, and ends with a link to a section headed
+# by its name (2026-0041); Tooling names each of its tags; and an
 # internal module lists nothing. An author test, as the reference isn't
 # in the distribution.
 
@@ -42,14 +43,26 @@ sub sort_key ($name) {
 }
 
 
-# Return the index's entries, in order: each a module's name, the text
-# saying what it is, and its names, in order, each with its text.
+# Return a heading's anchor, as GitHub makes it.
+sub anchor ($heading) {
+    my $anchor = lc $heading;
+    $anchor =~ s( [^\w\-\ ] )()xg;
+    $anchor =~ s( \  )(-)xg;
+    return $anchor;
+}
+
+
+# Return the anchors of the reference's headings before the index, and
+# the index's entries, in order: each a module's name, the text saying
+# what it is, and its names, in order, each with its text.
 sub index_entries () {
     open my $in, '<', $REFERENCE or die "Can't read $REFERENCE: $!";
     my $text = do { local $/; <$in> };
     close $in;
-    my($index) = $text =~ m( ^\#\#\ Index\n (.*) \z )xms
+    my($body, $index) = $text =~ m( \A (.*?) ^\#\#\ Index\n (.*) \z )xms
         or die "No index in $REFERENCE";
+    $body =~ s( ^``` .*? ^``` )()xmsg;    # a comment in code isn't a heading
+    my %anchors = map { anchor($_) => 1 } $body =~ m( ^ \#+ \  (.+) $ )xmg;
     my @entries;
     for my $block (split m( (?= ^\#\#\#\  ) )xm, $index) {
         my($module, $about, $rest)
@@ -59,7 +72,7 @@ sub index_entries () {
             split m( (?= ^\#\#\#\#\  ) )xm, $rest // '';
         push @entries, {module => $module, about => $about, names => \@names};
     }
-    return @entries;
+    return \%anchors, @entries;
 }
 
 
@@ -91,7 +104,7 @@ sub public_names ($module) {
 }
 
 
-my @entries = index_entries();
+my($anchors, @entries) = index_entries();
 my @modules = modules();
 
 is [map { $_->{module} } @entries],
@@ -109,6 +122,23 @@ for my $entry (@entries) {
             @{ $entry->{names} }
         ],
         [], "$module: each name ends with a link to where it's described";
+
+    # Its synopsis, all its forms, as code; and its link goes to a section
+    # headed by its name, not a table or a section shared with others.
+    is [
+        map  { $_->[0] }
+        grep { $_->[1] !~ m( ^```perl\n .+? ^```$ )xms } @{ $entry->{names} }
+        ],
+        [], "$module: each name has a synopsis";
+    is [
+        map { $_->[0] }
+        grep {
+            my($to)
+                = $_->[1] =~ m( \s See \s+ \[ [^\]]+ \] \( \# ([^\)]+) \) \. \s* \z )xs;
+            !defined $to || $to ne anchor($_->[0]) || !$anchors->{$to}
+        } @{ $entry->{names} }
+        ],
+        [], "$module: each name links to a section headed by it";
 }
 
 for my $entry (@entries) {

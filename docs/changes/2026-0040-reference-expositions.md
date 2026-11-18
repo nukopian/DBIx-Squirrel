@@ -20,10 +20,10 @@ or a section shared with others, not a section of the name's own: the
 iterator's methods (`all`, `column_names`, `EKORN_SOURCE`, `ended`,
 `first`, `new`, `next`, `single`, `sth`), Context's functions
 (`iterator`, `result_number`, `result_original`), `croakf`, the
-handles' `pipe` and `tap`, the seven select methods, and the canned stages in Flow,
-Batch, Rows and Taps (17). Iain asked for each index entry to have a
-synopsis of all its forms, a paragraph or two, and a link to a fuller
-description, written where there isn't one.
+handles' `pipe` and `tap`, the seven select methods, and the canned
+stages in Flow, Batch, Rows and Taps (17). Iain asked for each index
+entry to have a synopsis of all its forms, a paragraph or two, and a
+link to a fuller description, written where there isn't one.
 
 ## Decisions
 

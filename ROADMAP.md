@@ -41,15 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0041. A synopsis and a fuller description for each name in the index
-
-**Size:** M (3).
-
-Each name in the reference's index gets a synopsis of all its forms,
-one or two paragraphs, and its link to the section 2026-0040 gives
-it, with `xt/reference-index.t` checking both. Its
-[record](docs/changes/2026-0041-index-synopses.md) has the plan and
-the decisions.
+Nothing.
 
 ## Next
 

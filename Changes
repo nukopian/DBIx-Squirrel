@@ -2,8 +2,13 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    A section of its own for each name the reference described only in
-    passing.
+    The reference's index shows how each name is called, and each has a
+    section of its own.
+
+    - Each entry in the reference's index has a synopsis of all the
+      name's forms, a paragraph or two from its section saying what it
+      does and how it's exported, and a link to the section headed by
+      the name (roadmap 2026-0041).
 
     - The reference gives each of 39 names a section headed by the
       name, with a synopsis of all its forms, what it does, and an
