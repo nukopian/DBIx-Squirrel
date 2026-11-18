@@ -41,15 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0043. as_hash takes the columns to keep
-
-**Size:** S (2).
-
-`as_hash(@names)` keeps only the columns named, matched in any case,
-and keyed as `fetchrow_hashref` keys them; with no names, every
-column, as now. A name the statement hasn't got croaks. A minor
-release. Its [record](docs/changes/2026-0043-as-hash-columns.md) has
-the plan and the decisions.
+Nothing.
 
 ## Next
 

@@ -1,6 +1,6 @@
 # 2026-0043. as_hash takes the columns to keep
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: names in any case, keyed as now. D2 settled:
 a name the statement hasn't got croaks. D3 settled: names only, not
@@ -9,6 +9,8 @@ positions. D4 settled: no prototype. D5 settled: a minor release.
 **Origin:** roadmap, added 2026-11-18, Iain's idea
 
 **Started:** 2026-11-18
+
+**Finished:** 2026-11-18
 
 ## Background
 
@@ -66,3 +68,19 @@ wants a few columns, not every one a `SELECT *` gives.
 **Done when:** the suite, `xt/` included, passes on 5.36.3 and 5.44.0,
 and under `prove -l t` on 5.36.3; Perl::Critic and Perl::Tidy are
 clean on 5.44.0; coverage is above its floors.
+
+## What happened
+
+- **Outcome:** done as planned. `as_hash(@names)` keeps the columns
+  named, from arrays, hashes and row objects alike, found in any case
+  and keyed as without names; a hash row given names is made anew, one
+  without passed on as before; of two columns of a name, the last, as
+  without names. The suite, `xt/` included, passes on 5.36.3 and
+  5.44.0, 2,517 assertions, against Ekorn::Pipeline v0.3.7 as installed
+  from CPAN, and `prove -l t` on 5.36.3; Perl::Critic and Perl::Tidy
+  are clean on 5.44.0; `Stages/Rows.pm` is at 100% for statements and
+  branches, and coverage is above every floor.
+- **Changes from the plan:** none. The existing tests, which write
+  `as_hash` bare in lists of stages, compile and pass without the
+  prototype, as D4's trial said.
+- **What's left:** nothing.

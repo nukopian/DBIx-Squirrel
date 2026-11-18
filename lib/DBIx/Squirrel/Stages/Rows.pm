@@ -83,20 +83,34 @@ sub _pluck_only () {
 
 # Return a stage making each row a hash, keyed by the column names as
 # fetchrow_hashref keys them: arrays and row objects are made into one,
-# and hashes are passed on as they are.
-sub as_hash : prototype() () {
+# and hashes are passed on as they are. Given column names, the hash has
+# only those columns, each found in any case: a hash is made anew.
+sub as_hash (@columns) {
+    croakf 'Expected a column name' if grep { !defined || !length } @columns;
     return gather {
-        my $names;    # the column names, found once a run
+        my($names, $at, $keys);    # found once a run: names, positions, keys
 
         # Without a signature, as for pluck.
         return sub {
-            return $_[0] if is_plain_hashref($_[0]);
+            if (is_plain_hashref($_[0])) {
+                return $_[0] unless @columns;
+                $keys //= [map { _key_of($_[0], $_, 0) } @columns];
+                my %hash;
+                @hash{@$keys} = @{ $_[0] }{@$keys};
+                return \%hash;
+            }
             croakf 'Expected a row: an array, a hash or a row object'
                 unless is_plain_arrayref($_[0])
                 || $_[0] isa 'DBIx::Squirrel::Result';
             $names //= [_column_names()];
             my %hash;
-            @hash{@$names} = @{ $_[0] };
+            if (@columns) {
+                $at //= [map { _last_position_in($names, $_) } @columns];
+                @hash{@$names[@$at]} = @{ $_[0] }[@$at];
+            }
+            else {
+                @hash{@$names} = @{ $_[0] };
+            }
             return \%hash;
         };
     };
@@ -116,6 +130,17 @@ sub _position_of ($column) {
     my @names = _column_names();
     my($n)    = grep { $names[$_] eq $column } 0 .. $#names;
     ($n) = grep { lc $names[$_] eq lc $column } 0 .. $#names
+        unless defined $n;
+    croakf 'Expected a column of the row (%s)', $column unless defined $n;
+    return $n;
+}
+
+# Return the position of a column among the names, by its name: as it's
+# written, or else in any case. Of two columns of that name, the last,
+# as fetchrow_hashref keeps the last of them in its hash.
+sub _last_position_in ($names, $column) {
+    my($n) = reverse grep { $names->[$_] eq $column } 0 .. $#$names;
+    ($n) = reverse grep { lc $names->[$_] eq lc $column } 0 .. $#$names
         unless defined $n;
     croakf 'Expected a column of the row (%s)', $column unless defined $n;
     return $n;
@@ -203,14 +228,23 @@ variable is more likely a mistake.
 =head2 as_hash
 
     as_hash
+    as_hash(@names)
 
 Makes each row a hash, keyed by the column names as
 C<fetchrow_hashref> would key them, following C<FetchHashKeyName>. So
 it gives what plain DBI does. An array row, or a row object, is made
 into a new hash. A hash row is passed on unchanged. As with
 C<fetchrow_hashref>, of two columns with the same name, the hash has
-one. It needs to be in a run reading a statement, for the column
-names.
+one, the last. It needs to be in a run reading a statement, for the
+column names.
+
+Given column names, the hash has only those columns, each found in any
+case, and keyed as it would be without them, so it's a part of the
+hash C<as_hash> gives. A hash row is made into a new hash of those
+keys. A name the row hasn't got croaks, as an empty or undefined one
+does. Positions aren't taken: a number is a column's name.
+
+    my @rows = $dbh->iterate('SELECT * FROM artist', as_hash('name'))->all;
 
 =head1 DIAGNOSTICS
 
@@ -220,9 +254,13 @@ names.
 
 C<pluck> was given an undefined column, or an empty name.
 
+=item Expected a column name
+
+C<as_hash> was given an undefined or empty column name.
+
 =item Expected a column of the row (%s)
 
-A row hasn't got the column C<pluck> was given.
+A row hasn't got the column C<pluck>, or C<as_hash>, was given.
 
 =item Expected one column to pluck, not %d
 

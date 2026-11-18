@@ -116,7 +116,50 @@ subtest 'as_hash' => sub {
         'keyed as FetchHashKeyName says';
 };
 
+subtest 'as_hash, given column names' => sub {
+    my @names = map { {name => $_} } qw(Abba Blur Cream);
+    is [$dbh->iterate($all, as_hash('name'))->all], \@names, 'from arrays';
+    is [$dbh->iterate($all, as_hash('NAME'))->all], \@names,
+        'found in any case, keyed as fetchrow_hashref keys them';
+    is [$dbh->iterate($all, as_hash('id', 'name'))->all], fetched_hashes($all),
+        'every column named, as without names';
+    is [$dbh->iterate($all, {ekorn_slice => {}}, as_hash('Name'))->all],
+        \@names,
+        'from hashes';
+    is [$dbh->results($all, as_hash('name'))->all], \@names, 'from row objects';
+
+    my $row = {a => 1, b => 2};
+    my($hash) = $class->new(as_hash('A'))->($row);
+    is $hash, {a => 1}, 'a hash row, with no iterator';
+    ref_is_not $hash, $row, 'made anew';
+    ref_is [$class->new(as_hash)->($row)]->[0], $row,
+        'but passed on without names';
+
+    is [$dbh->iterate('SELECT 1 AS a, 2 AS a', as_hash('a'))->all], [{a => 2}],
+        'of two columns of the name, the last';
+    is [$dbh->iterate('SELECT 1 AS a, 2 AS a', as_hash)->all], [{a => 2}],
+        '(as without names)';
+
+    local $dbh->{FetchHashKeyName} = 'NAME_uc';
+    is [
+        $dbh->iterate('SELECT name FROM artist WHERE id = 2', as_hash('name'))->all
+        ],
+        [{NAME => 'Blur'}], 'keyed as FetchHashKeyName says';
+};
+
 subtest 'mistakes' => sub {
+    for my $bad (undef, '') {
+        my $line = __LINE__ + 1;
+        is dies { as_hash('id', $bad) },
+            "Expected a column name at ${\ __FILE__ } line $line.\n",
+            'as_hash with an undefined or empty name';
+    }
+    like dies { $dbh->iterate($all, as_hash('age'))->all },
+        qr( Expected\ a\ column\ of\ the\ row\ \(age\) )x,
+        'as_hash with a name the row has not';
+    like dies { $class->new(as_hash('c'))->({a => 1}) },
+        qr( Expected\ a\ column\ of\ the\ row\ \(c\) )x, 'or a hash row';
+
     for my $bad (undef, '') {
         my $line = __LINE__ + 1;
         is dies { pluck($bad) },

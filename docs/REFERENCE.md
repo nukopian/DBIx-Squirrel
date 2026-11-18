@@ -1043,6 +1043,18 @@ my $album = $dbh->iterate('SELECT title, year FROM album WHERE id = 2', as_hash)
 say "$album->{title} ($album->{year})";    # Parklife (1994)
 ```
 
+Given column names, `as_hash` keeps only those, so a stage after it,
+or code given its hashes, gets the columns it needs, whatever the
+`SELECT` gave. The names are found in any case, and the hash is keyed
+as it would be without them. A name the row hasn't got croaks, so a
+query that lost a column shows at once:
+
+```perl
+my @artists = $dbh->iterate('SELECT * FROM artist ORDER BY id LIMIT 2', as_hash('NAME'))->all;
+say join ' ', keys %{ $artists[0] };              # name
+say join ' ', map { $_->{name} } @artists;       # Abba Blur
+```
+
 **`pluck` reads the statement's columns, not the row's.** After a
 stage that reshapes rows, a name or position for an array row picks
 the wrong field, and says nothing. Make the rows hashes first, with
@@ -2339,7 +2351,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected only one item, but there were more` | A warning: `single`, `keep_single` or `take_single` found a second result, and gave the first. |
 | `Expected the statement handle's other iterator to be finished` | Another iterator over the same statement handle has results left. |
 | `Expected ekorn_result_class to be a subclass of DBIx::Squirrel::Result (%s)` | `ekorn_result_class` named a class that isn't one. |
-| `Expected a column of the row (%s)` | `get_column` or `pluck` was given a name or position the row doesn't have. |
+| `Expected a column of the row (%s)` | `get_column`, `pluck` or `as_hash` was given a name or position the row doesn't have. |
 | `Expected use Ekorn::Pipeline::Operators in scope, for %s` | `\|` or `@{}` was used on an iterator where the operators aren't in force. |
 
 #### Pipelines
@@ -2364,6 +2376,7 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected a count of 0 or more` | `take`, `drop` or `keep` was given something other than a whole number. |
 | `Expected a batch size of 1 or more` | `batch` was given something other than a whole number above 0. |
 | `Expected a column, by name or position` | `pluck` was given an undefined column, or an empty name. |
+| `Expected a column name` | `as_hash` was given an undefined or empty column name. |
 | `Expected one column to pluck, not %d` | `pluck`, given no column, had a row of more than one column, or of none. |
 | `Expected a statement to read, for the column names` | `as_hash`, or `pluck` with a name for an array row or a position for a hash row, ran where no statement was being read, such as in a pipeline called with values. |
 | `Expected a row: an array, a hash or a row object` | `pluck` or `as_hash` was given a value that isn't a row. |
@@ -3674,6 +3687,7 @@ Canned stages reshaping rows. Both by default, and in Tooling's
 <!-- not run -->
 ```perl
 as_hash
+as_hash(@names)
 ```
 
 Gives each row as a hash, keyed by the column names as
@@ -3681,7 +3695,10 @@ Gives each row as a hash, keyed by the column names as
 gives what plain DBI does. An array row, or a row object, is made into
 a new hash; a hash row is passed on unchanged. As with
 `fetchrow_hashref`, of two columns with the same name, the hash has
-one. It finds the names in the [run's context](#the-runs-context), so
+the last. Given column names, found in any case, the hash has only
+those columns, keyed as it would be without them; a hash row is made
+into a new hash, and a name the row hasn't got croaks, `Expected a
+column of the row (age)`. It finds the names in the [run's context](#the-runs-context), so
 it needs a statement to be what the run reads; elsewhere it croaks,
 `Expected a statement to read, for the column names`. Exported by
 default.

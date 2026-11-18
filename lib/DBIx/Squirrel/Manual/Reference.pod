@@ -1303,6 +1303,16 @@ written for the DBI's hashes:
     my $album = $dbh->iterate('SELECT title, year FROM album WHERE id = 2', as_hash)->first;
     say "$album->{title} ($album->{year})";    # Parklife (1994)
 
+Given column names, C<as_hash> keeps only those, so a stage after it,
+or code given its hashes, gets the columns it needs, whatever the
+C<SELECT> gave. The names are found in any case, and the hash is keyed
+as it would be without them. A name the row hasn't got croaks, so a
+query that lost a column shows at once:
+
+    my @artists = $dbh->iterate('SELECT * FROM artist ORDER BY id LIMIT 2', as_hash('NAME'))->all;
+    say join ' ', keys %{ $artists[0] };              # name
+    say join ' ', map { $_->{name} } @artists;       # Abba Blur
+
 **C<pluck> reads the statement's columns, not the row's.** After a
 stage that reshapes rows, a name or position for an array row picks
 the wrong field, and says nothing. Make the rows hashes first, with
@@ -2712,7 +2722,7 @@ C<ekorn_result_class> named a class that isn't one.
 
 =item C<Expected a column of the row (%s)>
 
-C<get_column> or C<pluck> was given a name or position the row doesn't have.
+C<get_column>, C<pluck> or C<as_hash> was given a name or position the row doesn't have.
 
 =item C<Expected use Ekorn::Pipeline::Operators in scope, for %s>
 
@@ -2781,6 +2791,10 @@ C<batch> was given something other than a whole number above 0.
 =item C<Expected a column, by name or position>
 
 C<pluck> was given an undefined column, or an empty name.
+
+=item C<Expected a column name>
+
+C<as_hash> was given an undefined or empty column name.
 
 =item C<Expected one column to pluck, not %d>
 
@@ -4289,13 +4303,17 @@ C<:rows>.
 =head3 as_hash
 
     as_hash
+    as_hash(@names)
 
 Gives each row as a hash, keyed by the column names as
 C<fetchrow_hashref> would key them, following C<FetchHashKeyName>, so it
 gives what plain DBI does. An array row, or a row object, is made into
 a new hash; a hash row is passed on unchanged. As with
 C<fetchrow_hashref>, of two columns with the same name, the hash has
-one. It finds the names in the L<run's context|/"The run's context">, so
+the last. Given column names, found in any case, the hash has only
+those columns, keyed as it would be without them; a hash row is made
+into a new hash, and a name the row hasn't got croaks, C<Expected a
+column of the row (age)>. It finds the names in the L<run's context|/"The run's context">, so
 it needs a statement to be what the run reads; elsewhere it croaks,
 C<Expected a statement to read, for the column names>. Exported by
 default.
