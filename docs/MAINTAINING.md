@@ -520,7 +520,6 @@ gh api --method PATCH repos/nukopian/DBIx-Squirrel/branches/main/protection/requ
     {"context": "perl 5.40 (ubuntu-24.04)", "app_id": 15368},
     {"context": "perl 5.42 (ubuntu-24.04)", "app_id": 15368},
     {"context": "perl 5.44 (ubuntu-24.04)", "app_id": 15368},
-    {"context": "perl 5.44 (macos-26)", "app_id": 15368},
     {"context": "perl 5.36 (windows-2025)", "app_id": 15368},
     {"context": "perl 5.42 (windows-2025)", "app_id": 15368},
     {"context": "perl 5.36, DBI 1.643 (ubuntu-24.04)", "app_id": 15368},
