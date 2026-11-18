@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0039.
+Last id: 2026-0041.
 
 Items come in four groups:
 
@@ -41,9 +41,30 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing.
+### 2026-0040. A section for each name the reference describes only in passing
+
+**Size:** L (5).
+
+A section headed by its name for each of the 39 names the index links
+to a table row or a shared section: the iterator's methods, Context's
+functions, `croakf`, `pipe` and `tap`, the select methods and the
+canned stages. Each has a synopsis of all its forms, what it does, and
+an example the tests run. Its
+[record](docs/changes/2026-0040-reference-expositions.md) has the plan
+and the decisions.
 
 ## Next
+
+### 2026-0041. A synopsis and a fuller description for each name in the index
+
+**Size:** M (3).
+
+**Depends on:** 2026-0040.
+
+Each name in the reference's index gets a synopsis of all its forms,
+one or two paragraphs, and its link to the section 2026-0040 gives
+it, with `xt/reference-index.t` checking both. Its decisions are
+settled, in [its record](docs/changes/2026-0041-index-synopses.md).
 
 ### 2026-0037. execute_array and execute_for_fetch, for every placeholder style
 
