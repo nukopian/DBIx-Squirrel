@@ -304,8 +304,9 @@ After C<pipeline>, it takes what L<Ekorn::Pipeline::Sugar> takes, a
 hash reference, or an array reference of names and stages in turn, and
 names each pipeline in the package, with a function of its name, as
 that module does. It defines them first, wherever they're given, so a
-statement given with them can name one. It gives no C<pipeline>
-function, which is Ekorn::Pipeline's.
+statement given with them can name one. It doesn't give the word
+C<pipeline>, which L<Ekorn::Pipeline::Factories> exports, and
+L<DBIx::Squirrel::Tooling> too. L</Pipelines> says how to use them.
 
 The arguments are worked out then too. The environment, literals, and
 what a C<BEGIN> block has set are there, but a variable the program
@@ -416,6 +417,47 @@ statement handle not read to the end, or by a stage calling the same
 function. A call then prepares one of its own. A statement taking a
 list (see L<DBIx::Squirrel::st/Lists>) is prepared for each call's
 values instead, and isn't cached.
+
+=head2 Pipelines
+
+    use DBIx::Squirrel::Sugar pipeline => {$name => [@stages], ...};
+
+    @results = loud(@values);
+    @results = loud(@values, $pipeline);
+    $it      = music($statement, @bind_values, pipeline('loud'));
+    $it      = artist(@bind_values, pipeline('loud'));
+
+Each pipeline after C<pipeline> is named in the package using
+DBIx::Squirrel::Sugar, as L<Ekorn::Pipeline/named> names one. The
+package gets a function of its name, which runs the values it's given
+through the pipeline and returns what comes out, as
+L<Ekorn::Pipeline::Sugar> describes: a list in list context, and in
+scalar context a sink's result, or how many values came out. A
+pipeline given last adds its stages to that call.
+
+    use DBIx::Squirrel::Sugar pipeline => {
+        first => [sub ($row) { $row->[0] }],
+        loud  => ['first', sub { uc }],
+    };
+
+    my @loud = loud(['abba'], ['blondie']);    # ('ABBA', 'BLONDIE')
+
+A statement's definition can name a pipeline among its stages, as
+L</statement> says:
+
+    use DBIx::Squirrel::Sugar statement => {
+        artist_names => [music => 'SELECT name FROM artist', 'first'],
+    };
+
+When a statement runs, a string given to it is a bind value, never a
+name. To use a named pipeline's stages for one call, give the pipeline
+itself, which the word C<pipeline> returns for its name. Import
+C<pipeline> from L<DBIx::Squirrel::Tooling> or
+L<Ekorn::Pipeline::Factories>:
+
+    use DBIx::Squirrel::Tooling qw(pipeline);
+
+    my @names = music 'SELECT name FROM artist', pipeline('loud'), keep_all;
 
 =head1 DIAGNOSTICS
 

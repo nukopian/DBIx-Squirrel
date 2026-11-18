@@ -450,8 +450,8 @@ exports the stages it's usually used for:
 =over
 
 =item * L<DBIx::Squirrel::Stages::Flow>: C<take> and C<drop>, with
-C<take_first>, C<take_last>, C<take_single>, C<take_while> and
-C<drop_while> on request;
+C<take_first>, C<take_last>, C<take_single>, C<take_while>,
+C<drop_while>, C<take_if> and C<drop_if> on request;
 
 =item * L<DBIx::Squirrel::Stages::Rows>: C<pluck> and C<as_hash>, for
 rows of any shape;
@@ -471,6 +471,19 @@ with C<dump_to> and C<tee> on request.
         pluck('name'),
         take(10),
     )->all;
+
+A sink goes last, after the stages, and the call gives what the sink
+returns, in place of an iterator: C<keep_all> gives every result, and
+C<count_items> how many there were. L<Ekorn::Pipeline::Sinks> has
+them. Sources, which give a pipeline values other than rows, such as
+the lines of a file, are in L<Ekorn::Pipeline::Sources>.
+L<DBIx::Squirrel::Tooling> exports all of these, and the stages above,
+from one module:
+
+    use DBIx::Squirrel::Tooling qw(:stages :sinks);
+
+    my @names = $dbh->iterate('SELECT name FROM artist', pluck('name'), keep_all);
+    my $count = $dbh->iterate('SELECT * FROM artist', count_items);
 
 The reference's "Writing stages" says how to write your own stages to
 work alongside them.

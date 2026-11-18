@@ -1742,8 +1742,11 @@ reference. After `pipeline`, it takes what Ekorn::Pipeline::Sugar
 takes, a hash reference, or an array reference of names and stages in
 turn, and names each pipeline, with a function of its name, as that
 module does. It names them before it defines any statement, wherever
-they're given, so a statement in the same `use` can name one; it gives
-no `pipeline` function, which is Ekorn's. It gives the package each function while the package is
+they're given, so a statement in the same `use` can name one. It
+doesn't give the word `pipeline`, which Ekorn::Pipeline::Factories
+exports, and Tooling too: [The Sugar's
+pipelines](#the-sugars-pipelines) says how to use them. It gives the
+package each function while the package is
 compiled, so the function can be called without parentheses. The
 arguments are worked out then too: the environment, literals, and what
 a `BEGIN` block has set are there, but a variable the program sets as
@@ -1871,6 +1874,36 @@ The statement is prepared once for each database handle, with
 read to the end, or by an iterator of an earlier call still reading. A
 call then prepares one of its own. A statement taking a [list](#lists)
 is prepared for each call's values instead, and isn't cached.
+
+### The Sugar's pipelines
+
+<!-- not run -->
+```perl
+@results = shouted(@values);
+@results = shouted(@values, $pipeline);
+$it      = music($statement, @bind_values, pipeline('shouted'));
+$it      = artist_names(@bind_values, pipeline('shouted'));
+```
+
+Each pipeline after `pipeline`, on `use`, is named in the package, and
+the package gets a function of its name. The function runs the values
+it's given through the pipeline, and returns what comes out: a list in
+list context, and in scalar context a sink's result, or how many values
+came out. A pipeline given last adds its stages to that call.
+
+A string given to a database's or a statement's function is a bind
+value, so to use a named pipeline for one call, give the pipeline
+itself: `pipeline`, given a name alone, returns the pipeline of that
+name.
+
+```perl
+say join ' ', shouted('abba', 'blur');                       # ABBA BLUR
+say join ' ', artist_names pipeline('shouted'), keep_all;    # ABBA BLUR CREAM
+
+my @loud = music 'SELECT name FROM artist ORDER BY id',
+    pluck('name'), pipeline('shouted'), keep_all;
+say "@loud";    # ABBA BLUR CREAM
+```
 
 ## 13. Caching and connections
 

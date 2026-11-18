@@ -2,6 +2,17 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    The Sugar's pipelines, and sinks, are documented.
+
+    - DBIx::Squirrel::Sugar's POD, and the reference's Sugar chapter,
+      have a section on pipelines: calling the function each gets, and
+      giving one to a single call with pipeline('name'). Both say the
+      word pipeline comes from Ekorn::Pipeline::Factories or
+      DBIx::Squirrel::Tooling.
+    - DBIx::Squirrel's POD says what a sink is, where sinks and sources
+      come from, and that DBIx::Squirrel::Tooling exports them. Its
+      list of Flow's stages has take_if and drop_if.
+
 v3.2.0 2026-11-18
 
     tee, a tap that takes stages, and loading rows with a feed.
