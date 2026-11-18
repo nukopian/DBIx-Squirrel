@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [as_hash takes the columns to keep](2026-0043-as-hash-columns.md),
+  roadmap 2026-0043: in progress.
 - [The index says how to use a name; the reference text shows it in context](2026-0042-index-and-text.md),
   roadmap 2026-0042: shipped, unreleased.
 - [A synopsis and a fuller description for each name in the index](2026-0041-index-synopses.md),
