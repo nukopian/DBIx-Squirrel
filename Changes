@@ -2,7 +2,14 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+v3.3.1 2026-11-18
+
     The reference has an index, by module.
+
+    A docs release: the reference ends with an index of each module and
+    what callers use from it, A to Z, each linked to its section
+    (roadmap 2026-0039). No code changes; still requires
+    Ekorn::Pipeline >= v0.3.6, < v0.4.0.
 
     - The reference ends with an index in place of "The modules": each
       module, A to Z, says what it is, then lists what callers use from

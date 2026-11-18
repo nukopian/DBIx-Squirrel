@@ -1,6 +1,6 @@
 # 2026-0039. An index of the reference, by module
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.3.1
 
 **Decisions:** D1 settled: it replaces "The modules". D2 settled: every
 name our modules export, re-exports from Ekorn included, linked to our
@@ -91,4 +91,5 @@ and Perl::Tidy are clean on 5.44.0.
   rows of their own, which the test passes over as not names. The
   records list in `docs/changes/README.md` also had 2026-0038 as open,
   fixed in the commit starting this.
+- **Released** in v3.3.1, 2026-11-18.
 - **What's left:** nothing.
