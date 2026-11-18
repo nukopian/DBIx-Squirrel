@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [pluck with no column gives the only one](2026-0038-pluck-only-column.md),
+  roadmap 2026-0038: open.
 - [execute_array and execute_for_fetch, for every placeholder style](2026-0037-execute-array.md),
   roadmap 2026-0037: open.
 - [tee, from DBIx::Squirrel::Stages::Taps and Tooling](2026-0035-tee.md),

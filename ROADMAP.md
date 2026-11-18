@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0037.
+Last id: 2026-0038.
 
 Items come in four groups:
 
@@ -72,6 +72,16 @@ rows, such as callbacks and a writer batching inserts, and send what's
 found as messages. Trying `feed` as a loader found 2026-0037.
 
 ## Later
+
+### 2026-0038. pluck with no column gives the only one
+
+**Size:** S (2).
+
+`pluck()`, or `pluck` written bare, gives a row's only column, and
+croaks for a row of more than one: so `sub { $_->[0] }` over a
+one-column query becomes `pluck`. Counted from each row, so it works
+without a statement. A minor release. Its decisions are settled, in
+[its record](docs/changes/2026-0038-pluck-only-column.md).
 
 ### 2026-0032. DBIx::Squirrel::Context on Ekorn's, without the counting stage
 
