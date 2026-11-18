@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [tee, from DBIx::Squirrel::Stages::Taps and Tooling](2026-0035-tee.md),
-  roadmap 2026-0035: shipped, unreleased.
+  roadmap 2026-0035: shipped in v3.2.0.
 - [A name Ekorn adds to its Tooling fails only our CI](2026-0034-tooling-names-xt.md),
   from a task of Ekorn-Pipeline's: shipped in v3.1.1.
 - [CI installs only what each job needs, and caches it](2026-0033-ci-installs.md),
