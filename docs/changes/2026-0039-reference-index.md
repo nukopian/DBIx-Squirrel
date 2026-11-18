@@ -92,4 +92,10 @@ and Perl::Tidy are clean on 5.44.0.
   records list in `docs/changes/README.md` also had 2026-0038 as open,
   fixed in the commit starting this.
 - **Released** in v3.3.1, 2026-11-18.
+- **Corrected, 2026-11-18:** the runs above said "against Ekorn's
+  working copy", but `perlbrew exec --with` replaces `PERL5LIB`, so
+  they used Ekorn::Pipeline v0.3.6 as installed from CPAN. Its `lib`
+  and `cpanfile` are the same as the working copy's at that commit,
+  so the results stand. MAINTAINING.md's form, `PERL5LIB` set inside
+  `sh -c`, is the one that puts the working copy first.
 - **What's left:** nothing.

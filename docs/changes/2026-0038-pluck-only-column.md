@@ -115,4 +115,10 @@ Perl::Critic and Perl::Tidy are clean on 5.44.0.
   select methods example now shows `pluck` working in a pushed run,
   where `pluck` by name for an array row can't.
 - **Released** in v3.3.0, 2026-11-18.
+- **Corrected, 2026-11-18:** the runs above said "against Ekorn's
+  working copy", but `perlbrew exec --with` replaces `PERL5LIB`, so
+  they used Ekorn::Pipeline v0.3.6 as installed from CPAN. Its `lib`
+  and `cpanfile` are the same as the working copy's at that commit,
+  so the results stand. MAINTAINING.md's form, `PERL5LIB` set inside
+  `sh -c`, is the one that puts the working copy first.
 - **What's left:** nothing.
