@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [execute_array and execute_for_fetch, for every placeholder style](2026-0037-execute-array.md),
+  roadmap 2026-0037: open.
 - [tee, from DBIx::Squirrel::Stages::Taps and Tooling](2026-0035-tee.md),
   roadmap 2026-0035: shipped in v3.2.0.
 - [A name Ekorn adds to its Tooling fails only our CI](2026-0034-tooling-names-xt.md),
