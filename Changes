@@ -4,12 +4,13 @@ Unreleased
 
 v3.2.0 2026-11-18
 
-    tee, a tap that takes stages.
+    tee, a tap that takes stages, and loading rows with a feed.
 
     DBIx::Squirrel exports Ekorn::Pipeline's new tee, which runs each
     value through stages of its own beside the pipeline (roadmap
     2026-0035). Requires Ekorn::Pipeline >= v0.3.6, < v0.4.0, which
-    also brings $pipeline->feed, a run fed values as they arrive.
+    also brings $pipeline->feed, a run fed values as they arrive: the
+    user guide shows it loading rows into a table.
 
     - DBIx::Squirrel::Stages::Taps exports tee on request, as
       Ekorn::Pipeline's does, and in :all, and DBIx::Squirrel::Tooling
@@ -17,6 +18,11 @@ v3.2.0 2026-11-18
       through a branch of stages, beside the pipeline, and passes it on
       unchanged; pluck and as_hash work in the branch on a statement's
       rows. Requires Ekorn::Pipeline v0.3.6 (roadmap 2026-0035).
+
+    - The user guide's "Load rows as they arrive" shows
+      $pipeline->feed as a loader: rows pushed in as they come,
+      batched, and each batch written with execute_array in a
+      transaction of its own, the last by close.
 
 v3.1.1 2026-11-17
 

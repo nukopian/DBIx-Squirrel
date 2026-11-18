@@ -1581,6 +1581,57 @@ a name for an array row, can't work there, as there's no statement:
 they croak "Expected a statement to read, for the column names".
 `pluck` by name on hashes, which reads their keys, works anywhere.
 
+### Load rows as they arrive
+
+`$pipeline->feed` starts one run of a pipeline and gives it to you,
+to push values into as they arrive: lines read from a socket, records
+a callback hands you, or rows from somewhere other than a statement.
+Each `push` gives back what came out of the values pushed. `close`
+ends the input, and gives what the stages still held, such as a last,
+part-filled batch. `ended` says how the run ended.
+
+So a feed is a loader. Here rows go into a table two at a time, each
+batch in a transaction of its own, with `execute_array` writing it:
+
+```perl
+use Ekorn::Pipeline;
+
+$dbh->do('CREATE TEMP TABLE heard (track_id INTEGER, plays INTEGER)');
+my $insert = $dbh->prepare('INSERT INTO heard (track_id, plays) VALUES (?, ?)');
+
+my $load = Ekorn::Pipeline->new(
+    drop_if { $_->{plays} == 0 },
+    batch(2),
+    sub {
+        my $rows = $_;
+        $dbh->begin_work;
+        $insert->execute_array(
+            {},
+            [map { $_->{track_id} } @$rows],
+            [map { $_->{plays} } @$rows],
+        );
+        $dbh->commit;
+        scalar @$rows;    # how many were written
+    },
+)->feed;
+
+my @written;
+push @written, $load->push($_)
+    for {track_id => 1, plays => 3}, {track_id => 2, plays => 0},
+        {track_id => 3, plays => 5}, {track_id => 4, plays => 1};
+push @written, $load->close;
+say "@written";         # 2 1
+say $load->ended;       # done
+say $dbh->selectrow_array('SELECT COUNT(*) FROM heard');    # 3
+```
+
+The first batch is written in the push that fills it, and the last, of
+one row, by `close`. A stop, such as `take`'s, ends the run in the push
+that meets it, and a push after that croaks, so ask `ended` after each
+push when a stop may come. Ekorn::Pipeline's [how-to on
+feeds](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#feed-values-in-as-they-arrive)
+has the rest.
+
 ### Name a pipeline, and use it by name
 
 `Ekorn::Pipeline->named` names a pipeline, for the rest of the
