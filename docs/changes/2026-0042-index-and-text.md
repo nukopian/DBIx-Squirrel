@@ -1,6 +1,6 @@
 # 2026-0042. The index says how to use a name; the reference text shows it in context
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.4.0
 
 **Decisions:** D1 settled: every section the index links to drops its
 synopsis and definition. D2 settled: the sections 2026-0040 gave each
@@ -108,4 +108,5 @@ run; the suite, `xt/` included, passes on 5.36.3 and 5.44.0.
   this one: `DBIx::Squirrel->connect_cached` takes its arguments as
   `connect` does, and the section's advice to give empty credentials
   went.
+- **Released** in v3.4.0, 2026-11-18.
 - **What's left:** nothing here.

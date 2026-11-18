@@ -81,13 +81,13 @@ Steps, Done when.
 Newest id first.
 
 - [as_hash takes the columns to keep](2026-0043-as-hash-columns.md),
-  roadmap 2026-0043: shipped, unreleased.
+  roadmap 2026-0043: shipped in v3.4.0.
 - [The index says how to use a name; the reference text shows it in context](2026-0042-index-and-text.md),
-  roadmap 2026-0042: shipped, unreleased.
+  roadmap 2026-0042: shipped in v3.4.0.
 - [A synopsis and a fuller description for each name in the index](2026-0041-index-synopses.md),
-  roadmap 2026-0041: shipped, unreleased.
+  roadmap 2026-0041: shipped in v3.4.0.
 - [A section for each name the reference describes only in passing](2026-0040-reference-expositions.md),
-  roadmap 2026-0040: shipped, unreleased.
+  roadmap 2026-0040: shipped in v3.4.0.
 - [An index of the reference, by module](2026-0039-reference-index.md),
   roadmap 2026-0039: shipped in v3.3.1.
 - [pluck with no column gives the only one](2026-0038-pluck-only-column.md),

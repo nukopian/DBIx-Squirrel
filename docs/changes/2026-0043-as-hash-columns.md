@@ -1,6 +1,6 @@
 # 2026-0043. as_hash takes the columns to keep
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.4.0
 
 **Decisions:** D1 settled: names in any case, keyed as now. D2 settled:
 a name the statement hasn't got croaks. D3 settled: names only, not
@@ -83,4 +83,5 @@ clean on 5.44.0; coverage is above its floors.
 - **Changes from the plan:** none. The existing tests, which write
   `as_hash` bare in lists of stages, compile and pass without the
   prototype, as D4's trial said.
+- **Released** in v3.4.0, 2026-11-18.
 - **What's left:** nothing.

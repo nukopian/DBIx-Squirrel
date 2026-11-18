@@ -1,6 +1,6 @@
 # 2026-0041. A synopsis and a fuller description for each name in the index
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.4.0
 
 **Decisions:** D1 settled: Ekorn gets the same, by a task. D2 settled:
 the test checks for a synopsis, and a link to the name's own section.
@@ -82,5 +82,6 @@ link; the test fails without each; the suite, `xt/` included, passes on
   section the index links to repeats its synopsis or definition. The
   index keeps the synopses and descriptions, linking each name to the
   section that discusses it.
+- **Released** in v3.4.0, 2026-11-18.
 - **What's left:** nothing; Ekorn-Pipeline's index has the task sent
   in 2026-0040.

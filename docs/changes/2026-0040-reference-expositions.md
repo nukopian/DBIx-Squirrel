@@ -1,6 +1,6 @@
 # 2026-0040. A section for each name the reference describes only in passing
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.4.0
 
 **Decisions:** D1 settled: Ekorn gets the same, by a task. D2 settled: a
 heading each, in its chapter. D3 settled: split from the index's
@@ -89,5 +89,6 @@ synopsis and a run example; the index links each to it; the suite,
   section the index links to repeats its synopsis or definition. The
   index keeps the synopses and descriptions, linking each name to the
   section that discusses it.
+- **Released** in v3.4.0, 2026-11-18.
 - **What's left:** 2026-0041, the index's synopses and descriptions,
   which this unblocks.

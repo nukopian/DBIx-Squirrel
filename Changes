@@ -2,12 +2,14 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+v3.4.0 2026-11-18
+
     as_hash takes the columns to keep; the reference's index says how to
     use each name, and the text shows it in context; connect_cached
     takes its arguments as connect does.
 
     as_hash(@names) keeps only the columns named (roadmap 2026-0043).
-    A minor release.
+    A minor release; still requires Ekorn::Pipeline >= v0.3.7, < v0.4.0.
 
     The index and the reference text now divide the work: the index
     gives each name's synopsis and what it's for, and the text
