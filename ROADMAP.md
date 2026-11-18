@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0041.
+Last id: 2026-0042.
 
 Items come in four groups:
 
@@ -41,7 +41,15 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing.
+### 2026-0042. The index says how to use a name; the reference text shows it in context
+
+**Size:** L (5).
+
+Each section the index links to drops the synopsis and definition the
+index now has, keeping its discussion and examples, and 2026-0040's
+per-name sections fold back into connected discussion, which the index
+links to. Its [record](docs/changes/2026-0042-index-and-text.md) has
+the plan and the decisions.
 
 ## Next
 

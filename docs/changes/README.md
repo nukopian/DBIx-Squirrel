@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [The index says how to use a name; the reference text shows it in context](2026-0042-index-and-text.md),
+  roadmap 2026-0042: in progress.
 - [A synopsis and a fuller description for each name in the index](2026-0041-index-synopses.md),
   roadmap 2026-0041: shipped, unreleased.
 - [A section for each name the reference describes only in passing](2026-0040-reference-expositions.md),
