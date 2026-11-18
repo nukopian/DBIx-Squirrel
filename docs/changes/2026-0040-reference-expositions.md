@@ -89,6 +89,8 @@ synopsis and a run example; the index links each to it; the suite,
   section the index links to repeats its synopsis or definition. The
   index keeps the synopses and descriptions, linking each name to the
   section that discusses it.
-- **Released** in v3.4.0, 2026-11-18.
+- **Released** in v3.4.0, 2026-11-18, tagged but never on CPAN, as its
+  distribution failed the POD spelling test; on CPAN in v3.4.1, the
+  same day.
 - **What's left:** 2026-0041, the index's synopses and descriptions,
   which this unblocks.

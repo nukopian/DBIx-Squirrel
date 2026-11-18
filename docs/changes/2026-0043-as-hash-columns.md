@@ -83,5 +83,7 @@ clean on 5.44.0; coverage is above its floors.
 - **Changes from the plan:** none. The existing tests, which write
   `as_hash` bare in lists of stages, compile and pass without the
   prototype, as D4's trial said.
-- **Released** in v3.4.0, 2026-11-18.
+- **Released** in v3.4.0, 2026-11-18, tagged but never on CPAN, as its
+  distribution failed the POD spelling test; on CPAN in v3.4.1, the
+  same day.
 - **What's left:** nothing.

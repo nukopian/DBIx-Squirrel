@@ -108,5 +108,7 @@ run; the suite, `xt/` included, passes on 5.36.3 and 5.44.0.
   this one: `DBIx::Squirrel->connect_cached` takes its arguments as
   `connect` does, and the section's advice to give empty credentials
   went.
-- **Released** in v3.4.0, 2026-11-18.
+- **Released** in v3.4.0, 2026-11-18, tagged but never on CPAN, as its
+  distribution failed the POD spelling test; on CPAN in v3.4.1, the
+  same day.
 - **What's left:** nothing here.

@@ -2,11 +2,17 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    v3.4.0, never on CPAN, with a word its spelling test didn't know.
+v3.4.1 2026-11-18
+
+    v3.4.0, which never reached CPAN, with its POD spelling fixed.
 
     v3.4.0 was tagged, and released on GitHub, but its distribution
-    failed POD spelling in the reference manual, so it never reached
-    CPAN. This is v3.4.0, with that fixed.
+    failed the POD spelling test, so it never reached CPAN. This is
+    v3.4.0, with that fixed: as_hash takes the columns to keep
+    (roadmap 2026-0043), the reference's index says how to use each
+    name, and the text shows it in context (roadmap 2026-0040 to
+    2026-0042), and connect_cached takes its arguments as connect
+    does. Still requires Ekorn::Pipeline >= v0.3.7, < v0.4.0.
 
     - The reference says drop(20), take(10) passes on values 21 to 30,
       not "the 21st to the 30th", which the spelling test didn't know.

@@ -82,6 +82,8 @@ link; the test fails without each; the suite, `xt/` included, passes on
   section the index links to repeats its synopsis or definition. The
   index keeps the synopses and descriptions, linking each name to the
   section that discusses it.
-- **Released** in v3.4.0, 2026-11-18.
+- **Released** in v3.4.0, 2026-11-18, tagged but never on CPAN, as its
+  distribution failed the POD spelling test; on CPAN in v3.4.1, the
+  same day.
 - **What's left:** nothing; Ekorn-Pipeline's index has the task sent
   in 2026-0040.
