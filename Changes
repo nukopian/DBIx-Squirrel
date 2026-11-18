@@ -2,6 +2,17 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    A section of its own for each name the reference described only in
+    passing.
+
+    - The reference gives each of 39 names a section headed by the
+      name, with a synopsis of all its forms, what it does, and an
+      example the tests run: the iterator's methods, Context's
+      functions, croakf, the handles' pipe and tap, the seven select
+      methods, and the canned stages. The tables that were their only
+      description now list them, each linking to its section, and the
+      index links each name to it (roadmap 2026-0040).
+
 v3.3.2 2026-11-18
 
     The reference's index is laid out as Ekorn::Pipeline's is.

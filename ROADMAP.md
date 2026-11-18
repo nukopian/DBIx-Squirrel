@@ -41,17 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0040. A section for each name the reference describes only in passing
-
-**Size:** L (5).
-
-A section headed by its name for each of the 39 names the index links
-to a table row or a shared section: the iterator's methods, Context's
-functions, `croakf`, `pipe` and `tap`, the select methods and the
-canned stages. Each has a synopsis of all its forms, what it does, and
-an example the tests run. Its
-[record](docs/changes/2026-0040-reference-expositions.md) has the plan
-and the decisions.
+Nothing.
 
 ## Next
 

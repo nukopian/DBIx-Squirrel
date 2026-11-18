@@ -83,7 +83,7 @@ Newest id first.
 - [A synopsis and a fuller description for each name in the index](2026-0041-index-synopses.md),
   roadmap 2026-0041: open.
 - [A section for each name the reference describes only in passing](2026-0040-reference-expositions.md),
-  roadmap 2026-0040: in progress.
+  roadmap 2026-0040: shipped, unreleased.
 - [An index of the reference, by module](2026-0039-reference-index.md),
   roadmap 2026-0039: shipped in v3.3.1.
 - [pluck with no column gives the only one](2026-0038-pluck-only-column.md),

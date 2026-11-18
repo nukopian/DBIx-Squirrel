@@ -942,19 +942,10 @@ L<iterator|/"4. Iterators">, or the select methods, for those.
 
 =head2 The select methods
 
-    @row_ary  = $dbh->selectrow_array($statement, \%attr, @bind_values, @stages);
-    $ary_ref  = $dbh->selectrow_arrayref($statement, \%attr, @bind_values, @stages);
-    $hash_ref = $dbh->selectrow_hashref($statement, \%attr, @bind_values, @stages);
-    $ary_ref  = $dbh->selectall_arrayref($statement, \%attr, @bind_values, @stages);
-    @rows     = $dbh->selectall_array($statement, \%attr, @bind_values, @stages);
-    $hash_ref = $dbh->selectall_hashref($statement, $key_field, \%attr, @bind_values, @stages);
-    $ary_ref  = $dbh->selectcol_arrayref($statement, \%attr, @bind_values, @stages);
-
-Without stages, each works as the DBI's does. It prepares the
-statement as C<prepare> does, unless it's already a statement handle,
-and binds the values as L<C<bind>|/"bind"> binds them. C<selectall_array>
-gives the rows C<selectall_arrayref> gives, as a list, as the DBI's
-does.
+Each select method works as the DBI's does, given no stages. It
+prepares the statement as C<prepare> does, unless it's already a
+statement handle, and binds the values as L<C<bind>|/"bind"> binds them,
+so placeholders can be in any style.
 
 As with L<C<do>|/"do">, the attributes may be left out. The first
 argument after the statement, or after C<selectall_hashref>'s key
@@ -966,10 +957,82 @@ B<Given stages after the bind values,> each pushes what the DBI's
 method returns through them, as a pipeline called with values does. It
 returns every value that comes out of the last. Where one value is
 asked for, it returns a sink's result, if a sink is last, or else how
-many values came out. C<selectrow_array> pushes the row's values,
-C<selectall_array> each row, and the others their one reference. As a
-pushed run has no statement as its source, the stages can't use
-C<pluck> by a name for an array row, or C<as_hash>.
+many values came out. As a pushed run has no statement as its source,
+the stages can't use C<pluck> by a name for an array row, or C<as_hash>;
+C<pluck> with no column, or by position, works.
+
+Unlike C<prepare>, they don't croak if the statement can't be prepared.
+Without C<RaiseError>, each returns what the DBI's returns, C<undef> or
+nothing.
+
+=head3 selectrow_array
+
+    @row_ary = $dbh->selectrow_array($statement, \%attr, @bind_values);
+    @row_ary = $dbh->selectrow_array($statement, @bind_values);
+    @results = $dbh->selectrow_array($statement, \%attr, @bind_values, @stages);
+
+Returns the first row's values, as a list, or nothing if there's no
+row. Given stages, it pushes each of the row's values through them.
+
+    my @row = $dbh->selectrow_array('SELECT id, name FROM artist WHERE id = ?', 2);
+    say "@row";    # 2 Blur
+
+    say join ',', $dbh->selectrow_array('SELECT id, name FROM artist WHERE id = :id', id => 2, sub {"<$_>"});    # <2>,<Blur>
+
+=head3 selectrow_arrayref
+
+    $ary_ref = $dbh->selectrow_arrayref($statement, \%attr, @bind_values);
+    $ary_ref = $dbh->selectrow_arrayref($statement, @bind_values);
+    @results = $dbh->selectrow_arrayref($statement, \%attr, @bind_values, @stages);
+
+Returns the first row, as an array reference, or C<undef> if there's no
+row. Given stages, it pushes that one reference through them.
+
+    my $row = $dbh->selectrow_arrayref('SELECT id, name FROM artist WHERE id = ?', 3);
+    say "@$row";    # 3 Cream
+
+    say $dbh->selectrow_arrayref('SELECT id, name FROM artist WHERE id = ?', 3, sub { $_->[1] });    # Cream
+
+=head3 selectrow_hashref
+
+    $hash_ref = $dbh->selectrow_hashref($statement, \%attr, @bind_values);
+    $hash_ref = $dbh->selectrow_hashref($statement, @bind_values);
+    @results  = $dbh->selectrow_hashref($statement, \%attr, @bind_values, @stages);
+
+Returns the first row, as a hash reference keyed by the column names,
+as C<fetchrow_hashref> keys them, or C<undef> if there's no row. Given
+stages, it pushes that one reference through them.
+
+    say $dbh->selectrow_hashref('SELECT * FROM artist WHERE id = ?', 1)->{name};    # Abba
+    say $dbh->selectrow_hashref('SELECT * FROM artist WHERE id = ?', 1, sub { uc $_->{name} });    # ABBA
+
+=head3 selectall_arrayref
+
+    $ary_ref = $dbh->selectall_arrayref($statement, \%attr, @bind_values);
+    $ary_ref = $dbh->selectall_arrayref($statement, @bind_values);
+    @results = $dbh->selectall_arrayref($statement, \%attr, @bind_values, @stages);
+
+Returns every row, as an array reference of rows, each an array
+reference, or a hash reference given the attribute C<< Slice => {} >>, as
+the DBI's does. Given stages, it pushes that one reference through
+them, so a stage gets all the rows at once.
+
+    my $rows = $dbh->selectall_arrayref('SELECT id, name FROM artist ORDER BY id');
+    say scalar @$rows;    # 3
+
+    say $dbh->selectall_arrayref('SELECT name FROM artist ORDER BY id', sub { join ' ', map { $_->[0] } @$_ });    # Abba Blur Cream
+
+=head3 selectall_array
+
+    @rows    = $dbh->selectall_array($statement, \%attr, @bind_values);
+    @rows    = $dbh->selectall_array($statement, @bind_values);
+    @results = $dbh->selectall_array($statement, \%attr, @bind_values, @stages);
+    $count   = $dbh->selectall_array($statement, \%attr, @bind_values, @stages);
+
+Returns every row, as a list, the rows C<selectall_arrayref> gives, as
+the DBI's does. Given stages, it pushes each row through them in turn,
+which makes it the select method most like C<iterate>, but with every
+row fetched first.
 
     my @names = $dbh->selectall_array(
         'SELECT name FROM artist ORDER BY id',
@@ -980,12 +1043,37 @@ C<pluck> by a name for an array row, or C<as_hash>.
 
     say scalar $dbh->selectall_array('SELECT * FROM artist', sub { $_->[0] > 1 ? $_ : () });    # 2
 
+=head3 selectall_hashref
+
+    $hash_ref = $dbh->selectall_hashref($statement, $key_field, \%attr, @bind_values);
+    $hash_ref = $dbh->selectall_hashref($statement, $key_field, @bind_values);
+    @results  = $dbh->selectall_hashref($statement, $key_field, \%attr, @bind_values, @stages);
+
+Returns every row, in a hash reference keyed by the values of
+C<$key_field>, each row a hash reference, as the DBI's does. The key
+field comes before the attributes, and can be an array reference of
+fields, for nested keys. Given stages, it pushes that one reference
+through them.
+
+    my $by_id = $dbh->selectall_hashref('SELECT id, name FROM artist', 'id');
+    say $by_id->{2}{name};    # Blur
+
+    say join ' ', $dbh->selectall_hashref('SELECT id, name FROM artist', 'id', sub { map { $_->{name} } @{$_}{sort keys %$_} });    # Abba Blur Cream
+
+=head3 selectcol_arrayref
+
+    $ary_ref = $dbh->selectcol_arrayref($statement, \%attr, @bind_values);
+    $ary_ref = $dbh->selectcol_arrayref($statement, @bind_values);
+    @results = $dbh->selectcol_arrayref($statement, \%attr, @bind_values, @stages);
+
+Returns the first column of every row, as an array reference, or the
+columns the attribute C<Columns> names, as the DBI's does. Given
+stages, it pushes that one reference through them.
+
     my $col = $dbh->selectcol_arrayref('SELECT name FROM artist WHERE id IN ($1, $2) ORDER BY id', 1, 2);
     say "@$col";    # Abba Blur
 
-Unlike C<prepare>, they don't croak if the statement can't be prepared.
-Without C<RaiseError>, each returns what the DBI's returns, C<undef> or
-nothing.
+    say $dbh->selectcol_arrayref('SELECT name FROM artist', sub { scalar @$_ });    # 3
 
 =head1 4. Iterators
 
@@ -1059,60 +1147,172 @@ than a stage:
 
 =over 4
 
-=item C<next>
+=item L<C<next>|/"next">
 
 Returns the next result, or an empty list when there are no more.
 
-=item C<all>
+=item L<C<all>|/"all">
 
-Returns the results still to come, reading the run to its end: as a list, or, asked for one value, an array reference of them, never a count. The statement is then finished. Without stages, it fetches the rest at once.
+Returns the results still to come, and finishes the statement.
 
-=item C<first>
+=item L<C<first>|/"first">
 
-Returns the next result, or C<undef> if there's none, and finishes the statement.
+Returns the next result, or C<undef>, and finishes the statement.
 
-=item C<single>
+=item L<C<single>|/"single">
 
-Returns the next result, or C<undef> if there's none, and finishes the statement. If there's another, it warns, C<Expected only one item, but there were more>, and returns the first: for a statement that lost its C<LIMIT 1>.
+As C<first>, warning if there's another result.
 
-=item C<ended>
+=item L<C<ended>|/"ended">
 
-Returns how the last run ended: C<done>, C<stopped> or C<died>; nothing while a run is going, or before one has started.
+Returns how the last run ended.
 
-=item C<reset>
+=item L<C<reset>|/"reset">
 
-Runs the statement again, from its first row, and returns the iterator. See L<reset|/"reset">.
+Runs the statement again, from its first row.
 
-=item C<column_names>
+=item L<C<column_names>|/"column_names">
 
-Returns the names of the statement's columns, as C<fetchrow_hashref> would key them, following C<FetchHashKeyName>. They're read when the statement is executed, as DBD::mysql gives none once the last row is fetched.
+Returns the names of the statement's columns.
 
-=item C<sth>
+=item L<C<sth>|/"sth">
 
-Returns the statement handle. It changes when C<reset> prepares a statement taking a list again.
+Returns the statement handle.
+
+=item L<C<new>|/"new">
+
+Makes an iterator over a statement handle.
 
 =back
 
+C<all>, C<first> and C<single> take what's left of the run, so after
+C<next> they start from the next result.
+
+=head3 next
+
+    while (my($result) = $it->next) { ... }
+
+Returns the next result, or an empty list when there are no more. The
+first call executes the statement, if it hasn't been, and each call
+fetches rows as they're wanted, running each through the iterator's
+stages until one comes out.
+
 A stage can return C<undef> as a result. So read C<next> in list
-context, as below, rather than testing whether what it returns is
-defined. C<all>, C<first> and C<single> take what's left of the run, so
-after C<next> they start from the next result:
+context, as above, rather than testing whether what it returns is
+defined. Once a stage dies, the iterator has ended: C<next> returns an
+empty list on every call after, and the statement is finished.
+L<reset|/"reset"> runs it again, from the start.
+
+    my $it = $dbh->iterate('SELECT id, name FROM artist ORDER BY id', sub { $_->[0] == 2 ? undef : $_->[1] });
+    my @seen;
+    while (my($name) = $it->next) {
+        push @seen, $name // '(none)';
+    }
+    say "@seen";    # Abba (none) Cream
+
+=head3 all
+
+    @results = $it->all;
+    $results = $it->all;
+
+Returns the results still to come, reading the run to its end: as a
+list, or, asked for one value, an array reference of them, never a
+count. Either way, the statement is then finished, and C<next> returns
+nothing after, until L<reset|/"reset">.
+
+Without stages, the rows are the results, so C<all> fetches the rest at
+once, with one C<fetchall_arrayref>, nearly as quickly as the DBI's own
+C<selectall_arrayref>. With stages, each row goes through them in turn.
 
     my $it = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck);
     my($abba) = $it->next;
-    say $abba;                  # Abba
-    say join ' ', $it->all;     # Blur Cream
-    say $it->ended;             # done
+    say $abba;                   # Abba
+    say join ' ', $it->all;      # Blur Cream
+
+    my $names = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck)->all;
+    say scalar @$names;          # 3
+
+=head3 first
+
+    $result = $it->first;
+
+Returns the next result, or C<undef> if there's none, and finishes the
+statement, so the rest aren't fetched. C<next> returns nothing after,
+until L<reset|/"reset">. The run ends C<stopped>, as it was cut short.
 
     say $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck)->first;    # Abba
-    say $dbh->iterate('SELECT COUNT(*) FROM track', pluck)->single;            # 6
+    say $dbh->iterate('SELECT name FROM artist WHERE id > 9', pluck)->first // 'none';    # none
+
+=head3 single
+
+    $result = $it->single;
+
+Returns the next result, or C<undef> if there's none, and finishes the
+statement, as C<first> does. If there's another result, it warns,
+C<Expected only one item, but there were more>, and returns the first.
+It's for a statement that should give one result: the warning finds
+one that lost its C<LIMIT 1>, or its C<WHERE>.
+
+    say $dbh->iterate('SELECT COUNT(*) FROM track', pluck)->single;    # 6
+
+=head3 ended
+
+    $how = $it->ended;
+
+Returns how the last run ended: C<done> when the rows ran out,
+C<stopped> when it was cut short, by C<first>, by C<single> finding a
+second result, or by a stage that stopped, and C<died> when a stage
+died. While a run is going, and before one has started, it returns
+nothing; L<reset|/"reset"> starts a new run, so it returns nothing after
+one. A run read with C<|> or C<@{}> is the iterator's last run too (see
+L<11. Operators|/"11. Operators: E<verbar> and @{}">).
+
+    my $it = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck);
+    $it->all;
+    say $it->ended;                   # done
+    $it->reset->first;
+    say $it->ended;                   # stopped
+    say $it->reset->ended // 'none';  # none
+
+=head3 column_names
+
+    @names = $it->column_names;
+
+Returns the names of the statement's columns, as C<fetchrow_hashref>
+would key them, following C<FetchHashKeyName>. If the statement hasn't
+been executed, it's executed first. The names are read when it's
+executed, as some drivers, such as DBD::mysql, give none once the last
+row is fetched. A statement without columns has no names, and nor does
+one that couldn't be executed. A stage can ask for them through
+L<iterator|/"iterator">.
+
     say join ', ', $dbh->iterate('SELECT id, title AS Album FROM album')->column_names;    # id, Album
 
-C<ended> is C<done> when the rows ran out, C<stopped> when the run was
-cut short, by C<first>, by C<single> finding a second result, or by a
-stage that stopped, and C<died> when a stage died. A run read with C<|>
-or C<@{}> is the iterator's last run too (see L<11.
-Operators|/"11. Operators: E<verbar> and @{}">).
+=head3 sth
+
+    $sth = $it->sth;
+
+Returns the iterator's statement handle, a C<DBIx::Squirrel::st>. It
+changes when L<reset|/"reset"> prepares a statement taking a
+L<list|/"Lists"> again, for a list of another length.
+
+    my $it = $dbh->iterate('SELECT name FROM artist');
+    say $it->sth->{Statement};    # SELECT name FROM artist
+
+=head3 new
+
+    $it = DBIx::Squirrel::Iterator->new($sth, @bind_values, @stages);
+
+Returns an iterator over the rows of C<$sth>, a C<DBIx::Squirrel::st>,
+without executing it. When it does, it's executed with C<@bind_values>,
+in any form L<execute|/"execute"> takes, and each row runs through
+C<@stages>, the stages at the end of the arguments. C<iterate> makes an
+iterator this way, and is how you'd usually get one; a statement
+handle that isn't DBIx::Squirrel's croaks, C<Expected a DBIx::Squirrel
+statement handle>.
+
+    my $sth = $dbh->prepare('SELECT name FROM artist WHERE id = ?');
+    say DBIx::Squirrel::Iterator->new($sth, 3, pluck)->first;    # Cream
 
 =head2 reset
 
@@ -1221,17 +1421,17 @@ out from its value. None is exported by default.
 
 =over 4
 
-=item C<iterator>
+=item L<C<iterator>|/"iterator">
 
-The iterator running the stage, in its own stages. Its C<sth> is the statement handle, and the statement handle's C<Database> is the database handle.
+The iterator running the stage.
 
-=item C<result_number>
+=item L<C<result_number>|/"result_number">
 
-The number of the result being made, from 1. It counts results, not rows. While a stage drops rows, the number stays the same. Each value a stage returns in place of one row is a result of its own. In a flush, it's the number of the first value the flush returns.
+The number of the result being made, from 1.
 
-=item C<result_original>
+=item L<C<result_original>|/"result_original">
 
-The row the result is being made from, as it was fetched, before any stage changed it. For a result set, it's the row object. In a L<flush|/"7. Gathering: stages made for each run">, and the stages after it, it's C<undef>: what a flush gives comes from every row, not one.
+The row the result is being made from, as it was fetched.
 
 =back
 
@@ -1249,6 +1449,68 @@ Elsewhere, and outside a stage, they return C<undef>.
         sub { result_number() . ". $_ (" . result_original()->[1] . ')' },
     )->all;
     say $chart[0];    # 1. Dancing Queen (9100)
+
+=head3 iterator
+
+    $it = iterator();
+
+Returns the iterator running the stage, in an iterator's or result
+set's own stages; elsewhere, and outside a stage, C<undef>. Through
+it a stage can reach the rest: its C<sth> is the statement handle, the
+statement handle's C<Database> is the database handle, and its
+L<column_names|/"column_names"> are the statement's columns.
+
+    my($columns) = $dbh->iterate(
+        'SELECT id, name FROM artist WHERE id = 1',
+        sub { join ',', iterator()->column_names },
+    )->all;
+    say $columns;                 # id,name
+    say iterator() // 'none';     # none
+
+=head3 result_number
+
+    $n = result_number();
+
+Returns the number of the result being made, from 1. It counts
+results, not rows: while a stage drops rows, the number stays the
+same, and each value a stage returns in place of one row is a result
+of its own. In a flush of a stage made with L<gather|/"gather">, it's
+the number of the first value the flush returns.
+
+It works only in an iterator's or result set's own stages, as only the
+iterator counts its results; elsewhere it returns C<undef>.
+
+    my @hits = $dbh->iterate(
+        'SELECT name, plays FROM track ORDER BY id',
+        take_if { $_->[1] > 6000 },
+        sub { result_number() . ". $_->[0]" },
+    )->all;
+    say for @hits;
+    # 1. Dancing Queen
+    # 2. Girls & Boys
+    # 3. Sunshine of Your Love
+
+=head3 result_original
+
+    $row = result_original();
+
+Returns the row the result is being made from, as it was fetched,
+before any stage changed it; for a result set, the row object. In a
+flush of a stage made with L<gather|/"gather">, and the stages after it,
+it's C<undef>, as what a flush gives comes from every row, not one.
+
+It works in any run reading a statement, as the statement keeps the
+row in its run's L<context|/"The run's context">: an iterator's own
+stages, a chain made with C<|>, or a pipeline of yours reading one.
+
+    my @plays = $dbh->iterate(
+        'SELECT name, plays FROM track ORDER BY plays DESC LIMIT 2',
+        pluck('name'),
+        sub { "$_: " . result_original()->[1] },
+    )->all;
+    say for @plays;
+    # Dancing Queen: 9100
+    # Sunshine of Your Love: 7700
 
 =head2 Canned stages
 
@@ -1284,70 +1546,78 @@ B<On request:> C<dump_to($fh)>, C<tee(@stages)>
 
 =back
 
-Flow's are described in L<6. Stopping a
-pipeline|/"6. Stopping a pipeline">, and Batch's in L<7.
-Gathering|/"7. Gathering: stages made for each run">. Flow's, Batch's and
-Taps' stages are Ekorn::Pipeline's, exported from a list of
-DBIx::Squirrel's own; its reference's L<Canned
+Flow's are described in L<Taking and dropping|/"Taking and dropping">,
+and Batch's in L<Batching and collecting|/"Batching and collecting">.
+Flow's, Batch's and Taps' stages are Ekorn::Pipeline's, exported from
+a list of DBIx::Squirrel's own; its reference's L<Canned
 stages|Ekorn::Pipeline::Manual::Reference/"Canned stages">
-describes them in full. Rows' stages are DBIx::Squirrel's own. Each is
-a function that makes a stage, checking what it's given when it's
+describes them too. Rows' stages are DBIx::Squirrel's own. Each is a
+function that makes a stage, checking what it's given when it's
 called, not on each value.
 
 =over 4
 
-=item C<pluck($column)>
+=item L<C<pluck>|/"pluck">
 
-Gives one column of each row, by its name, in any case, or its position, from 0, whether the row is an array, a hash or a row object.
+Gives one column of each row, or its only column.
 
-=item C<pluck>
+=item L<C<as_hash>|/"as_hash">
 
-Gives each row's only column, counted from the row, so it needs no statement. A row of more columns croaks.
+Gives each row as a hash, as C<fetchrow_hashref> would.
 
-=item C<as_hash>
-
-Gives each row as a hash, as C<fetchrow_hashref> would, keyed as C<FetchHashKeyName> says. A hash row is passed on unchanged.
-
-=item C<peek { ... }>
+=item L<C<peek { ... }>|/"peek">
 
 Calls the block with each value, and passes the value on.
 
-=item C<count_into(\$n)>
+=item L<C<count_into(\$n)>|/"count_into">
 
-Counts the values into C<$n>, from 0 on each run, and passes them on.
+Counts the values into C<$n>, and passes them on.
 
-=item C<dump_to($fh)>
+=item L<C<dump_to($fh)>|/"dump_to">
 
-Writes each value, with Data::Dumper, to C<$fh> or STDERR, and passes it on.
+Writes each value, with Data::Dumper, and passes it on.
 
-=item C<tee(@stages)>
+=item L<C<tee(@stages)>|/"tee">
 
-Runs each value through a branch of C<@stages>, a run of its own beside the main run, and passes it on. A stop in the branch ends only the branch; a death kills the run. The branch shares the run's context, so C<pluck> and C<as_hash> work in it.
+Runs each value through a branch of stages, and passes it on.
 
 =back
 
-    my $read  = 0;
-    my @names = $dbh->iterate(
-        'SELECT id, name FROM artist ORDER BY id',
-        count_into(\$read),
-        pluck('name'),
-    )->all;
-    say "@names, from $read rows";    # Abba Blur Cream, from 3 rows
+=head3 pluck
 
-    my $album = $dbh->iterate('SELECT title, year FROM album WHERE id = 2', as_hash)->first;
-    say "$album->{title} ($album->{year})";    # Parklife (1994)
+    pluck($name)
+    pluck($position)
+    pluck
 
-C<pluck> and C<as_hash> find the column names in the L<run's
-context|/"The run's context">, which a statement gives it: an iterator's
-or result set's own stages, or a chain made with C<|>, or a pipeline of
-yours, reading one. So a name for an array row, or C<as_hash>, needs a
-statement to be what the run reads. C<pluck> by name for a hash row
-reads the hash's own keys, and C<pluck> with no column counts each
-row's own columns, so both work anywhere.
+Gives one column of each row, by its name, in any case, or by its
+position, from 0, whether the row is an array, a hash (with the
+C<ekorn_slice> attribute) or a row object (from C<results>). Given no
+column, it gives each row's only column, counted from the row: an
+array of one element, a hash of one key, a row object of one column. A
+row of more columns, or of none, croaks, C<Expected one column to
+pluck, not 2>, rather than give the first, which would go wrong
+silently when a query gains a column; C<pluck(0)> gives the first. A
+column the row hasn't got croaks, C<Expected a column of the row
+(age)>, and C<pluck(undef)> or C<pluck('')> croaks, C<Expected a column,
+by name or position>. By default.
 
-**C<pluck> reads the statement's columns, not the row's.** After a
-stage that reshapes rows, a name or position for an array row picks
-the wrong field, and says nothing. Make the rows hashes first, with
+A name for an array row, or a position for a hash row, is found from
+the statement's column names, in the L<run's
+context|/"The run's context">, once on each run: an iterator's or result
+set's own stages, a chain made with C<|>, or a pipeline of yours,
+reading one. So it needs a statement to be what the run reads. A name
+for a hash row reads the hash's own keys, and C<pluck> with no column
+counts each row's own columns, so both work anywhere.
+
+    my @names = $dbh->iterate('SELECT id, name FROM artist ORDER BY id', pluck('name'))->all;
+    say "@names";    # Abba Blur Cream
+
+    say join ' ', $dbh->results('SELECT id, name FROM artist ORDER BY id', pluck(0))->all;    # 1 2 3
+    say join ' ', $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck)->all;           # Abba Blur Cream
+
+B<It reads the statement's columns, not the row's.> After a stage
+that reshapes rows, a name or position for an array row picks the
+wrong field, and says nothing. Make the rows hashes first, with
 C<as_hash>. Then C<pluck> by name reads each hash's own keys:
 
     my $sql = 'SELECT id, name FROM artist ORDER BY id';
@@ -1367,17 +1637,110 @@ C<as_hash>. Then C<pluck> by name reads each hash's own keys:
     )->all;
     say "@ids";    # 1 2 3
 
-C<dump_to> is for debugging. Where Text::Redact::Secrets v1.x is
-installed, it writes each secret that module's rules find as
-C<*REDACTED*>, in the text it writes only: the value passed on is as it
-came. The rules find a long, random password, token or key, such as
-the password in a DSN, but not a short or ordinary password, so a dump
-can still hold secrets. Without the module, or while
+=head3 as_hash
+
+    as_hash
+
+Gives each row as a hash, keyed by the column names as
+C<fetchrow_hashref> would key them, following C<FetchHashKeyName>, so it
+gives what plain DBI does. An array row, or a row object, is made into
+a new hash; a hash row is passed on unchanged. As with
+C<fetchrow_hashref>, of two columns with the same name, the hash has
+one. It finds the names in the L<run's context|/"The run's context">, so
+it needs a statement to be what the run reads; elsewhere it croaks,
+C<Expected a statement to read, for the column names>. By default.
+
+    my $album = $dbh->iterate('SELECT title, year FROM album WHERE id = 2', as_hash)->first;
+    say "$album->{title} ($album->{year})";    # Parklife (1994)
+
+=head3 peek
+
+    peek { ... }
+    peek(\&code)
+
+Calls the block with each value, in C<$_> and as its argument, and
+passes the value on, whatever the block returns: for logging, or
+looking. It croaks, C<Expected a code reference>, if it isn't given a
+block or code reference. By default.
+
+    my @seen;
+    my @names = $dbh->iterate(
+        'SELECT name FROM artist ORDER BY id',
+        pluck,
+        peek { push @seen, length },
+    )->all;
+    say "@names: @seen";    # Abba Blur Cream: 4 4 5
+
+=head3 count_into
+
+    count_into(\$n)
+
+Counts the values into C<$n>, and passes them on. It sets C<$n> to 0 at
+the start of each run, so after a run it holds how many values went
+by, even if none did. It croaks, C<Expected a reference to a scalar>,
+if it isn't given one. By default.
+
+    my $read  = 0;
+    my @names = $dbh->iterate(
+        'SELECT id, name FROM artist ORDER BY id',
+        count_into(\$read),
+        pluck('name'),
+    )->all;
+    say "@names, from $read rows";    # Abba Blur Cream, from 3 rows
+
+=head3 dump_to
+
+    dump_to($fh)
+    dump_to
+
+Writes each value to C<$fh>, or to STDERR, with Data::Dumper, keys
+sorted and indented by two, and passes it on. It croaks, C<Expected an
+open filehandle>, if C<$fh> isn't one. On request.
+
+It's for debugging. Where Text::Redact::Secrets v1.x is installed, it
+writes each secret that module's rules find as C<*REDACTED*>, in the
+text it writes only: the value passed on is as it came. The rules find
+a long, random password, token or key, such as the password in a DSN,
+but not a short or ordinary password, so a dump can still hold
+secrets. Without the module, or while
 C<local $Ekorn::Pipeline::Stages::Taps::DumpSecrets = 1> is set, it
 writes each value in full; with the module there but broken, it
 croaks rather than write a dump. It doesn't escape control characters
 in strings, so a value from outside can send escape sequences to a
 terminal.
+
+    open my $fh, '>', \my $dump or die $!;
+    $dbh->iterate('SELECT id, name FROM artist WHERE id = 1', as_hash, dump_to($fh))->all;
+    close $fh;
+    print $dump;
+    # {
+    #   'id' => 1,
+    #   'name' => 'Abba'
+    # }
+
+=head3 tee
+
+    tee(@stages)
+
+Runs each value through a branch of C<@stages>, for what they do on the
+side, and passes the value on unchanged. What comes out of the branch
+is dropped. The branch is a run of its own beside the main run, so its
+stages keep their state across the values, and each main run gets a
+fresh branch. On request.
+
+A stop in the branch, such as C<take>'s, ends only the branch; a death
+in it kills the run. The branch shares the main run's context, so
+C<pluck> and C<as_hash> work in it on a statement's rows. Each value
+costs a push into the branch, several times what C<peek> costs, so it's
+for side jobs and debugging, not a hot loop.
+
+    my @hits;
+    my @names = $dbh->iterate(
+        'SELECT name, plays FROM track ORDER BY id',
+        tee(take_if { $_->[1] > 6000 }, pluck('name'), sub { push @hits, $_; () }),
+        pluck('name'),
+    )->all;
+    say scalar(@names), ' tracks; hits: ', join ', ', @hits;    # 6 tracks; hits: Dancing Queen, Girls & Boys, Sunshine of Your Love
 
 =head1 6. Stopping a pipeline
 
@@ -1462,47 +1825,74 @@ including those the canned stages throw, such as C<take>'s:
 =head2 Taking and dropping
 
 DBIx::Squirrel::Stages::Flow's stages decide which values go on, by
-their place or by a test:
+their place or by a test. C<take> and C<drop> are exported by default,
+the others on request; Tooling's C<:flow> has them all.
 
 =over 4
 
-=item C<take($n)>
+=item L<C<take($n)>|/"take">
 
-Passes on the first C<$n> values, then stops the run, so no more rows are fetched.
+Passes on the first C<$n> values, then stops the run.
 
-=item C<drop($n)>
+=item L<C<drop($n)>|/"drop">
 
 Drops the first C<$n> values, and passes on the rest.
 
-=item C<take_first>
+=item L<C<take_first>|/"take_first">
 
-Passes on the first value, then stops the run: C<take(1)>.
+Passes on the first value, then stops the run.
 
-=item C<take_last>
+=item L<C<take_last>|/"take_last">
 
-Passes on the last value, once there are no more, reading every one to find it; nothing if there were none.
+Passes on the last value, once there are no more.
 
-=item C<take_single>
+=item L<C<take_single>|/"take_single">
 
-Passes on the one value. At a second, it warns, C<Expected only one item, but there were more>, and stops the run, so only the first goes on.
+Passes on the one value, warning and stopping at a second.
 
-=item C<take_while { ... }>
+=item L<C<take_if { ... }>|/"take_if">
 
-Passes on values while the block is true of them. At the first it's false of, it stops the run, and doesn't pass that value on.
+Passes on each value the block is true of.
 
-=item C<drop_while { ... }>
+=item L<C<drop_if { ... }>|/"drop_if">
 
-Drops values while the block is true of them, then passes on the rest, from the first it's false of.
+Passes on each value the block is false of.
 
-=item C<take_if { ... }>
+=item L<C<take_while { ... }>|/"take_while">
 
-Passes on each value the block is true of, testing every one, as C<grep> does; it never stops the run.
+Passes on values while the block is true of them, then stops the run.
 
-=item C<drop_if { ... }>
+=item L<C<drop_while { ... }>|/"drop_while">
 
-Passes on each value the block is false of, testing every one.
+Drops values while the block is true of them, then passes on the rest.
 
 =back
+
+In SQL, C<LIMIT> and C<OFFSET> page results in the database, which is
+quicker. C<take> and C<drop> are for when a stage in Perl decides which
+rows go on. A stage that stops the run stops the fetching too, so no
+more rows are read than are wanted.
+
+=head3 take
+
+    take($n)
+
+Passes on the first C<$n> values, then stops the run, so the statement
+is finished and no more rows are fetched. The last value it passes on
+goes with the stop. If there are fewer values, it passes them all on.
+It croaks, C<Expected a count of 0 or more>, if C<$n> isn't a whole
+number. By default.
+
+    say join ', ', $dbh->iterate('SELECT name FROM track ORDER BY plays DESC', pluck, take(2))->all;    # Dancing Queen, Sunshine of Your Love
+
+=head3 drop
+
+    drop($n)
+
+Drops the first C<$n> values, and passes on the rest. With C<take>, it
+gives a page: C<drop(20), take(10)> passes on the 21st to the 30th. It
+croaks, C<Expected a count of 0 or more>, if C<$n> isn't a whole number.
+By default.
 
     my @page = $dbh->iterate(
         'SELECT name FROM track ORDER BY id',
@@ -1512,12 +1902,22 @@ Passes on each value the block is false of, testing every one.
     )->all;
     say join ', ', @page;    # Girls & Boys, Parklife
 
-    my @hits = $dbh->iterate(
-        'SELECT name, plays FROM track ORDER BY plays DESC',
-        take_while { $_->[1] > 6000 },
-        sub { $_->[0] },
-    )->all;
-    say join ', ', @hits;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
+=head3 take_first
+
+    take_first
+
+Passes on the first value, then stops the run: C<take(1)>, named as the
+stage of the sink C<keep_first>. On request.
+
+    say $dbh->iterate('SELECT title FROM album ORDER BY year', pluck, take_first)->all;    # Disraeli Gears
+
+=head3 take_last
+
+    take_last
+
+Passes on the last value, once there are no more, reading every one to
+find it; nothing if there were none. If a stage before it stops the
+run, it passes on the last value to reach it. On request.
 
     my @newest = $dbh->iterate(
         'SELECT title FROM album ORDER BY year',
@@ -1526,16 +1926,89 @@ Passes on each value the block is false of, testing every one.
     )->all;
     say "@newest";    # The Great Escape
 
+=head3 take_single
+
+    take_single
+
+Passes on the one value. At a second, it warns, C<Expected only one
+item, but there were more>, and stops the run, so only the first goes
+on: for a statement meant to give one row, whose limit was forgotten.
+On request.
+
+    say $dbh->iterate('SELECT name FROM artist WHERE id = 2', pluck, take_single)->all;    # Blur
+
+=head3 take_if
+
+    take_if { ... }
+    take_if(\&code)
+
+Passes on each value the block is true of, and drops the rest, testing
+every one, as C<grep> does; it never stops the run. The block gets each
+value in C<$_> and as its argument. A plain stage ending in a test
+passes on what the test returns, true or false; C<take_if> passes on
+the value. It croaks, C<Expected a code reference>, if it isn't given a
+block or code reference. On request.
+
     my @popular = $dbh->iterate(
         'SELECT name, plays FROM track ORDER BY id',
         take_if { $_->[1] > 6000 },
-        sub { $_->[0] },
+        pluck(0),
     )->all;
     say join ', ', @popular;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
 
-In SQL, C<LIMIT> and C<OFFSET> page results in the database, which is
-quicker. C<take> and C<drop> are for when a stage in Perl decides which
-rows go on.
+=head3 drop_if
+
+    drop_if { ... }
+    drop_if(\&code)
+
+Drops each value the block is true of, and passes on the rest:
+C<take_if>'s opposite. The block gets each value in C<$_> and as its
+argument. It croaks, C<Expected a code reference>, if it isn't given a
+block or code reference. On request.
+
+    my @quiet = $dbh->iterate(
+        'SELECT name, plays FROM track ORDER BY id',
+        drop_if { $_->[1] > 6000 },
+        pluck(0),
+    )->all;
+    say join ', ', @quiet;    # Knowing Me, Knowing You, Parklife, Country House
+
+=head3 take_while
+
+    take_while { ... }
+    take_while(\&code)
+
+Passes on values while the block is true of them. At the first it's
+false of, it stops the run, and doesn't pass that value on. Unlike
+C<take_if>, it reads no further, so it suits rows in an order the test
+follows. The block gets each value in C<$_> and as its argument. It
+croaks, C<Expected a code reference>, if it isn't given a block or code
+reference. On request.
+
+    my @hits = $dbh->iterate(
+        'SELECT name, plays FROM track ORDER BY plays DESC',
+        take_while { $_->[1] > 6000 },
+        pluck(0),
+    )->all;
+    say join ', ', @hits;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
+
+=head3 drop_while
+
+    drop_while { ... }
+    drop_while(\&code)
+
+Drops values while the block is true of them, then passes on the rest,
+from the first it's false of. After that, the block isn't called again
+on that run. The block gets each value in C<$_> and as its argument. It
+croaks, C<Expected a code reference>, if it isn't given a block or code
+reference. On request.
+
+    my @later = $dbh->iterate(
+        'SELECT title, year FROM album ORDER BY year',
+        drop_while { $_->[1] < 1990 },
+        pluck(0),
+    )->all;
+    say join ', ', @later;    # Parklife, The Great Escape
 
 =head1 7. Gathering: stages made for each run
 
@@ -1619,23 +2092,33 @@ keep it out of your namespace, C<use DBIx::Squirrel::Gather ()>.
 
 =head2 Batching and collecting
 
-DBIx::Squirrel::Stages::Batch's stages are made with C<gather>:
+DBIx::Squirrel::Stages::Batch's stages gather values and pass them on
+together. They're made with C<gather>, so each run starts afresh, and
+both pass on what they still hold once the values run out. Both are
+exported by default; Tooling's C<:batch> has them.
 
 =over 4
 
-=item C<batch($n)>
+=item L<C<batch($n)>|/"batch">
 
-Passes values on in batches of C<$n>, each an array. The last, shorter batch comes when the values run out.
+Passes values on in batches of C<$n>, each an array.
 
-=item C<collect>
+=item L<C<collect>|/"collect">
 
-Holds every value. When they run out, it passes on an array of them.
-
-=item C<collect { ... }>
-
-Holds every value. When they run out, it passes on what the block makes of them, given as its arguments.
+Passes on every value at once, once they run out.
 
 =back
+
+=head3 batch
+
+    batch($n)
+
+Passes values on in batches of C<$n>, each a new array reference. Once
+the values run out, the last batch goes on, which may be shorter.
+There's never an empty batch: with no values, there's no batch at all.
+It holds no more than one batch at a time, so it suits loading or
+sending rows in groups. It croaks, C<Expected a batch size of 1 or
+more>, if C<$n> isn't a whole number above 0. By default.
 
     my @batches = $dbh->iterate(
         'SELECT name FROM track ORDER BY id',
@@ -1645,6 +2128,24 @@ Holds every value. When they run out, it passes on what the block makes of them,
     say scalar(@$_), ': ', join ', ', @$_ for @batches;
     # 4: Dancing Queen, Knowing Me, Knowing You, Girls & Boys, Parklife
     # 2: Country House, Sunshine of Your Love
+
+=head3 collect
+
+    collect
+    collect { ... }
+    collect(\&code)
+
+Holds every value. Once they run out, it passes on an array reference
+of them. Given a block, it calls the block once, with the values as
+its arguments, and passes on what the block returns: nothing, one
+value, or several, as a stage does. The block is called even with no
+values, so C<collect> always gives a result. It holds every value until
+the end, so the whole result is in memory at once. It croaks,
+C<Expected a code reference>, if it's given something other than a
+block or code reference. By default.
+
+    my($ids) = $dbh->iterate('SELECT id FROM artist ORDER BY id', pluck, collect)->all;
+    say "@$ids";    # 1 2 3
 
     say $dbh->iterate(
         'SELECT name FROM artist ORDER BY id',
@@ -1978,18 +2479,27 @@ pipelines|Ekorn::Pipeline::Manual::Reference/"Named pipelines">.
 
 =head2 pipe and tap
 
+Database and statement handles both have these methods, from
+Ekorn::Pipeline::Pipes. Each runs the handle itself through stages:
+the first stage is called with the handle, and the rest with what
+comes out of the stage before. On a statement handle, the statement
+handle goes through the stages instead.
+L<pipe and
+tap|Ekorn::Pipeline::Manual::Reference/"pipe and tap: Ekorn::Pipeline::Pipes">,
+in Ekorn's reference, says how to give a class of your own the same.
+
+=head3 pipe
+
     @results = $dbh->pipe(@stages);
     $result  = $dbh->pipe(@stages);
-    $dbh     = $dbh->tap(@stages);
+    @results = $sth->pipe(@stages);
+    $result  = $sth->pipe(@stages);
 
-Database and statement handles both have these methods, from
-Ekorn::Pipeline::Pipes. C<pipe> runs the handle itself through stages,
-and returns what comes out of the last one: all of it in list context;
-in scalar context, the first value, or C<undef>. With no stages, it
-returns the handle. C<tap> runs the handle through stages for their
-side effects, drops what comes out, and returns the handle however
-they end, so a chain of method calls can carry on. On a statement
-handle, the statement handle goes through the stages instead.
+Runs the handle through the stages, and returns what comes out of the
+last one: all of it in list context; in scalar context, the first
+value, or C<undef> if none came out. With no stages, it returns the
+handle. A stage that dies makes C<pipe> croak, naming the stage (see
+L<When a stage dies|/"When a stage dies">).
 
     my @names = $dbh->pipe(
         sub ($dbh) { @{ $dbh->selectcol_arrayref('SELECT name FROM artist ORDER BY id') } },
@@ -1997,14 +2507,24 @@ handle, the statement handle goes through the stages instead.
     );
     say "@names";    # ABBA BLUR CREAM
 
+    my $sth = $dbh->prepare('SELECT name FROM artist WHERE id = ?');
+    say scalar $sth->pipe(sub ($sth) { $sth->execute(2); $sth->fetchrow_arrayref->[0] });    # Blur
+
+=head3 tap
+
+    $dbh = $dbh->tap(@stages);
+    $sth = $sth->tap(@stages);
+
+Runs the handle through the stages for their side effects, drops what
+comes out, and returns the handle, however the stages end: having run
+out of values, stopped, or with no stages at all. So a chain of method
+calls can carry on after it. A stage that dies makes C<tap> croak, as
+C<pipe> does.
+
     my $n = $dbh->tap(sub ($dbh) { say 'tapped ', ref $dbh })->selectrow_array('SELECT COUNT(*) FROM artist');
     say $n;
     # tapped DBIx::Squirrel::db
     # 3
-
-L<pipe and
-tap|Ekorn::Pipeline::Manual::Reference/"pipe and tap: Ekorn::Pipeline::Pipes">,
-in Ekorn's reference, says how to give a class of your own the same.
 
 =head2 When a stage dies
 
@@ -2439,9 +2959,34 @@ for the result, not inside DBIx::Squirrel:
     eval { My::Stages::prefixed('') };
     print $@;    # Expected a prefix at ... line ...
 
-C<croakf> croaks with a message made by C<sprintf>. Its format is a
-literal, written in the code, with the values as its arguments. Never
-make the format from data: it does whatever its C<%> directives say.
+=head3 croakf
+
+    use DBIx::Squirrel::Errors qw(croakf);
+
+    croakf $format, @values;
+
+Croaks with a message made by C<sprintf> from a format and its values,
+reported at the line C<croak> would report it at. With C<@CARP_NOT> set
+to C<@DBIx::Squirrel::Errors::INTERNAL>, as above, that's the line that
+called DBIx::Squirrel. It's exported on request, the one function of
+DBIx::Squirrel::Errors for others: the rest are for the handles.
+
+The format is a literal, written in the code; values go in as
+arguments, through C<%s> and the like, never as the format. A format
+made from data does whatever its C<%> directives say: C<%999999999s>
+makes a string of a gigabyte. A literal C<%> is C<%%>.
+
+    package My::Columns {
+        use DBIx::Squirrel::Errors qw(croakf);
+
+        sub exactly ($n) {
+            croakf 'Expected %d %s, not %d%%', 3, 'columns', $n unless $n == 3;
+            return $n;
+        }
+    }
+
+    eval { My::Columns::exactly(50) };
+    print $@;    # Expected 3 columns, not 50% at ... line ...
 
 B<Where they go.> A stage goes where what it needs to know is. One
 that needs a database, a statement, a row's column names, or the row a
@@ -2478,10 +3023,18 @@ Ekorn|Ekorn::Pipeline::Manual::Reference/"Delivering parts for Ekorn">.
 =head2 The iterator as a source
 
 A C<DBIx::Squirrel::Iterator>, and so a result set, is a source, as
-Ekorn::Pipeline takes one: it offers C<EKORN_SOURCE>, the role method
-that a pipeline's C<iterator>, a chain made with C<|>, and C<@{}> call.
-You don't call it yourself. Each call starts a fresh run of the
-statement, from its first row:
+Ekorn::Pipeline takes one, by offering C<EKORN_SOURCE>.
+
+=head3 EKORN_SOURCE
+
+    ($step, $end, $context) = $it->EKORN_SOURCE;
+
+The role method that makes an iterator a source: a pipeline's
+C<iterator>, a chain made with C<|>, and C<@{}> call it, and you don't.
+It returns what Ekorn::Pipeline's source protocol asks for: a step,
+called for each next value, an end, told how the run ended, and the
+run's context. Each call starts a fresh run of the statement, from its
+first row:
 
 =over 4
 
@@ -3575,18 +4128,18 @@ each on request, and in Tooling's C<:context>.
 
 =head3 iterator
 
-The iterator running the stage, in its own stages. On request. See
-L<Context|/"Context">.
+The iterator running the stage, in its own stages. On request.
+See L<iterator|/"iterator">.
 
 =head3 result_number
 
-The number of the result being made, from 1. On request. See
-L<Context|/"Context">.
+The number of the result being made, from 1. On request.
+See L<result_number|/"result_number">.
 
 =head3 result_original
 
 The row the result is being made from, as it was fetched. On request.
-See L<Context|/"Context">.
+See L<result_original|/"result_original">.
 
 =head2 DBIx::Squirrel::db
 
@@ -3604,8 +4157,8 @@ sink's result. See L<iterate|/"iterate">.
 
 =head3 pipe
 
-Runs the handle through stages, and returns what comes out. See L<pipe
-and tap|/"pipe and tap">.
+Runs the handle through stages, and returns what comes out.
+See L<pipe|/"pipe">.
 
 =head3 prepare
 
@@ -3625,42 +4178,42 @@ L<results|/"results">.
 =head3 selectall_array
 
 As the DBI's, with placeholders in any style, and stages after the
-values. See L<The select methods|/"The select methods">.
+values. See L<selectall_array|/"selectall_array">.
 
 =head3 selectall_arrayref
 
 As the DBI's, with placeholders in any style, and stages after the
-values. See L<The select methods|/"The select methods">.
+values. See L<selectall_arrayref|/"selectall_arrayref">.
 
 =head3 selectall_hashref
 
 As the DBI's, with placeholders in any style, and stages after the
-values. See L<The select methods|/"The select methods">.
+values. See L<selectall_hashref|/"selectall_hashref">.
 
 =head3 selectcol_arrayref
 
 As the DBI's, with placeholders in any style, and stages after the
-values. See L<The select methods|/"The select methods">.
+values. See L<selectcol_arrayref|/"selectcol_arrayref">.
 
 =head3 selectrow_array
 
 As the DBI's, with placeholders in any style, and stages after the
-values. See L<The select methods|/"The select methods">.
+values. See L<selectrow_array|/"selectrow_array">.
 
 =head3 selectrow_arrayref
 
 As the DBI's, with placeholders in any style, and stages after the
-values. See L<The select methods|/"The select methods">.
+values. See L<selectrow_arrayref|/"selectrow_arrayref">.
 
 =head3 selectrow_hashref
 
 As the DBI's, with placeholders in any style, and stages after the
-values. See L<The select methods|/"The select methods">.
+values. See L<selectrow_hashref|/"selectrow_hashref">.
 
 =head3 tap
 
 Runs the handle through stages for their side effects, and returns
-the handle. See L<pipe and tap|/"pipe and tap">.
+the handle. See L<tap|/"tap">.
 
 =head2 DBIx::Squirrel::Errors
 
@@ -3671,7 +4224,7 @@ passes over, for a module's C<@CARP_NOT>. Nothing by default.
 =head3 croakf
 
 Croaks with a message made by C<sprintf>, at the caller's line. On
-request. See L<Stages for others|/"Stages for others">.
+request. See L<croakf|/"croakf">.
 
 =head2 DBIx::Squirrel::Gather
 
@@ -3692,38 +4245,38 @@ C<|> runs it through a sink or stages, and C<@{}> gives every result
 
 =head3 all
 
-The results still to come; the statement is then finished. See L<The
-iterator's methods|/"The iterator's methods">.
+The results still to come; the statement is then finished.
+See L<all|/"all">.
 
 =head3 column_names
 
 The names of the statement's columns, as C<fetchrow_hashref> keys them.
-See L<The iterator's methods|/"The iterator's methods">.
+See L<column_names|/"column_names">.
 
 =head3 EKORN_SOURCE
 
-Makes the iterator a source for a pipeline; a run calls it. See L<The
-iterator as a source|/"The iterator as a source">.
+Makes the iterator a source for a pipeline; a run calls it.
+See L<EKORN_SOURCE|/"EKORN_SOURCE">.
 
 =head3 ended
 
-How the last run ended: C<done>, C<stopped> or C<died>. See L<The
-iterator's methods|/"The iterator's methods">.
+How the last run ended: C<done>, C<stopped> or C<died>.
+See L<ended|/"ended">.
 
 =head3 first
 
-The next result, or C<undef>; the statement is then finished. See L<The
-iterator's methods|/"The iterator's methods">.
+The next result, or C<undef>; the statement is then finished.
+See L<first|/"first">.
 
 =head3 new
 
 An iterator over a statement handle, without executing it, as
-C<iterate> makes. See L<iterate|/"iterate">.
+C<iterate> makes. See L<new|/"new">.
 
 =head3 next
 
-The next result, or an empty list when there are no more. See L<The
-iterator's methods|/"The iterator's methods">.
+The next result, or an empty list when there are no more.
+See L<next|/"next">.
 
 =head3 reset
 
@@ -3733,12 +4286,11 @@ iterator. See L<reset|/"reset">.
 =head3 single
 
 The one result, with a warning if there's another; the statement is
-then finished. See L<The iterator's methods|/"The iterator's methods">.
+then finished. See L<single|/"single">.
 
 =head3 sth
 
-The statement handle. See L<The iterator's
-methods|/"The iterator's methods">.
+The statement handle. See L<sth|/"sth">.
 
 =head2 DBIx::Squirrel::Manual::HowTo
 
@@ -3797,8 +4349,8 @@ L<iterate|/"iterate">.
 
 =head3 pipe
 
-Runs the handle through stages, and returns what comes out. See L<pipe
-and tap|/"pipe and tap">.
+Runs the handle through stages, and returns what comes out.
+See L<pipe|/"pipe">.
 
 =head3 results
 
@@ -3808,7 +4360,7 @@ L<results|/"results">.
 =head3 tap
 
 Runs the handle through stages for their side effects, and returns
-the handle. See L<pipe and tap|/"pipe and tap">.
+the handle. See L<tap|/"tap">.
 
 =head2 DBIx::Squirrel::Stages::Batch
 
@@ -3818,13 +4370,12 @@ C<:batch>.
 =head3 batch
 
 Passes values on in batches of the size given, each an array. By
-default. See L<Batching and collecting|/"Batching and collecting">.
+default. See L<batch|/"batch">.
 
 =head3 collect
 
 Passes on an array of every value, or what a block makes of them, once
-they run out. By default. See L<Batching and
-collecting|/"Batching and collecting">.
+they run out. By default. See L<collect|/"collect">.
 
 =head2 DBIx::Squirrel::Stages::Flow
 
@@ -3834,47 +4385,47 @@ the others on request; all in Tooling's C<:flow>.
 =head3 drop
 
 Drops the first values, as many as given, and passes on the rest. By
-default. See L<Taking and dropping|/"Taking and dropping">.
+default. See L<drop|/"drop">.
 
 =head3 drop_if
 
-Passes on each value the block is false of. On request. See L<Taking
-and dropping|/"Taking and dropping">.
+Passes on each value the block is false of. On request.
+See L<drop_if|/"drop_if">.
 
 =head3 drop_while
 
 Drops values while the block is true of them, then passes on the rest.
-On request. See L<Taking and dropping|/"Taking and dropping">.
+On request. See L<drop_while|/"drop_while">.
 
 =head3 take
 
 Passes on the first values, as many as given, then stops the run. By
-default. See L<Taking and dropping|/"Taking and dropping">.
+default. See L<take|/"take">.
 
 =head3 take_first
 
-Passes on the first value, then stops the run. On request. See L<Taking
-and dropping|/"Taking and dropping">.
+Passes on the first value, then stops the run. On request.
+See L<take_first|/"take_first">.
 
 =head3 take_if
 
-Passes on each value the block is true of. On request. See L<Taking and
-dropping|/"Taking and dropping">.
+Passes on each value the block is true of. On request.
+See L<take_if|/"take_if">.
 
 =head3 take_last
 
-Passes on the last value, once there are no more. On request. See
-L<Taking and dropping|/"Taking and dropping">.
+Passes on the last value, once there are no more. On request.
+See L<take_last|/"take_last">.
 
 =head3 take_single
 
 Passes on the one value, with a warning and a stop at a second. On
-request. See L<Taking and dropping|/"Taking and dropping">.
+request. See L<take_single|/"take_single">.
 
 =head3 take_while
 
 Passes on values while the block is true of them, then stops the run.
-On request. See L<Taking and dropping|/"Taking and dropping">.
+On request. See L<take_while|/"take_while">.
 
 =head2 DBIx::Squirrel::Stages::Rows
 
@@ -3883,13 +4434,13 @@ C<:rows>.
 
 =head3 as_hash
 
-Makes each row a hash, as C<fetchrow_hashref> would. By default. See
-L<Canned stages|/"Canned stages">.
+Makes each row a hash, as C<fetchrow_hashref> would. By default.
+See L<as_hash|/"as_hash">.
 
 =head3 pluck
 
 One column of each row, by name or position, or, given none, its only
-column. By default. See L<Canned stages|/"Canned stages">.
+column. By default. See L<pluck|/"pluck">.
 
 =head2 DBIx::Squirrel::Stages::Taps
 
@@ -3899,22 +4450,22 @@ default, C<dump_to> and C<tee> on request; all in Tooling's C<:taps>.
 =head3 count_into
 
 Counts the values into the scalar given, and passes them on. By
-default. See L<Canned stages|/"Canned stages">.
+default. See L<count_into|/"count_into">.
 
 =head3 dump_to
 
 Writes each value, with Data::Dumper, and passes it on; for debugging.
-On request. See L<Canned stages|/"Canned stages">.
+On request. See L<dump_to|/"dump_to">.
 
 =head3 peek
 
 Calls the block with each value, and passes the value on. By default.
-See L<Canned stages|/"Canned stages">.
+See L<peek|/"peek">.
 
 =head3 tee
 
 Runs each value through a branch of stages, and passes it on. On
-request. See L<Canned stages|/"Canned stages">.
+request. See L<tee|/"tee">.
 
 =head2 DBIx::Squirrel::Stop
 

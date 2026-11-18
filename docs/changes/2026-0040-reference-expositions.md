@@ -1,6 +1,6 @@
 # 2026-0040. A section for each name the reference describes only in passing
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: Ekorn gets the same, by a task. D2 settled: a
 heading each, in its chapter. D3 settled: split from the index's
@@ -9,6 +9,8 @@ synopses, which are 2026-0041.
 **Origin:** roadmap, added 2026-11-18, Iain's idea
 
 **Started:** 2026-11-18
+
+**Finished:** 2026-11-18
 
 ## Background
 
@@ -59,3 +61,28 @@ there is to know about it.
 **Done when:** each of the 39 names has a section headed by it, with a
 synopsis and a run example; the index links each to it; the suite,
 `xt/` included, passes on 5.36.3 and 5.44.0.
+
+## What happened
+
+- **Outcome:** done as planned. Each of the 39 names has a section
+  headed by it, the first heading in the reference with its anchor,
+  with a synopsis of all its forms, what it does, and an example
+  `xt/examples.t` runs and checks; the index links each of its 41
+  entries for them (`pipe` and `tap` are under both handles) to the
+  section. The suite, `xt/` included, passes on 5.36.3 and 5.44.0,
+  2,445 assertions, against Ekorn::Pipeline v0.3.7 as installed from
+  CPAN; `scripts/manuals` resolves every link, and podchecker is
+  clean.
+- **Changes from the plan:** "The select methods" keeps the rules all
+  seven share at its head; "pipe and tap" keeps a paragraph on both;
+  `EKORN_SOURCE` takes a heading inside "The iterator as a source",
+  which stays its fuller description; `pluck`'s section takes the
+  paragraphs on where it finds columns and the reshaped-rows trap, and
+  `dump_to`'s the paragraph on redaction. Two claims the examples
+  don't run, `selectall_hashref`'s nested keys and
+  `selectcol_arrayref`'s `Columns`, were checked against plain DBI and
+  give the same.
+- **The Ekorn task** went to Ekorn-Pipeline's `TODO.md` in
+  6437537ecbb3ab0a03b3d13038b1b14b8bdeb7e3.
+- **What's left:** 2026-0041, the index's synopses and descriptions,
+  which this unblocks.
