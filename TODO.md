@@ -1,6 +1,6 @@
 # Planned work
 
-## The README's logo and badges in a =begin markdown block
+## The README's logo: a =begin markdown block, and not in the distribution
 
 **From:** Ekorn-Pipeline's session, 2026-11-23 (Ekorn-Pipeline
 ba37e15879adfad8c52810dd289b71a17928cf86; the same fix to Ekorn's
@@ -48,10 +48,16 @@ What to do, as Ekorn's README now does:
 =end markdown
 ```
 
+- Leave `logo/` out of the distribution, as Ekorn now does: add
+  `'^logo/'` to `exclude_match` in `minil.toml`, beside a comment that
+  the logos are for the README on GitHub, which shows them from the
+  repository. Iain asked for this the same day, after Ekorn's.
 - Generate `README.md` again with `minil build`, and check its first
   line still says `branch=main`.
 
 **Done when:** `perldoc -T README.pod` opens at the DBIx-Squirrel
 heading, with no image tag or badge links as text; `podchecker
-README.pod` says its syntax is OK; and `README.md`'s first three
-lines are the CI badge, the CPAN and Kwalitee badges, and the logo.
+README.pod` says its syntax is OK; `README.md`'s first three lines
+are the CI badge, the CPAN and Kwalitee badges, and the logo; and the
+tarball `minil dist --skip-prepare --no-test` makes, with `logo/`
+tracked, holds no file under `logo/`.
