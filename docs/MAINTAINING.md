@@ -159,6 +159,12 @@ perlbrew exec --with perl-5.36.3@dbix-squirrel-2 scripts/manuals
 git status --short
 ```
 
+`xt/spelling.t` checks the POD's spelling as Minilla's release test
+does, in CI's coverage job, and locally on Perl 5.36, whose library
+has Test::Spellunker. If it flags a word that's right, add it to the
+Markdown as `<!-- stopwords: word another -->`, or, in a module, to
+its `=for stopwords` line.
+
 Minilla takes the branch in `README.md`'s CI badge from GitHub, with
 `git remote show origin`. If GitHub can't be reached, it writes
 `master` instead, and the badge breaks. Check that this prints
@@ -260,11 +266,11 @@ change the first line of each.
    `develop`, and start again.
 
    The build also runs Minilla's own tests, which CI doesn't, among
-   them a POD spelling test. A word it doesn't know, but that's right,
-   goes in the manuals' `<!-- stopwords: ... -->` comment at the top
-   of `docs/REFERENCE.md` or `docs/HOWTO.md`, which `scripts/manuals`
-   copies, or in a module's `=for stopwords` line. It caught "bitwise"
-   before v3.0.0's build.
+   them a POD spelling test. It caught "bitwise" before v3.0.0's
+   build, and "21st" only after v3.4.0's tag. `xt/spelling.t` now runs
+   the same check in CI, and a word it doesn't know, but that's right,
+   goes where the note on the manuals in
+   [Every commit](#every-commit) says.
 
 4. **Test it over the last release.** Installing never removes a
    file, so code that relies on a module being gone can fail for
@@ -384,6 +390,27 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
 
    Commit it with the version (`chore: release v3.0.2`), push, and wait
    for CI.
+
+   Then build the tarball from `develop`, as step 6 will from the tag,
+   and check it passes, before anything is tagged. `minil dist` runs
+   release tests that CI doesn't, as Minilla writes them only into the
+   tarball it builds, and a tag, once pushed, can't be taken back.
+   v3.4.0's reference failed Minilla's POD spelling test here, on
+   "21st", after its tag. `xt/spelling.t` now runs that check in CI,
+   but this catches anything else of Minilla's. Set the version on the
+   first line:
+
+   ```sh
+   v=v3.0.2
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
+   perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist --skip-prepare > "$TMPDIR/dist-$v.log" 2>&1
+   grep '^Result:' "$TMPDIR/dist-$v.log"
+   rm "DBIx-Squirrel-$v.tar.gz"
+   ```
+
+   It must print `Result: PASS`, as in step 6. On a failure, fix it on
+   `develop`, and push; the version isn't spent, as nothing is tagged
+   or uploaded.
 
 4. **Write the tag message from the entry,** and read it. The entry,
    without its indent, is also the GitHub release's notes. The tag
