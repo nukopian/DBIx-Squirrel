@@ -255,15 +255,15 @@ change the first line of each.
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist --skip-prepare > "$TMPDIR/dist-$v.log" 2>&1
    grep '^Result:' "$TMPDIR/dist-$v.log"
    tar -xOzf "DBIx-Squirrel-$v.tar.gz" "DBIx-Squirrel-$v/META.json" | jq -r .version
-   tar -tzf "DBIx-Squirrel-$v.tar.gz" | grep -E "^DBIx-Squirrel-$v/(CLAUDE|ROADMAP|TODO|docs/|scripts/)"
+   tar -tzf "DBIx-Squirrel-$v.tar.gz" | grep -E "^DBIx-Squirrel-$v/(CLAUDE|ROADMAP|TODO|docs/|logo/|scripts/)"
    git status --short
    ```
 
    It must print `Result: PASS`, then the version, and nothing after:
    `minil dist` exits 0, and writes the tarball, even when the tests
-   fail; no maintainers' file goes in the tarball; and git ignores the
-   tarball. On a failure, remove the tarball, fix the problem on
-   `develop`, and start again.
+   fail; no maintainers' file, nor the README's logos, goes in the
+   tarball; and git ignores the tarball. On a failure, remove the
+   tarball, fix the problem on `develop`, and start again.
 
    The build also runs Minilla's own tests, which CI doesn't, among
    them a POD spelling test. It caught "bitwise" before v3.0.0's
@@ -487,7 +487,7 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    perlbrew exec --with perl-5.36.3@dbix-squirrel-2 minil dist --skip-prepare > "$TMPDIR/dist-$v.log" 2>&1
    grep '^Result:' "$TMPDIR/dist-$v.log"
    tar -xOzf "DBIx-Squirrel-$v.tar.gz" "DBIx-Squirrel-$v/META.json" | jq -r .version
-   tar -tzf "DBIx-Squirrel-$v.tar.gz" | grep -E "^DBIx-Squirrel-$v/(CLAUDE|ROADMAP|TODO|docs/|scripts/)"
+   tar -tzf "DBIx-Squirrel-$v.tar.gz" | grep -E "^DBIx-Squirrel-$v/(CLAUDE|ROADMAP|TODO|docs/|logo/|scripts/)"
    ```
 
    It must print `Result: PASS`, then the version, and nothing after,
