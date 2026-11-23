@@ -2,6 +2,12 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    The reference's wording matches Ekorn::Pipeline's. It ships no
+    roadmap item, and changes only the documentation.
+
+    - The reference says a name is exported "upon request", not "on
+      request", as Ekorn::Pipeline's reference does.
+
 v3.4.1 2026-11-18
 
     v3.4.0, which never reached CPAN, with its POD spelling fixed.

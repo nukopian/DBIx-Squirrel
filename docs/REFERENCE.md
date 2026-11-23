@@ -989,7 +989,7 @@ say iterator() // 'none';     # none
 Four modules of ready-made stages ship with DBIx::Squirrel, each for
 one kind of job: Flow takes or drops values, Rows reshapes rows, Batch
 gathers values together, and Taps looks at them as they go by. Each
-exports the stages it's usually used for, and the rest on request, as
+exports the stages it's usually used for, and the rest upon request, as
 the [index](#index) says. `:all` gives them all, and `()` none. Naming
 a stage in the import list replaces the defaults. To have the defaults
 and one more, name `:DEFAULT` too:
@@ -2845,7 +2845,7 @@ See [connect_cached](#connect_cached).
 ### DBIx::Squirrel::Context
 
 What a stage can ask about the result it's making. Nothing by default;
-each on request, and in Tooling's `:context`.
+each upon request, and in Tooling's `:context`.
 
 #### iterator
 
@@ -2858,7 +2858,7 @@ Returns the iterator running the stage, in an iterator's or result
 set's own stages; elsewhere, and outside a stage, `undef`. Through it
 a stage can reach the rest: its `sth` is the statement handle, the
 statement handle's `Database` is the database handle, and its
-[column_names](#column_names) are the statement's columns. Exported on
+[column_names](#column_names) are the statement's columns. Exported upon
 request.
 
 See [Context](#context).
@@ -2874,7 +2874,7 @@ Returns the number of the result being made, from 1. It counts
 results, not rows: while a stage drops rows, the number stays the
 same, and each value a stage returns in place of one row is a result
 of its own. In a flush of a stage made with [gather](#gather), it's
-the number of the first value the flush returns. Exported on request.
+the number of the first value the flush returns. Exported upon request.
 
 See [Context](#context).
 
@@ -2889,7 +2889,7 @@ Returns the row the result is being made from, as it was fetched,
 before any stage changed it; for a result set, the row object. In a
 flush of a stage made with [gather](#gather), and the stages after it,
 it's `undef`, as what a flush gives comes from every row, not one.
-Exported on request.
+Exported upon request.
 
 See [Context](#context).
 
@@ -3144,7 +3144,7 @@ Croaks with a message made by `sprintf` from a format and its values,
 reported at the line `croak` would report it at. With `@CARP_NOT` set
 to `@DBIx::Squirrel::Errors::INTERNAL`, that's the line that called
 DBIx::Squirrel. It's the one function of DBIx::Squirrel::Errors for
-others: the rest are for the handles. Exported on request.
+others: the rest are for the handles. Exported upon request.
 
 See [Stages for others](#stages-for-others).
 
@@ -3542,7 +3542,7 @@ See [Batching and collecting](#batching-and-collecting).
 ### DBIx::Squirrel::Stages::Flow
 
 Canned stages taking or dropping values. `take` and `drop` by default,
-the others on request; all in Tooling's `:flow`.
+the others upon request; all in Tooling's `:flow`.
 
 #### drop
 
@@ -3569,7 +3569,7 @@ drop_if(\&code)
 Drops each value the block is true of, and passes on the rest:
 `take_if`'s opposite. The block gets each value in `$_` and as its
 argument. It croaks, `Expected a code reference`, if it isn't given a
-block or code reference. Exported on request.
+block or code reference. Exported upon request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3585,7 +3585,7 @@ Drops values while the block is true of them, then passes on the rest,
 from the first it's false of. After that, the block isn't called again
 on that run. The block gets each value in `$_` and as its argument. It
 croaks, `Expected a code reference`, if it isn't given a block or code
-reference. Exported on request.
+reference. Exported upon request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3612,7 +3612,7 @@ take_first
 ```
 
 Passes on the first value, then stops the run: `take(1)`, named as the
-stage of the sink `keep_first`. Exported on request.
+stage of the sink `keep_first`. Exported upon request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3629,7 +3629,7 @@ every one, as `grep` does; it never stops the run. The block gets each
 value in `$_` and as its argument. A plain stage ending in a test
 passes on what the test returns, true or false; `take_if` passes on
 the value. It croaks, `Expected a code reference`, if it isn't given a
-block or code reference. Exported on request.
+block or code reference. Exported upon request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3642,7 +3642,7 @@ take_last
 
 Passes on the last value, once there are no more, reading every one to
 find it; nothing if there were none. If a stage before it stops the
-run, it passes on the last value to reach it. Exported on request.
+run, it passes on the last value to reach it. Exported upon request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3656,7 +3656,7 @@ take_single
 Passes on the one value. At a second, it warns, `Expected only one
 item, but there were more`, and stops the run, so only the first goes
 on: for a statement meant to give one row, whose limit was forgotten.
-Exported on request.
+Exported upon request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3673,7 +3673,7 @@ false of, it stops the run, and doesn't pass that value on. Unlike
 `take_if`, it reads no further, so it suits rows in an order the test
 follows. The block gets each value in `$_` and as its argument. It
 croaks, `Expected a code reference`, if it isn't given a block or code
-reference. Exported on request.
+reference. Exported upon request.
 
 See [Taking and dropping](#taking-and-dropping).
 
@@ -3731,7 +3731,7 @@ See [Reshaping rows](#reshaping-rows).
 ### DBIx::Squirrel::Stages::Taps
 
 Canned stages run for their side effects. `peek` and `count_into` by
-default, `dump_to` and `tee` on request; all in Tooling's `:taps`.
+default, `dump_to` and `tee` upon request; all in Tooling's `:taps`.
 
 #### count_into
 
@@ -3757,7 +3757,7 @@ dump_to
 
 Writes each value to `$fh`, or to STDERR, with Data::Dumper, keys
 sorted and indented by two, and passes it on. It croaks, `Expected an
-open filehandle`, if `$fh` isn't one. Exported on request.
+open filehandle`, if `$fh` isn't one. Exported upon request.
 
 It's for debugging. Where Text::Redact::Secrets v1.x is installed, it
 writes each secret that module's rules find as `*REDACTED*`, in the
@@ -3799,7 +3799,7 @@ Runs each value through a branch of `@stages`, for what they do on the
 side, and passes the value on unchanged. What comes out of the branch
 is dropped. The branch is a run of its own beside the main run, so its
 stages keep their state across the values, and each main run gets a
-fresh branch. Exported on request.
+fresh branch. Exported upon request.
 
 See [Taps](#taps).
 
