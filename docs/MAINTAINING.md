@@ -501,7 +501,7 @@ The perlbrew libraries keep their name, as `perl-5.36.3@dbix-squirrel-2`.
 
 ## Changing the CI matrix
 
-`main` requires each CI job by its name, as `perl 5.44 (macos-26)`. So
+`main` requires each CI job by its name, as `perl 5.44 (ubuntu-24.04)`. So
 a new Perl, or a new runner, means changing the required checks to
 match. Otherwise `main` waits for a check that never reports, and
 can't move. After the new jobs have passed once on `develop`, change
@@ -539,7 +539,7 @@ and Ubuntu's DBI moves on, so does that job's.
 
 ## CI's caches
 
-The Linux and macOS jobs, but the one on DBI 1.643, have their modules
+The Linux jobs, but the one on DBI 1.643, have their modules
 installed by actions-setup-perl, into `local/`, which it caches
 (roadmap 2026-0033). The cache is keyed on the Perl, `cpanfile`,
 cpanm's arguments and the modules named, and once made it isn't

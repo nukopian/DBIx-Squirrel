@@ -21,11 +21,11 @@ jobs:
   # failed install prints cpanm's build log, as it stays on the runner
   # otherwise.
 
-  # The tests on Perl 5.36, the floor, to the newest on Linux, and the
-  # newest on macOS. Of the develop modules, they need only yath, and
-  # UUID, which the cpanfile lists beside it, so those are named, and
-  # the rest left to the style and coverage jobs; naming them also keeps
-  # this job's cache apart from theirs.
+  # The tests on Perl 5.36, the floor, to the newest on Linux. Of the
+  # develop modules, they need only yath, and UUID, which the cpanfile
+  # lists beside it, so those are named, and the rest left to the style
+  # and coverage jobs; naming them also keeps this job's cache apart
+  # from theirs.
   perl:
     name: perl ${{ matrix.perl }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
