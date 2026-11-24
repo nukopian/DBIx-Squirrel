@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0045.
+Last id: 2026-0046.
 
 Items come in four groups:
 
@@ -49,7 +49,17 @@ Nothing.
 
 ## Later
 
-Nothing.
+### 2026-0046. Ekorn v0.4.0, and its Tooling's :context
+
+**Size:** S (2). **Depends on:** Ekorn-Pipeline 2026-0051, released in
+its first v0.4.0.
+
+Ekorn's Tooling gains `result_number` and `result_original` in
+`:context` and `:all` in its v0.4.0. Widen our range to take it, and
+keep the two Toolings agreeing on every name, as `t/28-tooling.t`
+checks: our `result_original` becomes Ekorn's, if Ekorn's can carry a
+statement's row through chains, as ours does. Its question is open, in
+[its record](docs/changes/2026-0046-ekorn-tooling-context.md).
 
 ## Ideas
 
