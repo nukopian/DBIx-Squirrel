@@ -2,6 +2,17 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    The examples show stages doing what SQL can't, and leave to the SQL
+    what it can. It ships no roadmap item, and changes only the
+    documentation.
+
+    - The README, the user guide and the reference no longer filter,
+      limit or count in stages what a WHERE, LIMIT or COUNT would.
+      Their examples test data the database doesn't have, keep running
+      totals, resume where a run stopped, and make slugs and words,
+      and say that a test the SQL could do belongs there, but in a
+      stage while debugging a query you'd rather not touch.
+
 v3.4.2 2026-11-23
 
     The reference's wording matches Ekorn::Pipeline's.

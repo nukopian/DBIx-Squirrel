@@ -156,9 +156,10 @@ Ask for what you need, by tag or by name. Nothing comes by default:
 ```perl
 package My::Report {
     use DBIx::Squirrel::Tooling qw(:stages :sinks);
+    my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
     say $dbh->iterate(
-        'SELECT name, plays FROM track',
-        take_if { $_->[1] > 6000 },
+        'SELECT name FROM track',
+        drop_if { $on_my_phone{ $_->[0] } },    # what the database can't know
         count_items,
     );
     # 3
@@ -568,12 +569,12 @@ one comes back. Stages come into their own in [chapter
 in turn:
 
 ```perl
-my @names = $dbh->selectall_array(
-    'SELECT name FROM artist ORDER BY name',
-    sub ($row) { $row->[0] },    # each row, into its name
-    sub { uc },                  # each name, in capitals
+my @slugs = $dbh->selectall_array(
+    'SELECT title FROM album ORDER BY year',
+    sub ($row) { $row->[0] },      # each row, into its title
+    sub { lc s( \W+ )(-)xgr },     # each title, as a slug for a URL
 );
-say "@names";    # ABBA BLUR CREAM
+say "@slugs";    # disraeli-gears arrival parklife the-great-escape
 ```
 
 The others give one value, a reference, so their first stage gets
@@ -838,19 +839,25 @@ say "@names";    # Abba Blur Cream
 
 Return an empty list, and the row is dropped:
 
+Say the tracks already on your phone are in a hash, read from its
+playlist. The database has never heard of your phone, so no `WHERE`
+can ask it which tracks are still to copy. A stage can:
+
 ```perl
-my @hits = $dbh->iterate(
-    'SELECT name, plays FROM track ORDER BY id',
-    sub { $_->[1] >= 6000 ? $_ : () },    # keep the popular ones
-    sub { $_->[0] },                      # then just the name
+my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
+
+my @to_copy = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    sub { $on_my_phone{ $_->[0] } ? () : $_ },    # leave out what's there
+    sub { $_->[0] },                               # then just the name
 )->all;
-say join ', ', @hits;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
+say join ', ', @to_copy;    # Knowing Me, Knowing You, Girls & Boys, Country House
 ```
 
-That's a filter in Perl, and `take_if`, from
+That's a filter in Perl, and `drop_if`, from
 DBIx::Squirrel::Stages::Flow, says the same in a word:
-`take_if { $_->[1] >= 6000 }` passes on each row its block is true of,
-and `drop_if` each it's false of ([chapter
+`drop_if { $on_my_phone{ $_->[0] } }` drops each row its block is true
+of, and `take_if` keeps each ([chapter
 6](#keep-or-drop-rows-by-a-test)). When the database can do it, in a
 `WHERE`, let it: it's quicker, and fewer rows cross the wire. A stage
 is for what SQL can't say, or can't say well: a regular expression, a
@@ -1041,17 +1048,24 @@ over, a number of values. `take` stops the run once it has its values,
 so no more rows are fetched:
 
 ```perl
+my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
+
 my @page = $dbh->iterate(
     'SELECT name FROM track ORDER BY id',
     pluck,
-    sub { m( \s )x ? $_ : () },    # names of more than one word
-    drop(1),                       # the second and third of them
+    drop_if { $on_my_phone{$_} },    # the tracks still to copy
+    drop(1),                         # the second and third of them
     take(2),
 )->all;
 say for @page;
-# Knowing Me, Knowing You
 # Girls & Boys
+# Country House
 ```
+
+The page is of what's left after a test in Perl, which SQL's `LIMIT`
+and `OFFSET` can't see. With nothing in Perl before them, put `LIMIT`
+and `OFFSET` in the SQL instead, and the database sends only the
+page.
 
 ### Keep or drop rows by a test
 
@@ -1061,23 +1075,25 @@ never stop the run, unlike `take_while`, which stops at the first
 value its test fails:
 
 ```perl
-my @popular = $dbh->iterate(
-    'SELECT name, plays FROM track ORDER BY id',
-    take_if { $_->[1] > 6000 },
-    sub { $_->[0] },
-)->all;
-say join ', ', @popular;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
+my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
 
-my @quiet = $dbh->iterate(
-    'SELECT name, plays FROM track ORDER BY id',
-    drop_if { $_->[1] > 6000 },
+my @copied = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    take_if { $on_my_phone{ $_->[0] } },
     sub { $_->[0] },
 )->all;
-say join ', ', @quiet;    # Knowing Me, Knowing You, Parklife, Country House
+say join ', ', @copied;    # Dancing Queen, Parklife, Sunshine of Your Love
+
+my @to_copy = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    drop_if { $on_my_phone{ $_->[0] } },
+    sub { $_->[0] },
+)->all;
+say join ', ', @to_copy;    # Knowing Me, Knowing You, Girls & Boys, Country House
 
 my @until = $dbh->iterate(
-    'SELECT name, plays FROM track ORDER BY id',
-    take_while { $_->[1] > 6000 },
+    'SELECT name FROM track ORDER BY id',
+    take_while { $on_my_phone{ $_->[0] } },
     sub { $_->[0] },
 )->all;
 say join ', ', @until;    # Dancing Queen
@@ -1086,48 +1102,74 @@ say join ', ', @until;    # Dancing Queen
 The last stops at Knowing Me, Knowing You, the first track that fails
 its test, so the tracks after it are never fetched.
 
+A test the database could do belongs in the `WHERE`. The one time it
+earns a place in a stage is while you're debugging: to try a condition
+on a query's rows without touching the query, say one shared with
+other code, and move it into the SQL once it's right:
+
+```perl
+my $shared = 'SELECT name, plays FROM track ORDER BY id';    # not yours to change
+
+my @would_keep = $dbh->iterate(
+    $shared,
+    take_if { $_->[1] > 6000 },    # trying it out, before it goes in a WHERE
+    sub { $_->[0] },
+)->all;
+say join ', ', @would_keep;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
+```
+
 ### Take while a test holds, or skip until it fails
 
 `take_while` passes values on while its block is true of them, and
 stops at the first it isn't. `drop_while` passes over values while its
 block is true, then passes on the rest:
 
+Both suit a test that depends on what came before, which a `WHERE`,
+looking at one row at a time, can't see. Here are the few hits that
+make up half of all the plays, by a running total, and the albums a
+job has still to do, after the one it stopped at last time:
+
 ```perl
+my $half   = $dbh->selectrow_array('SELECT SUM(plays) FROM track') / 2;
+my $so_far = 0;
+
 my @hits = $dbh->iterate(
     'SELECT name, plays FROM track ORDER BY plays DESC',
-    take_while { $_->[1] > 6000 },
-    sub { $_->[0] },
+    take_while { $so_far < $half },          # until these make half
+    sub { $so_far += $_->[1]; $_->[0] },
 )->all;
 say join ', ', @hits;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
 
-my @later = $dbh->iterate(
-    'SELECT title, year FROM album ORDER BY year',
-    drop_while { $_->[1] < 1990 },
-    sub { $_->[0] },
+my $stopped_at = 'Arrival';    # saved by the last run
+
+my @still_to_do = $dbh->iterate(
+    'SELECT title FROM album ORDER BY year',
+    pluck,
+    drop_while { $_ ne $stopped_at },    # what's done already
+    drop(1),                             # and the one it stopped at
 )->all;
-say join ', ', @later;    # Parklife, The Great Escape
+say join ', ', @still_to_do;    # Parklife, The Great Escape
 ```
+
+`take_while` stops the run at Parklife, so no row after it is
+fetched.
 
 ### Take the first, the last, or the only one, and go on
 
 `take_first`, `take_last` and `take_single` pass on one value, and let
 the stages after them go on working with it. `take_single` warns at a
-second value, as `single` does:
+second value, as `single` does. On a query of your own, `LIMIT 1`
+fetches less; these are for a statement or pipeline that others
+share, or that has a name:
 
 ```perl
-my @oldest = $dbh->iterate(
-    'SELECT title FROM album ORDER BY year',
-    take_first,
-    sub { uc $_->[0] },
-)->all;
-say "@oldest";    # DISRAELI GEARS
+my $by_year = 'SELECT title FROM album ORDER BY year';
 
-my @newest = $dbh->iterate(
-    'SELECT title FROM album ORDER BY year',
-    take_last,
-    sub { lc $_->[0] },
-)->all;
-say "@newest";    # the great escape
+my @oldest = $dbh->iterate($by_year, take_first, sub { lc $_->[0] =~ s( \W+ )(-)xgr })->all;
+say "@oldest";    # disraeli-gears
+
+my @newest = $dbh->iterate($by_year, take_last, sub { lc $_->[0] =~ s( \W+ )(-)xgr })->all;
+say "@newest";    # the-great-escape
 ```
 
 ### Catch errors in a stage, but let a stop through
@@ -1340,9 +1382,13 @@ my $names = $dbh->iterate(
 );
 say ref $names;    # ARRAY
 
-my $popular = $dbh->iterate('SELECT name FROM track WHERE plays > ?', 5000, count_items);
-say $popular;    # 4
+my $words = $dbh->iterate('SELECT name FROM track', sub { split ' ', $_->[0] }, count_items);
+say $words;    # 16
 ```
+
+`count_items` counts what comes out of the stages, which SQL's `COUNT`
+can't: here, the words in the tracks' names. For a count of rows, ask
+the database, with `SELECT COUNT(*)`.
 
 So `my $rows = ...` is the rows, never a count by accident: if you
 want a count, say so with `count_items`. An empty result is an empty
@@ -1521,13 +1567,15 @@ Stages see the objects, and the sinks work as before. `pluck` takes a
 column of an object too:
 
 ```perl
-my @recent = $dbh->results(
+my %owned = map { $_ => 1 } 'Arrival', 'Parklife';
+
+my @wanted = $dbh->results(
     'SELECT title, year FROM album ORDER BY year',
-    sub { $_->year >= 1990 ? $_ : () },
+    drop_if { $owned{ $_->title } },    # the albums you have already
     pluck('title'),
     keep_all,
 );
-say "@recent";    # Parklife The Great Escape
+say join ', ', @wanted;    # Disraeli Gears, The Great Escape
 ```
 
 ## 10. Building pipelines from pipelines
@@ -1542,19 +1590,22 @@ you use often can be made once, named, and used everywhere.
 ```perl
 use Ekorn::Pipeline;
 
-my $hits = Ekorn::Pipeline->new(
-    sub { $_->[1] >= 5000 ? $_ : () },    # 5,000 plays or more
+my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
+
+my $to_copy = Ekorn::Pipeline->new(
+    drop_if { $on_my_phone{ $_->[0] } },    # what the phone has already
     pluck('name'),
 );
 
 my $by_plays = 'SELECT name, plays FROM track ORDER BY plays DESC';
-say join ', ', $dbh->iterate($by_plays, $hits)->all;             # Dancing Queen, Sunshine of Your Love, Girls & Boys, Parklife
+say join ', ', $dbh->iterate($by_plays, $to_copy)->all;
+# Girls & Boys, Knowing Me, Knowing You, Country House
 say join ', ', $dbh->iterate(
     $by_plays,
-    $hits,
+    $to_copy,
     take(2),
 )->all;
-# Dancing Queen, Sunshine of Your Love
+# Girls & Boys, Knowing Me, Knowing You
 ```
 
 Its stages run in its place, as if written out there, with more stages
@@ -1642,10 +1693,11 @@ pipeline, then these":
 ```perl
 use Ekorn::Pipeline;
 
-Ekorn::Pipeline->named(shouted => sub { uc $_->[0] });
+Ekorn::Pipeline->named(slug => sub { lc $_->[0] =~ s( \W+ )(-)xgr });
 
-say join ', ', $dbh->iterate('SELECT name FROM artist ORDER BY id', pipeline('shouted'))->all;             # ABBA, BLUR, CREAM
-say join ', ', $dbh->iterate('SELECT name FROM artist ORDER BY id', pipeline('shouted', take(1)))->all;    # ABBA
+say join ', ', $dbh->iterate('SELECT title FROM album ORDER BY year', pipeline('slug'))->all;
+# disraeli-gears, arrival, parklife, the-great-escape
+say join ', ', $dbh->iterate('SELECT title FROM album ORDER BY year', pipeline('slug', take(1)))->all;    # disraeli-gears
 ```
 
 A name belongs to the package that named it, so two modules can each
@@ -1660,11 +1712,13 @@ gives back what comes out. `tap` does the same for the stages' side
 effects, and gives back the handle, so a chain of calls can carry on:
 
 ```perl
+my %from = (Abba => 'Sweden', Blur => 'England', Cream => 'England');    # from a config file
+
 my @names = $dbh->pipe(
     sub ($dbh) { @{ $dbh->selectcol_arrayref('SELECT name FROM artist ORDER BY id') } },
-    sub { uc },
+    sub { "$_ ($from{$_})" },
 );
-say "@names";    # ABBA BLUR CREAM
+say join ', ', @names;    # Abba (Sweden), Blur (England), Cream (England)
 
 my $albums = $dbh->tap(sub ($dbh) { say 'albums: ', $dbh->selectrow_array('SELECT COUNT(*) FROM album') })
     ->selectrow_array('SELECT COUNT(*) FROM album WHERE year > 1990');
@@ -1686,14 +1740,17 @@ does what it makes:
 ```perl
 use Ekorn::Pipeline::Operators;
 
-my $top = $dbh->iterate('SELECT name FROM track ORDER BY plays DESC')
-    | pluck('name')
-    | take(3)
-    | keep_all;
-say join ', ', @$top;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
+my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
 
-my $n = $dbh->iterate('SELECT * FROM album') | count_items;
-say $n;    # 4
+my $next = $dbh->iterate('SELECT name FROM track ORDER BY plays DESC')
+    | pluck('name')
+    | drop_if { $on_my_phone{$_} }
+    | take(2)
+    | keep_all;
+say join ', ', @$next;    # Girls & Boys, Knowing Me, Knowing You
+
+my $n = $dbh->iterate('SELECT name FROM track') | sub { split ' ', $_->[0] } | count_items;
+say $n;    # 16
 ```
 
 The operators are in force only in the scope that says
@@ -1809,8 +1866,8 @@ use DBIx::Squirrel::Sugar statement => {
 my @titles = titles_by artist => 2, keep_all;
 say "@titles";    # Parklife The Great Escape
 
-my @shouted = titles_by artist => 2, sub { uc }, keep_all;
-say "@shouted";    # PARKLIFE THE GREAT ESCAPE
+my @slugs = titles_by artist => 2, sub { lc s( \W+ )(-)xgr }, keep_all;
+say "@slugs";    # parklife the-great-escape
 
 say titles_by(artist => 2, count_items);    # 2
 
@@ -1854,12 +1911,12 @@ called, a string is always a value, never a name:
 ```perl
 use DBIx::Squirrel::Sugar
     statement => {
-        loud_titles => [music => 'SELECT title FROM album WHERE year < ? ORDER BY year', 'loud'],
+        title_slugs => [music => 'SELECT title FROM album WHERE year < ? ORDER BY year', 'slugged'],
     },
-    pipeline => {loud => [sub { uc $_->[0] }]};
+    pipeline => {slugged => [sub { lc $_->[0] =~ s( \W+ )(-)xgr }]};
 
-say join ', ', loud_titles(1990, keep_all);    # DISRAELI GEARS, ARRIVAL
-say loud(['Parklife']);                        # PARKLIFE
+say join ', ', title_slugs(1990, keep_all);    # disraeli-gears, arrival
+say slugged(['The Great Escape']);             # the-great-escape
 ```
 
 `pipeline` takes what Ekorn::Pipeline::Sugar takes: a hash, or an
@@ -2072,15 +2129,18 @@ do:
 ```perl
 use Ekorn::Pipeline;
 
-sub loud_names () {
+sub with_origin () {
+    my %from = (Abba => 'Sweden', Blur => 'England', Cream => 'England');
     return Ekorn::Pipeline->new(
         pluck('name'),
-        sub { uc },
+        sub { "$_ ($from{$_})" },
     );
 }
 
-say join ' ', $dbh->iterate('SELECT id, name FROM artist ORDER BY id', loud_names)->all;    # ABBA BLUR CREAM
-say join ' ', $dbh->results('SELECT id, name FROM artist ORDER BY id', loud_names)->all;    # ABBA BLUR CREAM
+say join ', ', $dbh->iterate('SELECT id, name FROM artist ORDER BY id', with_origin)->all;
+# Abba (Sweden), Blur (England), Cream (England)
+say join ', ', $dbh->results('SELECT id, name FROM artist ORDER BY id', with_origin)->all;
+# Abba (Sweden), Blur (England), Cream (England)
 ```
 
 ### Test a stage

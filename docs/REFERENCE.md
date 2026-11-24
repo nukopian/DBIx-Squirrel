@@ -103,16 +103,20 @@ while (my($row) = $it->next) {
 # Blur
 # Cream
 
-# Stages beside the query, and a sink last to say what comes back
-my @top = $dbh->iterate(
+# Stages beside the query, for what SQL can't do, and a sink last to
+# say what comes back: the two most played tracks not yet on a phone
+my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
+my @next = $dbh->iterate(
     'SELECT name FROM track ORDER BY plays DESC',
     pluck('name'),
+    drop_if { $on_my_phone{$_} },
     take(2),
     keep_all,
 );
-say join ', ', @top;    # Dancing Queen, Sunshine of Your Love
+say join ', ', @next;    # Girls & Boys, Knowing Me, Knowing You
 
-say $dbh->iterate('SELECT * FROM track WHERE plays > ?', 6000, count_items);    # 3
+# The words in the tracks' names
+say $dbh->iterate('SELECT name FROM track', sub { split ' ', $_->[0] }, count_items);    # 16
 
 # Each row as an object, with a method for each column
 say $dbh->results('SELECT * FROM album WHERE id = ?', 2)->first->title;    # Parklife
@@ -656,10 +660,10 @@ one reference, so a stage gets all of it at once: every row, for
 `selectall_arrayref`.
 
 ```perl
-my @names = $dbh->selectall_array('SELECT name FROM artist ORDER BY id', pluck, sub {uc});
-say "@names";    # ABBA BLUR CREAM
+my @slugs = $dbh->selectall_array('SELECT title FROM album ORDER BY year', pluck, sub { lc s( \W+ )(-)xgr });
+say "@slugs";    # disraeli-gears arrival parklife the-great-escape
 
-say scalar $dbh->selectall_array('SELECT * FROM artist', sub { $_->[0] > 1 ? $_ : () });    # 2
+say scalar $dbh->selectall_array('SELECT name FROM track', sub { split ' ', $_->[0] });    # 16
 
 say join ',', $dbh->selectrow_array('SELECT id, name FROM artist WHERE id = :id', id => 2, sub {"<$_>"});    # <2>,<Blur>
 
@@ -894,14 +898,20 @@ gives, so a stage run for its side effects should still return what
 the next stage needs.
 
 ```perl
+my %little = map { $_ => 1 } qw(a of the);
+
 my @words = $dbh->iterate(
-    'SELECT title, year FROM album ORDER BY year',
-    sub { $_->[1] < 1990 ? $_ : () },    # filter
-    sub { split ' ', $_->[0] },          # flatMap
-    sub {lc},                            # map
+    'SELECT title FROM album ORDER BY year',
+    sub { split ' ', $_->[0] },       # flatMap
+    sub {lc},                         # map
+    sub { $little{$_} ? () : $_ },    # filter
 )->all;
-say "@words";    # disraeli gears arrival
+say "@words";    # disraeli gears arrival parklife great escape
 ```
+
+The filter here tests words a stage made, which no `WHERE` can see. A
+row the database could leave out, it should: a `WHERE` is quicker,
+and fewer rows cross the wire.
 
 A stage can be a code reference, a [pipeline](#10-pipelines), or one
 of Ekorn::Pipeline's stage objects, such as those its words and the
@@ -943,15 +953,17 @@ one row is a result of its own. So numbering after a filter numbers
 what's left:
 
 ```perl
-my @hits = $dbh->iterate(
-    'SELECT name, plays FROM track ORDER BY id',
-    take_if { $_->[1] > 6000 },
+my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
+
+my @to_copy = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    drop_if { $on_my_phone{ $_->[0] } },
     sub { result_number() . ". $_->[0]" },
 )->all;
-say for @hits;
-# 1. Dancing Queen
+say for @to_copy;
+# 1. Knowing Me, Knowing You
 # 2. Girls & Boys
-# 3. Sunshine of Your Love
+# 3. Country House
 ```
 
 `result_original` keeps the row as it was fetched, so a stage after
@@ -1215,25 +1227,29 @@ say "@safe";    # ABBA BLUR
 ### Taking and dropping
 
 DBIx::Squirrel::Stages::Flow's stages decide which values go on, by
-their place or by a test. In SQL, `LIMIT` and `OFFSET` page results in
-the database, which is quicker; these are for when Perl decides which
-rows go on. A stage that stops the run stops the fetching too, so no
-more rows are read than are wanted.
+their place or by a test. In SQL, `LIMIT`, `OFFSET` and `WHERE` do
+that in the database, which is quicker; these are for when Perl
+decides: a test on data the database doesn't have, a test on what
+came before, or a limit on what's left after one. A stage that stops
+the run stops the fetching too, so no more rows are read than are
+wanted. Some examples use a hash of the tracks already on a phone,
+which the database knows nothing of.
 
 **By place.** `take` and `drop` give a page: `drop(20), take(10)`
 passes on values 21 to 30. `take` stops the run at its last
 value, so the statement is finished then:
 
 ```perl
+my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
+
 my @page = $dbh->iterate(
     'SELECT name FROM track ORDER BY id',
     pluck,
-    drop(2),
+    drop_if { $on_my_phone{$_} },
+    drop(1),
     take(2),
 )->all;
-say join ', ', @page;    # Girls & Boys, Parklife
-
-say join ', ', $dbh->iterate('SELECT name FROM track ORDER BY plays DESC', pluck, take(2))->all;    # Dancing Queen, Sunshine of Your Love
+say join ', ', @page;    # Girls & Boys, Country House
 ```
 
 `take_first`, `take_last` and `take_single` each pass on one value,
@@ -1261,19 +1277,34 @@ does, and never stop the run. A plain stage ending in a test passes on
 what the test returns, true or false; `take_if` passes on the value:
 
 ```perl
-my @popular = $dbh->iterate(
-    'SELECT name, plays FROM track ORDER BY id',
-    take_if { $_->[1] > 6000 },
-    pluck(0),
-)->all;
-say join ', ', @popular;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
+my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
 
-my @quiet = $dbh->iterate(
-    'SELECT name, plays FROM track ORDER BY id',
-    drop_if { $_->[1] > 6000 },
+my @copied = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    take_if { $on_my_phone{ $_->[0] } },
     pluck(0),
 )->all;
-say join ', ', @quiet;    # Knowing Me, Knowing You, Parklife, Country House
+say join ', ', @copied;    # Dancing Queen, Parklife, Sunshine of Your Love
+
+my @to_copy = $dbh->iterate(
+    'SELECT name FROM track ORDER BY id',
+    drop_if { $on_my_phone{ $_->[0] } },
+    pluck(0),
+)->all;
+say join ', ', @to_copy;    # Knowing Me, Knowing You, Girls & Boys, Country House
+```
+
+A test the database could do, such as `plays > 6000`, belongs in the
+`WHERE`. In a stage, it's for debugging: trying a condition on a
+query's rows without touching the query, before it goes in the SQL:
+
+```perl
+my @would_keep = $dbh->iterate(
+    'SELECT name, plays FROM track ORDER BY id',
+    take_if { $_->[1] > 6000 },    # trying it out, before it goes in a WHERE
+    pluck(0),
+)->all;
+say join ', ', @would_keep;    # Dancing Queen, Girls & Boys, Sunshine of Your Love
 ```
 
 `take_while` and `drop_while` test values only until the first that
@@ -1283,19 +1314,25 @@ every row; `drop_while` passes on everything from there, without
 testing again:
 
 ```perl
+my $half   = $dbh->selectrow_array('SELECT SUM(plays) FROM track') / 2;
+my $so_far = 0;
+
 my @hits = $dbh->iterate(
     'SELECT name, plays FROM track ORDER BY plays DESC',
-    take_while { $_->[1] > 6000 },
-    pluck(0),
+    take_while { $so_far < $half },    # the hits making half the plays
+    sub { $so_far += $_->[1]; $_->[0] },
 )->all;
 say join ', ', @hits;    # Dancing Queen, Sunshine of Your Love, Girls & Boys
 
-my @later = $dbh->iterate(
-    'SELECT title, year FROM album ORDER BY year',
-    drop_while { $_->[1] < 1990 },
-    pluck(0),
+my $stopped_at = 'Arrival';    # where the last run stopped
+
+my @still_to_do = $dbh->iterate(
+    'SELECT title FROM album ORDER BY year',
+    pluck,
+    drop_while { $_ ne $stopped_at },
+    drop(1),
 )->all;
-say join ', ', @later;    # Parklife, The Great Escape
+say join ', ', @still_to_do;    # Parklife, The Great Escape
 ```
 
 ## 7. Gathering: stages made for each run
@@ -1471,7 +1508,7 @@ say join ', ', $dbh->iterate(
 );
 # Dancing Queen, Sunshine of Your Love
 
-say $dbh->iterate('SELECT * FROM album', count_items);    # 4
+say $dbh->iterate('SELECT title FROM album', sub { split ' ', $_->[0] }, count_items);    # 7
 ```
 
 The iterator's methods and the sinks overlap: `all` and `keep_all`,
@@ -1642,18 +1679,20 @@ it limits the whole run:
 ```perl
 use Ekorn::Pipeline;
 
-my $hits = Ekorn::Pipeline->new(
-    sub { $_->[1] >= 5000 ? $_ : () },
+my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
+my $to_copy = Ekorn::Pipeline->new(
+    drop_if { $on_my_phone{ $_->[0] } },
     pluck('name'),
 );
-my $sql  = 'SELECT name, plays FROM track ORDER BY plays DESC';
-say join ', ', $dbh->iterate($sql, $hits)->all;             # Dancing Queen, Sunshine of Your Love, Girls & Boys, Parklife
+my $sql = 'SELECT name, plays FROM track ORDER BY plays DESC';
+say join ', ', $dbh->iterate($sql, $to_copy)->all;
+# Girls & Boys, Knowing Me, Knowing You, Country House
 say join ', ', $dbh->iterate(
     $sql,
-    $hits,
+    $to_copy,
     take(1),
 )->all;
-# Dancing Queen
+# Girls & Boys
 ```
 
 Make a stage that counts or remembers with
