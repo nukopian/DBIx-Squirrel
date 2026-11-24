@@ -879,6 +879,70 @@ to a position of its own.
     $sth->execute;
     say join ' ', @{ $sth->fetchrow_arrayref };    # 4 3
 
+=head2 execute_array
+
+C<execute_array> and C<execute_for_fetch> execute a statement once for
+each row of values, as the DBI's do, and C<bind_param_array> binds an
+array of values to a placeholder, a value for each row. They're how
+the DBI loads many rows at once. Plain DBI's work for C<?>, and for
+other styles only as far as the driver reads them; here they work for
+every style:
+
+=over 4
+
+=item *
+
+A row's values come in the order of its placeholders: by number, or,
+for names, in the order each first appears. C<:id, :name, :id> takes
+two values a row, not three.
+
+=item *
+
+For named placeholders, a row can be a hash, keyed by name, with or
+without the sigil: rows shaped by L<as_hash|/"as_hash">, or records
+from anywhere, load as they are.
+
+=item *
+
+C<bind_param_array> names its placeholder as
+L<C<bind_param>|/"bind_param"> does: by number or by name, with or
+without the sigil. A plain value, not an array, is the value for
+every row.
+
+=back
+
+    $dbh->do('CREATE TEMP TABLE gig (artist TEXT, city TEXT, year INTEGER)');
+    my $sth = $dbh->prepare('INSERT INTO gig (artist, city, year) VALUES (:artist, :city, :year)');
+
+    # An array for each name, in the order each first appears
+    say scalar $sth->execute_array({}, ['Abba', 'Blur'], ['Brighton', 'Colchester'], [1974, 1990]);    # 2
+
+    # Rows as hashes, from anything that gives them
+    my @rows = ({artist => 'Cream', city => 'Windsor', year => 1966});
+    say scalar $sth->execute_for_fetch(sub { shift @rows });    # 1
+
+    # Arrays bound by name, and a value for every row
+    $sth->bind_param_array(':artist', ['Abba', 'Cream']);
+    $sth->bind_param_array(city => ['London', 'London']);
+    $sth->bind_param_array(year => 1977);
+    my @status;
+    say scalar $sth->execute_array({ArrayTupleStatus => \@status});    # 2
+    say "@status";                                                     # 1 1
+
+    say $dbh->selectrow_array('SELECT COUNT(*) FROM gig');    # 5
+    $dbh->do('DROP TABLE gig');
+
+C<ArrayTupleFetch> and C<ArrayTupleStatus> work as the DBI's do, and so
+does context: in a list, C<execute_array> gives the rows executed and
+the rows changed. The counts the DBI checks are of the placeholders,
+not their uses, and its errors are its own, raised as its
+attributes say. A row of the wrong shape croaks at the caller's line,
+as C<execute> would. A statement with a L<list|/"Lists"> can't take
+rows, as its handle is prepared for lists of one length: each of the
+three croaks, C<Expected no list placeholder in a statement for rows of
+values (...:ids)>. Arrays bound with C<bind_param_array> are kept with
+the statement, not in the DBI's C<ParamArrays>, for any style but C<?>.
+
 =head2 do
 
 Unlike the DBI's, the attributes may be left out. The first argument
@@ -2693,7 +2757,7 @@ The first argument after the statement in C<do>, C<iterate>, C<results> or a sel
 
 =item C<Expected %d bind values, not %d>
 
-A statement with numbered placeholders was given more or fewer values than its highest number.
+A statement with numbered placeholders was given more or fewer values than its highest number; or a row given to C<execute_for_fetch> had more or fewer values than the statement has placeholders.
 
 =item C<Expected names and values in pairs>
 
@@ -2702,6 +2766,10 @@ A statement with named placeholders was given an odd number of values.
 =item C<Expected a placeholder of the statement (%s)>
 
 A value was given for a placeholder the statement doesn't have.
+
+=item C<Expected no list placeholder in a statement for rows of values (%s)>
+
+C<execute_array>, C<execute_for_fetch> or C<bind_param_array> was called on a statement with a list placeholder, whose handle is prepared for lists of one length.
 
 =item C<Expected a value for each placeholder (none for %s)>
 
@@ -3236,6 +3304,12 @@ B<DBIx::Squirrel:> The same, or finished first with C<ekorn_finish_active>.
 B<Plain DBI:> Left to the driver, which most read as C<NULL>.
 
 B<DBIx::Squirrel:> Croaks, for numbered and named placeholders: C<Expected a value for each placeholder (none for id)>.
+
+=item C<execute_array>, C<execute_for_fetch> and C<bind_param_array>
+
+B<Plain DBI:> For C<?>, and other styles as far as the driver reads them.
+
+B<DBIx::Squirrel:> For every style: a row's values in placeholder order, or a hash by name; C<bind_param_array> by name.
 
 =item Stages after the select methods' values
 
@@ -4117,6 +4191,21 @@ the placeholder in the statement.
 
 See L<bind_param|/"bind_param">.
 
+=head3 bind_param_array
+
+    $rv = $sth->bind_param_array($placeholder, \@values);
+    $rv = $sth->bind_param_array($placeholder, $value);
+    $rv = $sth->bind_param_array($placeholder, \@values, \%attr);
+
+Binds an array of values to a placeholder, a value for each row
+L<execute_array|/"execute_array"> executes, or one value for every
+row, as the DBI's C<bind_param_array> does, and returns what it
+returns. The placeholder is named as for L<bind_param|/"bind_param">:
+by number or name, with or without the sigil, for numbered and named
+placeholders. Attributes given are bound to every use of it.
+
+See L<execute_array|/"execute_array">.
+
 =head3 execute
 
     $rv = $sth->execute;
@@ -4137,6 +4226,37 @@ placeholder unbound, which most drivers read as C<NULL>. C<do>,
 iterators and the select methods check the same way.
 
 See L<execute|/"execute">.
+
+=head3 execute_array
+
+    $tuples = $sth->execute_array(\%attr, @arrays);
+    ($tuples, $rows) = $sth->execute_array(\%attr, @arrays);
+    $tuples = $sth->execute_array(\%attr);
+
+Executes the statement once for each row of values, as the DBI's
+C<execute_array> does, and returns what it returns: in a list, the
+rows executed and the rows changed. The rows come from C<@arrays>, one
+for each placeholder, in order, by number, or for names, in the order
+each first appears; from those bound with
+L<bind_param_array|/"bind_param_array">; or from C<ArrayTupleFetch> in
+C<%attr>. Each row's status goes in C<ArrayTupleStatus>. A statement
+with a list croaks.
+
+See L<execute_array|/"execute_array">.
+
+=head3 execute_for_fetch
+
+    $tuples = $sth->execute_for_fetch($fetch);
+    $tuples = $sth->execute_for_fetch($fetch, \@status);
+    ($tuples, $rows) = $sth->execute_for_fetch($fetch, \@status);
+
+Executes the statement once for each row C<$fetch> returns, until it
+returns nothing, as the DBI's C<execute_for_fetch> does, and returns
+what it returns. A row is an array of values, in the order
+L<execute_array|/"execute_array"> takes them, or, for named
+placeholders, a hash of them by name. A statement with a list croaks.
+
+See L<execute_array|/"execute_array">.
 
 =head3 iterate
 

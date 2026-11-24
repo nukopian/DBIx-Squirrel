@@ -1641,28 +1641,26 @@ Each `push` gives back what came out of the values pushed. `close`
 ends the input, and gives what the stages still held, such as a last,
 part-filled batch. `ended` says how the run ended.
 
-So a feed is a loader. Here rows go into a table two at a time, each
-batch in a transaction of its own, with `execute_array` writing it:
+So a feed is a loader. Here records go into a table two at a time,
+each batch in a transaction of its own. The records are hashes, and
+the statement's placeholders are named, so `execute_for_fetch` writes
+each as it came, with no arrays to build:
 
 ```perl
 use Ekorn::Pipeline;
 
 $dbh->do('CREATE TEMP TABLE heard (track_id INTEGER, plays INTEGER)');
-my $insert = $dbh->prepare('INSERT INTO heard (track_id, plays) VALUES (?, ?)');
+my $insert = $dbh->prepare('INSERT INTO heard (track_id, plays) VALUES (:track_id, :plays)');
 
 my $load = Ekorn::Pipeline->new(
     drop_if { $_->{plays} == 0 },
     batch(2),
     sub {
-        my $rows = $_;
+        my @records = @$_;
         $dbh->begin_work;
-        $insert->execute_array(
-            {},
-            [map { $_->{track_id} } @$rows],
-            [map { $_->{plays} } @$rows],
-        );
+        my $written = $insert->execute_for_fetch(sub { shift @records });
         $dbh->commit;
-        scalar @$rows;    # how many were written
+        $written;    # how many were written
     },
 )->feed;
 
@@ -1682,6 +1680,13 @@ that meets it, and a push after that croaks, so ask `ended` after each
 push when a stop may come. Ekorn::Pipeline's [how-to on
 feeds](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#feed-values-in-as-they-arrive)
 has the rest.
+
+`execute_for_fetch` takes arrays too, a value for each placeholder,
+in the order each name first appears. So does `execute_array`, an
+array for each placeholder, and `bind_param_array` binds one by name,
+as the reference's [execute_array](REFERENCE.md#execute_array) says.
+Plain DBI's take only `?`, and other styles as far as the driver reads
+them.
 
 ### Name a pipeline, and use it by name
 

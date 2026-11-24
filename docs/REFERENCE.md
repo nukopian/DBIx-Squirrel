@@ -588,6 +588,60 @@ $sth->execute;
 say join ' ', @{ $sth->fetchrow_arrayref };    # 4 3
 ```
 
+### execute_array
+
+`execute_array` and `execute_for_fetch` execute a statement once for
+each row of values, as the DBI's do, and `bind_param_array` binds an
+array of values to a placeholder, a value for each row. They're how
+the DBI loads many rows at once. Plain DBI's work for `?`, and for
+other styles only as far as the driver reads them; here they work for
+every style:
+
+- A row's values come in the order of its placeholders: by number, or,
+  for names, in the order each first appears. `:id, :name, :id` takes
+  two values a row, not three.
+- For named placeholders, a row can be a hash, keyed by name, with or
+  without the sigil: rows shaped by [as_hash](#as_hash), or records
+  from anywhere, load as they are.
+- `bind_param_array` names its placeholder as
+  [`bind_param`](#bind_param) does: by number or by name, with or
+  without the sigil. A plain value, not an array, is the value for
+  every row.
+
+```perl
+$dbh->do('CREATE TEMP TABLE gig (artist TEXT, city TEXT, year INTEGER)');
+my $sth = $dbh->prepare('INSERT INTO gig (artist, city, year) VALUES (:artist, :city, :year)');
+
+# An array for each name, in the order each first appears
+say scalar $sth->execute_array({}, ['Abba', 'Blur'], ['Brighton', 'Colchester'], [1974, 1990]);    # 2
+
+# Rows as hashes, from anything that gives them
+my @rows = ({artist => 'Cream', city => 'Windsor', year => 1966});
+say scalar $sth->execute_for_fetch(sub { shift @rows });    # 1
+
+# Arrays bound by name, and a value for every row
+$sth->bind_param_array(':artist', ['Abba', 'Cream']);
+$sth->bind_param_array(city => ['London', 'London']);
+$sth->bind_param_array(year => 1977);
+my @status;
+say scalar $sth->execute_array({ArrayTupleStatus => \@status});    # 2
+say "@status";                                                     # 1 1
+
+say $dbh->selectrow_array('SELECT COUNT(*) FROM gig');    # 5
+$dbh->do('DROP TABLE gig');
+```
+
+`ArrayTupleFetch` and `ArrayTupleStatus` work as the DBI's do, and so
+does context: in a list, `execute_array` gives the rows executed and
+the rows changed. The counts the DBI checks are of the placeholders,
+not their uses, and its errors are its own, raised as its
+attributes say. A row of the wrong shape croaks at the caller's line,
+as `execute` would. A statement with a [list](#lists) can't take
+rows, as its handle is prepared for lists of one length: each of the
+three croaks, `Expected no list placeholder in a statement for rows of
+values (...:ids)`. Arrays bound with `bind_param_array` are kept with
+the statement, not in the DBI's `ParamArrays`, for any style but `?`.
+
 ### do
 
 Unlike the DBI's, the attributes may be left out. The first argument
@@ -2370,9 +2424,10 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected placeholders numbered from 1 (%s)` | A numbered placeholder such as `$0`. |
 | `Expected ekorn_slice to be a reference to an ARRAY or HASH` | `ekorn_slice` was something else. |
 | `Expected a reference to a HASH or ARRAY` | The first argument after the statement in `do`, `iterate`, `results` or a select method was an unblessed reference, but not to a hash or an array. An object there is a bind value. |
-| `Expected %d bind values, not %d` | A statement with numbered placeholders was given more or fewer values than its highest number. |
+| `Expected %d bind values, not %d` | A statement with numbered placeholders was given more or fewer values than its highest number; or a row given to `execute_for_fetch` had more or fewer values than the statement has placeholders. |
 | `Expected names and values in pairs` | A statement with named placeholders was given an odd number of values. |
 | `Expected a placeholder of the statement (%s)` | A value was given for a placeholder the statement doesn't have. |
+| `Expected no list placeholder in a statement for rows of values (%s)` | `execute_array`, `execute_for_fetch` or `bind_param_array` was called on a statement with a list placeholder, whose handle is prepared for lists of one length. |
 | `Expected a value for each placeholder (none for %s)` | A statement with named placeholders wasn't given a value for each name, or a statement with numbered or named placeholders was executed without values when some had none bound. |
 | `Expected bind values with a statement taking a list (%s)` | `prepare` or `prepare_cached` was given a statement taking a [list](#lists). Each list placeholder is named, and a `?` is named by its position: `...? at 2`. |
 | `Expected a placeholder to take a list everywhere or nowhere (%s)` | A placeholder was used with `...` in one place and without it in another. |
@@ -2677,6 +2732,7 @@ same result. These are the places they differ.
 | Statements | A string. | A string, lines in an array reference, a code reference returning either, or a statement handle. |
 | Executing an active statement | Left to the driver. | The same, or finished first with `ekorn_finish_active`. |
 | Executing with placeholders unbound | Left to the driver, which most read as `NULL`. | Croaks, for numbered and named placeholders: `Expected a value for each placeholder (none for id)`. |
+| `execute_array`, `execute_for_fetch` and `bind_param_array` | For `?`, and other styles as far as the driver reads them. | For every style: a row's values in placeholder order, or a hash by name; `bind_param_array` by name. |
 | Stages after the select methods' values | None. | What the DBI gives is pushed through them. |
 | Iterators, result sets, pipelines | None. | `iterate`, `results`, sinks, `\|` and `@{}`, `pipe`, `tap` and the Sugar. |
 
@@ -3453,6 +3509,24 @@ the placeholder in the statement.
 
 See [bind_param](#bind_param).
 
+#### bind_param_array
+
+<!-- not run -->
+```perl
+$rv = $sth->bind_param_array($placeholder, \@values);
+$rv = $sth->bind_param_array($placeholder, $value);
+$rv = $sth->bind_param_array($placeholder, \@values, \%attr);
+```
+
+Binds an array of values to a placeholder, a value for each row
+[execute_array](#execute_array) executes, or one value for every
+row, as the DBI's `bind_param_array` does, and returns what it
+returns. The placeholder is named as for [bind_param](#bind_param):
+by number or name, with or without the sigil, for numbered and named
+placeholders. Attributes given are bound to every use of it.
+
+See [execute_array](#execute_array).
+
 #### execute
 
 <!-- not run -->
@@ -3476,6 +3550,43 @@ placeholder unbound, which most drivers read as `NULL`. `do`,
 iterators and the select methods check the same way.
 
 See [execute](#execute).
+
+#### execute_array
+
+<!-- not run -->
+```perl
+$tuples = $sth->execute_array(\%attr, @arrays);
+($tuples, $rows) = $sth->execute_array(\%attr, @arrays);
+$tuples = $sth->execute_array(\%attr);
+```
+
+Executes the statement once for each row of values, as the DBI's
+`execute_array` does, and returns what it returns: in a list, the
+rows executed and the rows changed. The rows come from `@arrays`, one
+for each placeholder, in order, by number, or for names, in the order
+each first appears; from those bound with
+[bind_param_array](#bind_param_array); or from `ArrayTupleFetch` in
+`%attr`. Each row's status goes in `ArrayTupleStatus`. A statement
+with a list croaks.
+
+See [execute_array](#execute_array).
+
+#### execute_for_fetch
+
+<!-- not run -->
+```perl
+$tuples = $sth->execute_for_fetch($fetch);
+$tuples = $sth->execute_for_fetch($fetch, \@status);
+($tuples, $rows) = $sth->execute_for_fetch($fetch, \@status);
+```
+
+Executes the statement once for each row `$fetch` returns, until it
+returns nothing, as the DBI's `execute_for_fetch` does, and returns
+what it returns. A row is an array of values, in the order
+[execute_array](#execute_array) takes them, or, for named
+placeholders, a hash of them by name. A statement with a list croaks.
+
+See [execute_array](#execute_array).
 
 #### iterate
 

@@ -2,10 +2,24 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    The examples show stages doing what SQL can't, and leave to the SQL
-    what it can. It ships no roadmap item, and changes only the
-    documentation.
+    execute_array and execute_for_fetch work for every placeholder
+    style, and the examples show stages doing what SQL can't.
 
+    It ships roadmap 2026-0037: loading many rows at once, which worked
+    only for ? placeholders, works for numbered and named ones, used
+    once or more, with rows as hashes by name. Still requires
+    Ekorn::Pipeline >= v0.3.7, < v0.4.0.
+
+    - execute_array, execute_for_fetch and bind_param_array work for
+      numbered and named placeholders, used once or more, as plain DBI's
+      work for ?, on any driver (roadmap 2026-0037). A row's values come
+      in placeholder order: by number, or as each name first appears,
+      so :id, :name, :id takes two values a row. A row for named
+      placeholders can be a hash, keyed by name. bind_param_array takes
+      a placeholder's name. A statement with a list placeholder croaks:
+      "Expected no list placeholder in a statement for rows of values".
+    - The user guide's loader writes hashes with execute_for_fetch and
+      named placeholders.
     - The README, the user guide and the reference no longer filter,
       limit or count in stages what a WHERE, LIMIT or COUNT would.
       Their examples test data the database doesn't have, keep running
