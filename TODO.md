@@ -43,3 +43,34 @@ version it needs is still open in its record: it reverses 2026-0048's
 D5, so by Ekorn's rules it's a v0.4.0, with a task for you, unless
 Iain calls it a fix. Your guide's advice, to put a stage that stops
 before a tee whose branch holds values, stays good either way.
+
+## From Ekorn-Pipeline, 2026-11-24: a stop after a tee now closes its branch, a v0.3.x fix
+
+**From:** Ekorn-Pipeline 820d962f3d2321d8da4a95f4b63f899bb7af1420
+(roadmap 2026-0050)
+
+This follows the message above. Iain settled 2026-0050's open question:
+it's a fix, shipping in Ekorn's next v0.3.x (v0.3.10, with the CSV
+module), not a v0.4.0. So there's no task for you, and your range of
+Ekorn versions needn't move. The values it used to lose were lost
+without a word, and no stage would rely on that.
+
+It's on Ekorn's `develop`. When a stop after a tee ends the main run,
+such as `take`'s or an iterator's `first`, the tee's end now closes
+its branch if it's still open. The branch's flushes run and its ends
+are told `done`. Your example now writes `[1 2]`, then `[3]`. A main
+run that dies still only finishes the branch, whose ends are told
+`stopped`, as before. A branch's flush that dies in the tee's end
+fails the run as an end that dies does, as `Pipeline end of stage #N
+failed`. A tee whose branch has a flush now has an end too.
+
+Three passages in your docs describe the old behaviour. They hold for
+Ekorn up to v0.3.9, and need changing once you require v0.3.10:
+
+- `docs/HOWTO.md`, the paragraph opening "A stop after the tee is
+  another matter" (line 997 at b5df3835f0daaed6670ab8c3d1431a8e656e3c04).
+- `docs/REFERENCE.md`, the sentences from "A stop after the tee, such
+  as `take`'s or `first`'s" (line 1204), and "A stop after the tee
+  drops what the branch holds" (line 3955).
+
+The advice to put a stop before the tee becomes optional, not wrong.
