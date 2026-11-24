@@ -61,15 +61,6 @@ record](docs/changes/2026-0032-context-on-ekorn.md).
 
 ## Ideas
 
-### 2026-0003. Add-on stage distributions
-
-Added 2026-11-08. Stages for one concern each, in distributions of
-their own, as the plan for 2.0 had them: serializers (YAML, XML, CSV,
-dumps), decoding columns, types such as dates and booleans,
-validation, and progress and logging taps. Those that need no database
-may belong in Ekorn::Pipeline's `Ekorn::Pipeline::Stages::` instead.
-Split into items, each sized, when one is taken up.
-
 ### 2026-0029. Scanning with betterleaks
 
 Added 2026-11-15. Scan for secrets with betterleaks, gitleaks'
