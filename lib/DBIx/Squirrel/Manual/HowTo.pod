@@ -2615,7 +2615,7 @@ three runs, in seconds:
 
 =item C<iterate(..., keep_all)>
 
-0.506
+0.429
 
 =item C<< iterate(..., $stage)->all >>
 

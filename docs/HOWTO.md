@@ -2470,7 +2470,7 @@ three runs, in seconds:
 | `iterate(...)->all` | 0.122 |
 | `map` over `iterate(...)->all` | 0.144 |
 | `next`, in a loop | 0.259 |
-| `iterate(..., keep_all)` | 0.506 |
+| `iterate(..., keep_all)` | 0.429 |
 | `iterate(..., $stage)->all` | 0.437 |
 
 On wide rows, 21,826 of them averaging 24 KB, fetching the data costs

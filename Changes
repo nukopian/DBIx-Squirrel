@@ -11,7 +11,7 @@ Unreleased
     through chains, so DBIx::Squirrel::Context's result_original is
     Ekorn::Pipeline::Context's own, as result_number is; and fixes
     from a review of what changed since v3.3.2. Requires
-    Ekorn::Pipeline >= v0.3.13, < v0.4.0.
+    Ekorn::Pipeline >= v0.3.14, < v0.4.0.
 
     - result_original is Ekorn::Pipeline::Context's own sub, and gives
       what it gave: the fetched row wherever a statement is read,
@@ -19,8 +19,10 @@ Unreleased
       reading no statement. A stage reading it each row is 238 to 259
       ns a row quicker, 11 to 13%, on Perl 5.36 and 5.44, reading
       297,848 rows (roadmap 2026-0046).
-    - Requires Ekorn::Pipeline v0.3.13 or later, below v0.4.0, the first
-      with a source's original part.
+    - Requires Ekorn::Pipeline v0.3.14 or later, below v0.4.0: v0.3.13
+      added a source's original part, and v0.3.14 hands a sink of
+      many's result straight to all, so iterate(..., keep_all) is 15
+      to 17% quicker, costing what a stage and all do.
     - A value given for a named placeholder twice, written with and
       without its sigil, as :id and id, croaks: "Expected one value for
       each placeholder (two for id)". It took one of the two as a hash
@@ -35,7 +37,8 @@ Unreleased
       reference". The reference says the rows before such a row have
       been executed, so a load wants a transaction.
     - The user guide's timings are measured again: a stage now costs
-      about a microsecond a row, where it said under two.
+      about a microsecond a row, where it said under two, and
+      iterate(..., keep_all) 0.429 seconds over 297,848 rows, not 0.533.
     - DBIx::Squirrel::db's POD lists the ekorn_slice error.
 
 v3.6.0 2026-11-24
