@@ -1,6 +1,6 @@
 # 2026-0032. DBIx::Squirrel::Context on Ekorn's, without the counting stage
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.6.0
 
 **Decisions:** D1 settled: `result_number` is Ekorn's, in every run. D2
 settled: `result_original` falls back to Ekorn's outside a statement's

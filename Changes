@@ -2,6 +2,8 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+v3.6.0 2026-11-24
+
     Iterators with stages are 10 to 17% quicker, and result_number
     works in any run.
 
