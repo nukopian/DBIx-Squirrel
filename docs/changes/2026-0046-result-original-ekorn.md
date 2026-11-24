@@ -1,6 +1,6 @@
 # 2026-0046. result_original is Ekorn's own sub
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.6.1
 
 **Decisions:** D1 settled: a source's `original` part, as Ekorn
 designs it.

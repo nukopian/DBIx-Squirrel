@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [result_original is Ekorn's own sub](2026-0046-result-original-ekorn.md),
-  roadmap 2026-0046: shipped, unreleased.
+  roadmap 2026-0046: shipped in v3.6.1.
 - [A stop after a tee no longer loses what its branch holds](2026-0045-tee-stop-closes-branch.md),
   roadmap 2026-0045: shipped in v3.5.0.
 - [CSV in and out: a recipe, an export, and the README](2026-0044-csv-recipe.md),

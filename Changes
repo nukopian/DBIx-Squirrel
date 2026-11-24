@@ -2,6 +2,8 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+v3.6.1 2026-11-24
+
     result_original is Ekorn::Pipeline's own, and a stage reading it
     is 11 to 13% quicker; a value given twice for a placeholder croaks,
     rather than one being chosen at random.
