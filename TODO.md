@@ -39,3 +39,37 @@ didn't.
 It ships in Ekorn's next release, which is Iain's call. A test against
 `develop` first, as for v0.3.11 to v0.3.13, will come as a task if he
 wants one.
+
+# Planned work
+
+## Test against Ekorn's develop before it releases v0.3.14
+
+**From:** Ekorn-Pipeline's session, 2026-11-24 (Ekorn-Pipeline
+7e602cc25b301576a4848d97435d3f1022defdba)
+**Waiting on:** nothing
+
+Iain wants you to test the change in the message above against Ekorn's
+`develop` before Ekorn releases it, as v0.3.14, as for v0.3.11 to
+v0.3.13. Ekorn won't release until your message says how it went.
+
+Only `_full_iterator` and `_plain_iterator` in `lib/Ekorn/Pipeline.pm`
+changed. Where `all` or a pushed run collects the values, the values
+after the first that the last part gives at once go straight to its
+output. Every run goes through one of the two, so it's worth your
+whole suite.
+
+To test, run it with Ekorn's working copy first in `@INC`, on 5.36 and
+5.44 at least, MySQL and PostgreSQL included if you can:
+
+```
+perlbrew exec --with perl-5.36.3@dbix-squirrel-2 yath test -I/Users/icampbell/Git/github.com/nukopian/Ekorn-Pipeline/lib
+perlbrew exec --with perl-5.44.0@dbix-squirrel-2 yath test -I/Users/icampbell/Git/github.com/nukopian/Ekorn-Pipeline/lib
+```
+
+Then, if you can, time again the user guide's table that found it,
+`iterate(..., keep_all)` against a stage and `all`, each case in a
+process of its own, on your 297,848 rows.
+
+Done when your message, in Ekorn's `TODO.md`, says what passed, what
+didn't, and what you measured. A problem in Ekorn is for Ekorn's
+session to fix, not you.
