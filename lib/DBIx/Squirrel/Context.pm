@@ -28,13 +28,12 @@ sub iterator : prototype() () {
     return $ITERATOR;
 }
 
-# The number of the result being made, from 1: Ekorn's, as every run
-# counts its results (roadmap 2026-0032, D1). A sub of ours, not Ekorn's
-# under our name, as Ekorn's has no prototype, and ours has always had
-# an empty one, so result_number + 1 adds one rather than passing it.
-sub result_number : prototype() () {
-    return Ekorn::Pipeline::Context::result_number();
-}
+# The number of the result being made, from 1: Ekorn's own sub, under our
+# name, as every run counts its results (roadmap 2026-0032, D1), so a
+# stage reading it pays for one call, not two. Ekorn's has an empty
+# prototype from v0.3.12, as ours always had, so result_number + 1 adds
+# one.
+*result_number = \&Ekorn::Pipeline::Context::result_number;
 
 # The row the result is being made from, as it was fetched; undef for a
 # result a flush is making, which comes from every row. Outside a run

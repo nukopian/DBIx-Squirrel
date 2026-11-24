@@ -8,7 +8,7 @@ Unreleased
     It ships roadmap 2026-0032: Ekorn::Pipeline now counts every run's
     results, so DBIx::Squirrel::Context builds on its count, and the
     stage each iterator added to count its own is gone. Requires
-    Ekorn::Pipeline >= v0.3.11, < v0.4.0.
+    Ekorn::Pipeline >= v0.3.12, < v0.4.0.
 
     - An iterator with stages no longer adds one of its own to count
       its results, which cost 200 to 260 ns a row: reading 297,848
@@ -21,8 +21,9 @@ Unreleased
     - result_original, in a run reading no statement, where it was
       undef, gives the value the run's source gave, or that was pushed,
       as Ekorn::Pipeline::Context's does.
-    - Requires Ekorn::Pipeline v0.3.11 or later, below v0.4.0, the first
-      with Ekorn::Pipeline::Context.
+    - Requires Ekorn::Pipeline v0.3.12 or later, below v0.4.0: v0.3.11
+      added Ekorn::Pipeline::Context, and v0.3.12 gave its functions
+      the empty prototype ours have, so result_number is Ekorn's own.
 
 v3.5.0 2026-11-24
 

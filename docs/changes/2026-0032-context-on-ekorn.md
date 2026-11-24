@@ -150,4 +150,13 @@ says so, for v3.6.0 (D4).
 
   So 197 to 274 ns a row quicker, 10 to 17%: the counting stage's cost,
   less Ekorn's counting, as the throwaway copy measured.
+- **Then, Ekorn's own sub.** Ekorn took the missing prototype as a fix,
+  v0.3.12, at a0df4fb48a9c5a837bfdab8521e057fa202275b0. Tested there,
+  our `result_number` as Ekorn's sub under our name passed every test,
+  and a stage reading it each row was 11 to 48 ns a row quicker, 1 to
+  3%, over the same rows; a stage that doesn't read it was the same.
+  Iain chose to do it in v3.6.0, on 2026-11-24, raising the floor to
+  v0.3.12: so when Ekorn's Tooling gains the names in v0.4.0 (its
+  2026-0051), both export the same `result_number`. `result_original`
+  stays ours, as it carries a statement's row through chains.
 - **What's left:** nothing.
