@@ -1,6 +1,6 @@
 # 2026-0044. CSV in and out: a recipe, an export, and the README
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.5.0
 
 **Decisions:** D1 settled: Text::CSV recommended, and required for
 development. D2 settled: the export, the recipe and the README, all

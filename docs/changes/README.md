@@ -81,9 +81,9 @@ Steps, Done when.
 Newest id first.
 
 - [A stop after a tee no longer loses what its branch holds](2026-0045-tee-stop-closes-branch.md),
-  roadmap 2026-0045: shipped, unreleased.
+  roadmap 2026-0045: shipped in v3.5.0.
 - [CSV in and out: a recipe, an export, and the README](2026-0044-csv-recipe.md),
-  roadmap 2026-0044: shipped, unreleased.
+  roadmap 2026-0044: shipped in v3.5.0.
 - [as_hash takes the columns to keep](2026-0043-as-hash-columns.md),
   roadmap 2026-0043: shipped in v3.4.0.
 - [The index says how to use a name; the reference text shows it in context](2026-0042-index-and-text.md),
@@ -97,9 +97,9 @@ Newest id first.
 - [pluck with no column gives the only one](2026-0038-pluck-only-column.md),
   roadmap 2026-0038: shipped in v3.3.0.
 - [execute_array and execute_for_fetch, for every placeholder style](2026-0037-execute-array.md),
-  roadmap 2026-0037: shipped, unreleased.
+  roadmap 2026-0037: shipped in v3.5.0.
 - [Appraise Ekorn's feed and tee](2026-0036-appraise-feed-tee.md),
-  roadmap 2026-0036: shipped, unreleased.
+  roadmap 2026-0036: shipped in v3.5.0.
 - [tee, from DBIx::Squirrel::Stages::Taps and Tooling](2026-0035-tee.md),
   roadmap 2026-0035: shipped in v3.2.0.
 - [A name Ekorn adds to its Tooling fails only our CI](2026-0034-tooling-names-xt.md),

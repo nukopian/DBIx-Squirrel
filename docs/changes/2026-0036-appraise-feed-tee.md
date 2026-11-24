@@ -1,6 +1,6 @@
 # 2026-0036. Appraise Ekorn's feed and tee
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.5.0
 
 **Decisions:** None.
 

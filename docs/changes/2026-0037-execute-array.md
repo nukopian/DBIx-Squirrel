@@ -1,6 +1,6 @@
 # 2026-0037. execute_array and execute_for_fetch, for every placeholder style
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.5.0
 
 **Decisions:** D1 settled: a named statement's values in the order its
 names first appear. D2 settled: `bind_param_array` takes names. D3

@@ -2,6 +2,8 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+v3.5.0 2026-11-24
+
     execute_array and execute_for_fetch work for every placeholder
     style, CSV files go in and out, the examples show stages doing what
     SQL can't, and the user guide says when to use them.

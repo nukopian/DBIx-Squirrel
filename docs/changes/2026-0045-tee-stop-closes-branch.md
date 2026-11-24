@@ -1,6 +1,6 @@
 # 2026-0045. A stop after a tee no longer loses what its branch holds
 
-**Status:** shipped, unreleased
+**Status:** shipped in v3.5.0
 
 **Decisions:** None.
 
