@@ -3,8 +3,8 @@ Revision history for DBIx-Squirrel
 Unreleased
 
     execute_array and execute_for_fetch work for every placeholder
-    style, CSV files go in and out, and the examples show stages doing
-    what SQL can't.
+    style, CSV files go in and out, the examples show stages doing what
+    SQL can't, and the user guide says when to use them.
 
     It ships roadmap 2026-0037: loading many rows at once, which worked
     only for ? placeholders, works for numbered and named ones, used
@@ -47,6 +47,10 @@ Unreleased
       totals, resume where a run stopped, and make slugs and words,
       and say that a test the SQL could do belongs there, but in a
       stage while debugging a query you'd rather not touch.
+    - The user guide answers "When should I use it, and when not?": the
+      DBI's methods for a simple query used once, SQL for what the
+      database can do, stages for a query whose callers vary, and a
+      list or a hash where rows don't flow. The README points to it.
 
 v3.4.2 2026-11-23
 

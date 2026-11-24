@@ -2374,6 +2374,77 @@ the same thing, they give the same result. You can add it to a program
 one query at a time, and take a handle you already have ([chapter
 1](#1-still-the-dbi)). The tests run on SQLite, MySQL and PostgreSQL.
 
+### When should I use it, and when not?
+
+The rest of this guide says what DBIx::Squirrel can do; this says when
+it's worth it. The stages are more to learn, and they pay that back in
+some code, not all of it.
+
+**One query, used once, its rows used at once: the DBI's methods.** A
+`selectall_arrayref`, or a `fetchrow_hashref` loop, says all there is
+to say, and stages would only add words. That isn't leaving
+DBIx::Squirrel: the handle is a DBI handle, so the DBI's methods are
+there beside the rest, with placeholders in any style.
+
+**Work the database can do: SQL.** For the first ten rows, write
+`LIMIT 10`, not `take(10)`; for the rows that match, write `WHERE`,
+not `take_if`. Sorting, grouping, joining and filtering a large table
+belong in the query, where the database can use its indexes and send
+fewer rows. Stages aren't a way to tune a query. As a rule: shaping
+that belongs to the query goes in SQL, and shaping that belongs to the
+caller goes in stages.
+
+**One query, many callers: stages.** When a query stays the same but
+what's done with its rows varies, write it once, in a function that
+takes stages, and let each caller say what it wants: a count, the
+first few, a column, a file ([Let callers of your functions add
+stages](#let-callers-of-your-functions-add-stages)). The function
+needn't change for a caller it didn't foresee. That's where the extra
+words pay for themselves, and why the package suits reports, exports
+and loads, command-line tools over a database, admin scripts, and
+modules whose functions others call.
+
+**Every caller wants a list: give them one.** A function whose callers
+all end with `keep_all` holds every row each time, so its rows don't
+stream anyway. `keep_all` isn't wrong; often it's what's wanted. But
+then offer both, a function that takes stages and one that gives the
+list, and let the caller choose:
+
+```perl
+sub artist_names (@stages) {
+    return $dbh->iterate('SELECT name FROM artist ORDER BY name', pluck, @stages);
+}
+sub all_artist_names () { return artist_names(keep_all) }
+
+say join ', ', all_artist_names();                # Abba, Blur, Cream
+say artist_names(take(1), keep_all);              # Abba
+```
+
+**Not everything is a stream.** Rows that flow, read once in order,
+suit an iterator and stages. A table you look things up in wants a
+hash, built once with a select method, and an answer you'll read
+several times wants an array:
+
+```perl
+my %artist = map {@$_} @{ $dbh->selectall_arrayref('SELECT id, name FROM artist') };
+say $artist{2};    # Blur
+```
+
+Making every query a stream would make code like that worse, not
+better.
+
+As a rough rule, choosing quickly:
+
+| You have | Reach for |
+|---|---|
+| a simple query, and one simple use of its rows | the DBI's methods, on the same handle |
+| a domain model, as objects and their relationships | an ORM, such as DBIx::Class |
+| a query that stays the same, and callers that vary | DBIx::Squirrel's stages |
+
+It's a simplification, but close to how the choice goes in practice.
+The biggest gain isn't the loops the stages replace: it's that whoever
+writes a query needn't guess how its callers will want the rows.
+
 ### Do I need to learn Ekorn::Pipeline?
 
 Not to use DBIx::Squirrel: this guide shows its parts as they apply to

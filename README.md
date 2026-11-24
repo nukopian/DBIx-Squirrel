@@ -234,7 +234,9 @@ among its stages.
 feature in detail, with examples.
 [The user guide](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AHowTo) is a tour of the
 package, a layer at a time, from the DBI underneath to the shortcuts
-on top, with recipes that work. Each module's POD, starting with
+on top, with recipes that work; its "When should I use it, and when
+not?" says where the package helps, and where plain DBI or SQL is the
+better choice. Each module's POD, starting with
 [DBIx::Squirrel](https://metacpan.org/pod/DBIx%3A%3ASquirrel), says the same more briefly.
 
 ## Installing
