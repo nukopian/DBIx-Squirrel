@@ -94,6 +94,8 @@ Newest id first.
   roadmap 2026-0038: shipped in v3.3.0.
 - [execute_array and execute_for_fetch, for every placeholder style](2026-0037-execute-array.md),
   roadmap 2026-0037: shipped, unreleased.
+- [Appraise Ekorn's feed and tee](2026-0036-appraise-feed-tee.md),
+  roadmap 2026-0036: shipped, unreleased.
 - [tee, from DBIx::Squirrel::Stages::Taps and Tooling](2026-0035-tee.md),
   roadmap 2026-0035: shipped in v3.2.0.
 - [A name Ekorn adds to its Tooling fails only our CI](2026-0034-tooling-names-xt.md),

@@ -1125,6 +1125,14 @@ A stop in C<tee>'s stages, such as C<take(2)>'s, ends only them: the
 pipeline reads on. It costs a good deal more than C<peek>, so keep it
 for side jobs and debugging.
 
+A stop after the tee is another matter. A branch that holds values,
+as C<batch> does, gives them out in its flush, which runs only when the
+tee's input runs out. A stage after the tee that stops the run, such
+as C<take>, or an iterator's C<first>, ends it before then, so what the
+branch held is dropped, with no error. A branch writing rows in
+batches would leave the last few unwritten. Put any stage that stops
+the run before the tee.
+
 =head2 Compared with C<map> over every row
 
 The obvious alternative is to fetch every row and use Perl's own C<map>

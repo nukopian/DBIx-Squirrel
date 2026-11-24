@@ -994,6 +994,14 @@ A stop in `tee`'s stages, such as `take(2)`'s, ends only them: the
 pipeline reads on. It costs a good deal more than `peek`, so keep it
 for side jobs and debugging.
 
+A stop after the tee is another matter. A branch that holds values,
+as `batch` does, gives them out in its flush, which runs only when the
+tee's input runs out. A stage after the tee that stops the run, such
+as `take`, or an iterator's `first`, ends it before then, so what the
+branch held is dropped, with no error. A branch writing rows in
+batches would leave the last few unwritten. Put any stage that stops
+the run before the tee.
+
 ### Compared with `map` over every row
 
 The obvious alternative is to fetch every row and use Perl's own `map`

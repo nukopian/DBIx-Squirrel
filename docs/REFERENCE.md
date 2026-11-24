@@ -1201,7 +1201,10 @@ ends only the branch, and a death in it kills the run. It shares the
 main run's context, so `pluck` and `as_hash` work in it on a
 statement's rows. Each value costs a push into the branch, several
 times what `peek` costs, so it's for side jobs and debugging, not a
-hot loop.
+hot loop. A stop after the tee, such as `take`'s or `first`'s, ends
+the run before the branch's flushes run, so what a branch holds, such
+as a part-filled `batch`, is dropped: put a stage that stops the run
+before a tee whose branch holds values.
 
 ```perl
 my @hits;
@@ -3949,7 +3952,8 @@ Runs each value through a branch of `@stages`, for what they do on the
 side, and passes the value on unchanged. What comes out of the branch
 is dropped. The branch is a run of its own beside the main run, so its
 stages keep their state across the values, and each main run gets a
-fresh branch. Exported upon request.
+fresh branch. A stop after the tee drops what the branch holds, as its
+flushes don't run. Exported upon request.
 
 See [Taps](#taps).
 

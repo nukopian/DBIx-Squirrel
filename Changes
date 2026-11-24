@@ -7,8 +7,9 @@ Unreleased
 
     It ships roadmap 2026-0037: loading many rows at once, which worked
     only for ? placeholders, works for numbered and named ones, used
-    once or more, with rows as hashes by name. Still requires
-    Ekorn::Pipeline >= v0.3.7, < v0.4.0.
+    once or more, with rows as hashes by name; and 2026-0036, an
+    appraisal of Ekorn's feed and tee. Still requires Ekorn::Pipeline
+    >= v0.3.7, < v0.4.0.
 
     - execute_array, execute_for_fetch and bind_param_array work for
       numbered and named placeholders, used once or more, as plain DBI's
@@ -20,6 +21,9 @@ Unreleased
       "Expected no list placeholder in a statement for rows of values".
     - The user guide's loader writes hashes with execute_for_fetch and
       named placeholders.
+    - The user guide and the reference say to put a stage that stops the
+      run, such as take, before a tee whose branch holds values, such as
+      a batch: a stop after it drops them (roadmap 2026-0036).
     - The README, the user guide and the reference no longer filter,
       limit or count in stages what a WHERE, LIMIT or COUNT would.
       Their examples test data the database doesn't have, keep running
