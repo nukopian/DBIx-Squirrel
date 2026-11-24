@@ -5,7 +5,8 @@
 **Decisions:** D1 settled: `result_number` is Ekorn's, in every run. D2
 settled: `result_original` falls back to Ekorn's outside a statement's
 run. D3 settled: `iterator` keeps the `local`ised global. D4 settled:
-v3.6.0, with the floor raised. D5 settled: `next` and `all`, before and after.
+v3.6.0, with the floor raised. D5 settled: `next` and `all`, before
+and after.
 
 **Origin:** a message from Ekorn-Pipeline's session, 2026-11-16
 (Ekorn-Pipeline 5ff0ea15ada5f95207001e740889614f32c574ff, its roadmap
