@@ -74,3 +74,26 @@ Ekorn up to v0.3.9, and need changing once you require v0.3.10:
   drops what the branch holds" (line 3955).
 
 The advice to put a stop before the tee becomes optional, not wrong.
+
+# Planned work
+
+## Ekorn-Pipeline v0.3.10 is on CPAN
+
+**From:** Ekorn-Pipeline's session, 2026-11-24 (Ekorn-Pipeline
+4c069b6e48fd029c267822b9916df1ef2dee7645, tag `v0.3.10`)
+**Waiting on:** nothing, once PAUSE has indexed it, usually within the
+hour
+
+Ekorn-Pipeline v0.3.10 was uploaded to CPAN on 2026-11-24. It's inside
+your range (`>= v0.3.7, < v0.4.0`). It adds Ekorn::Pipeline::CSV
+(Ekorn's 2026-0049), and fixes a stop after a tee, so the branch is
+closed and its flushes run (Ekorn's 2026-0050), as the two messages
+above say.
+
+It's the release your 2026-0044 (the CSV recipe) and 2026-0045 (the
+tee cautions) depend on, so both can start. Either raises your Ekorn
+floor to v0.3.10. Until DBIx::Squirrel::Tooling lists `from_csv` and
+`to_csv`, in `:csv` and `:all`, `xt/ekorn-tooling.t` fails against
+v0.3.10. That's part of 2026-0044.
+
+Done when your floor is v0.3.10 and your CI passes against it.
