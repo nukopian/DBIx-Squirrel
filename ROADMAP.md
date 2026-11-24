@@ -49,16 +49,17 @@ Nothing.
 
 ## Later
 
-### 2026-0047. Ekorn v0.4.0, and its Tooling's :context
+### 2026-0047. Ekorn v0.4.0, when there is one
 
-**Size:** XS (1). **Depends on:** 2026-0046; Ekorn-Pipeline 2026-0051,
-released in its first v0.4.0.
+**Size:** XS (1). **Depends on:** Ekorn-Pipeline's first v0.4.0.
 
-Ekorn's Tooling gains `result_number` and `result_original` in
-`:context` and `:all` in its v0.4.0, which our range, `< v0.4.0`,
-excludes. Widen it to take v0.4.0, and check the two Toolings agree on
-every name, as `t/28-tooling.t` and `xt/ekorn-tooling.t` do. Done when
-the tests pass against Ekorn's v0.4.0, and `Changes` says so.
+Our range, `< v0.4.0`, takes no v0.4.0 of Ekorn's. Its Tooling's
+`:context` came in v0.3.15 instead (its 2026-0051), so nothing is
+waiting on a v0.4.0 now, but when Ekorn has one, for its own reasons,
+widen the range to take it, after testing against it, and check the two
+Toolings still agree on every name, as `t/28-tooling.t` and
+`xt/ekorn-tooling.t` do. Done when the tests pass against Ekorn's
+v0.4.0, and `Changes` says so.
 
 ## Ideas
 
