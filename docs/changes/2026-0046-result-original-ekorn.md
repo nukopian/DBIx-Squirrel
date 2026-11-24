@@ -2,16 +2,15 @@
 
 **Status:** open
 
-**Decisions:** D1 open: how the two Toolings agree on
-`result_original`; Ekorn's answer recommends a source's `original`
-part.
+**Decisions:** D1 settled: a source's `original` part, as Ekorn
+designs it.
 
 **Origin:** roadmap, added 2026-11-24, the other side of
 Ekorn-Pipeline's 2026-0051, as Iain asked; split on 2026-11-24, with
 taking Ekorn's v0.4.0 moved to 2026-0047
 
-**Depends on:** Ekorn-Pipeline 2026-0052, proposed: a source's
-`original` part, released in a v0.3.x
+**Depends on:** Ekorn-Pipeline 2026-0052, a source's `original` part,
+released in v0.3.13
 
 ## Background
 
@@ -47,7 +46,14 @@ reaches outer pipelines with no code of ours. It can't speak for a
 source whose step gives several values at once; ours does so only when
 an iterator has no stages and no pipeline reads it, where nothing can
 ask. It only adds, so it's for a v0.3.x, ahead of 2026-0051, which
-will depend on it; Ekorn proposed it as its 2026-0052.
+will depend on it; Ekorn proposed it as its 2026-0052, committed at
+dee853233996cb433e8b544e251448f949b26c83, its factory taking the part
+by name too (its D6). Tested at its
+1bce895f7d3b2eecc387416991514ab99536ed89, before its v0.3.13, with our
+source giving the part and our `result_original` as Ekorn's: every
+test passed on 5.36 to 5.44, our row reached outer pipelines in every
+kind of chain, and a stage reading `result_original` each row was 229
+to 270 ns a row quicker, 12 to 14%.
 
 Our side, then: the statement source gives `original => sub {
 $context->{row} }`, our `result_original` becomes Ekorn's sub under
@@ -56,10 +62,13 @@ Taking Ekorn's v0.4.0, with the names in its Tooling, is 2026-0047.
 
 ## Decisions
 
-- [ ] **D1.** How do the two Toolings agree on `result_original`? Our
+- [x] **D1.** How do the two Toolings agree on `result_original`? Our
   proposal, a key in the run's context; Ekorn's `:context` holding
   `result_number` alone; or our `t/28-tooling.t` excusing the name.
   Ekorn's answer: a source's `original` part, as above, which we
-  recommend over all three. To be settled as "a source part, as
-  Ekorn designs it" once Ekorn's 2026-0052 is committed, as its
-  session suggested.
+  recommend over all three. Settled as "a source part, as Ekorn designs
+  it" on 2026-11-24, once Ekorn committed its 2026-0052
+  (Ekorn-Pipeline dee853233996cb433e8b544e251448f949b26c83), as its
+  session suggested: it claims no name in a caller's context, costs a
+  run nothing until asked, and carries our row through chains with no
+  code of ours.

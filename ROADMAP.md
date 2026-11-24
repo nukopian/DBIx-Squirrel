@@ -51,15 +51,15 @@ Nothing.
 
 ### 2026-0046. result_original is Ekorn's own sub
 
-**Size:** XS (1). **Depends on:** Ekorn-Pipeline 2026-0052, proposed:
-a source's `original` part, released in a v0.3.x.
+**Size:** XS (1). **Depends on:** Ekorn-Pipeline 2026-0052, a
+source's `original` part, released in v0.3.13.
 
 Our statement source gives the `original` part Ekorn's 2026-0052 adds,
 `sub { $context->{row} }`, and Ekorn's iterators pass it through
 chains, so our `result_original` can be Ekorn's own sub under our
 name, as `result_number` is, and the two Toolings agree on both names
 when Ekorn's gains them. The floor rises to the Ekorn release that has
-the part. Its question is settled by Ekorn's design, in [its
+the part. Its decision is settled, in [its
 record](docs/changes/2026-0046-result-original-ekorn.md).
 
 ### 2026-0047. Ekorn v0.4.0, and its Tooling's :context
