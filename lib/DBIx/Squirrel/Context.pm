@@ -18,9 +18,7 @@ our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
 # The iterator running the stages, set by the iterator while they run; a
 # package variable, so the iterator's next can localise it itself,
-# without a call for each row. The row a value came from is the run's,
-# in the context a statement's source gives it, so it's there in any run
-# reading a statement.
+# without a call for each row.
 our $ITERATOR;
 
 # The iterator running the stage.

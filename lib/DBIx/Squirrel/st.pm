@@ -4,7 +4,9 @@ package DBIx::Squirrel::st;
 
 use DBI        qw();
 use List::Util qw(max pairs);
-use Ref::Util  qw(is_coderef is_plain_arrayref is_plain_hashref is_ref);
+use Ref::Util  qw(
+    is_arrayref is_coderef is_plain_arrayref is_plain_hashref
+    is_ref);
 
 use DBIx::Squirrel::Errors       qw(at_caller croakf);
 use DBIx::Squirrel::Iterator     qw();
@@ -325,10 +327,13 @@ sub _row_keys ($state) {
 # values for, and the row: an array of values in that order, or, for a
 # named statement, a hash of them by name.
 sub _row_in_order ($state, $keys, $row) {
+    my $numbered = is_numbered($state->{Binds});
     return _in_order($state, [$row])
-        if is_plain_hashref($row);
+        if !$numbered && is_plain_hashref($row);
+    croakf 'Expected a row of values: an array, or a hash for named placeholders'
+        unless is_arrayref($row);
     return _in_order($state, $row)
-        if is_numbered($state->{Binds});
+        if $numbered;
     croakf 'Expected %d bind values, not %d', scalar @$keys, scalar @$row
         unless @$row == @$keys;
     my %values;
@@ -644,6 +649,11 @@ A statement with named placeholders wasn't given a value for each
 name, or a statement with numbered or named placeholders was executed
 without values when some had none bound.
 
+=item Expected one value for each placeholder (two for %s)
+
+A statement with named placeholders was given a value for a name twice,
+written with and without its sigil, as C<:id> and C<id>.
+
 =item Expected a reference to an ARRAY for a list (%s)
 
 The value given for a list placeholder, named with its C<...>, wasn't
@@ -660,6 +670,12 @@ so the caller must deal with an empty list.
 A list held an unblessed reference, such as an array reference inside
 the one given, as in C<[[1, 2]]> to a statement whose one value is a
 list.
+
+=item Expected a row of values: an array, or a hash for named placeholders
+
+A row given to L</execute_for_fetch>, or by C<ArrayTupleFetch> to
+L</execute_array>, was neither an array, nor, for named placeholders, a
+hash. The rows before it have been executed.
 
 =item Expected no list placeholder in a statement for rows of values (%s)
 

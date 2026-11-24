@@ -217,11 +217,24 @@ subtest 'a row of the wrong shape croaks' => sub {
         qr( \A \QExpected a placeholder of the statement (nope)\E )x,
         'or with one the statement has not';
 
+    my $not_a_row = qr(
+        \A \QExpected a row of values: an array, or a hash for named placeholders\E
+    )x;
+    @rows = (bless {id => 1, name => 'a'}, 'Some::Class');
+    like dies { $sth->execute_for_fetch($fetch) }, $not_a_row,
+        'an object, not a plain hash';
+    @rows = ('a');
+    like dies { $sth->execute_for_fetch($fetch) }, $not_a_row,
+        'a plain value';
+
     @rows = ({1 => 1, 2 => 'a'});
     $sth  = dbh()->prepare($NUMBERED);
-    like dies { $sth->execute_for_fetch($fetch) },
-        qr( \A \QExpected 2 bind values, not 1\E )x,
+    like dies { $sth->execute_for_fetch($fetch) }, $not_a_row,
         'a hash, for numbered placeholders';
+
+    @rows = (bless [1, 'a'], 'Some::Class');
+    is $sth->execute_for_fetch($fetch), 1,
+        'but an object that is an array is one, as for the DBI';
 };
 
 subtest "a row the database refuses, in the status, as with the DBI" => sub {

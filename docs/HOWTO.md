@@ -2459,32 +2459,32 @@ starts from the beginning.
 
 Close to the DBI where it does the DBI's work, and a little slower per
 row where it does more. Timed on a real table of 297,848 narrow rows,
-in SQLite, the best of three runs, in seconds:
+in SQLite, on Perl 5.36, each way in a process of its own, the best of
+three runs, in seconds:
 
 | How the rows are read | Seconds |
 |---|---|
-| the DBI's `fetchrow_arrayref`, in a loop | 0.079 |
-| the DBI's `selectall_arrayref` | 0.107 |
-| DBIx::Squirrel's `selectall_arrayref` | 0.107 |
-| `iterate(...)->all` | 0.156 |
-| `map` over `iterate(...)->all` | 0.169 |
-| `next`, in a loop | 0.276 |
-| `iterate(..., keep_all)` | 0.533 |
-| `iterate(..., $stage)->all` | 0.637 |
+| the DBI's `fetchrow_arrayref`, in a loop | 0.073 |
+| the DBI's `selectall_arrayref` | 0.092 |
+| DBIx::Squirrel's `selectall_arrayref` | 0.092 |
+| `iterate(...)->all` | 0.122 |
+| `map` over `iterate(...)->all` | 0.144 |
+| `next`, in a loop | 0.259 |
+| `iterate(..., keep_all)` | 0.506 |
+| `iterate(..., $stage)->all` | 0.437 |
 
 On wide rows, 21,826 of them averaging 24 KB, fetching the data costs
 far more than anything around it, and every one of those ways takes
-between 0.13 and 0.23 seconds.
+between 0.13 and 0.20 seconds.
 
-So: the select methods cost nothing over the DBI's. `all` with no
-stages takes about one and a half times as long as
-`selectall_arrayref`. A stage costs under two microseconds a row; over
-a hundred thousand rows, that's a sixth of a second, and on most
-queries it's lost in the time the database takes. When every row of a
-big result is wanted, and only needs changing, `map` over `all` is
-quickest. Use stages when you might not need every row, when the
-result is too big to hold, or when the steps should travel with the
-query.
+So: the select methods cost nothing over the DBI's. `all` with no stages
+takes about a third longer than `selectall_arrayref`. A stage costs
+about a microsecond a row; over a hundred thousand rows, that's a tenth
+of a second, and on most queries it's lost in the time the database
+takes. When every row of a big result is wanted, and only needs
+changing, `map` over `all` is quickest. Use stages when you might not
+need every row, when the result is too big to hold, or when the steps
+should travel with the query.
 
 ### Will a large result fill my memory?
 

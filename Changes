@@ -3,12 +3,14 @@ Revision history for DBIx-Squirrel
 Unreleased
 
     result_original is Ekorn::Pipeline's own, and a stage reading it
-    is 11 to 13% quicker.
+    is 11 to 13% quicker; a value given twice for a placeholder croaks,
+    rather than one being chosen at random.
 
     It ships roadmap 2026-0046: the statement's source gives
     Ekorn::Pipeline the row as its original, which Ekorn carries
     through chains, so DBIx::Squirrel::Context's result_original is
-    Ekorn::Pipeline::Context's own, as result_number is. Requires
+    Ekorn::Pipeline::Context's own, as result_number is; and fixes
+    from a review of what changed since v3.3.2. Requires
     Ekorn::Pipeline >= v0.3.13, < v0.4.0.
 
     - result_original is Ekorn::Pipeline::Context's own sub, and gives
@@ -19,6 +21,22 @@ Unreleased
       297,848 rows (roadmap 2026-0046).
     - Requires Ekorn::Pipeline v0.3.13 or later, below v0.4.0, the first
       with a source's original part.
+    - A value given for a named placeholder twice, written with and
+      without its sigil, as :id and id, croaks: "Expected one value for
+      each placeholder (two for id)". It took one of the two as a hash
+      happened to order them, wherever values are given by name: in
+      pairs, in a hash given to execute, or in a hash row for
+      execute_for_fetch.
+    - A row for execute_for_fetch, or from ArrayTupleFetch, that's
+      neither an array nor, for named placeholders, a hash croaks:
+      "Expected a row of values: an array, or a hash for named
+      placeholders". A hash for numbered placeholders said "Expected 2
+      bind values, not 1", and an object, Perl's own "Not an ARRAY
+      reference". The reference says the rows before such a row have
+      been executed, so a load wants a transaction.
+    - The user guide's timings are measured again: a stage now costs
+      about a microsecond a row, where it said under two.
+    - DBIx::Squirrel::db's POD lists the ekorn_slice error.
 
 v3.6.0 2026-11-24
 

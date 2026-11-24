@@ -545,6 +545,7 @@ line:
 | named | There's an odd number of values: `Expected names and values in pairs`. |
 | named | A name isn't one of the statement's: `Expected a placeholder of the statement (x)`. |
 | named | A name has no value: `Expected a value for each placeholder (none for id)`. |
+| named | A name is given twice, as `:id` and `id`: `Expected one value for each placeholder (two for id)`. |
 
 ### An array reference of values
 
@@ -635,15 +636,21 @@ $dbh->do('DROP TABLE gig');
 ```
 
 `ArrayTupleFetch` and `ArrayTupleStatus` work as the DBI's do, and so
-does context: in a list, `execute_array` gives the rows executed and
-the rows changed. The counts the DBI checks are of the placeholders,
-not their uses, and its errors are its own, raised as its
-attributes say. A row of the wrong shape croaks at the caller's line,
-as `execute` would. A statement with a [list](#lists) can't take
-rows, as its handle is prepared for lists of one length: each of the
-three croaks, `Expected no list placeholder in a statement for rows of
-values (...:ids)`. Arrays bound with `bind_param_array` are kept with
-the statement, not in the DBI's `ParamArrays`, for any style but `?`.
+does context: in a list, `execute_array` gives the rows executed and the
+rows changed. The counts the DBI checks are of the placeholders, not
+their uses, and its errors are its own, raised as its attributes say. A
+row of the wrong shape croaks at the caller's line, as `execute` would:
+one with too few or too many values, `Expected 2 bind values, not 1`, or
+one that's neither an array nor, for named placeholders, a hash,
+`Expected a row of values: an array, or a hash for named placeholders`.
+The rows before it have been executed, so load in a transaction to keep
+all or none. For `?`, the DBI's way holds instead: the row's error goes
+in its status, and the rows after it are executed. A statement with a
+[list](#lists) can't take rows, as its handle is prepared for lists of
+one length: each of the three croaks, `Expected no list placeholder in a
+statement for rows of values (...:ids)`. Arrays bound with
+`bind_param_array` are kept with the statement, not in the DBI's
+`ParamArrays`, for any style but `?`.
 
 ### do
 
@@ -2445,7 +2452,9 @@ caller's line. Those starting "Expected" say what was expected.
 | `Expected names and values in pairs` | A statement with named placeholders was given an odd number of values. |
 | `Expected a placeholder of the statement (%s)` | A value was given for a placeholder the statement doesn't have. |
 | `Expected no list placeholder in a statement for rows of values (%s)` | `execute_array`, `execute_for_fetch` or `bind_param_array` was called on a statement with a list placeholder, whose handle is prepared for lists of one length. |
+| `Expected a row of values: an array, or a hash for named placeholders` | A row given to `execute_for_fetch`, or by `ArrayTupleFetch`, was neither an array, nor, for named placeholders, a hash. |
 | `Expected a value for each placeholder (none for %s)` | A statement with named placeholders wasn't given a value for each name, or a statement with numbered or named placeholders was executed without values when some had none bound. |
+| `Expected one value for each placeholder (two for %s)` | A statement with named placeholders was given a value for a name twice, written with and without its sigil, as `:id` and `id`. |
 | `Expected bind values with a statement taking a list (%s)` | `prepare` or `prepare_cached` was given a statement taking a [list](#lists). Each list placeholder is named, and a `?` is named by its position: `...? at 2`. |
 | `Expected a placeholder to take a list everywhere or nowhere (%s)` | A placeholder was used with `...` in one place and without it in another. |
 | `Expected no list placeholder with pg_placeholder_dollaronly (%s)` | A `$1` placeholder took a list under DBD::Pg's `pg_placeholder_dollaronly`. |
