@@ -55,9 +55,8 @@ Nothing.
 
 Once Ekorn::Pipeline::Context is out, build `result_number` and
 `result_original` on Ekorn's, and drop the stage every iterator with
-stages adds to count its results, 11 to 15% a row. Iain won't start
-it the week of 2026-11-16. Its questions are open, in [its
-record](docs/changes/2026-0032-context-on-ekorn.md).
+stages adds to count its results, 11 to 15% a row. Its decisions
+are settled, in [its record](docs/changes/2026-0032-context-on-ekorn.md).
 
 ## Ideas
 
