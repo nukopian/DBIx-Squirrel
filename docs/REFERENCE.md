@@ -987,13 +987,17 @@ from, and the iterator reading them. None is exported by default.
 use DBIx::Squirrel::Context qw(iterator result_number result_original);
 ```
 
-`result_original` works in any run reading a statement: an iterator's
-or result set's own stages, and the stages of a chain made with `|`,
-or of a pipeline of yours, reading one, as it's read from the [run's
-context](#the-runs-context). `result_number` and `iterator` work only
-in an iterator's or result set's own stages, run by its `next`, `all`,
-`first` or `single`, or by a sink given last to the call that made it.
-Elsewhere, and outside a stage, they return `undef`.
+`result_number` works in any run, as Ekorn::Pipeline counts every
+run's results: an iterator's or result set's own stages, a chain made
+with `|`, and a pipeline of yours, each counting its own.
+`result_original` gives a statement's row in any run reading one, as
+it's read from the [run's context](#the-runs-context), chains
+included; in a run reading no statement, it's the value the run's
+source gave, or that was pushed, as Ekorn::Pipeline::Context's is.
+`iterator` works only in an iterator's or result set's own stages, run
+by its `next`, `all`, `first` or `single`, or by a sink given last to
+the call that made it. Elsewhere it returns `undef`, and outside a run
+all three do.
 
 ```perl
 my @chart = $dbh->iterate(
@@ -2524,14 +2528,14 @@ function, `|`, or a pipeline of yours reading an iterator, finds the
 statement in the [run's context](#the-runs-context). What each piece
 finds there, and what [Context](#context)'s functions give it:
 
-| Piece | `Ekorn::Pipeline::run_context()` | `result_original` | `result_number`, in an iterator's own run |
+| Piece | `Ekorn::Pipeline::run_context()` | `result_original` | `result_number` |
 |---|---|---|---|
 | **set-up** | nothing: the run hasn't read the statement yet | `undef` | `undef` |
 | a stage's **step** | `statement`, `columns`, and the `row` this value came from | the row | the number of the result being made |
 | a stage's **flush** | `statement` and `columns`; `ending()` is true, and the row is no value's | `undef` | the number of the first value it gives |
-| a sink's **step** | `statement`, `columns` and `row`, as for a stage | the row | not the value's number, which has been counted: a sink counts for itself |
-| a sink's **flush** | as for a stage's flush | `undef` | not used |
-| an **end** | `statement` and `columns`; the `row` is `undef` | `undef` | not used |
+| a sink's **step** | `statement`, `columns` and `row`, as for a stage | the row | the number of the value it's given |
+| a sink's **flush** | as for a stage's flush | `undef` | the results so far, plus one |
+| an **end** | `statement` and `columns`; the `row` is `undef` | `undef` | `undef` |
 
 So a stage that needs the statement's columns reads them in its step,
 the first time it's called in the run, and keeps them in a variable of
@@ -2767,7 +2771,7 @@ the changes code written for 2.x meets, and how to move:
 | `DBIx::Squirrel::Stop->throw`, or a subclass of DBIx::Squirrel::Stop | fails: it's no longer a class | `Ekorn::Pipeline::Stop->throw`, and subclass `Ekorn::Pipeline::Stop` |
 | `ref $stage eq 'CODE'`, or `is_coderef($stage)`, for a stage made by `take`, `gather` and the like | false: they're objects now, called as code references | `is_stage($stage)`, from Ekorn::Pipeline |
 | A `gather` block's second part, "the end function" | the same, now called the flush | nothing; an end, told how the run ended, can follow it |
-| `result_number` or `iterator` in a pipeline of your own reading an iterator | `undef` | count in a stage of your own |
+| `iterator` in a pipeline of your own reading an iterator | `undef` | keep the iterator in a variable the stage can see |
 | `my($first) = $sth->iterate->next`, then using the handle | the handle is finished once the iterator goes | keep the iterator while the handle is in use |
 
 Everything else works as it did: `iterate`, `results`, and the select
@@ -2980,7 +2984,10 @@ Returns the number of the result being made, from 1. It counts
 results, not rows: while a stage drops rows, the number stays the
 same, and each value a stage returns in place of one row is a result
 of its own. In a flush of a stage made with [gather](#gather), it's
-the number of the first value the flush returns. Exported upon request.
+the number of the first value the flush returns. It works in any run,
+each counting its own results, and is `undef` outside one. It has an
+empty prototype, so `result_number + 1` adds one. Exported upon
+request.
 
 See [Context](#context).
 
@@ -2994,8 +3001,9 @@ $row = result_original();
 Returns the row the result is being made from, as it was fetched,
 before any stage changed it; for a result set, the row object. In a
 flush of a stage made with [gather](#gather), and the stages after it,
-it's `undef`, as what a flush gives comes from every row, not one.
-Exported upon request.
+it's `undef`, as what a flush gives comes from every row, not one. In
+a run reading no statement, it's the value the run's source gave, or
+that was pushed. Exported upon request.
 
 See [Context](#context).
 

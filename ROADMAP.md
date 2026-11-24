@@ -45,14 +45,7 @@ Nothing.
 
 ## Next
 
-### 2026-0032. DBIx::Squirrel::Context on Ekorn's, without the counting stage
-
-**Size:** S (2). **Depends on:** Ekorn-Pipeline 2026-0046, released.
-
-Once Ekorn::Pipeline::Context is out, build `result_number` and
-`result_original` on Ekorn's, and drop the stage every iterator with
-stages adds to count its results, 11 to 15% a row. Its decisions
-are settled, in [its record](docs/changes/2026-0032-context-on-ekorn.md).
+Nothing.
 
 ## Later
 

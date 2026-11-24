@@ -947,7 +947,8 @@ say for @chart[0, 1];
 ```
 
 `result_number` counts results, not rows, so a dropped row doesn't use
-up a number.
+up a number. It works in any run, each counting its own: an
+iterator's stages, a chain made with `|`, or a pipeline of your own.
 
 ### Watch rows go by, or count them
 

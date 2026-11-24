@@ -1087,7 +1087,8 @@ was fetched, whatever the stages before have done to it:
     # 2. Sunshine of Your Love (7700 plays)
 
 C<result_number> counts results, not rows, so a dropped row doesn't use
-up a number.
+up a number. It works in any run, each counting its own: an
+iterator's stages, a chain made with C<|>, or a pipeline of your own.
 
 =head2 Watch rows go by, or count them
 

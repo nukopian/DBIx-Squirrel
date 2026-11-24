@@ -1280,13 +1280,17 @@ from, and the iterator reading them. None is exported by default.
 
     use DBIx::Squirrel::Context qw(iterator result_number result_original);
 
-C<result_original> works in any run reading a statement: an iterator's
-or result set's own stages, and the stages of a chain made with C<|>,
-or of a pipeline of yours, reading one, as it's read from the L<run's
-context|/"The run's context">. C<result_number> and C<iterator> work only
-in an iterator's or result set's own stages, run by its C<next>, C<all>,
-C<first> or C<single>, or by a sink given last to the call that made it.
-Elsewhere, and outside a stage, they return C<undef>.
+C<result_number> works in any run, as Ekorn::Pipeline counts every
+run's results: an iterator's or result set's own stages, a chain made
+with C<|>, and a pipeline of yours, each counting its own.
+C<result_original> gives a statement's row in any run reading one, as
+it's read from the L<run's context|/"The run's context">, chains
+included; in a run reading no statement, it's the value the run's
+source gave, or that was pushed, as Ekorn::Pipeline::Context's is.
+C<iterator> works only in an iterator's or result set's own stages, run
+by its C<next>, C<all>, C<first> or C<single>, or by a sink given last to
+the call that made it. Elsewhere it returns C<undef>, and outside a run
+all three do.
 
     my @chart = $dbh->iterate(
         'SELECT name, plays FROM track ORDER BY plays DESC',
@@ -3023,7 +3027,7 @@ finds there, and what L<Context|/"Context">'s functions give it:
 
 **C<result_original>:** C<undef>
 
-**C<result_number>, in an iterator's own run:** C<undef>
+**C<result_number>:** C<undef>
 
 =item a stage's B<step>
 
@@ -3031,7 +3035,7 @@ finds there, and what L<Context|/"Context">'s functions give it:
 
 **C<result_original>:** the row
 
-**C<result_number>, in an iterator's own run:** the number of the result being made
+**C<result_number>:** the number of the result being made
 
 =item a stage's B<flush>
 
@@ -3039,7 +3043,7 @@ finds there, and what L<Context|/"Context">'s functions give it:
 
 **C<result_original>:** C<undef>
 
-**C<result_number>, in an iterator's own run:** the number of the first value it gives
+**C<result_number>:** the number of the first value it gives
 
 =item a sink's B<step>
 
@@ -3047,7 +3051,7 @@ finds there, and what L<Context|/"Context">'s functions give it:
 
 **C<result_original>:** the row
 
-**C<result_number>, in an iterator's own run:** not the value's number, which has been counted: a sink counts for itself
+**C<result_number>:** the number of the value it's given
 
 =item a sink's B<flush>
 
@@ -3055,7 +3059,7 @@ finds there, and what L<Context|/"Context">'s functions give it:
 
 **C<result_original>:** C<undef>
 
-**C<result_number>, in an iterator's own run:** not used
+**C<result_number>:** the results so far, plus one
 
 =item an B<end>
 
@@ -3063,7 +3067,7 @@ finds there, and what L<Context|/"Context">'s functions give it:
 
 **C<result_original>:** C<undef>
 
-**C<result_number>, in an iterator's own run:** not used
+**C<result_number>:** C<undef>
 
 =back
 
@@ -3419,11 +3423,11 @@ B<What happens now:> the same, now called the flush
 
 B<How to move:> nothing; an end, told how the run ended, can follow it
 
-=item C<result_number> or C<iterator> in a pipeline of your own reading an iterator
+=item C<iterator> in a pipeline of your own reading an iterator
 
 B<What happens now:> C<undef>
 
-B<How to move:> count in a stage of your own
+B<How to move:> keep the iterator in a variable the stage can see
 
 =item C<< my($first) = $sth->iterate->next >>, then using the handle
 
@@ -3760,7 +3764,10 @@ Returns the number of the result being made, from 1. It counts
 results, not rows: while a stage drops rows, the number stays the
 same, and each value a stage returns in place of one row is a result
 of its own. In a flush of a stage made with L<gather|/"gather">, it's
-the number of the first value the flush returns. Exported upon request.
+the number of the first value the flush returns. It works in any run,
+each counting its own results, and is C<undef> outside one. It has an
+empty prototype, so C<result_number + 1> adds one. Exported upon
+request.
 
 See L<Context|/"Context">.
 
@@ -3771,8 +3778,9 @@ See L<Context|/"Context">.
 Returns the row the result is being made from, as it was fetched,
 before any stage changed it; for a result set, the row object. In a
 flush of a stage made with L<gather|/"gather">, and the stages after it,
-it's C<undef>, as what a flush gives comes from every row, not one.
-Exported upon request.
+it's C<undef>, as what a flush gives comes from every row, not one. In
+a run reading no statement, it's the value the run's source gave, or
+that was pushed. Exported upon request.
 
 See L<Context|/"Context">.
 

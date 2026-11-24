@@ -2,6 +2,28 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    Iterators with stages are 10 to 17% quicker, and result_number
+    works in any run.
+
+    It ships roadmap 2026-0032: Ekorn::Pipeline now counts every run's
+    results, so DBIx::Squirrel::Context builds on its count, and the
+    stage each iterator added to count its own is gone. Requires
+    Ekorn::Pipeline >= v0.3.11, < v0.4.0.
+
+    - An iterator with stages no longer adds one of its own to count
+      its results, which cost 200 to 260 ns a row: reading 297,848
+      rows through one stage, next and all are 197 to 274 ns a row
+      quicker, 10 to 17%, on Perl 5.36 and 5.44 (roadmap 2026-0032).
+    - result_number works in any run, each counting its own: in a chain
+      made with |, and in a pipeline of your own, where it was undef. A
+      sink's step sees the number of the value it's given, not the
+      next, and an end sees undef.
+    - result_original, in a run reading no statement, where it was
+      undef, gives the value the run's source gave, or that was pushed,
+      as Ekorn::Pipeline::Context's does.
+    - Requires Ekorn::Pipeline v0.3.11 or later, below v0.4.0, the first
+      with Ekorn::Pipeline::Context.
+
 v3.5.0 2026-11-24
 
     execute_array and execute_for_fetch work for every placeholder
