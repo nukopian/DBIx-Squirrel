@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0043.
+Last id: 2026-0045.
 
 Items come in four groups:
 
@@ -45,7 +45,24 @@ Nothing.
 
 ## Next
 
-Nothing.
+### 2026-0044. A recipe: load a CSV file into a table
+
+**Size:** S (2). **Depends on:** Ekorn-Pipeline 2026-0049, released.
+
+Ekorn::Pipeline::CSV's `from_csv` gives hash rows when a header names
+the columns, and `execute_for_fetch` takes a hash row for named
+placeholders (2026-0037), so a CSV file loads into a table with no
+reshaping: `from_csv`, with `munge => 'db'` making a header's names
+into placeholder names (Ekorn's D11), `batch`, and `execute_for_fetch`
+on an `INSERT` with `:name` placeholders; and `iterate` with `as_hash`
+into `to_csv` writes a query out. A user guide recipe beside "Load
+rows as they arrive" shows both, as the kind of job that's tedious
+with plain DBI. Our Tooling exports `from_csv` and `to_csv` in `:csv`
+and `:all`, as Ekorn's will (`xt/ekorn-tooling.t` fails until it
+does), and the Ekorn floor rises to the release that has them. Done
+when the recipe runs under `xt/examples.t`, or is marked not run with
+the reason, and `Changes` says so. From 2026-0036's appraisal, as Iain
+asked.
 
 ## Later
 
@@ -58,6 +75,22 @@ Once Ekorn::Pipeline::Context is out, build `result_number` and
 stages adds to count its results, 11 to 15% a row. Iain won't start
 it the week of 2026-11-16. Its questions are open, in [its
 record](docs/changes/2026-0032-context-on-ekorn.md).
+
+### 2026-0045. A stop after a tee no longer loses what its branch holds
+
+**Size:** XS (1). **Depends on:** Ekorn-Pipeline 2026-0050, released.
+
+2026-0036 found that a stage stopping the run after a `tee`, such as
+`take` or the iterator's `first`, drops what the branch holds, such as
+a `batch` not yet full, and the user guide and the reference say to
+put the stopping stage before the tee. Once Ekorn's tee closes its
+branch on a stop, so its batches flush, those cautions go: in
+`docs/HOWTO.md` (the tee section) and `docs/REFERENCE.md` (tee's
+section and the index), with `scripts/manuals` run, a test in
+`t/` showing a batch held in a branch flushed when `take` stops the
+run, and the Ekorn floor raised to the release that has it, past our
+`< v0.4.0` bound if Ekorn calls the change a v0.4.0. Done when
+the cautions are gone, the test passes, and `Changes` says so.
 
 ## Ideas
 

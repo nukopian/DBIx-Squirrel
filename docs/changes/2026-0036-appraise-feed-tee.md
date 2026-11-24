@@ -81,4 +81,4 @@ is in our docs, and the message is sent.
   v3.5.0, `execute_for_fetch` takes a hash row for named placeholders,
   so rows from a header load with no reshaping.
 - **What's left:** a user guide recipe loading a CSV file into a
-  table, once Ekorn's 2026-0049 is released, is a task in `TODO.md`.
+  table, once Ekorn's 2026-0049 is released, is roadmap 2026-0044.
