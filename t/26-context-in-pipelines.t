@@ -76,6 +76,20 @@ subtest "result_number in every run; iterator only the iterator's" => sub {
         'an empty prototype: + 1 adds one';
 };
 
+# From roadmap 2026-0046, result_original is Ekorn's own sub, and the
+# statement's source gives Ekorn the row as its original, which Ekorn
+# passes through chains.
+subtest "result_original is Ekorn's, carrying the row through chains" => sub {
+    ref_is \&result_original, \&Ekorn::Pipeline::Context::result_original,
+        "Ekorn's own sub";
+    is prototype(\&result_original), '', 'with an empty prototype';
+    my $inner = $dbh->iterate($sql, sub { uc $_->[1] });
+    my $outer = Ekorn::Pipeline->new(sub { $_ })->iterator($inner);
+    is [Ekorn::Pipeline->new(sub { result_original })->iterator($outer)->all],
+        [map { [$_ + 1, $names[$_]] } 0 .. 2],
+        'the fetched row, two pipelines from the statement';
+};
+
 subtest 'result_original, outside a run reading a statement' => sub {
     is [Ekorn::Pipeline->new(sub { result_original })->(qw(a b))],
         [qw(a b)], "Ekorn's: the value pushed";

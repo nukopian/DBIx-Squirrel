@@ -990,10 +990,11 @@ use DBIx::Squirrel::Context qw(iterator result_number result_original);
 `result_number` works in any run, as Ekorn::Pipeline counts every
 run's results: an iterator's or result set's own stages, a chain made
 with `|`, and a pipeline of yours, each counting its own.
-`result_original` gives a statement's row in any run reading one, as
-it's read from the [run's context](#the-runs-context), chains
-included; in a run reading no statement, it's the value the run's
-source gave, or that was pushed, as Ekorn::Pipeline::Context's is.
+`result_original` gives a statement's row in any run reading one,
+chains included: it's Ekorn::Pipeline::Context's, and the statement's
+source gives Ekorn the row as its original, which Ekorn passes through
+chains. In a run reading no statement, it's the value the run's source
+gave, or that was pushed.
 `iterator` works only in an iterator's or result set's own stages, run
 by its `next`, `all`, `first` or `single`, or by a sink given last to
 the call that made it. Elsewhere it returns `undef`, and outside a run
@@ -2356,8 +2357,9 @@ reading it, has the statement's context, which a stage asks for with
 
 A run whose context has a `statement` that's a `DBIx::Squirrel::st` is
 reading a statement; any other run, such as a pipeline called with
-values, has some other context, or none. `pluck`, `as_hash` and
-`result_original` read it, and so can a stage of yours. While a flush
+values, has some other context, or none. `pluck` and `as_hash` read
+it, and so can a stage of yours; `result_original` gives the same
+row, which the source also gives Ekorn as its original. While a flush
 gives its values, which come from every row, not one,
 `Ekorn::Pipeline::ending()` is true, and the row is no value's;
 `result_original` gives `undef` then.
@@ -3003,7 +3005,8 @@ before any stage changed it; for a result set, the row object. In a
 flush of a stage made with [gather](#gather), and the stages after it,
 it's `undef`, as what a flush gives comes from every row, not one. In
 a run reading no statement, it's the value the run's source gave, or
-that was pushed. Exported upon request.
+that was pushed. It's Ekorn::Pipeline::Context's own, with an empty
+prototype. Exported upon request.
 
 See [Context](#context).
 

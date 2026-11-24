@@ -36,14 +36,12 @@ sub iterator : prototype() () {
 *result_number = \&Ekorn::Pipeline::Context::result_number;
 
 # The row the result is being made from, as it was fetched; undef for a
-# result a flush is making, which comes from every row. Outside a run
-# reading a statement, Ekorn's: the value the run's source gave
-# (roadmap 2026-0032, D2).
-sub result_original : prototype() () {
-    my $run = statement_context();
-    return Ekorn::Pipeline::Context::result_original() unless $run;
-    return Ekorn::Pipeline::ending() ? undef : $run->{row};
-}
+# result a flush is making, which comes from every row: Ekorn's own sub,
+# under our name, as our statement source gives Ekorn the row as its
+# original part, which Ekorn passes through chains (roadmap 2026-0046).
+# Outside a run reading a statement, it's the value the run's source
+# gave (roadmap 2026-0032, D2).
+*result_original = \&Ekorn::Pipeline::Context::result_original;
 
 # For DBIx::Squirrel's stages: the context of the run, if its source is a
 # statement, with its columns and the row it gave last; otherwise undef.
@@ -119,11 +117,12 @@ prototype, so C<result_number + 1> adds one.
 The row the result is being made from, as it was fetched, before any
 stage changed it. In a flush of a stage made with
 L<DBIx::Squirrel::Gather>, and the stages after it, it's C<undef>.
-What a flush gives comes from every row, not one. The statement's
-source keeps the row in its run's context, so it's there wherever a
-statement is read, through chains too. In a run that reads no
-statement, it's L<Ekorn::Pipeline::Context>'s: the value the run's
-source gave, or that was pushed.
+What a flush gives comes from every row, not one. It's
+L<Ekorn::Pipeline::Context>'s, with an empty prototype: the
+statement's source gives Ekorn the row as its original, and Ekorn
+passes it through chains, so it's there wherever a statement is read.
+In a run that reads no statement, it's the value the run's source
+gave, or that was pushed.
 
 =head2 statement_context
 

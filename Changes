@@ -2,6 +2,24 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    result_original is Ekorn::Pipeline's own, and a stage reading it
+    is 11 to 13% quicker.
+
+    It ships roadmap 2026-0046: the statement's source gives
+    Ekorn::Pipeline the row as its original, which Ekorn carries
+    through chains, so DBIx::Squirrel::Context's result_original is
+    Ekorn::Pipeline::Context's own, as result_number is. Requires
+    Ekorn::Pipeline >= v0.3.13, < v0.4.0.
+
+    - result_original is Ekorn::Pipeline::Context's own sub, and gives
+      what it gave: the fetched row wherever a statement is read,
+      chains included, undef in a flush, and the value given in a run
+      reading no statement. A stage reading it each row is 238 to 259
+      ns a row quicker, 11 to 13%, on Perl 5.36 and 5.44, reading
+      297,848 rows (roadmap 2026-0046).
+    - Requires Ekorn::Pipeline v0.3.13 or later, below v0.4.0, the first
+      with a source's original part.
+
 v3.6.0 2026-11-24
 
     Iterators with stages are 10 to 17% quicker, and result_number

@@ -323,7 +323,15 @@ sub _statement ($self) {
             $sth->finish if $sth->{Active};
             return;
         };
-        return {step => $step, end => $end, context => $context};
+        # The original of the value given last, the row, for Ekorn's
+        # result_original, which passes it through chains (roadmap
+        # 2026-0046).
+        return {
+            step     => $step,
+            end      => $end,
+            context  => $context,
+            original => sub { $context->{row} },
+        };
     };
 }
 

@@ -1,6 +1,6 @@
 # 2026-0046. result_original is Ekorn's own sub
 
-**Status:** open
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: a source's `original` part, as Ekorn
 designs it.
@@ -11,6 +11,10 @@ taking Ekorn's v0.4.0 moved to 2026-0047
 
 **Depends on:** Ekorn-Pipeline 2026-0052, a source's `original` part,
 released in v0.3.13
+
+**Started:** 2026-11-24
+
+**Finished:** 2026-11-24
 
 ## Background
 
@@ -72,3 +76,69 @@ Taking Ekorn's v0.4.0, with the names in its Tooling, is 2026-0047.
   session suggested: it claims no name in a caller's context, costs a
   run nothing until asked, and carries our row through chains with no
   code of ours.
+
+## The plan
+
+**What:** our statement source gives Ekorn's `original` part, and our
+`result_original` is Ekorn's own sub, under our name, as D1 settled.
+
+**Why:** so the two Toolings agree on every name when Ekorn's gains
+`:context` (Ekorn's 2026-0051, our 2026-0047), and a stage reading
+`result_original` pays one call, not a look at the run's context:
+229 to 270 ns a row quicker in the test against Ekorn's 1bce895.
+
+**How:** `_statement`'s set-up returns `original => sub {
+$context->{row} }` beside its step, end and context; Ekorn's iterator
+passes it through chains. `result_original` is
+`\&Ekorn::Pipeline::Context::result_original`, as `result_number` is.
+`statement_context` stays, for `pluck` and `as_hash`.
+
+**Steps:**
+
+1. Raise the floor to Ekorn::Pipeline v0.3.13 in `cpanfile`, and make
+   `META.json` again.
+2. Change `Iterator.pm` and `Context.pm`, and Context's POD.
+3. Tests: `t/26-context-in-pipelines.t` checks `result_original` is
+   Ekorn's sub, with its empty prototype, and that a chain's outer
+   pipelines, two deep, see the fetched row.
+4. The reference and the user guide, where they say how
+   `result_original` works; `scripts/manuals`.
+5. Measure a stage reading `result_original`, and one that doesn't,
+   over `place_areas`, before and after, on 5.36 and 5.44.
+6. `Changes`, coverage, and the style checks.
+
+**Done when:** the tests pass on 5.36 to 5.44 against Ekorn v0.3.13,
+coverage holds its floors, the measurements are here, and `Changes`
+says so.
+
+## What happened
+
+- **Outcome:** as planned. The tests pass on 5.36.3, 5.38.5, 5.40.5,
+  5.42.3 and 5.44.0, MySQL and PostgreSQL included, against
+  Ekorn-Pipeline 5e1cf7634bd3b3e5b29ff2175234225c773b89cf (v0.3.13),
+  and coverage holds its floors. `t/26-context-in-pipelines.t` checks
+  that `result_original` is Ekorn's sub, with an empty prototype, and
+  gives the fetched row two pipelines from the statement.
+- **Changes from the plan:** none. The user guide needed no change; the
+  reference's three passages on how `result_original` works say the
+  source gives Ekorn the row.
+- **Measurements:** all 297,848 rows of `place_areas`, ns a row, best
+  of five, through one stage passing the row on ("bare") or one
+  calling `result_original` ("reading"); before is DBIx::Squirrel at
+  7301f0ad89aaf465a58c11fb9089b94807842784, v3.6.0's code, with Ekorn
+  v0.3.12; after is this commit's, with Ekorn v0.3.13:
+
+  | | before | after | gain |
+  |---|---|---|---|
+  | `next`, bare, 5.36 | 1,723 | 1,713 | 10 (0.6%) |
+  | `all`, bare, 5.36 | 1,406 | 1,411 | -5 (-0.4%) |
+  | `next`, reading, 5.36 | 2,177 | 1,931 | 246 (11.3%) |
+  | `all`, reading, 5.36 | 1,876 | 1,634 | 242 (12.9%) |
+  | `next`, bare, 5.44 | 1,642 | 1,630 | 12 (0.7%) |
+  | `all`, bare, 5.44 | 1,342 | 1,346 | -4 (-0.3%) |
+  | `next`, reading, 5.44 | 2,111 | 1,852 | 259 (12.3%) |
+  | `all`, reading, 5.44 | 1,819 | 1,581 | 238 (13.1%) |
+
+  So a stage reading `result_original` is 238 to 259 ns a row quicker,
+  11 to 13%, and one that doesn't is the same, within a run's noise.
+- **What's left:** nothing; taking Ekorn's v0.4.0 is 2026-0047.
