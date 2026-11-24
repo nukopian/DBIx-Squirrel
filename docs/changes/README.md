@@ -80,6 +80,10 @@ Steps, Done when.
 
 Newest id first.
 
+- [A stop after a tee no longer loses what its branch holds](2026-0045-tee-stop-closes-branch.md),
+  roadmap 2026-0045: shipped, unreleased.
+- [CSV in and out: a recipe, an export, and the README](2026-0044-csv-recipe.md),
+  roadmap 2026-0044: shipped, unreleased.
 - [as_hash takes the columns to keep](2026-0043-as-hash-columns.md),
   roadmap 2026-0043: shipped in v3.4.0.
 - [The index says how to use a name; the reference text shows it in context](2026-0042-index-and-text.md),

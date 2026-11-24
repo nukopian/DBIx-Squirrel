@@ -55,6 +55,21 @@ DBIx::Squirrel does them for you.
     without changing a query: one shared, or with a name, or one you're
     debugging.
 
+- **Files in and out, without the plumbing.**
+
+    A query goes out to a CSV file in one call, with its column names as
+    the header, and fields quoted where they need to be:
+
+    ```perl
+    $dbh->iterate('SELECT name, plays FROM track', to_csv(file => 'tracks.csv', header => 1));
+    ```
+
+    A CSV file comes in the same way: each row a hash keyed by the header,
+    straight into a statement's named placeholders, a batch to a
+    transaction, with no arrays to build and no columns to count. JSON
+    Lines go in and out much the same way, with `as_hash` to write each
+    row as an object.
+
 - **Queries with names.**
 
     A statement and its stages can become a function with a name of its

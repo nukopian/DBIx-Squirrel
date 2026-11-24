@@ -325,6 +325,12 @@ B<What it gives you:> C<from_json>, C<from_jsonl>, C<to_json> and C<to_jsonl>
 
 B<Made in:> Ekorn::Pipeline::JSON
 
+=item C<:csv>
+
+B<What it gives you:> C<from_csv> and C<to_csv>
+
+B<Made in:> Ekorn::Pipeline::CSV
+
 =item C<:words>
 
 B<What it gives you:> C<pipeline>, C<stage>, C<source>, C<generator>, C<sink_one> and the rest
@@ -1125,13 +1131,10 @@ A stop in C<tee>'s stages, such as C<take(2)>'s, ends only them: the
 pipeline reads on. It costs a good deal more than C<peek>, so keep it
 for side jobs and debugging.
 
-A stop after the tee is another matter. A branch that holds values,
-as C<batch> does, gives them out in its flush, which runs only when the
-tee's input runs out. A stage after the tee that stops the run, such
-as C<take>, or an iterator's C<first>, ends it before then, so what the
-branch held is dropped, with no error. A branch writing rows in
-batches would leave the last few unwritten. Put any stage that stops
-the run before the tee.
+A stop after the tee, such as C<take>'s, or an iterator's C<first>,
+ends the branch too, and the branch's stages hand over what they
+hold, as they do when the rows run out. So a branch writing rows in
+batches writes the last, part-filled one, however the run ends.
 
 =head2 Compared with C<map> over every row
 
@@ -1593,6 +1596,36 @@ C<to_fh> does the same to a filehandle you've opened, and leaves it
 open. So an export of a large table is one call, a few rows in memory
 at a time.
 
+For a spreadsheet, C<to_csv>, from Tooling's C<:csv>, writes each row as
+a line of CSV. With C<< header => 1 >>, the first line is the statement's
+column names, so the file says what's in it, and fields holding a
+comma or a quote are quoted, so it reads back as it was:
+
+    my $exported = $dbh->iterate(
+        'SELECT name, plays FROM track WHERE plays > 6000 ORDER BY plays DESC',
+        to_csv(file => 'hits.csv', header => 1),
+    );
+    say $exported;    # 3
+
+    open my $in, '<', 'hits.csv' or die "Can't read hits.csv: $!";
+    my @lines = <$in>;
+    close $in;
+    print @lines;
+    # name,plays
+    # "Dancing Queen",9100
+    # "Sunshine of Your Love",7700
+    # "Girls & Boys",6100
+
+C<to_csv> gives how many rows it wrote, not counting the header. It
+needs L<Text::CSV|https://metacpan.org/pod/Text::CSV>, which
+DBIx::Squirrel recommends, rather than requires; it's loaded only when
+C<to_csv> or C<from_csv> is called. Rows may be arrays, as here, or
+hashes, written in the header's order. After C<as_hash> with columns,
+as in C<as_hash(qw(name plays))>, name them in the header too,
+C<< header => [qw(name plays)] >>: C<< header => 1 >> names every column the
+statement has. C<< csv => {sep_char => "\t"} >> writes TSV. L<Load a CSV
+file into a table|/"Load a CSV file into a table"> goes the other way.
+
 =head2 Methods or sinks?
 
 The iterator's methods and the sinks overlap, on purpose:
@@ -1632,6 +1665,10 @@ B<A sink, given last:> C<keep_last>
 =item them in a file
 
 B<A sink, given last:> C<to_file($path)>
+
+=item them in a CSV file
+
+B<A sink, given last:> C<< to_csv(file => $path, header => 1) >>
 
 =back
 
@@ -1771,7 +1808,9 @@ to push values into as they arrive: lines read from a socket, records
 a callback hands you, or rows from somewhere other than a statement.
 Each C<push> gives back what came out of the values pushed. C<close>
 ends the input, and gives what the stages still held, such as a last,
-part-filled batch. C<ended> says how the run ended.
+part-filled batch. C<ended> says how the run ended. For a file, there's
+a source instead: see L<Load a CSV file into a
+table|/"Load a CSV file into a table">.
 
 So a feed is a loader. Here records go into a table two at a time,
 each batch in a transaction of its own. The records are hashes, and
@@ -1817,6 +1856,58 @@ array for each placeholder, and C<bind_param_array> binds one by name,
 as the reference's L<execute_array|DBIx::Squirrel::Manual::Reference/"execute_array"> says.
 Plain DBI's take only C<?>, and other styles as far as the driver reads
 them.
+
+=head2 Load a CSV file into a table
+
+A file needs no feed: C<from_csv>, from Tooling's C<:csv>, is a source,
+reading a row at a time as the pipeline asks. With C<< header => 1 >>, each
+row is a hash keyed by the header's names, and C<< munge => 'db' >> makes
+those names into ones a database takes, so "Track Name" is
+C<track_name>. Name the statement's placeholders the same, and each
+row goes in as it was read, with no arrays to build and no columns to
+count:
+
+    use Ekorn::Pipeline;
+
+    # A file as a spreadsheet saves it, its header in a person's words
+    open my $out, '>', 'this-week.csv' or die "Can't write this-week.csv: $!";
+    print $out <<~'CSV';
+        Track Name,Plays This Week
+        Parklife,12
+        "Knowing Me, Knowing You",3
+        Country House,0
+        Girls & Boys,7
+        CSV
+    close $out;
+
+    $dbh->do('CREATE TEMP TABLE this_week (track_name TEXT, plays_this_week INTEGER)');
+    my $insert = $dbh->prepare(
+        'INSERT INTO this_week (track_name, plays_this_week) VALUES (:track_name, :plays_this_week)',
+    );
+
+    my @written = Ekorn::Pipeline->new(
+        drop_if { $_->{plays_this_week} == 0 },    # the file's rows, before the database has them
+        batch(500),
+        sub {
+            my @rows = @$_;
+            $dbh->begin_work;
+            my $written = $insert->execute_for_fetch(sub { shift @rows });
+            $dbh->commit;
+            $written;
+        },
+    )->iterator(from_csv(file => 'this-week.csv', header => 1, munge => 'db'))->all;
+    say "@written";    # 3
+
+    say $dbh->selectrow_array('SELECT SUM(plays_this_week) FROM this_week');    # 22
+
+It reads the file a row at a time, and writes it 500 rows at a time,
+each batch in a transaction, so a file of a million rows needs no more
+memory than a batch of them. A row that won't parse croaks, naming its
+record and field, rather than ending the load early as if the file had
+ended. C<from_csv> needs Text::CSV, as C<to_csv> does (see L<Write the
+results to a file|/"Write the results to a file">). C<< header => 'skip' >>
+reads the rows as arrays, for C<?> placeholders, and C<< csv => {sep_char
+Z<>=> "\t"} >> reads TSV. Ekorn::Pipeline::CSV's documentation has the rest.
 
 =head2 Name a pipeline, and use it by name
 

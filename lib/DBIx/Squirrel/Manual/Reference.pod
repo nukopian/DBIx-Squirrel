@@ -273,6 +273,12 @@ B<Holds:> C<from_json>, C<from_jsonl>, C<to_json>, C<to_jsonl>
 
 B<Made in:> Ekorn::Pipeline::JSON
 
+=item C<:csv>
+
+B<Holds:> C<from_csv>, C<to_csv>
+
+B<Made in:> Ekorn::Pipeline::CSV
+
 =item C<:words>
 
 B<Holds:> C<pipeline>, C<stage>, C<gather>, C<source>, C<generator>, C<yield>, C<sink_one>, C<sink_many>
@@ -324,6 +330,11 @@ C<use Ekorn::Pipeline::Operators> puts in force, in its own scope.
 B<JSON.pm's names.> JSON exports a C<from_json> and a C<to_json> of
 its own, by default, so a module using both imports C<:all> or C<:json>
 from only one of them, or calls the other's by its full name.
+
+=item *
+
+B<Text::CSV.> C<:csv>'s names need it, but load it only when one
+is first called, so C<:csv> and C<:all> import without it.
 
 =item *
 
@@ -1389,6 +1400,12 @@ query that lost a column shows at once:
     say join ' ', keys %{ $artists[0] };              # name
     say join ' ', map { $_->{name} } @artists;       # Abba Blur
 
+The run's context still names every column the statement has, so a
+stage reading it sees them all. C<to_csv>'s C<< header => 1 >> is one: after
+C<as_hash> with names, give C<to_csv> the same names as its header,
+C<< header => [qw(name plays)] >>, or it writes a column for each, empty
+for those left out.
+
 **C<pluck> reads the statement's columns, not the row's.** After a
 stage that reshapes rows, a name or position for an array row picks
 the wrong field, and says nothing. Make the rows hashes first, with
@@ -1463,10 +1480,9 @@ ends only the branch, and a death in it kills the run. It shares the
 main run's context, so C<pluck> and C<as_hash> work in it on a
 statement's rows. Each value costs a push into the branch, several
 times what C<peek> costs, so it's for side jobs and debugging, not a
-hot loop. A stop after the tee, such as C<take>'s or C<first>'s, ends
-the run before the branch's flushes run, so what a branch holds, such
-as a part-filled C<batch>, is dropped: put a stage that stops the run
-before a tee whose branch holds values.
+hot loop. A stop after the tee, such as C<take>'s or C<first>'s, closes
+the branch, so its flushes run, and what it holds, such as a
+part-filled C<batch>, is handed on, as when the input runs out.
 
     my @hits;
     my @names = $dbh->iterate(
@@ -4473,7 +4489,9 @@ C<fetchrow_hashref>, of two columns with the same name, the hash has
 the last. Given column names, found in any case, the hash has only
 those columns, keyed as it would be without them; a hash row is made
 into a new hash, and a name the row hasn't got croaks, C<Expected a
-column of the row (age)>. It finds the names in the L<run's context|/"The run's context">, so
+column of the row (age)>. It leaves the run's context as it is, so
+C<to_csv>, after it, takes a header of the same names. It finds the
+names in the L<run's context|/"The run's context">, so
 it needs a statement to be what the run reads; elsewhere it croaks,
 C<Expected a statement to read, for the column names>. Exported by
 default.
@@ -4559,8 +4577,8 @@ Runs each value through a branch of C<@stages>, for what they do on the
 side, and passes the value on unchanged. What comes out of the branch
 is dropped. The branch is a run of its own beside the main run, so its
 stages keep their state across the values, and each main run gets a
-fresh branch. A stop after the tee drops what the branch holds, as its
-flushes don't run. Exported upon request.
+fresh branch. A stop after the tee closes the branch, so its flushes
+run. Exported upon request.
 
 See L<Taps|/"Taps">.
 
@@ -4629,19 +4647,20 @@ runs|/"Defining them as the program runs">.
 
 Exports what callers use to do work, from one place, by tags. Nothing
 by default: ask for the names in the modules above, or the tags that
-hold them, C<:all>, C<:batch>, C<:context>, C<:core>, C<:flow>, C<:json>,
-C<:rows>, C<:sinks>, C<:sources>, C<:stages>, C<:taps> and C<:words> (see
+hold them, C<:all>, C<:batch>, C<:context>, C<:core>, C<:csv>, C<:flow>,
+C<:json>, C<:rows>, C<:sinks>, C<:sources>, C<:stages>, C<:taps> and
+C<:words> (see
 L<Importing|/"Importing: DBIx::Squirrel::Tooling">).
 
 =head2 DBIx::Squirrel::Util
 
 Helpers the modules share. Internal: they may change without notice.
 
-Pipelines, the operators, the sources, the sinks and the JSON parts
-are Ekorn::Pipeline's own: C<Ekorn::Pipeline>,
+Pipelines, the operators, the sources, the sinks and the JSON and CSV
+parts are Ekorn::Pipeline's own: C<Ekorn::Pipeline>,
 C<Ekorn::Pipeline::Operators>, C<Ekorn::Pipeline::Sources>,
-C<Ekorn::Pipeline::Sinks>, C<Ekorn::Pipeline::JSON> and
-C<Ekorn::Pipeline::Factories>.
+C<Ekorn::Pipeline::Sinks>, C<Ekorn::Pipeline::JSON>,
+C<Ekorn::Pipeline::CSV> and C<Ekorn::Pipeline::Factories>.
 
 =head1 SEE ALSO
 

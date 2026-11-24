@@ -148,6 +148,7 @@ place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
 | `:sources` | `from_array`, `from_fh`, `from_file`, `counter` | Ekorn::Pipeline::Sources |
 | `:sinks` | `count_items`, `keep`, `keep_all`, `keep_first`, `keep_last`, `keep_single`, `to_fh`, `to_file` | [Sinks](#8-sinks) |
 | `:json` | `from_json`, `from_jsonl`, `to_json`, `to_jsonl` | Ekorn::Pipeline::JSON |
+| `:csv` | `from_csv`, `to_csv` | Ekorn::Pipeline::CSV |
 | `:words` | `pipeline`, `stage`, `gather`, `source`, `generator`, `yield`, `sink_one`, `sink_many` | Ekorn::Pipeline::Factories |
 | `:all` | all of the above | |
 
@@ -174,6 +175,8 @@ place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
 - **JSON.pm's names.** JSON exports a `from_json` and a `to_json` of
   its own, by default, so a module using both imports `:all` or `:json`
   from only one of them, or calls the other's by its full name.
+- **Text::CSV.** `:csv`'s names need it, but load it only when one
+  is first called, so `:csv` and `:all` import without it.
 - **What a tag holds is public.** A name may be added to one in a
   release that only adds, but is dropped or renamed only in a major
   release.
@@ -1121,6 +1124,12 @@ say join ' ', keys %{ $artists[0] };              # name
 say join ' ', map { $_->{name} } @artists;       # Abba Blur
 ```
 
+The run's context still names every column the statement has, so a
+stage reading it sees them all. `to_csv`'s `header => 1` is one: after
+`as_hash` with names, give `to_csv` the same names as its header,
+`header => [qw(name plays)]`, or it writes a column for each, empty
+for those left out.
+
 **`pluck` reads the statement's columns, not the row's.** After a
 stage that reshapes rows, a name or position for an array row picks
 the wrong field, and says nothing. Make the rows hashes first, with
@@ -1201,10 +1210,9 @@ ends only the branch, and a death in it kills the run. It shares the
 main run's context, so `pluck` and `as_hash` work in it on a
 statement's rows. Each value costs a push into the branch, several
 times what `peek` costs, so it's for side jobs and debugging, not a
-hot loop. A stop after the tee, such as `take`'s or `first`'s, ends
-the run before the branch's flushes run, so what a branch holds, such
-as a part-filled `batch`, is dropped: put a stage that stops the run
-before a tee whose branch holds values.
+hot loop. A stop after the tee, such as `take`'s or `first`'s, closes
+the branch, so its flushes run, and what it holds, such as a
+part-filled `batch`, is handed on, as when the input runs out.
 
 ```perl
 my @hits;
@@ -3851,7 +3859,9 @@ a new hash; a hash row is passed on unchanged. As with
 the last. Given column names, found in any case, the hash has only
 those columns, keyed as it would be without them; a hash row is made
 into a new hash, and a name the row hasn't got croaks, `Expected a
-column of the row (age)`. It finds the names in the [run's context](#the-runs-context), so
+column of the row (age)`. It leaves the run's context as it is, so
+`to_csv`, after it, takes a header of the same names. It finds the
+names in the [run's context](#the-runs-context), so
 it needs a statement to be what the run reads; elsewhere it croaks,
 `Expected a statement to read, for the column names`. Exported by
 default.
@@ -3952,8 +3962,8 @@ Runs each value through a branch of `@stages`, for what they do on the
 side, and passes the value on unchanged. What comes out of the branch
 is dropped. The branch is a run of its own beside the main run, so its
 stages keep their state across the values, and each main run gets a
-fresh branch. A stop after the tee drops what the branch holds, as its
-flushes don't run. Exported upon request.
+fresh branch. A stop after the tee closes the branch, so its flushes
+run. Exported upon request.
 
 See [Taps](#taps).
 
@@ -4031,16 +4041,17 @@ runs](#defining-them-as-the-program-runs).
 
 Exports what callers use to do work, from one place, by tags. Nothing
 by default: ask for the names in the modules above, or the tags that
-hold them, `:all`, `:batch`, `:context`, `:core`, `:flow`, `:json`,
-`:rows`, `:sinks`, `:sources`, `:stages`, `:taps` and `:words` (see
+hold them, `:all`, `:batch`, `:context`, `:core`, `:csv`, `:flow`,
+`:json`, `:rows`, `:sinks`, `:sources`, `:stages`, `:taps` and
+`:words` (see
 [Importing](#importing-dbixsquirreltooling)).
 
 ### DBIx::Squirrel::Util
 
 Helpers the modules share. Internal: they may change without notice.
 
-Pipelines, the operators, the sources, the sinks and the JSON parts
-are Ekorn::Pipeline's own: `Ekorn::Pipeline`,
+Pipelines, the operators, the sources, the sinks and the JSON and CSV
+parts are Ekorn::Pipeline's own: `Ekorn::Pipeline`,
 `Ekorn::Pipeline::Operators`, `Ekorn::Pipeline::Sources`,
-`Ekorn::Pipeline::Sinks`, `Ekorn::Pipeline::JSON` and
-`Ekorn::Pipeline::Factories`.
+`Ekorn::Pipeline::Sinks`, `Ekorn::Pipeline::JSON`,
+`Ekorn::Pipeline::CSV` and `Ekorn::Pipeline::Factories`.
