@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0046.
+Last id: 2026-0047.
 
 Items come in four groups:
 
@@ -49,17 +49,29 @@ Nothing.
 
 ## Later
 
-### 2026-0046. Ekorn v0.4.0, and its Tooling's :context
+### 2026-0046. result_original is Ekorn's own sub
 
-**Size:** S (2). **Depends on:** Ekorn-Pipeline 2026-0051, released in
-its first v0.4.0.
+**Size:** XS (1). **Depends on:** Ekorn-Pipeline 2026-0052, proposed:
+a source's `original` part, released in a v0.3.x.
+
+Our statement source gives the `original` part Ekorn's 2026-0052 adds,
+`sub { $context->{row} }`, and Ekorn's iterators pass it through
+chains, so our `result_original` can be Ekorn's own sub under our
+name, as `result_number` is, and the two Toolings agree on both names
+when Ekorn's gains them. The floor rises to the Ekorn release that has
+the part. Its question is settled by Ekorn's design, in [its
+record](docs/changes/2026-0046-result-original-ekorn.md).
+
+### 2026-0047. Ekorn v0.4.0, and its Tooling's :context
+
+**Size:** XS (1). **Depends on:** 2026-0046; Ekorn-Pipeline 2026-0051,
+released in its first v0.4.0.
 
 Ekorn's Tooling gains `result_number` and `result_original` in
-`:context` and `:all` in its v0.4.0. Widen our range to take it, and
-keep the two Toolings agreeing on every name, as `t/28-tooling.t`
-checks: our `result_original` becomes Ekorn's, if Ekorn's can carry a
-statement's row through chains, as ours does. Its question is open, in
-[its record](docs/changes/2026-0046-ekorn-tooling-context.md).
+`:context` and `:all` in its v0.4.0, which our range, `< v0.4.0`,
+excludes. Widen it to take v0.4.0, and check the two Toolings agree on
+every name, as `t/28-tooling.t` and `xt/ekorn-tooling.t` do. Done when
+the tests pass against Ekorn's v0.4.0, and `Changes` says so.
 
 ## Ideas
 

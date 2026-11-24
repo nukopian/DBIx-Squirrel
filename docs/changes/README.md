@@ -80,7 +80,7 @@ Steps, Done when.
 
 Newest id first.
 
-- [Ekorn v0.4.0, and its Tooling's :context](2026-0046-ekorn-tooling-context.md),
+- [result_original is Ekorn's own sub](2026-0046-result-original-ekorn.md),
   roadmap 2026-0046: open.
 - [A stop after a tee no longer loses what its branch holds](2026-0045-tee-stop-closes-branch.md),
   roadmap 2026-0045: shipped in v3.5.0.
