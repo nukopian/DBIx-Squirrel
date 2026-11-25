@@ -41,16 +41,20 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing.
+Nothing yet.
 
 ## Next
 
-Nothing.
+Nothing yet.
 
 ## Later
 
-Nothing.
+Nothing yet.
 
 ## Ideas
 
-Nothing.
+An idea is a numbered heading, the date it was added, its size, and a
+line or two on what and why. Each is kept, promoted to Later or Next
+with its id, or dropped, as Iain decides.
+
+Nothing yet.

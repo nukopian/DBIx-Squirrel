@@ -78,3 +78,10 @@ and entry. Done when CI's `secrets` job passes with betterleaks.
   user sees changed.
 - **What's left:** nothing here. Ekorn-Pipeline's 2026-0039 is told
   what this found.
+- **Ekorn's reply** (Ekorn-Pipeline
+  cf19d735da817fde2148a54284ebc7c219d7289e): betterleaks found 9
+  placeholders in its history, such as `*REDACTED*` as a DSN's
+  password, which gitleaks didn't, and Ekorn allowed them with a
+  `.betterleaks.toml`, loaded only with `--config`. Our history has no
+  such example, and scans clean; we'd follow its way if one came to
+  trip the scan (Iain, 2026-11-25).
