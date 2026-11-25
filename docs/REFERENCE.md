@@ -19,7 +19,8 @@ map. Each module's own POD says the same things more briefly. Where
 the two differ, the POD is the authority. Every example runs, against
 the database below, and its comments say what it prints.
 
-This is version 3. [Upgrading from 2.x](#upgrading-from-2x) and
+This is version 4. [Upgrading from 3.x](#upgrading-from-3x),
+[Upgrading from 2.x](#upgrading-from-2x) and
 [Upgrading from 1.x](#upgrading-from-1x) list what changes for code
 written for earlier versions.
 
@@ -46,6 +47,7 @@ written for earlier versions.
 - [16. Errors and diagnostics](#16-errors-and-diagnostics)
 - [Making each kind of part](#making-each-kind-of-part)
 - [Differences from plain DBI](#differences-from-plain-dbi)
+- [Upgrading from 3.x](#upgrading-from-3x)
 - [Upgrading from 2.x](#upgrading-from-2x)
 - [Upgrading from 1.x](#upgrading-from-1x)
 - [Index](#index)
@@ -786,8 +788,8 @@ the iterator is let go.
 Rows are fetched with the DBI's `fetchall_arrayref`, 2 at first, the
 least that tells whether there's a second, then twice as many each
 time a fetch fills its batch, up to 64. Past 64, each fetch's cost is
-spread so thin that a bigger batch reads hardly any faster, and holds
-more of a wide row's data. So reading one row fetches no more than
+spread so thin that a batch of 1,024 read narrow rows at most 7%
+faster, and would hold more of a wide row's data. So reading one row fetches no more than
 two, and DBIx::Squirrel holds no more than 64 rows of a result.
 
 The driver may hold more. DBD::SQLite reads rows as they're fetched,
@@ -2765,6 +2767,18 @@ same result. These are the places they differ.
 | `execute_array`, `execute_for_fetch` and `bind_param_array` | For `?`, and other styles as far as the driver reads them. | For every style: a row's values in placeholder order, or a hash by name; `bind_param_array` by name. |
 | Stages after the select methods' values | None. | What the DBI gives is pushed through them. |
 | Iterators, result sets, pipelines | None. | `iterate`, `results`, sinks, `\|` and `@{}`, `pipe`, `tap` and the Sugar. |
+
+## Upgrading from 3.x
+
+Version 4 takes Ekorn::Pipeline v0.4.0, where `pipe` gives what a
+pipeline of the same stages gives. One change meets code written for
+3.x:
+
+| Your code | What happens now | How to move |
+|---|---|---|
+| `my $name = $dbh->pipe(...)`, or `$sth->pipe(...)`, in scalar context, for the first result | how many results came out, or a sink's result if a sink is last | read it in list context, `my($name) = $dbh->pipe(...)`, or give `keep_first` last |
+
+Everything else works as it did.
 
 ## Upgrading from 2.x
 

@@ -101,7 +101,11 @@ baseline.
   code keeps its signature, so a block changing `$_[0]` can't change
   what's passed on. Other subs, and the docs' examples, keep theirs
   unless a measurement shows a gain.
-- **Two blank lines between subs,** or one above a sub's comment.
+- **Two blank lines between subs,** or one above a sub's comment, in
+  tests and scripts too (2026-0049, as Ekorn's 2026-0053 D4).
+  Perl::Tidy keeps one above a comment, but makes two above a sub
+  without one, even at the start of a block, and above `sub {`
+  starting a line in a list: name such a closure in a variable first.
 - **Every regex takes `x`, and its operator with parentheses:**
   `m( \A \d+ \z )x`, `s( \s+ \z )()xr`, `qr( ... )x`; never `/.../`.
   A literal space is `\ `, a literal `#` is `\#`.

@@ -3,10 +3,12 @@ Revision history for DBIx-Squirrel
 Unreleased
 
     pipe gives what a pipeline gives, as it does in Ekorn::Pipeline
-    v0.4.0, which is now required.
+    v0.4.0, which is now required; and a quality release: every module
+    has a $VERSION, and the README's examples are checked.
 
-    It ships roadmap 2026-0048, from a task of Ekorn-Pipeline's. Requires
-    Ekorn::Pipeline >= v0.4.0, < v0.5.0.
+    It ships roadmap 2026-0048, from a task of Ekorn-Pipeline's, and
+    2026-0049, the fixes from a review of the code, tests and docs.
+    Requires Ekorn::Pipeline >= v0.4.0, < v0.5.0.
 
     - pipe, on a database or statement handle, gives in scalar context
       what a pipeline of the same stages gives: how many results, or a
@@ -18,6 +20,29 @@ Unreleased
       pipe; v0.4.0 carries v0.3.16's fix, which passes a statement's
       row to a pipeline reading a | chain made from its iterator, as
       result_original (roadmap 2026-0048).
+    - Every module has a $VERSION, the distribution's, so a caller can
+      ask for one, as use DBIx::Squirrel::Tooling v4.0.0; a test keeps
+      them in step (roadmap 2026-0049).
+    - A select method whose values fail to bind, without RaiseError,
+      returns undef where it returns a reference, as when its
+      statement fails to prepare, not an empty list (roadmap
+      2026-0049).
+    - The reference has "Upgrading from 3.x", for pipe, and the README
+      and DBIx::Squirrel's POD say this is version 4 (roadmap
+      2026-0049).
+    - The iterator's POD and the reference give the measured figure
+      for a batch bigger than 64 rows: at most 7% faster, for narrow
+      rows (roadmap 2026-0049).
+    - Tests: a pipeline of your own reading a | chain made from an
+      iterator gets the row from result_original, as Context's POD
+      promises; prepare_cached keeps what was studied after a
+      subclass's prepare that skips DBIx::Squirrel's; the README's
+      examples compile (roadmap 2026-0049).
+    - Code: an unreachable return in the placeholders' values goes;
+      comments say "re-export", not "facade", give one figure for a
+      signature's cost, and are rewrapped where edits left them
+      short; one blank line above a commented sub, in tests and
+      scripts too (roadmap 2026-0049).
 
 v3.6.1 2026-11-24
 

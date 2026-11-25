@@ -27,6 +27,8 @@ use overload
     '@{}'    => \&Ekorn::Pipeline::Operators::drain,
     fallback => 1;
 
+our $VERSION = 'v3.6.1';
+
 # Croak at the line that called DBIx::Squirrel.
 our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
 
@@ -398,8 +400,8 @@ run out.
 Rows are fetched with L<DBI/fetchall_arrayref>, 2 at first, the least
 that tells whether there's a second, then twice as many each time a
 fetch fills its batch, up to 64. Past 64, each fetch's cost is spread
-so thin that a bigger batch reads hardly any faster, and holds more of
-a wide row's data. L</all> without stages fetches the rest at once.
+so thin that a batch of 1,024 read narrow rows at most 7% faster, and
+would hold more of a wide row's data. L</all> without stages fetches the rest at once.
 Each row is an array, or, with the C<ekorn_slice> attribute, in the
 shape it gives:
 

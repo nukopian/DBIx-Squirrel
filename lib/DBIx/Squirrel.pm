@@ -60,7 +60,6 @@ sub connect_cached ($class, $source, @args) {
     return $class->SUPER::connect_cached($source, @args);
 }
 
-
 # Return the handle of a new connection using the same parameters as
 # another connection.
 sub _connect_dbh ($class, $dbh, @args) {
@@ -136,7 +135,6 @@ sub _dialect ($dbh) {
 }
 
 1;
-
 __END__
 
 =encoding utf8
@@ -208,10 +206,11 @@ It's a subclass of the DBI, so everything the DBI does still works.
 Where the two do the same thing, they give the same result. This page
 notes where they differ.
 
-This is version 3, built on L<Ekorn::Pipeline>. Version 2 was a
-rewrite of DBIx::Squirrel 1.x for Perl 5.36 or later. Code written for
-either needs changes to run, and the reference's "Upgrading from 2.x"
-and "Upgrading from 1.x" list them. To stay on 1.x, install its last
+This is version 4, built on L<Ekorn::Pipeline>. Version 3 first built
+on it, and version 2 was a rewrite of DBIx::Squirrel 1.x for Perl 5.36
+or later. Code written for any of them may need changes to run, and
+the reference's "Upgrading from 3.x", "Upgrading from 2.x" and
+"Upgrading from 1.x" list them. To stay on 1.x, install its last
 version, C<cpanm DBIx::Squirrel@1.6.5>.
 
 The database handle's own methods are in L<DBIx::Squirrel::db>, and

@@ -28,7 +28,8 @@ map. Each module's own POD says the same things more briefly. Where
 the two differ, the POD is the authority. Every example runs, against
 the database below, and its comments say what it prints.
 
-This is version 3. L<Upgrading from 2.x|/"Upgrading from 2.x"> and
+This is version 4. L<Upgrading from 3.x|/"Upgrading from 3.x">,
+L<Upgrading from 2.x|/"Upgrading from 2.x"> and
 L<Upgrading from 1.x|/"Upgrading from 1.x"> list what changes for code
 written for earlier versions.
 
@@ -119,6 +120,10 @@ L<Making each kind of part|/"Making each kind of part">
 =item *
 
 L<Differences from plain DBI|/"Differences from plain DBI">
+
+=item *
+
+L<Upgrading from 3.x|/"Upgrading from 3.x">
 
 =item *
 
@@ -1090,8 +1095,8 @@ the iterator is let go.
 Rows are fetched with the DBI's C<fetchall_arrayref>, 2 at first, the
 least that tells whether there's a second, then twice as many each
 time a fetch fills its batch, up to 64. Past 64, each fetch's cost is
-spread so thin that a bigger batch reads hardly any faster, and holds
-more of a wide row's data. So reading one row fetches no more than
+spread so thin that a batch of 1,024 read narrow rows at most 7%
+faster, and would hold more of a wide row's data. So reading one row fetches no more than
 two, and DBIx::Squirrel holds no more than 64 rows of a result.
 
 The driver may hold more. DBD::SQLite reads rows as they're fetched,
@@ -3371,6 +3376,24 @@ B<Plain DBI:> None.
 B<DBIx::Squirrel:> C<iterate>, C<results>, sinks, C<|> and C<@{}>, C<pipe>, C<tap> and the Sugar.
 
 =back
+
+=head1 Upgrading from 3.x
+
+Version 4 takes Ekorn::Pipeline v0.4.0, where C<pipe> gives what a
+pipeline of the same stages gives. One change meets code written for
+3.x:
+
+=over 4
+
+=item C<< my $name = $dbh->pipe(...) >>, or C<< $sth->pipe(...) >>, in scalar context, for the first result
+
+B<What happens now:> how many results came out, or a sink's result if a sink is last
+
+B<How to move:> read it in list context, C<< my($name) = $dbh->pipe(...) >>, or give C<keep_first> last
+
+=back
+
+Everything else works as it did.
 
 =head1 Upgrading from 2.x
 
