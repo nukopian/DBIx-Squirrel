@@ -9,7 +9,7 @@ use DBIx::Squirrel::Util   qw(install_sub is_name);
 
 use namespace::clean;
 
-our $VERSION = 'v3.6.1';
+our $VERSION = 'v4.0.0';
 
 # Croak at the line that called DBIx::Squirrel.
 our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;

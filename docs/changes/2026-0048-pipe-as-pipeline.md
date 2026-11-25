@@ -1,6 +1,6 @@
 # 2026-0048. pipe gives what a pipeline gives
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.0.0
 
 **Decisions:** D1 settled: `pipe` gives what a pipeline gives, in
 either context (Ekorn's 2026-0053 D2). D2 settled: the range is

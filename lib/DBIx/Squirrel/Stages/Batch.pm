@@ -6,7 +6,7 @@ use Exporter qw(import);
 
 use Ekorn::Pipeline::Stages::Batch qw(batch collect);
 
-our $VERSION = 'v3.6.1';
+our $VERSION = 'v4.0.0';
 
 # A plain re-export of Ekorn::Pipeline::Stages::Batch's functions, from
 # DBIx::Squirrel's own list of them, imported from it by name, so a name

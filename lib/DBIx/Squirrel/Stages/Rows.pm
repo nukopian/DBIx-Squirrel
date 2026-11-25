@@ -14,7 +14,7 @@ use DBIx::Squirrel::Gather  qw(gather);
 
 use namespace::clean -except => 'import';
 
-our $VERSION = 'v3.6.1';
+our $VERSION = 'v4.0.0';
 
 our @EXPORT = qw(pluck as_hash);    ## no critic (Modules::ProhibitAutomaticExportation)
 

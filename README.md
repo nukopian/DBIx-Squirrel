@@ -255,11 +255,17 @@ It needs Perl 5.36 or later.
 
 ## Upgrading
 
-This is version 3. It builds on Ekorn::Pipeline, and makes one rule of
-what a call with stages gives: an iterator, unless a sink given last
-says otherwise. Most code written for 2.x runs as it did, and
-[Upgrading from 2.x](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AReference#Upgrading-from-2.x),
-in the reference, lists what changes.
+This is version 4. Code written for 3.x runs as it did, but for one
+change: `pipe`, in scalar context, gives what a pipeline gives, not
+the first result, as
+[Upgrading from 3.x](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AReference#Upgrading-from-3.x),
+in the reference, says.
+
+Version 3 built on Ekorn::Pipeline, and made one rule of what a call
+with stages gives: an iterator, unless a sink given last says
+otherwise. Most code written for 2.x runs as it did, and
+[Upgrading from 2.x](https://metacpan.org/pod/DBIx%3A%3ASquirrel%3A%3AManual%3A%3AReference#Upgrading-from-2.x)
+lists what changes.
 
 Version 2 was a rewrite. Code written for 1.x needs changes to run,
 and

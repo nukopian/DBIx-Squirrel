@@ -2,9 +2,10 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    pipe gives what a pipeline gives, as it does in Ekorn::Pipeline
-    v0.4.0, which is now required; and a quality release: every module
-    has a $VERSION, and the README's examples are checked.
+v4.0.0 2026-11-25
+
+    Version 4: pipe gives what a pipeline gives, as in Ekorn::Pipeline
+    v0.4.0, now required; and a quality release, from a review.
 
     It ships roadmap 2026-0048, from a task of Ekorn-Pipeline's, and
     2026-0049, the fixes from a review of the code, tests and docs.

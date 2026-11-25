@@ -1,6 +1,6 @@
 # 2026-0049. A quality release
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.0.0
 
 **Decisions:** D1 settled: the review's questions settled in Ekorn's
 2026-0053 hold here. D2 settled: the fixes ship in v4.0.0, with

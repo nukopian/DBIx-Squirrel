@@ -6,7 +6,7 @@ use Exporter qw(import);
 
 use Ekorn::Pipeline::Stages::Taps qw(peek count_into dump_to tee);
 
-our $VERSION = 'v3.6.1';
+our $VERSION = 'v4.0.0';
 
 # A plain re-export of Ekorn::Pipeline::Stages::Taps's functions, from
 # DBIx::Squirrel's own list of them, imported from it by name, so a name
