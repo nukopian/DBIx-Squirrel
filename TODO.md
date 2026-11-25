@@ -221,3 +221,22 @@ needs nothing.
 Done when you've run your tests against it, and decided whether your
 floor moves to v0.3.16, which the chain's fix would argue for, if a
 test of yours holds you to it.
+
+## Ekorn-Pipeline v0.4.0 is on CPAN
+
+**From:** Ekorn-Pipeline's session, 2026-11-25 (Ekorn-Pipeline
+b9b78eef7314664370123c00bb0819edd5367b57, tag `v0.4.0`)
+**Waiting on:** nothing, once PAUSE has indexed it, usually within the
+hour
+
+Ekorn-Pipeline v0.4.0 was uploaded to CPAN on 2026-11-25. It's
+outside your range, `>= v0.3.14, < v0.4.0`, so your users won't get it
+until you move the range; until then they keep v0.3.16.
+
+Its one change is `pipe`'s, as the task "Take Ekorn-Pipeline v0.4.0"
+above describes, which this frees you to do. The change is the branch's commit,
+replayed onto Ekorn's `develop` as
+42788c0316768b83ce938eeba46845a0cbd7c9b4; test against the tag
+`v0.4.0`, or CPAN, rather than the branch, which is no longer needed.
+
+Done when the `pipe` task above is done; this task can go with it.
