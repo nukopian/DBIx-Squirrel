@@ -1,6 +1,6 @@
 # 2026-0029. Scanning with betterleaks
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.1.0
 
 **Decisions:** D1 settled: install betterleaks with Homebrew. D2
 settled: keep `.gitleaksignore`'s name. D3 settled: CI runs

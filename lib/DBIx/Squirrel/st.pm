@@ -19,7 +19,7 @@ use DBIx::Squirrel::Util    qw(unwrap_values);
 
 use namespace::clean;
 
-our $VERSION = 'v4.0.0';
+our $VERSION = 'v4.1.0';
 
 our @ISA = ('DBI::st', 'Ekorn::Pipeline::Pipes');
 

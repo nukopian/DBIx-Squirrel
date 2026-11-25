@@ -13,7 +13,7 @@ use DBIx::Squirrel::Errors qw(croakf);
 
 use namespace::clean -except => 'import';
 
-our $VERSION = 'v4.0.0';
+our $VERSION = 'v4.1.0';
 
 our @EXPORT_OK = qw(
     canonical

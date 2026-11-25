@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [An iterator's all_arrayref](2026-0050-all-arrayref.md),
-  roadmap 2026-0050: shipped, unreleased.
+  roadmap 2026-0050: shipped in v4.1.0.
 - [A quality release](2026-0049-quality-release.md),
   roadmap 2026-0049: shipped in v4.0.0.
 - [pipe gives what a pipeline gives](2026-0048-pipe-as-pipeline.md),
@@ -119,7 +119,7 @@ Newest id first.
 - [A study cache that evicts the least used](2026-0030-study-cache-eviction.md),
   roadmap 2026-0030: shipped in v3.1.0.
 - [Scanning with betterleaks](2026-0029-betterleaks.md),
-  roadmap 2026-0029: shipped, unreleased.
+  roadmap 2026-0029: shipped in v4.1.0.
 - [Measured gains in the handles, for v3.0.3](2026-0028-handles-gains.md),
   roadmap 2026-0028: shipped in v3.0.3.
 - [A pipeline key for the Sugar](2026-0027-sugar-pipeline-key.md),

@@ -1,6 +1,6 @@
 # 2026-0050. An iterator's all_arrayref
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.1.0
 
 **Decisions:** D1 settled: `all_arrayref`, as Ekorn's.
 
