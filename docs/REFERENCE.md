@@ -832,6 +832,20 @@ say $dbh->iterate('SELECT name FROM artist WHERE id > 9', pluck)->first // 'none
 say $dbh->iterate('SELECT COUNT(*) FROM track', pluck)->single;                        # 6
 ```
 
+`all` gives an array reference only where one value is asked for. In
+a hash constructor, an argument list or a sub's return, it gives a
+list, flattened into what's around it, unless you write `scalar`.
+`all_arrayref` gives one reference, whatever the context, reading the
+run to its end as `all` does:
+
+```perl
+my %artists = (
+    names => $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck)->all_arrayref,
+    table => 'artist',
+);
+say "@{$artists{names}}";    # Abba Blur Cream
+```
+
 `single` is for a statement meant to give one result: if there's
 another, it warns, and returns the first, which finds a statement that
 lost its `LIMIT 1`, or its `WHERE`.
@@ -3342,6 +3356,22 @@ Returns the results still to come, reading the run to its end: as a
 list, or, asked for one value, an array reference of them, never a
 count. Either way, the statement is then finished, and `next` returns
 nothing after, until [reset](#reset).
+
+See [The iterator's methods](#the-iterators-methods).
+
+#### all_arrayref
+
+<!-- not run -->
+```perl
+$results = $it->all_arrayref;
+```
+
+Returns the results still to come as an array reference, whatever the
+context it's called in, so a hash constructor, an argument list or a
+sub's return can't flatten them; an empty one if there are none.
+Otherwise it's [all](#all): it reads the run to its end, the statement
+is then finished, and `next` returns nothing after, until
+[reset](#reset).
 
 See [The iterator's methods](#the-iterators-methods).
 

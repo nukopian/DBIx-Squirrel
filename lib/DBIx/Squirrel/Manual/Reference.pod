@@ -1135,6 +1135,18 @@ finishes the statement, so the rest of its rows aren't fetched:
     say $dbh->iterate('SELECT name FROM artist WHERE id > 9', pluck)->first // 'none';    # none
     say $dbh->iterate('SELECT COUNT(*) FROM track', pluck)->single;                        # 6
 
+C<all> gives an array reference only where one value is asked for. In
+a hash constructor, an argument list or a sub's return, it gives a
+list, flattened into what's around it, unless you write C<scalar>.
+C<all_arrayref> gives one reference, whatever the context, reading the
+run to its end as C<all> does:
+
+    my %artists = (
+        names => $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck)->all_arrayref,
+        table => 'artist',
+    );
+    say "@{$artists{names}}";    # Abba Blur Cream
+
 C<single> is for a statement meant to give one result: if there's
 another, it warns, and returns the first, which finds a statement that
 lost its C<LIMIT 1>, or its C<WHERE>.
@@ -4086,6 +4098,19 @@ Returns the results still to come, reading the run to its end: as a
 list, or, asked for one value, an array reference of them, never a
 count. Either way, the statement is then finished, and C<next> returns
 nothing after, until L<reset|/"reset">.
+
+See L<The iterator's methods|/"The iterator's methods">.
+
+=head3 all_arrayref
+
+    $results = $it->all_arrayref;
+
+Returns the results still to come as an array reference, whatever the
+context it's called in, so a hash constructor, an argument list or a
+sub's return can't flatten them; an empty one if there are none.
+Otherwise it's L<all|/"all">: it reads the run to its end, the statement
+is then finished, and C<next> returns nothing after, until
+L<reset|/"reset">.
 
 See L<The iterator's methods|/"The iterator's methods">.
 

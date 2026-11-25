@@ -2,6 +2,16 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    An iterator's all_arrayref, matching Ekorn::Pipeline's.
+
+    It ships roadmap 2026-0050, from a message of Ekorn-Pipeline's.
+
+    - all_arrayref, on an iterator, returns the results still to come
+      as an array reference, whatever the context, so a hash
+      constructor, an argument list or a sub's return can't flatten
+      them, as all's list is; it matches Ekorn::Pipeline::Iterator's,
+      and needs no newer Ekorn::Pipeline (roadmap 2026-0050).
+
 v4.0.0 2026-11-25
 
     Version 4: pipe gives what a pipeline gives, as in Ekorn::Pipeline

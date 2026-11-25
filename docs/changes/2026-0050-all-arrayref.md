@@ -1,11 +1,15 @@
 # 2026-0050. An iterator's all_arrayref
 
-**Status:** open
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: `all_arrayref`, as Ekorn's.
 
 **Origin:** a message from Ekorn-Pipeline's session, 2026-11-25
 (Ekorn-Pipeline 50021bf8acfb5083649758f23df5ae50b252c50b)
+
+**Started:** 2026-11-25
+
+**Finished:** 2026-11-25
 
 ## Background
 
@@ -34,3 +38,52 @@ stays as it is.
   DBI's `fetchrow_arrayref` gives one, and our rows are often array
   references; `all_arrayref` follows DBI's `fetchall_arrayref`. Matching
   Ekorn's name keeps the two iterators alike.
+
+## The plan
+
+**What:** a method, `all_arrayref`, on DBIx::Squirrel::Iterator,
+returning every result still to come as an array reference, in any
+context, reading the run to its end as `all` does.
+
+**Why:** `all` gives a reference only in scalar context, so a caller
+who wants one in a hash constructor, an argument list or a sub's
+return has to write `scalar`, or gets a flattened list without a
+word (Background); and Ekorn's iterator gains the method, which ours
+should match.
+
+**Steps:**
+
+1. `lib/DBIx/Squirrel/Iterator.pm`: `sub all_arrayref ($self) {
+   return scalar $self->all }`, after `all`, so it keeps `all`'s
+   fetching of the rest at once without stages; in the POD, a
+   `=head2 all_arrayref` after `all`, `all`'s entry pointing to it.
+2. Tests in `t/24-iterator-source.t`, beside `all`'s: in list context,
+   in a hash constructor and as an argument, it gives one reference;
+   with no results left, an empty array reference, not an empty list;
+   without stages, the rows left, in one fetch, as `all`; with stages,
+   the results; after it, `ended` is `done`, the statement is
+   finished, and `next` gives nothing.
+3. `docs/REFERENCE.md`: under The iterator's methods, `all_arrayref`
+   beside `all`, with an example building a hash; an index entry
+   under DBIx::Squirrel::Iterator; `scripts/manuals` run, and
+   `xt/manuals.t`, `xt/examples.t` and `xt/reference-index.t` passing.
+4. `Changes`, under Unreleased: a precis naming roadmap 2026-0050,
+   and the entry; the item leaves `ROADMAP.md` in the same commit.
+
+**Done when:** the method, its tests and its POD are in; the
+reference and `Changes` say so; `yath test` passes on 5.36 and 5.44,
+against Ekorn's working copy, coverage stays above its floors, and
+perlcritic and perltidy are clean.
+
+## What happened
+
+- **Outcome:** done as planned. `all_arrayref` returns `scalar
+  $self->all`; its tests, its POD, the reference's text and index
+  entry, and `Changes` are in. `yath test -L t xt` passes on 5.36 and
+  5.44 against Ekorn-Pipeline's working copy at
+  60754fd66a6a2711af43e0676fe0db14b58e9679, which has Ekorn's own
+  `all_arrayref`; the test passes under `prove` too; coverage stays
+  above its floors; perlcritic and perltidy are clean.
+- **Changes from the plan:** none.
+- **What's left:** nothing. Nothing here calls Ekorn's
+  `all_arrayref`, so our range of Ekorn versions stays as it is.
