@@ -1,5 +1,5 @@
 # Devel::Cover's cover_db/digests maps an MD5 hash of each file it
 # covered to the file's path, all on line 1; the hashes look like API
 # keys. cover_db/ is made by scripts/coverage, git-ignored and never
-# committed, so only `gitleaks dir` sees it.
+# committed, so only `betterleaks dir` sees it.
 cover_db/digests:generic-api-key:1

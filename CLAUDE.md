@@ -163,7 +163,7 @@ here, and creating it ends the redirect.
   session only sends messages.
 - **No secret whole in a message or task,** made-up or not: build it
   from pieces (`join '', 'AKIA', 'MADEUP', ...`) or leave it out. Run
-  `gitleaks dir .` before a docs commit; a full hash beside a rule's
+  `betterleaks dir .` before a docs commit; a full hash beside a rule's
   name can look like a secret.
 
 ## The roadmap and change records
@@ -196,8 +196,9 @@ follow them. In short:
 - User-visible changes go in `Changes` under Unreleased in the same
   commit, and the entry's precis, naming the roadmap ids it ships, is
   kept current.
-- **Secrets:** gitleaks scans history in CI. A finding stops the work.
-  Published history is never rewritten: list that one finding by
-  fingerprint (from `gitleaks git --redact -f json -r report.json .`)
-  in `.gitleaksignore`, with Iain's reason above it, and
-  revoke a real secret first.
+- **Secrets:** betterleaks scans history in CI. A finding stops the
+  work. Published history is never rewritten: list that one finding by
+  fingerprint (from
+  `betterleaks git --redact -f json -r report.json .`) in
+  `.gitleaksignore`, which betterleaks reads, with Iain's reason above
+  it, and revoke a real secret first.

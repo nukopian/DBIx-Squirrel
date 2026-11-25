@@ -53,15 +53,4 @@ Nothing.
 
 ## Ideas
 
-### 2026-0029. Scanning with betterleaks
-
-Added 2026-11-15. Scan for secrets with betterleaks, gitleaks'
-successor, in place of gitleaks, which gets no new rules now: in CI's
-job over the whole history (`.github/workflows/test.yml`) and in the
-scans by hand before a push and a tag (docs/MAINTAINING.md), as
-Ekorn-Pipeline's 2026-0039 does there. Two questions when it's taken
-up: whether betterleaks reads a `.gitleaksignore`, which the rule on
-secrets in messages relies on, and installing it, asking Iain first.
-**Origin:** a message from Ekorn-Pipeline, 2026-11-15 (its commit
-17f3ac15803cb91a6bb5fb184c2d30c09921b606), whose details are in TODO.md at
-62b4c63b98f1efdc8e518e5e4c070985abb8c3a5.
+Nothing.

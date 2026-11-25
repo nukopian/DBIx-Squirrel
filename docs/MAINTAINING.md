@@ -346,7 +346,7 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    git pull --ff-only
    gh run list --branch develop --limit 1
    if [ -e TODO.md ]; then cat TODO.md; else echo "no TODO.md"; fi
-   gitleaks git --redact --no-banner .
+   betterleaks git --redact --no-banner .
    ```
 
    If `TODO.md` is there, its tasks come first. Do them, or move them
@@ -646,11 +646,12 @@ gh run rerun "$(gh run list --branch develop --limit 1 --json databaseId --jq '.
 
 ## Security checks
 
-- **gitleaks** scans the whole history for secrets on every push, in
-  `test.yml`'s `secrets` job, and by hand before a tag (step 1).
+- **betterleaks**, gitleaks' successor, scans the whole history for
+  secrets on every push, in `test.yml`'s `secrets` job, and by hand
+  before a tag (step 1). It reads `.gitleaksignore`, whose name is kept.
 - **Secret scanning and push protection** are on. Push protection
-  refuses a push with a recognised secret in it, before gitleaks would
-  see it.
+  refuses a push with a recognised secret in it, before betterleaks
+  would see it.
 - **Dependabot alerts** are on, and **Dependabot security updates** are
   off on purpose. They'd open pull requests against `main`, which moves
   only at a release. Dependabot doesn't read a `cpanfile`, so its alerts
@@ -671,7 +672,7 @@ gh api repos/nukopian/DBIx-Squirrel/secret-scanning/alerts --jq '.[] | select(.s
   `cpanfile` (yath, Perl::Critic, Perl::Tidy, CPAN::Uploader and
   Pod::Markdown::Github, which writes README.md's code in fences,
   among them);
-- `gh`, `gitleaks` and `jq`;
+- `gh`, `betterleaks` and `jq`;
 - for the PDFs, `pandoc` and Prince.
 
 `scripts/readme-pdf.sh` builds a PDF of the README, the reference, the
