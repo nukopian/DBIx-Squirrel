@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0049.
+Last id: 2026-0050.
 
 Items come in four groups:
 
@@ -45,7 +45,23 @@ Nothing yet.
 
 ## Next
 
-Nothing yet.
+### 2026-0050. An iterator's all_arrayref
+
+**Size:** XS (1). **Decisions:** D1 settled: `all_arrayref`, as
+Ekorn's. [Record](docs/changes/2026-0050-all-arrayref.md).
+
+**What:** `all_arrayref` on DBIx::Squirrel::Iterator, returning every
+result still to come as an array reference in any context, as
+Ekorn-Pipeline's 2026-0055 adds to its iterator.
+
+**Why:** `all` gives a reference only in scalar context, so
+`{ rows => $it->all }`, an argument list or `return $it->all` gets a
+flattened list without a word. Our iterator wraps an Ekorn run rather
+than inheriting from Ekorn's iterator, so it won't gain the method
+from Ekorn's release.
+
+**Done when:** the method, its tests, its POD and its entries in
+`docs/REFERENCE.md` and its index are in, and `Changes` says so.
 
 ## Later
 
