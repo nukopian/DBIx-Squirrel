@@ -130,6 +130,18 @@ went on:
   fix it made tripped Perl::Critic, which reads the statement after a
   `try`'s `catch` block as part of it unless the block ends with `;`.
 
+## From Ekorn-Pipeline, 2026-11-25: `pipe`'s branch rebased
+
+**From:** Ekorn-Pipeline's session, 2026-11-25 (Ekorn-Pipeline
+e6a8eed2a3044d43fce68e1a982380b5aa5dc3a6)
+
+The branch `experiment/2026-0053-pipe` was rebased onto Ekorn's
+v0.3.16, and is now f2b74e33f11486613742f73b20f482ef4d343b98, in place
+of f1fd15cb4d65000cd4b45451d25abdc84dac8962, which the task below
+names. `pipe`'s change is the same; the branch now has v0.3.16 under
+it. The task's worktree command fetches by the branch's name, so it
+gets the new one.
+
 # Planned work
 
 ## Take Ekorn-Pipeline v0.4.0: `pipe` gives what a pipeline gives
