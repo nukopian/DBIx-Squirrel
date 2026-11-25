@@ -170,5 +170,10 @@ The review itself isn't started. Prep, run on 2026-11-25 at
 - `lastlog.jsonl` is a stale link, to a log of 2026-11-16, so
   `yath failed lastlog.jsonl` fails; name the run's own log.
 
+The fixes ship in v4.0.0, with 2026-0048's `pipe`, not first in a
+v3.6.x as Ekorn's went out in v0.3.16 before its v0.4.0: Iain,
+2026-11-25, as `pipe`'s change was already on `develop`. The review's
+record carries this as a settled decision.
+
 Done when the review's findings are written up in a roadmap item's
 record, fixed and tested, and itemised in `Changes`.
