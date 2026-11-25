@@ -201,4 +201,6 @@ follow them. In short:
   fingerprint (from
   `betterleaks git --redact -f json -r report.json .`) in
   `.gitleaksignore`, which betterleaks reads, with Iain's reason above
-  it, and revoke a real secret first.
+  it, and revoke a real secret first. Claude changes `.gitleaksignore`
+  only with its Edit tool, never from the shell: a rule in Iain's
+  settings makes each such edit ask him.

@@ -438,7 +438,22 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    `@$it`. The last line shows each `@` left in the notes: read it.
    After the release, step 5 checks it has no mentions.
 
-5. **Move `main` and tag it.** First check that every check run on the
+5. **Move `main` and tag it.** First check `develop` once more, as
+   another session may have sent a task or a message since step 1, as
+   one did during Ekorn-Pipeline's v0.4.2. Pull it, and check there's
+   still no `TODO.md`, and that its last commit is the release's:
+
+   ```sh
+   cd ~/Git/github.com/nukopian/DBIx-Squirrel
+   git switch develop
+   git pull --ff-only
+   if [ -e TODO.md ]; then cat TODO.md; else echo "no TODO.md"; fi
+   git log -1 --format='%H %s'
+   ```
+
+   If `TODO.md` is back, `main` doesn't move: its tasks come first, as
+   in step 1, and the release goes on from the commit that deletes it,
+   once CI is green there. Then check that every check run on the
    commit has completed successfully. `gh run watch` can report a run
    as passed while one of its jobs is still marked in progress, and
    `main`'s protection refuses the push until it isn't. Each check is
