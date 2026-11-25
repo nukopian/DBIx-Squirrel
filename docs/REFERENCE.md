@@ -1819,8 +1819,9 @@ in Ekorn's reference, says how to give a class of your own the same.
 returns what a pipeline of the same stages gives: in list context, what
 comes out of the last stage; in scalar context, how many results came
 out, or a sink's result. For one value, read it in list context, or
-end with `keep_first`. A stage that dies makes it croak, naming the
-stage (see [When a stage dies](#when-a-stage-dies)).
+end with `keep_first`. Until v4.0.0, in scalar context, `pipe` gave the
+first result instead, unlike a pipeline. A stage that dies makes it
+croak, naming the stage (see [When a stage dies](#when-a-stage-dies)).
 
 ```perl
 my @names = $dbh->pipe(
@@ -3073,9 +3074,9 @@ Runs the handle through the stages, and returns what comes out of the
 last one, as a pipeline of the same stages does: all of it in list
 context; in scalar context, how many results came out, or, if a sink
 is last, the sink's result, a list sink's as an array reference. For
-one value, read it in list context, or end with `keep_first`. With no
-stages, it returns the handle, or, in scalar context, 1. A stage that
-dies makes `pipe` croak, naming the stage (see
+one value, read it in list context, or end with `keep_first`. Until
+v4.0.0, in scalar context, it gave the first result. With no stages, it
+returns the handle, or, in scalar context, 1. A stage that dies makes `pipe` croak, naming the stage (see
 [When a stage dies](#when-a-stage-dies)).
 
 See [pipe and tap](#pipe-and-tap).
@@ -3655,9 +3656,9 @@ Runs the handle through the stages, and returns what comes out of the
 last one, as a pipeline of the same stages does: all of it in list
 context; in scalar context, how many results came out, or, if a sink
 is last, the sink's result, a list sink's as an array reference. For
-one value, read it in list context, or end with `keep_first`. With no
-stages, it returns the handle, or, in scalar context, 1. A stage that
-dies makes `pipe` croak, naming the stage (see
+one value, read it in list context, or end with `keep_first`. Until
+v4.0.0, in scalar context, it gave the first result. With no stages, it
+returns the handle, or, in scalar context, 1. A stage that dies makes `pipe` croak, naming the stage (see
 [When a stage dies](#when-a-stage-dies)).
 
 See [pipe and tap](#pipe-and-tap).

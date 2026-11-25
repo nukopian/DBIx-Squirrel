@@ -2122,8 +2122,9 @@ C<pipe> is for work that starts from the handle and ends in values: it
 returns what a pipeline of the same stages gives: in list context, what
 comes out of the last stage; in scalar context, how many results came
 out, or a sink's result. For one value, read it in list context, or
-end with C<keep_first>. A stage that dies makes it croak, naming the
-stage (see L<When a stage dies|/"When a stage dies">).
+end with C<keep_first>. Until v4.0.0, in scalar context, C<pipe> gave the
+first result instead, unlike a pipeline. A stage that dies makes it
+croak, naming the stage (see L<When a stage dies|/"When a stage dies">).
 
     my @names = $dbh->pipe(
         sub ($dbh) { @{ $dbh->selectcol_arrayref('SELECT name FROM artist ORDER BY id') } },
@@ -3850,9 +3851,9 @@ Runs the handle through the stages, and returns what comes out of the
 last one, as a pipeline of the same stages does: all of it in list
 context; in scalar context, how many results came out, or, if a sink
 is last, the sink's result, a list sink's as an array reference. For
-one value, read it in list context, or end with C<keep_first>. With no
-stages, it returns the handle, or, in scalar context, 1. A stage that
-dies makes C<pipe> croak, naming the stage (see
+one value, read it in list context, or end with C<keep_first>. Until
+v4.0.0, in scalar context, it gave the first result. With no stages, it
+returns the handle, or, in scalar context, 1. A stage that dies makes C<pipe> croak, naming the stage (see
 L<When a stage dies|/"When a stage dies">).
 
 See L<pipe and tap|/"pipe and tap">.
@@ -4336,9 +4337,9 @@ Runs the handle through the stages, and returns what comes out of the
 last one, as a pipeline of the same stages does: all of it in list
 context; in scalar context, how many results came out, or, if a sink
 is last, the sink's result, a list sink's as an array reference. For
-one value, read it in list context, or end with C<keep_first>. With no
-stages, it returns the handle, or, in scalar context, 1. A stage that
-dies makes C<pipe> croak, naming the stage (see
+one value, read it in list context, or end with C<keep_first>. Until
+v4.0.0, in scalar context, it gave the first result. With no stages, it
+returns the handle, or, in scalar context, 1. A stage that dies makes C<pipe> croak, naming the stage (see
 L<When a stage dies|/"When a stage dies">).
 
 See L<pipe and tap|/"pipe and tap">.

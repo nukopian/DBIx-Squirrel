@@ -381,6 +381,9 @@ read it in list context, or end with C<keep_first>:
     my ($first) = $dbh->pipe(@stages);
     my $first   = $dbh->pipe(@stages, keep_first);
 
+Until v4.0.0, in scalar context, C<pipe> gave the first value, or
+C<undef> if there were none, unlike a pipeline.
+
 If a stage dies, C<pipe> croaks at the line that called it, naming the
 stage by its position, from C<#1>:
 
