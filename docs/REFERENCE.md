@@ -1816,9 +1816,11 @@ tap](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#pipe
 in Ekorn's reference, says how to give a class of your own the same.
 
 `pipe` is for work that starts from the handle and ends in values: it
-returns what comes out of the last stage, all of it in list context,
-or the first in scalar context. A stage that dies makes it croak,
-naming the stage (see [When a stage dies](#when-a-stage-dies)).
+returns what a pipeline of the same stages gives: in list context, what
+comes out of the last stage; in scalar context, how many results came
+out, or a sink's result. For one value, read it in list context, or
+end with `keep_first`. A stage that dies makes it croak, naming the
+stage (see [When a stage dies](#when-a-stage-dies)).
 
 ```perl
 my @names = $dbh->pipe(
@@ -1828,7 +1830,8 @@ my @names = $dbh->pipe(
 say "@names";    # ABBA BLUR CREAM
 
 my $sth = $dbh->prepare('SELECT name FROM artist WHERE id = ?');
-say scalar $sth->pipe(sub ($sth) { $sth->execute(2); $sth->fetchrow_arrayref->[0] });    # Blur
+my ($name) = $sth->pipe(sub ($sth) { $sth->execute(2); $sth->fetchrow_arrayref->[0] });
+say $name;    # Blur
 ```
 
 `tap` is for a side job in the middle of a chain of method calls: it
@@ -3061,13 +3064,18 @@ See [iterate](#iterate).
 <!-- not run -->
 ```perl
 @results = $dbh->pipe(@stages);
-$result  = $dbh->pipe(@stages);
+$count   = $dbh->pipe(@stages);
+($first) = $dbh->pipe(@stages);
+$first   = $dbh->pipe(@stages, keep_first);
 ```
 
 Runs the handle through the stages, and returns what comes out of the
-last one: all of it in list context; in scalar context, the first
-value, or `undef` if none came out. With no stages, it returns the
-handle. A stage that dies makes `pipe` croak, naming the stage (see
+last one, as a pipeline of the same stages does: all of it in list
+context; in scalar context, how many results came out, or, if a sink
+is last, the sink's result, a list sink's as an array reference. For
+one value, read it in list context, or end with `keep_first`. With no
+stages, it returns the handle, or, in scalar context, 1. A stage that
+dies makes `pipe` croak, naming the stage (see
 [When a stage dies](#when-a-stage-dies)).
 
 See [pipe and tap](#pipe-and-tap).
@@ -3638,13 +3646,18 @@ See [iterate](#iterate).
 <!-- not run -->
 ```perl
 @results = $sth->pipe(@stages);
-$result  = $sth->pipe(@stages);
+$count   = $sth->pipe(@stages);
+($first) = $sth->pipe(@stages);
+$first   = $sth->pipe(@stages, keep_first);
 ```
 
 Runs the handle through the stages, and returns what comes out of the
-last one: all of it in list context; in scalar context, the first
-value, or `undef` if none came out. With no stages, it returns the
-handle. A stage that dies makes `pipe` croak, naming the stage (see
+last one, as a pipeline of the same stages does: all of it in list
+context; in scalar context, how many results came out, or, if a sink
+is last, the sink's result, a list sink's as an array reference. For
+one value, read it in list context, or end with `keep_first`. With no
+stages, it returns the handle, or, in scalar context, 1. A stage that
+dies makes `pipe` croak, naming the stage (see
 [When a stage dies](#when-a-stage-dies)).
 
 See [pipe and tap](#pipe-and-tap).

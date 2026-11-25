@@ -2,6 +2,23 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    pipe gives what a pipeline gives, as it does in Ekorn::Pipeline
+    v0.4.0, which is now required.
+
+    It ships roadmap 2026-0048, from a task of Ekorn-Pipeline's. Requires
+    Ekorn::Pipeline >= v0.4.0, < v0.5.0.
+
+    - pipe, on a database or statement handle, gives in scalar context
+      what a pipeline of the same stages gives: how many results, or a
+      sink's result, a list sink's as an array reference, and 1 with
+      no stages. It gave the first result, or undef. For one value,
+      read it in list context, my($first) = $dbh->pipe(...), or end
+      with keep_first (roadmap 2026-0048).
+    - Requires Ekorn::Pipeline v0.4.0 or later, below v0.5.0, for
+      pipe; v0.4.0 carries v0.3.16's fix, which passes a statement's
+      row to a pipeline reading a | chain made from its iterator, as
+      result_original (roadmap 2026-0048).
+
 v3.6.1 2026-11-24
 
     result_original is Ekorn::Pipeline's own, and a stage reading it

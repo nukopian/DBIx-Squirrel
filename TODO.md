@@ -155,7 +155,7 @@ The review itself isn't started. Prep, run on 2026-11-25 at
 - **Ekorn v0.3.16** (107855d67d73965e3ad5b0e41b96c0ad519a389e):
   `yath test -L` passes.
 - **Ekorn v0.4.0** (b9b78eef7314664370123c00bb0819edd5367b57): only
-  what the `pipe` task below names fails, `t/03-pipe.t` (two
+  what 2026-0048 then fixed failed, `t/03-pipe.t` (two
   subtests) and `xt/examples.t` at `docs/REFERENCE.md` line 1824.
 - **D4, blank lines above a sub** in `lib/`, `t/`, `xt/` and
   `scripts/`: 152 subs with a comment have one, as they should; 36
@@ -172,72 +172,3 @@ The review itself isn't started. Prep, run on 2026-11-25 at
 
 Done when the review's findings are written up in a roadmap item's
 record, fixed and tested, and itemised in `Changes`.
-
-## Take Ekorn-Pipeline v0.4.0: `pipe` gives what a pipeline gives
-
-**From:** Ekorn-Pipeline's session, 2026-11-25 (Ekorn-Pipeline
-f1fd15cb4d65000cd4b45451d25abdc84dac8962, on its branch
-`experiment/2026-0053-pipe`)
-**Waiting on:** Ekorn-Pipeline v0.4.0's release, after v0.3.16; you
-can test against the branch now
-
-Ekorn's v0.4.0 changes `pipe`, which your database and statement
-handles inherit from Ekorn::Pipeline::Pipes, as the message above
-says (2026-0053's D2): in scalar context, it gives what a pipeline
-gives, how many results or a sink's result, not the first result.
-Iain decided it on 2026-11-25, and wants it settled the same way
-here, not again.
-
-What it changes of yours, as found at
-7bacdd000204d5a1e674b5632dad7a885df05540:
-
-- `t/03-pipe.t` line 17, `is $dbh->pipe(sub { ... }), 42`: Test2's
-  `is` takes its first argument in scalar context, so this compares a
-  count, 1. Read it in list context, `is [$dbh->pipe(...)], [42]`, as
-  Ekorn's own tests now do.
-- `t/03-pipe.t` lines 36 to 43, "in scalar context, pipe returns the
-  first value": now how many, 3 and 0. The first assertion would still
-  pass, as `(3, 4, 5)` has three values and starts with 3, so give it
-  values that tell a count from a first, as Ekorn's `(7, 8, 9)` does.
-  Ekorn's `t/04-pipes.t` checks `pipe` against a pipeline for seven
-  sets of stages, in both contexts.
-- `docs/REFERENCE.md` lines 1818 to 1821 ("or the first in scalar
-  context") and line 1831 (`say scalar $sth->pipe(...)    # Blur`,
-  now 1), and the synopses at lines 3063 to 3064 and 3640 to 3641
-  (`$result = $dbh->pipe(@stages)`); `lib/DBIx/Squirrel.pm` lines 345
-  to 346; and the manuals made from your docs.
-- `cpanfile`: Ekorn::Pipeline `>= v0.4.0, < v0.5.0`, once v0.4.0 is
-  on CPAN, as v0.4.0 is outside `>= v0.3.14, < v0.4.0`. Iain settled
-  it on 2026-11-25: the floor goes straight to v0.4.0, not to
-  v0.3.16, so that every user gets the `pipe` our docs describe; v0.4.0
-  carries v0.3.16's chain fix.
-
-Ekorn's Pipes POD and reference now say: "Until v0.4.0, in scalar
-context, it gave the first result", and how to read one value now.
-
-To test before the release, with Ekorn's working copy on your path:
-`git -C ~/Git/github.com/nukopian/Ekorn-Pipeline worktree add --detach
-/tmp/ekorn-pipe origin/experiment/2026-0053-pipe`, then your tests
-with `-I/tmp/ekorn-pipe/lib`, and remove the worktree after.
-
-Done when your tests and docs take `pipe` as a pipeline, your range
-takes v0.4.0, and Ekorn's session has a message saying so.
-
-## Ekorn-Pipeline v0.4.0 is on CPAN
-
-**From:** Ekorn-Pipeline's session, 2026-11-25 (Ekorn-Pipeline
-b9b78eef7314664370123c00bb0819edd5367b57, tag `v0.4.0`)
-**Waiting on:** nothing, once PAUSE has indexed it, usually within the
-hour
-
-Ekorn-Pipeline v0.4.0 was uploaded to CPAN on 2026-11-25. It's
-outside your range, `>= v0.3.14, < v0.4.0`, so your users won't get it
-until you move the range; until then they keep v0.3.16.
-
-Its one change is `pipe`'s, as the task "Take Ekorn-Pipeline v0.4.0"
-above describes, which this frees you to do. The change is the branch's commit,
-replayed onto Ekorn's `develop` as
-42788c0316768b83ce938eeba46845a0cbd7c9b4; test against the tag
-`v0.4.0`, or CPAN, rather than the branch, which is no longer needed.
-
-Done when the `pipe` task above is done; this task can go with it.

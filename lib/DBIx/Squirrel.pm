@@ -343,10 +343,13 @@ instead.
 =head2 pipe
 
     @results = $dbh->pipe(@stages);
-    $result  = $dbh->pipe(@stages);
+    $count   = $dbh->pipe(@stages);
+    ($first) = $dbh->pipe(@stages);
+    $first   = $dbh->pipe(@stages, keep_first);
 
 Runs the database handle through a pipeline of stages, and returns
-what comes out of the last one.
+what the pipeline gives, as
+C<< Ekorn::Pipeline->new(@stages)->($dbh) >> would.
 
 A stage is a code reference, or a pipeline, which stands for its
 stages, as L<Ekorn::Pipeline> shows. A code reference is called with
@@ -368,13 +371,15 @@ of several goes through the rest of the stages on its own:
     );    # (6, 10)
 
 To end the pipeline early, call L</Stop>. With no stages, C<pipe>
-returns the database handle.
+returns the database handle, or, in scalar context, 1.
 
 Called in list context, C<pipe> returns all the values. In scalar
-context, it returns the first, or C<undef> if there are none. To count
-the values, assign them to an empty list in scalar context:
+context, it returns how many there are, or, if a sink is last, the
+sink's result, a list sink's as an array reference. For one value,
+read it in list context, or end with C<keep_first>:
 
-    my $count = () = $dbh->pipe(@stages);
+    my ($first) = $dbh->pipe(@stages);
+    my $first   = $dbh->pipe(@stages, keep_first);
 
 If a stage dies, C<pipe> croaks at the line that called it, naming the
 stage by its position, from C<#1>:

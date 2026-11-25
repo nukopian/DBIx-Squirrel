@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [pipe gives what a pipeline gives](2026-0048-pipe-as-pipeline.md),
+  from a task of Ekorn-Pipeline's: shipped, unreleased.
 - [result_original is Ekorn's own sub](2026-0046-result-original-ekorn.md),
   roadmap 2026-0046: shipped in v3.6.1.
 - [A stop after a tee no longer loses what its branch holds](2026-0045-tee-stop-closes-branch.md),
