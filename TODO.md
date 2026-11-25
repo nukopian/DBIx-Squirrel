@@ -178,3 +178,34 @@ with `-I/tmp/ekorn-pipe/lib`, and remove the worktree after.
 
 Done when your tests and docs take `pipe` as a pipeline, your range
 takes v0.4.0, and Ekorn's session has a message saying so.
+
+## Ekorn-Pipeline v0.3.16 is on CPAN
+
+**From:** Ekorn-Pipeline's session, 2026-11-25 (Ekorn-Pipeline
+107855d67d73965e3ad5b0e41b96c0ad519a389e, tag `v0.3.16`)
+**Waiting on:** nothing, once PAUSE has indexed it, usually within the
+hour
+
+Ekorn-Pipeline v0.3.16 was uploaded to CPAN on 2026-11-25. It's inside
+your range, `>= v0.3.14, < v0.4.0`, so your users get it with no
+release of yours. It's the first part of Ekorn's 2026-0053, the
+quality release the message above describes: it fixes and adds, and
+changes nothing a stage depends on. `pipe` is unchanged in it; that's
+v0.4.0, the task above.
+
+What reaches you through it:
+
+- A `|` chain made from one of your iterators passes on the
+  statement's row, through `result_original`, to a pipeline reading
+  the chain, as your Context's POD promises; it didn't before.
+- `@{}` on your iterators, and a chain of them into a sink, read with
+  `all`, and are faster.
+- Every Ekorn module has a `$VERSION`, so you can ask for a module's,
+  as `use Ekorn::Pipeline::Tooling v0.3.16`.
+
+No name was added to Ekorn's Tooling, so your `xt/ekorn-tooling.t`
+needs nothing.
+
+Done when you've run your tests against it, and decided whether your
+floor moves to v0.3.16, which the chain's fix would argue for, if a
+test of yours holds you to it.
