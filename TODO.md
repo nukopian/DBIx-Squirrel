@@ -21,7 +21,7 @@ The first:
 > I'd like a thorough quality review conducted. We are looking for
 > inefficient and inconsistent code, errors, untested code,as well as
 > code that should be but is not documented. We're also looking for
-> slop and hallucinations, as well as documentation that is pool
+> slop and hallucinations, as well as documentation that is poor
 > quality. The next release is a quality release.
 
 The review came back with findings numbered 1 to 14, and four
