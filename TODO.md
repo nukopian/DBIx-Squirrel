@@ -144,6 +144,35 @@ gets the new one.
 
 # Planned work
 
+## A quality review, as Ekorn's 2026-0053
+
+**From:** Iain, 2026-11-25, with the message above, whose prompt and
+D1 to D6 hold here as settled; none is asked again.
+
+The review itself isn't started. Prep, run on 2026-11-25 at
+7bacdd000204d5a1e674b5632dad7a885df05540, Perl 5.36.3:
+
+- **Ekorn v0.3.16** (107855d67d73965e3ad5b0e41b96c0ad519a389e):
+  `yath test -L` passes.
+- **Ekorn v0.4.0** (b9b78eef7314664370123c00bb0819edd5367b57): only
+  what the `pipe` task below names fails, `t/03-pipe.t` (two
+  subtests) and `xt/examples.t` at `docs/REFERENCE.md` line 1824.
+- **D4, blank lines above a sub** in `lib/`, `t/`, `xt/` and
+  `scripts/`: 152 subs with a comment have one, as they should; 36
+  have two; and 8 with no comment have two, as they should. Found by
+  a scan of lines starting `sub `, so a sub inside a block isn't
+  counted.
+- **D5, `$VERSION`:** only `lib/DBIx/Squirrel.pm` has one; 17 modules
+  have none. No test like Ekorn's `t/34-versions.t` yet.
+- **D3, "new in":** none in the docs or POD.
+- **F17, regexes without `x`,** by PPI as Ekorn checked: none (the
+  one it lists, `scripts/manuals` line 73, is a `tr`).
+- `lastlog.jsonl` is a stale link, to a log of 2026-11-16, so
+  `yath failed lastlog.jsonl` fails; name the run's own log.
+
+Done when the review's findings are written up in a roadmap item's
+record, fixed and tested, and itemised in `Changes`.
+
 ## Take Ekorn-Pipeline v0.4.0: `pipe` gives what a pipeline gives
 
 **From:** Ekorn-Pipeline's session, 2026-11-25 (Ekorn-Pipeline
