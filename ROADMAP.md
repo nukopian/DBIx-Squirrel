@@ -45,50 +45,6 @@ Nothing yet.
 
 ## Next
 
-### 2026-0052. Two parts: DBIx::Squirrel, then Ekorn::Pipeline
-
-**Size:** S (2). **Decisions:** D1 settled: Part 1 is DBIx::Squirrel,
-complete; Part 2 is Ekorn::Pipeline, by choice. D2 settled: Ekorn's
-names are those imported from its modules, and Tooling goes to Part 2
-whole; amended with a positive test, that what fits 1.6.5's
-DESCRIPTION, or extends something it names, belongs in Part 1. D3 settled: a divider heading for each part, "Part 1:
-DBIx::Squirrel" and "Part 2: With Ekorn::Pipeline"; the chapters keep
-theirs, numbered on through both. D4 settled: Part 1 names what it
-asks a reader to learn, and ends where they may stop. D5 settled: an
-author test keeps Ekorn's names out of Part 1. D6 settled: the new
-documents are written in `docs/next/`, and today's are kept untouched
-until they're swapped in (2026-0058). D7 settled: success is
-measured by the D5 test, a cold reader given Part 1 alone and then
-both parts, coupling before and after, and Iain's sceptical review;
-the README and the guide carry the sales pitch, for sceptical and
-enthusiastic readers alike; amended after a first review, with the
-cold reader's tasks, and every claimed gain shown in code. D8 settled:
-Part 1's foundation, true without Ekorn::Pipeline: "You write the SQL;
-DBIx::Squirrel takes away the DBI machinery around it, with
-placeholders in any common style, a list into `IN (...)` from one
-placeholder, and results read through an iterator, and every handle is
-still a DBI handle. Rows can also be changed as they're read, by small
-functions written beside the query."
-[Record](docs/changes/2026-0052-two-parts.md).
-
-**What:** where the line between the two parts falls, the same in the
-README, the guide and the reference, and how it's kept; and `docs/next/` made ready for the new documents,
-with `xt/examples.t` and `xt/spelling.t` reading it too. The D5 test
-comes with the first document written, 2026-0054. The cold reader
-(D7) is run on today's documents, for a baseline.
-
-**Why:** the documents tell DBIx::Squirrel's story in Ekorn::Pipeline's
-words: `keep_all` comes up more often than the iterator's `->all` in
-the README. So the two distributions read as tightly coupled, which is
-what the split was meant to escape, and a reader must learn both to
-follow either. Told in two parts, DBIx::Squirrel is complete in
-itself, and Ekorn::Pipeline is a choice that builds on it: synergy,
-not dependency.
-
-**Done when:** `xt/examples.t` and `xt/spelling.t` read `docs/next/`
-as they read `docs/`, `yath test -L xt` passes, the cold reader's
-baseline is in the record.
-
 ### 2026-0053. Why Ekorn::Pipeline split from DBIx::Squirrel
 
 **Size:** S (2). **Decisions:** D1 open: the reasons, from Iain; where
@@ -115,11 +71,11 @@ say what changed for a caller at each version, but not why.
 `docs/next/README.pod`, by 2026-0052. Part 1 opens with 2026-0052's
 D8, then shows DBIx::Squirrel with its own iterator, its gains in
 pairs, plain DBI beside DBIx::Squirrel, for work a DBI user does every
-week. Part 2 is a paragraph on Ekorn::Pipeline, a sentence on why the
-two split, and links on. The first document written, so the test from
-2026-0052's D5 comes with it, failing where a document's Part 1 names
-one of Ekorn's names. Done when that test and `xt/examples.t` pass on
-it.
+week, and closes the gaps 2026-0052's baseline found. Part 2 is a
+paragraph on Ekorn::Pipeline, a sentence on why the two split, and
+links on. The first document written, so the test from 2026-0052's D5
+comes with it, failing where a document's Part 1 names one of Ekorn's
+names. Done when that test and `xt/examples.t` pass on it.
 
 ### 2026-0055. The guide in two parts
 
@@ -133,8 +89,9 @@ a glance" ends at the iterator, and "Import everything from one place"
 moves on. Part 2 is data crossing the database's edge. It opens with
 why the two split (2026-0053), then the recipes that put them
 together: sinks, files, JSON and CSV, `feed` for loading in batches,
-`tee`, and pipelines built from pipelines. Done when the 2026-0052
-test and `xt/examples.t` pass on it.
+`tee`, and pipelines built from pipelines. It closes the gaps
+2026-0052's baseline found. Done when the 2026-0052 test and
+`xt/examples.t` pass on it.
 
 ### 2026-0056. The reference in two parts
 

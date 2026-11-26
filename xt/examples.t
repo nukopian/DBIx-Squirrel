@@ -8,11 +8,13 @@ use File::Temp qw(tempdir);
 # Run the examples in docs/HOWTO.md and docs/REFERENCE.md, each document
 # as one program, so they can't drift from the code, and check that each
 # prints what its comments say; those in README.pod are compiled, as the
-# end of this file says. A document's examples share a database,
-# set up by its first, and follow on from each other: the first runs as
-# it is, and each after it in a block of its own, so their names don't
-# clash. An example marked <!-- not run -->, such as a usage synopsis, or
-# one needing a server or driver the tests don't have, is left out.
+# end of this file says. The new documents being written in docs/next/
+# are run and compiled as today's are, where they exist (roadmap
+# 2026-0052). A document's examples share a database, set up by its
+# first, and follow on from each other: the first runs as it is, and
+# each after it in a block of its own, so their names don't clash. An
+# example marked <!-- not run -->, such as a usage synopsis, or one
+# needing a server or driver the tests don't have, is left out.
 #
 # What an example prints is in its comments:
 #
@@ -25,7 +27,12 @@ use File::Temp qw(tempdir);
 # In either, ... stands for any text, such as a file's path or a line
 # number.
 
-my @DOCS = grep { -e } qw(docs/HOWTO.md docs/REFERENCE.md);
+my @DOCS = grep { -e } qw(
+    docs/HOWTO.md
+    docs/REFERENCE.md
+    docs/next/HOWTO.md
+    docs/next/REFERENCE.md
+);
 skip_all "the docs aren't here" unless @DOCS;
 
 # Return the Perl examples in a Markdown file, each as the line it starts
@@ -173,8 +180,7 @@ for my $doc (@DOCS) {
 # name DBIx::Squirrel::Tooling exports, as Ekorn-Pipeline compiles its
 # README's (roadmap 2026-0049). One that isn't Perl is marked
 # =for not-run.
-my $README = 'README.pod';
-if (-e $README) {
+for my $README (grep { -e } qw(README.pod docs/next/README.pod)) {
     subtest $README => sub {
         my @examples = pod_examples($README);
         ok @examples, 'it has examples' or return;
