@@ -1477,12 +1477,12 @@ C<DBIx::Squirrel::Stop::Stop()>.
 
 A stop is an exception, an object, which the run catches. So a stage
 that catches errors itself, with C<eval> or C<try>, should throw a stop
-on again. An error from C<die> with a message is a string, so passing
-on each error that's an object passes on every stop, including those
-the canned stages throw, such as C<take>'s. Part 2's L<What a stop
-is|/"What a stop is"> gives its class, to pass on stops alone:
+on again. C<is_stop>, exported on request, is true of every stop,
+including those the canned stages throw, such as C<take>'s, and false
+of any other error. Part 2's L<What a stop is|/"What a stop is"> gives
+its class:
 
-    use DBIx::Squirrel::Stop qw(Stop);
+    use DBIx::Squirrel::Stop qw(Stop is_stop);
     use experimental qw(try);
 
     my @safe = $dbh->iterate(
@@ -1493,7 +1493,7 @@ is|/"What a stop is"> gives its class, to pass on stops alone:
                 return uc $row->[0];
             }
             catch ($e) {
-                die $e if ref $e;    # a stop, or another error object
+                die $e if is_stop($e);    # a stop goes on
                 return 'unknown';
             }
         },
@@ -2516,7 +2516,7 @@ DBIx::Squirrel's own C<:rows> and C<:context> besides:
 
 =item C<:core>
 
-B<Holds:> C<Stop>, C<gather>
+B<Holds:> C<Stop>, C<is_stop>, C<gather>
 
 B<Made in:> L<Stop|/"6. Stopping early">, L<Gather|/"7. Gathering: stages made for each run">
 
@@ -3234,9 +3234,9 @@ reference says what a stop holds, in L<The stop
 object|Ekorn::Pipeline::Manual::Reference/"The stop object">.
 A stage made with C<gather> is an C<Ekorn::Pipeline::Gather>.
 
-A stage that catches errors, and should pass on stops alone, checks
-for C<Ekorn::Pipeline::Stop>. Every stop is one, including those the
-canned stages throw, such as C<take>'s:
+A stop is an C<Ekorn::Pipeline::Stop>, so C<is_stop> is the same test as
+this one, which names the class. Every stop is one, including those
+the canned stages throw, such as C<take>'s:
 
     use experimental qw(try);
     use DBIx::Squirrel::Tooling qw(Stop);
@@ -4909,7 +4909,19 @@ See L<Taps|/"Taps">.
 
 =head2 DBIx::Squirrel::Stop
 
-Ends a pipeline early: Ekorn's C<Stop>, by default.
+Ends a pipeline early: Ekorn's C<Stop>, by default, and tells a stop
+from other errors with C<is_stop>, upon request.
+
+=head3 is_stop
+
+    use DBIx::Squirrel::Stop qw(is_stop);
+
+    $is = is_stop($error);
+
+True if C<$error> is a stop, however it was thrown, and false of any
+other error. Exported upon request.
+
+See L<Catch errors, but let a stop through|/"Catch errors, but let a stop through">.
 
 =head3 Stop
 

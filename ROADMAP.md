@@ -45,22 +45,7 @@ Nothing yet.
 
 ## Next
 
-### 2026-0060. is_stop, from DBIx::Squirrel::Stop
-
-**Size:** S (2). From 2026-0057's D3.
-
-**What:** DBIx::Squirrel::Stop exports `is_stop` on request, true of
-any stop, whether thrown with `Stop` or by a canned stage such as
-`take`.
-
-**Why:** a stage that catches errors must pass on a stop, and Part 1
-of the documents can only say to pass on any error that's an object,
-as a stop's class is Ekorn::Pipeline's. With `is_stop`, Part 1's catch
-passes on stops alone, naming nothing of Ekorn's.
-
-**Done when:** `is_stop` is tested, in the POD, the reference's Part 1
-and index, and the guide's catch example, with a `Changes` line, and
-`yath test -L t xt` passes on 5.36 and 5.44.
+Nothing yet.
 
 ## Later
 

@@ -1196,11 +1196,12 @@ say "@newest";    # the-great-escape
 
 A stop works by throwing an exception that the run catches. So a
 stage that catches errors itself must pass a stop on, or the run won't
-stop. A stop is an object, where an error from `die` with a message is
-a string, so pass on any error that's an object:
+stop. `is_stop`, from DBIx::Squirrel::Stop on request, tells a stop from
+any other error, whether thrown with `Stop` or by a stage such as
+`take`:
 
 ```perl
-use DBIx::Squirrel::Stop qw(Stop);
+use DBIx::Squirrel::Stop qw(Stop is_stop);
 use experimental qw(try);
 
 my @safe = $dbh->iterate(
@@ -1211,7 +1212,7 @@ my @safe = $dbh->iterate(
             return uc $row->[0];
         }
         catch ($e) {
-            die $e if ref $e;    # a stop, or another error object
+            die $e if is_stop($e);    # a stop goes on
             return 'unknown';
         }
     },
@@ -1990,7 +1991,7 @@ DBIx::Squirrel that adds it.
 
 | Tag | What it gives you | Made in |
 |---|---|---|
-| `:core` | `Stop` and `gather` | DBIx::Squirrel::Stop and ::Gather |
+| `:core` | `Stop`, `is_stop` and `gather` | DBIx::Squirrel::Stop and ::Gather |
 | `:flow` | `take`, `drop`, `take_if`, `take_while` and the rest | DBIx::Squirrel::Stages::Flow |
 | `:batch` | `batch` and `collect` | DBIx::Squirrel::Stages::Batch |
 | `:taps` | `peek`, `count_into`, `dump_to` and `tee` | DBIx::Squirrel::Stages::Taps |
@@ -2798,11 +2799,11 @@ Ekorn::Pipeline can't depend on DBIx::Squirrel, so a stage that would
 
 ### Tell a stop from other errors by its class
 
-[Chapter 6](#catch-errors-in-a-stage-but-let-a-stop-through) passes
-on any error that's an object, as a stop is one. To pass on only
-stops, and handle other error objects, test for the class every stop
-belongs to, Ekorn::Pipeline::Stop, whether it was thrown with `Stop`,
-or by a stage such as `take`:
+[Chapter 6](#catch-errors-in-a-stage-but-let-a-stop-through) tells a
+stop with `is_stop`. A stop is an Ekorn::Pipeline::Stop, whether it was
+thrown with `Stop`, or by a stage such as `take`, so `is_stop` is the
+same as testing for that class, which code that knows Ekorn::Pipeline
+may do:
 
 ```perl
 use DBIx::Squirrel::Tooling qw(Stop);

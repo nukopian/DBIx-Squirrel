@@ -1266,13 +1266,13 @@ say "@upto";    # Disraeli Gears Arrival Parklife
 
 A stop is an exception, an object, which the run catches. So a stage
 that catches errors itself, with `eval` or `try`, should throw a stop
-on again. An error from `die` with a message is a string, so passing
-on each error that's an object passes on every stop, including those
-the canned stages throw, such as `take`'s. Part 2's [What a stop
-is](#what-a-stop-is) gives its class, to pass on stops alone:
+on again. `is_stop`, exported on request, is true of every stop,
+including those the canned stages throw, such as `take`'s, and false
+of any other error. Part 2's [What a stop is](#what-a-stop-is) gives
+its class:
 
 ```perl
-use DBIx::Squirrel::Stop qw(Stop);
+use DBIx::Squirrel::Stop qw(Stop is_stop);
 use experimental qw(try);
 
 my @safe = $dbh->iterate(
@@ -1283,7 +1283,7 @@ my @safe = $dbh->iterate(
             return uc $row->[0];
         }
         catch ($e) {
-            die $e if ref $e;    # a stop, or another error object
+            die $e if is_stop($e);    # a stop goes on
             return 'unknown';
         }
     },
@@ -2087,7 +2087,7 @@ DBIx::Squirrel's own `:rows` and `:context` besides:
 
 | Tag | Holds | Made in |
 |---|---|---|
-| `:core` | `Stop`, `gather` | [Stop](#6-stopping-early), [Gather](#7-gathering-stages-made-for-each-run) |
+| `:core` | `Stop`, `is_stop`, `gather` | [Stop](#6-stopping-early), [Gather](#7-gathering-stages-made-for-each-run) |
 | `:flow` | `take`, `take_first`, `take_last`, `take_single`, `take_if`, `take_while`, `drop`, `drop_if`, `drop_while` | [Stages::Flow](#taking-and-dropping) |
 | `:batch` | `batch`, `collect` | [Stages::Batch](#batching-and-collecting) |
 | `:taps` | `peek`, `count_into`, `dump_to`, `tee` | [Stages::Taps](#canned-stages) |
@@ -2676,9 +2676,9 @@ reference says what a stop holds, in [The stop
 object](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#the-stop-object).
 A stage made with `gather` is an `Ekorn::Pipeline::Gather`.
 
-A stage that catches errors, and should pass on stops alone, checks
-for `Ekorn::Pipeline::Stop`. Every stop is one, including those the
-canned stages throw, such as `take`'s:
+A stop is an `Ekorn::Pipeline::Stop`, so `is_stop` is the same test as
+this one, which names the class. Every stop is one, including those
+the canned stages throw, such as `take`'s:
 
 ```perl
 use experimental qw(try);
@@ -4263,7 +4263,22 @@ See [Taps](#taps).
 
 ### DBIx::Squirrel::Stop
 
-Ends a pipeline early: Ekorn's `Stop`, by default.
+Ends a pipeline early: Ekorn's `Stop`, by default, and tells a stop
+from other errors with `is_stop`, upon request.
+
+#### is_stop
+
+<!-- not run -->
+```perl
+use DBIx::Squirrel::Stop qw(is_stop);
+
+$is = is_stop($error);
+```
+
+True if `$error` is a stop, however it was thrown, and false of any
+other error. Exported upon request.
+
+See [Catch errors, but let a stop through](#catch-errors-but-let-a-stop-through).
 
 #### Stop
 

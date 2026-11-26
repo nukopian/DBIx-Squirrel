@@ -25,7 +25,7 @@ use Ekorn::Pipeline::Factories qw(
     pipeline stage source generator yield
     sink_one sink_many);
 
-use DBIx::Squirrel::Stop          qw(Stop);
+use DBIx::Squirrel::Stop          qw(Stop is_stop);
 use DBIx::Squirrel::Gather        qw(gather);
 use DBIx::Squirrel::Context       qw(iterator result_number result_original);
 use DBIx::Squirrel::Stages::Flow  qw(:all);
@@ -36,7 +36,7 @@ use DBIx::Squirrel::Stages::Rows  qw(:all);
 our $VERSION = 'v4.1.1';
 
 our %EXPORT_TAGS = (
-    core => [qw(Stop gather)],
+    core => [qw(Stop is_stop gather)],
     flow => [
         qw(take take_first take_last take_single take_if take_while),
         qw(drop drop_if    drop_while),

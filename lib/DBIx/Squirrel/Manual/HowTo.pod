@@ -1263,10 +1263,11 @@ has a name:
 
 A stop works by throwing an exception that the run catches. So a
 stage that catches errors itself must pass a stop on, or the run won't
-stop. A stop is an object, where an error from C<die> with a message is
-a string, so pass on any error that's an object:
+stop. C<is_stop>, from DBIx::Squirrel::Stop on request, tells a stop from
+any other error, whether thrown with C<Stop> or by a stage such as
+C<take>:
 
-    use DBIx::Squirrel::Stop qw(Stop);
+    use DBIx::Squirrel::Stop qw(Stop is_stop);
     use experimental qw(try);
 
     my @safe = $dbh->iterate(
@@ -1277,7 +1278,7 @@ a string, so pass on any error that's an object:
                 return uc $row->[0];
             }
             catch ($e) {
-                die $e if ref $e;    # a stop, or another error object
+                die $e if is_stop($e);    # a stop goes on
                 return 'unknown';
             }
         },
@@ -2053,7 +2054,7 @@ DBIx::Squirrel that adds it.
 
 =item C<:core>
 
-B<What it gives you:> C<Stop> and C<gather>
+B<What it gives you:> C<Stop>, C<is_stop> and C<gather>
 
 B<Made in:> DBIx::Squirrel::Stop and ::Gather
 
@@ -2952,11 +2953,11 @@ C<use> any of DBIx::Squirrel belongs with DBIx::Squirrel.
 
 =head2 Tell a stop from other errors by its class
 
-L<Chapter 6|/"Catch errors in a stage, but let a stop through"> passes
-on any error that's an object, as a stop is one. To pass on only
-stops, and handle other error objects, test for the class every stop
-belongs to, Ekorn::Pipeline::Stop, whether it was thrown with C<Stop>,
-or by a stage such as C<take>:
+L<Chapter 6|/"Catch errors in a stage, but let a stop through"> tells a
+stop with C<is_stop>. A stop is an Ekorn::Pipeline::Stop, whether it was
+thrown with C<Stop>, or by a stage such as C<take>, so C<is_stop> is the
+same as testing for that class, which code that knows Ekorn::Pipeline
+may do:
 
     use DBIx::Squirrel::Tooling qw(Stop);
     use experimental qw(try);

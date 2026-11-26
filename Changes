@@ -3,11 +3,12 @@ Revision history for DBIx-Squirrel
 Unreleased
 
     The README, the user guide and the reference each come in two
-    parts, DBIx::Squirrel first, then what Ekorn::Pipeline adds; and
+    parts, DBIx::Squirrel first, then what Ekorn::Pipeline adds.
     DBIx::Squirrel::Tooling's tags hold lists of its own, so a newer
-    Ekorn::Pipeline changes nothing a caller imports.
+    Ekorn::Pipeline changes nothing a caller imports, and is_stop, from
+    DBIx::Squirrel::Stop, tells a stop from any other error.
 
-    It ships roadmap 2026-0052 to 2026-0056, 2026-0058 and 2026-0059.
+    It ships roadmap 2026-0052 to 2026-0056, and 2026-0058 to 2026-0060.
 
     - Why. Ekorn::Pipeline began as DBIx::Squirrel's pipeline, and
       moved into a distribution of its own in 2026, as it was useful,
@@ -46,6 +47,11 @@ Unreleased
       comes into a tag only in a release of DBIx::Squirrel that adds
       it, and one it drops fails as Tooling loads. A caller imports
       the same names as before (roadmap 2026-0059).
+    - is_stop, from DBIx::Squirrel::Stop on request, and in Tooling's
+      :core, is true of a stop, however it was thrown, and false of any
+      other error, so a stage that catches errors can pass a stop on
+      without naming its class, Ekorn::Pipeline::Stop. The guide's and
+      the reference's catch examples use it (roadmap 2026-0060).
 
 v4.1.1 2026-11-26
 
