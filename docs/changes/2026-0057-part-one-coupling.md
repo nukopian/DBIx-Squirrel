@@ -86,3 +86,7 @@ in our documents, so they aren't links to cut.
   dropped with its reason, as D2 is; both messages are sent (below).
   No `Changes` line, as nothing changes for a caller until the items
   ship.
+- **The messages,** in Ekorn-Pipeline's `TODO.md`: a way into its
+  documents for readers coming from ours (Ekorn-Pipeline
+  918b070da2d89131457482e04d88245a97a2e87c), and an iterator's `next`
+  (Ekorn-Pipeline 34be89ee4fc089c4d2494e3d391432a57ad2c76c).
