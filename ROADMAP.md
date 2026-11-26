@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0058.
+Last id: 2026-0062.
 
 Items come in four groups:
 
@@ -45,24 +45,59 @@ Nothing yet.
 
 ## Next
 
-Nothing yet.
+### 2026-0059. Tooling exports a list of its own
+
+**Size:** XS (1). From 2026-0057's D1.
+
+**What:** DBIx::Squirrel::Tooling exports the names it lists, today's
+25 from Ekorn::Pipeline among them, rather than every name
+Ekorn::Pipeline::Tooling's tags hold, and `xt/ekorn-tooling.t` goes.
+
+**Why:** a name Ekorn adds in any v0.4.x fails our CI today, and must
+be added to ours in a release. With a list of our own, a name Ekorn
+adds comes into Tooling when we choose, in a release that adds.
+
+**Done when:** `xt/ekorn-tooling.t` is gone, Tooling's POD and the
+reference say its tags are its own, and `yath test -L t xt` passes on
+5.36 and 5.44.
+
+### 2026-0060. is_stop, from DBIx::Squirrel::Stop
+
+**Size:** S (2). From 2026-0057's D3.
+
+**What:** DBIx::Squirrel::Stop exports `is_stop` on request, true of
+any stop, whether thrown with `Stop` or by a canned stage such as
+`take`.
+
+**Why:** a stage that catches errors must pass on a stop, and Part 1
+of the documents can only say to pass on any error that's an object,
+as a stop's class is Ekorn::Pipeline's. With `is_stop`, Part 1's catch
+passes on stops alone, naming nothing of Ekorn's.
+
+**Done when:** `is_stop` is tested, in the POD, the reference's Part 1
+and index, and the guide's catch example, with a `Changes` line, and
+`yath test -L t xt` passes on 5.36 and 5.44.
 
 ## Later
 
-### 2026-0057. What Part 1 still takes from Ekorn::Pipeline's code
+### 2026-0061. is_stage, from a module of DBIx::Squirrel's
 
-**Size:** S (2). **Depends on:** 2026-0058.
+**Size:** XS (1). From 2026-0057's D4. **Decisions:** D1 open: which
+module exports it. [Record](docs/changes/2026-0061-is-stage.md).
 
-Once the documents are split, list what DBIx::Squirrel's Part 1 still
-needs from Ekorn::Pipeline, by what a caller sees and what CI checks,
-and make an item to cut each link worth cutting. The candidates already
-seen: Tooling exporting a stated list of Ekorn's names, not every name
-Ekorn's Tooling has, so `xt/ekorn-tooling.t` can go; the range's upper
-bound, which makes each minor version of Ekorn's a release of ours;
-and a message to Ekorn-Pipeline suggesting a way into its documents
-for readers coming from DBIx::Squirrel; and those 2026-0055's and
-2026-0056's records list, such as a stop's class, which Part 1 can't
-name. Done when each is an item, or dropped with the reason.
+A module of DBIx::Squirrel's exports Ekorn::Pipeline's `is_stage` on
+request, so a function taking any number of values, then stages, can
+find the stages, and Part 1 can show it.
+
+### 2026-0062. dump_to's setting, without naming Ekorn
+
+**Size:** S (2). From 2026-0057's D5. **Decisions:** D1 open: how it's
+set. [Record](docs/changes/2026-0062-dump-to-setting.md).
+
+`dump_to` writes each value in full while
+`$Ekorn::Pipeline::Stages::Taps::DumpSecrets` is set, Ekorn's
+variable. DBIx::Squirrel gives a way to set it of its own, so Part 1
+can say how.
 
 ## Ideas
 

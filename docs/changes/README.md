@@ -80,8 +80,14 @@ Steps, Done when.
 
 Newest id first.
 
+- [dump_to's setting, without naming Ekorn](2026-0062-dump-to-setting.md),
+  roadmap 2026-0062: open.
+- [is_stage, from a module of DBIx::Squirrel's](2026-0061-is-stage.md),
+  roadmap 2026-0061: open.
 - [The new documents in place of the old](2026-0058-new-documents.md),
   roadmap 2026-0058: shipped, unreleased.
+- [What Part 1 still takes from Ekorn::Pipeline's code](2026-0057-part-one-coupling.md),
+  roadmap 2026-0057: shipped, unreleased.
 - [The reference in two parts](2026-0056-reference-two-parts.md),
   roadmap 2026-0056: shipped, unreleased.
 - [The guide in two parts](2026-0055-guide-two-parts.md),
