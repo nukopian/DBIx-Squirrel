@@ -41,15 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0056. The reference in two parts
-
-**Size:** L (5).
-[Record](docs/changes/2026-0056-reference-two-parts.md).
-
-`docs/next/REFERENCE.md`, from `docs/REFERENCE.md`, its index too:
-Part 1 is DBIx::Squirrel, Part 2 what Ekorn::Pipeline adds, with the
-protocols between them. The first draft is written and its tests
-pass; it waits on Iain's review with GitHub Copilot.
+Nothing yet.
 
 ## Next
 

@@ -1,6 +1,6 @@
 # 2026-0056. The reference in two parts
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** None: they're 2026-0052's, and 2026-0053's.
 
@@ -9,6 +9,8 @@
 **Depends on:** 2026-0052, 2026-0053
 
 **Started:** 2026-11-26
+
+**Finished:** 2026-11-26
 
 ## Background
 
@@ -65,9 +67,9 @@ xt` passes on 5.36 and 5.44, and Iain's sceptical review approves it.
 
 ## What happened
 
-- **So far:** the first draft of `docs/next/REFERENCE.md`, for Iain's
-  review with GitHub Copilot. Its 81 examples run, print what their
-  comments say, and import what they call; the D5 test, the POD
+- **Outcome:** done. `docs/next/REFERENCE.md` is written, and approved
+  by Iain's sceptical review with GitHub Copilot (below). Its 81
+  examples run, print what their comments say, and import what they call; the D5 test, the POD
   checks and the index's checks pass on it; and `yath test -L t xt`
   passes on 5.36 and 5.44, against Ekorn-Pipeline's working copy at
   446058f8873907be8d53f2befd49bbaa70e6f101. Part 1 has `keep_all` none
@@ -91,3 +93,17 @@ xt` passes on 5.36 and 5.44, and Iain's sceptical review approves it.
   A name with an underscore still counts anywhere.
 - **For 2026-0057:** what Part 1 can't say without naming Ekorn:
   a stop's class, `dump_to`'s setting, and `is_stage`.
+- **The review,** by GitHub Copilot on 2026-11-26, as a sceptical,
+  pragmatic reader: "Approved". Part 1 is a complete reference: a
+  reader looking up any of its features finds the behaviour there, with
+  no "learn Ekorn first" gap. "Part 1 says what it does, Part 2 says
+  what it is" it called the reference's strongest idea; passing on any
+  error that's an object is a sound rule for Part 1, with Part 2's
+  class test for those who want it; the index belongs at the end,
+  whole; and chapter 17 reads as a real Protocols chapter, not a
+  dumping ground. Its one note, made: chapter 6, "Stopping a
+  pipeline", brought Ekorn's vocabulary into Part 1, so it's now
+  "Stopping early", as in the guide. It advised moving on to the swap
+  and its `Changes` entry, then the work on the code's coupling.
+- **What's left:** the swap (2026-0058), which makes the manual's POD
+  from this reference; the candidates for 2026-0057 above.

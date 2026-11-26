@@ -35,7 +35,7 @@ written for earlier versions.
 - [3. Preparing, binding and running](#3-preparing-binding-and-running)
 - [4. Iterators](#4-iterators)
 - [5. Stages and Context](#5-stages-and-context)
-- [6. Stopping a pipeline](#6-stopping-a-pipeline)
+- [6. Stopping early](#6-stopping-early)
 - [7. Gathering: stages made for each run](#7-gathering-stages-made-for-each-run)
 - [8. Result sets and row objects](#8-result-sets-and-row-objects)
 - [9. Sugar: a function for each database and statement](#9-sugar-a-function-for-each-database-and-statement)
@@ -730,7 +730,7 @@ while (my($name) = $it->next) {
 
 The statement isn't executed until the first result is asked for. It's
 finished when the results run out, when the run is ended early, by a
-[stop](#6-stopping-a-pipeline), or by `first` or `single`, and when
+[stop](#6-stopping-early), or by `first` or `single`, and when
 the iterator is let go.
 
 ### How rows are fetched
@@ -1227,7 +1227,7 @@ my @names = $dbh->iterate(
 say scalar(@names), ' tracks; hits: ', join ', ', @hits;    # 6 tracks; hits: Dancing Queen, Girls & Boys, Sunshine of Your Love
 ```
 
-## 6. Stopping a pipeline
+## 6. Stopping early
 
 The user guide's [chapter 6](HOWTO.md#6-stopping-early).
 
@@ -1434,7 +1434,7 @@ fresh each time. The block returns:
 - **optionally, the flush:** called with no arguments once the values
   run out, even if there were none. What it returns goes through the
   rest of the stages, as what a stage returns does. After a
-  [stop](#6-stopping-a-pipeline), only the flushes of the stages after
+  [stop](#6-stopping-early), only the flushes of the stages after
   the one that stopped are called;
 - **optionally, the end:** called once the run has ended, however it
   ended, and told how: `done`, `stopped` or `died`. An iterator's run
@@ -2087,7 +2087,7 @@ place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
 
 | Tag | Holds | Made in |
 |---|---|---|
-| `:core` | `Stop`, `gather` | [Stop](#6-stopping-a-pipeline), [Gather](#7-gathering-stages-made-for-each-run) |
+| `:core` | `Stop`, `gather` | [Stop](#6-stopping-early), [Gather](#7-gathering-stages-made-for-each-run) |
 | `:flow` | `take`, `take_first`, `take_last`, `take_single`, `take_if`, `take_while`, `drop`, `drop_if`, `drop_while` | [Stages::Flow](#taking-and-dropping) |
 | `:batch` | `batch`, `collect` | [Stages::Batch](#batching-and-collecting) |
 | `:taps` | `peek`, `count_into`, `dump_to`, `tee` | [Stages::Taps](#canned-stages) |
