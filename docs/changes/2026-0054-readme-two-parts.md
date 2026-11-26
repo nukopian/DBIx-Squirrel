@@ -128,3 +128,7 @@ pass on `docs/next/README.pod`, `yath test -L t xt` passes on 5.36 and
 - **What's left:** the guide (2026-0055) and the reference (2026-0056)
   by the same principles; the link to the guide's Part 2, and the
   README's place, at the swap (2026-0058).
+- **After the review,** on 2026-11-26, `xt/examples.t` began checking
+  that each example in `docs/next/` imports every function it calls,
+  as Iain asked for the guide (2026-0055). The README's examples
+  already did.

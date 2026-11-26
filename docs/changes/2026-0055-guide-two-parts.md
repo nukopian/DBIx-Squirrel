@@ -130,3 +130,14 @@ approves it.
 - **What's left:** the reference (2026-0056), and the swap (2026-0058),
   which makes the manual's POD from this guide; the candidates for
   2026-0057 above.
+- **After the review, each example imports what it calls,** as Iain
+  noticed on 2026-11-26 that many lacked their `use` lines, leaning on
+  the set-up's imports, so an example copied from chapter 6 failed on
+  `take`. In Part 1, each imports from DBIx::Squirrel's own module,
+  and in Part 2 from Tooling, by name; the set-up imports only
+  DBIx::Squirrel. `xt/examples.t` now checks that each example in
+  `docs/next/` imports every function it calls of those
+  DBIx::Squirrel::Tooling and DBIx::Squirrel::Errors export, as
+  neither running the examples, where one example's import reaches
+  every one after it, nor compiling them could show it. It found 48
+  examples in the guide that didn't, and none in the README.

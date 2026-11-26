@@ -99,20 +99,13 @@ Every example runs against this small SQLite database, a file called
 `music.db`, made here. The examples follow on from each other, so
 `$dbh` is this handle wherever it appears. Nothing in the guide
 changes the data for good: an example that writes rolls its change
-back, so what each example prints is what you'll see. It imports
-every stage Part 1 uses, from the module that makes it, so the
-examples needn't:
+back, so what each example prints is what you'll see. Each example
+after it imports what it uses, from the module that makes it, so it
+works when copied, with a handle of your own as `$dbh`:
 
 ```perl
 use v5.36;
 use DBIx::Squirrel;
-use DBIx::Squirrel::Stages::Rows;                  # pluck and as_hash
-use DBIx::Squirrel::Stages::Flow qw(:all);         # take, drop, take_if, drop_if and the rest
-use DBIx::Squirrel::Stages::Batch;                 # batch and collect
-use DBIx::Squirrel::Stages::Taps qw(:DEFAULT dump_to);    # peek and count_into, and dump_to
-use DBIx::Squirrel::Stop;                          # Stop
-use DBIx::Squirrel::Gather;                        # gather
-use DBIx::Squirrel::Context qw(result_number result_original);
 
 my $dbh = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', {RaiseError => 1, PrintError => 0});
 
@@ -811,8 +804,8 @@ That's all a stage is. It's an ordinary sub, so anything Perl can do,
 a stage can do, and it's tested like any sub. DBIx::Squirrel feeds
 them rows, and has ready-made stages of its own, in four modules:
 DBIx::Squirrel::Stages::Rows, ::Flow, ::Batch and ::Taps. Each
-exports its commonest stages by default, and the rest on request, as
-the examples' database shows.
+exports its commonest stages by default, and the rest on request. The
+examples ask for each by name, so you can see where it comes from.
 
 ### Change each row
 
@@ -820,6 +813,8 @@ Return one value, and it takes the row's place. A stage gets its value
 as its argument, and in `$_`, so write whichever reads best:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 my @titles = $dbh->iterate('SELECT title, year FROM album ORDER BY year', sub ($row) { "$row->[0] ($row->[1])" })->all;
 say for @titles;
 # Disraeli Gears (1967)
@@ -886,6 +881,8 @@ case, or its position, from 0. `as_hash` gives each row as a hash, as
 `fetchrow_hashref` would:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck as_hash);
+
 my @titles = $dbh->iterate('SELECT title, year FROM album ORDER BY year', pluck('title'))->all;
 say "@titles";    # Disraeli Gears Arrival Parklife The Great Escape
 
@@ -905,6 +902,8 @@ without a word. Make the rows hashes first, and `pluck` by name reads
 each hash's own keys, however a stage has changed them:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck as_hash);
+
 my @wrong = $dbh->iterate(
     'SELECT id, name FROM artist ORDER BY id',
     sub { [reverse @$_] },
@@ -931,6 +930,9 @@ made, from 1. `result_original` is the row it's being made from, as it
 was fetched, whatever the stages before have done to it:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Context qw(result_number result_original);
+
 my @chart = $dbh->iterate(
     'SELECT name, plays FROM track ORDER BY plays DESC',
     pluck('name'),
@@ -951,6 +953,9 @@ each value as it passes, and pass it on unchanged. They're how you see
 what the stages are doing:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Taps qw(count_into peek);
+
 my $seen  = 0;
 my @names = $dbh->iterate(
     'SELECT name FROM artist ORDER BY name',
@@ -1010,6 +1015,8 @@ fetched from the database.
 on through the stages after it, as the last ones:
 
 ```perl
+use DBIx::Squirrel::Stop qw(Stop);
+
 my @upto = $dbh->iterate(
     'SELECT title, year FROM album ORDER BY year',
     sub { $_->[1] >= 1990 ? Stop($_) : $_ },    # this one, then no more
@@ -1025,6 +1032,9 @@ over, a number of values. `take` stops the run once it has its values,
 so no more rows are fetched:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(drop_if drop take);
+
 my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
 
 my @page = $dbh->iterate(
@@ -1076,6 +1086,8 @@ never stop the run, unlike `take_while`, which stops at the first
 value its test fails:
 
 ```perl
+use DBIx::Squirrel::Stages::Flow qw(take_if drop_if take_while);
+
 my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
 
 my @copied = $dbh->iterate(
@@ -1109,6 +1121,8 @@ on a query's rows without touching the query, say one shared with
 other code, and move it into the SQL once it's right:
 
 ```perl
+use DBIx::Squirrel::Stages::Flow qw(take_if);
+
 my $shared = 'SELECT name, plays FROM track ORDER BY id';    # not yours to change
 
 my @would_keep = $dbh->iterate(
@@ -1131,6 +1145,9 @@ make up half of all the plays, by a running total, and the albums a
 job has still to do, after the one it stopped at last time:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(take_while drop_while drop);
+
 my $half   = $dbh->selectrow_array('SELECT SUM(plays) FROM track') / 2;
 my $so_far = 0;
 
@@ -1164,6 +1181,8 @@ fetches less; these are for a statement that others share, or that
 has a name:
 
 ```perl
+use DBIx::Squirrel::Stages::Flow qw(take_first take_last);
+
 my $by_year = 'SELECT title FROM album ORDER BY year';
 
 my @oldest = $dbh->iterate($by_year, take_first, sub { lc $_->[0] =~ s( \W+ )(-)xgr })->all;
@@ -1181,6 +1200,7 @@ stop. A stop is an object, where an error from `die` with a message is
 a string, so pass on any error that's an object:
 
 ```perl
+use DBIx::Squirrel::Stop qw(Stop);
 use experimental qw(try);
 
 my @safe = $dbh->iterate(
@@ -1234,6 +1254,8 @@ start of each run. Its block is called then, so whatever it declares
 is new each time, and it returns the stage:
 
 ```perl
+use DBIx::Squirrel::Gather qw(gather);
+
 my $it = $dbh->iterate(
     'SELECT name FROM artist ORDER BY id',
     gather {
@@ -1255,6 +1277,9 @@ rows run out, even if there were none, and what it returns goes on
 through the stages after, as if a stage had returned it:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Gather qw(gather);
+
 # Each value, then, once they run out, how many there were
 sub and_count () {
     return gather {
@@ -1285,6 +1310,8 @@ The parts can also be returned by name, in a hash reference, giving
 only those you have:
 
 ```perl
+use DBIx::Squirrel::Gather qw(gather);
+
 my @how;
 my $watched = gather {
     return {
@@ -1308,6 +1335,9 @@ they run out, passes on what its block makes of them, or an array of
 them:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Batch qw(batch collect);
+
 my $batches = $dbh->iterate(
     'SELECT name FROM track ORDER BY id',
     pluck('name'),
@@ -1397,6 +1427,9 @@ Stages see the objects, and the iterator's methods work as before.
 `pluck` takes a column of an object too:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(drop_if);
+
 my %owned = map { $_ => 1 } 'Arrival', 'Parklife';
 
 my @wanted = $dbh->results(
@@ -1422,6 +1455,7 @@ handle. Called with a statement and values, it runs it. With stages,
 it gives an iterator:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
 use DBIx::Squirrel::Sugar database => {
     music => ['dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1}],
 };
@@ -1442,6 +1476,7 @@ always has. Called, it takes values, then any stages for that call
 only:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
 use DBIx::Squirrel::Sugar statement => {
     titles_by => [music => 'SELECT title FROM album WHERE artist_id = :artist ORDER BY year', pluck],
     album     => [music => 'SELECT * FROM album WHERE id = ?'],
@@ -1471,6 +1506,7 @@ its own or the call's, it gives an iterator.
 runs, from configuration, say:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
 use DBIx::Squirrel::Sugar qw(database statement);
 
 database(archive => 'dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1});
@@ -1501,6 +1537,8 @@ way through the cached handle, it's left alone, and a new handle takes
 its place:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 my $sql   = 'SELECT name FROM artist ORDER BY id';
 my $first = $dbh->prepare_cached($sql)->iterate(pluck);
 my($name) = $first->next;
@@ -1558,6 +1596,9 @@ then says what it wants of the rows, with the stages it gives and the
 iterator's methods:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(drop_if);
+
 # The tracks of an artist, through whatever stages the caller gives.
 sub tracks_by ($artist, @stages) {
     return $dbh->iterate(
@@ -1598,6 +1639,8 @@ your caller's line, when the module lists
 in a `gather` block, so it starts afresh on each run:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 package My::Stages {
     use DBIx::Squirrel::Errors qw(croakf);
     use DBIx::Squirrel::Gather;
@@ -1767,6 +1810,9 @@ both, a function that takes stages and one that gives the
 list, and let the caller choose:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(drop_if);
+
 sub artist_names (@stages) {
     return $dbh->iterate('SELECT name FROM artist ORDER BY name', pluck, @stages);
 }
@@ -1956,13 +2002,9 @@ Ekorn::Pipeline::Tooling, with two of DBIx::Squirrel's own:
 | `:words` | `pipeline`, `stage`, `source`, `generator`, `sink_one` and the rest | Ekorn::Pipeline::Factories |
 | `:all` | all of the above | |
 
-The rest of this part's examples use it, imported once, here:
-
-```perl
-use DBIx::Squirrel::Tooling qw(:all);    # every stage, sink and word
-```
-
-Or ask for what you need, by tag or by name. Nothing comes by default:
+The examples in this part import what each uses from Tooling, by
+name. Ask for what you need, by name or by tag, or for `:all`. Nothing
+comes by default:
 
 ```perl
 package My::Report {
@@ -2009,6 +2051,8 @@ DBIx::Squirrel::Tooling's `:sinks` exports them all, as [chapter
 for, an array reference. `count_items` gives how many there were:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck keep_all count_items);
+
 my @names = $dbh->iterate(
     'SELECT name FROM artist ORDER BY id',
     pluck('name'),
@@ -2043,6 +2087,8 @@ gives the only one, warning at a second, as `single` does. Each gives
 `undef` if there are none:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck keep_first keep_last keep_single);
+
 say $dbh->iterate(
     'SELECT name FROM track ORDER BY plays DESC',
     pluck('name'),
@@ -2083,6 +2129,8 @@ say $dbh->selectrow_array('SELECT name FROM track ORDER BY plays ASC LIMIT 1'); 
 them, so no more rows are fetched:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck keep);
+
 my @top = $dbh->iterate(
     'SELECT name FROM track ORDER BY plays DESC',
     pluck('name'),
@@ -2122,6 +2170,8 @@ sink as they take any stage, given last. Neither needed changing for
 it:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(count_items pluck keep_first);
+
 say tracks_by('Abba', count_items);                     # 2
 say titles_by(artist => 2, count_items);                # 2
 say tracks_by('Blur', pluck('name'), keep_first);       # Girls & Boys
@@ -2142,6 +2192,8 @@ few rows at a time are held, however large the file or the result.
 many it wrote. It closes the file however the run ends:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck to_file);
+
 my $written = $dbh->iterate(
     'SELECT title FROM album ORDER BY year',
     pluck('title'),
@@ -2169,6 +2221,8 @@ column names, so the file says what's in it, and fields holding a
 comma or a quote are quoted, so it reads back as it was:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(to_csv);
+
 my $exported = $dbh->iterate(
     'SELECT name, plays FROM track WHERE plays > 6000 ORDER BY plays DESC',
     to_csv(file => 'hits.csv', header => 1),
@@ -2202,6 +2256,8 @@ array, and gives how many it wrote. Make each row a hash first, with
 `as_hash`, and each is an object keyed by its column names:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(as_hash to_json);
+
 my $saved = $dbh->iterate(
     'SELECT name, plays FROM track WHERE plays > 6000 ORDER BY plays DESC',
     as_hash,
@@ -2221,6 +2277,7 @@ hash, goes through the stages in turn. `pluck` by name works on hashes
 from anywhere, as it reads their keys:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck from_json);
 use Ekorn::Pipeline;
 
 my @names = Ekorn::Pipeline->new(pluck('name'))->iterator(from_json(file => 'hits.json'))->all;
@@ -2245,6 +2302,7 @@ row goes in as it was read, with no arrays to build and no columns to
 count:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(drop_if batch from_csv);
 use Ekorn::Pipeline;
 
 # A file as a spreadsheet saves it, its header in a person's words
@@ -2306,6 +2364,7 @@ you use often can be made once, named, and used everywhere.
 ### Make a pipeline once, and use it anywhere
 
 ```perl
+use DBIx::Squirrel::Tooling qw(drop_if pluck take);
 use Ekorn::Pipeline;
 
 my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
@@ -2357,6 +2416,7 @@ wherever a stage goes, and works on each shape of row the stages in it
 do:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck);
 use Ekorn::Pipeline;
 
 sub with_origin () {
@@ -2379,6 +2439,7 @@ The stage a `gather` block returns can be a whole pipeline, built for
 the run. So the block can choose its stages as each run starts:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(gather take);
 use Ekorn::Pipeline;
 
 my $it = $dbh->iterate(
@@ -2403,6 +2464,7 @@ from stages and names, and is the shortest way to say "this named
 pipeline, then these":
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pipeline take);
 use Ekorn::Pipeline;
 
 Ekorn::Pipeline->named(slug => sub { lc $_->[0] =~ s( \W+ )(-)xgr });
@@ -2426,6 +2488,7 @@ it. Each gets a function of its name too. When the statement is
 called, a string is always a value, never a name:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(keep_all);
 use DBIx::Squirrel::Sugar
     statement => {
         title_slugs => [music => 'SELECT title FROM album WHERE year < ? ORDER BY year', 'slugged'],
@@ -2486,6 +2549,7 @@ the statement's placeholders are named, so `execute_for_fetch` writes
 each as it came, with no arrays to build:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(drop_if batch);
 use Ekorn::Pipeline;
 
 $dbh->do('CREATE TEMP TABLE heard (track_id INTEGER, plays INTEGER)');
@@ -2536,6 +2600,8 @@ run of a query can write a file and give its results too, without the
 query running twice:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(tee to_csv take_if pluck keep_all);
+
 my @hits = $dbh->iterate(
     'SELECT name, plays FROM track ORDER BY plays DESC',
     tee(to_csv(file => 'played.csv', header => 1)),    # every track, to a file
@@ -2556,6 +2622,8 @@ the run gave only three. A tee's stages can pick out some rows, stop
 early, or use `pluck`, as the pipeline's can:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(tee take pluck count_items);
+
 my @first_two;
 my $count = $dbh->iterate(
     'SELECT name FROM artist ORDER BY name',
@@ -2582,6 +2650,7 @@ Ekorn::Pipeline::Operators in force, an iterator takes `|`, and so
 does what it makes:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck drop_if take keep_all count_items);
 use Ekorn::Pipeline::Operators;
 
 my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
@@ -2608,6 +2677,7 @@ for exactly one value, so a chain ending in `keep_all` gives an array
 reference, even assigned to an array:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck keep_all);
 use Ekorn::Pipeline::Operators;
 
 my @oops = $dbh->iterate('SELECT name FROM artist')
@@ -2640,6 +2710,7 @@ asked for.
 result:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck);
 use Ekorn::Pipeline::Operators;
 
 my $it = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'));
@@ -2683,6 +2754,7 @@ The same idea works for any function, with values from anywhere: make
 a pipeline of the caller's stages, and call it with your values:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck);
 use Ekorn::Pipeline;
 
 # The bands, as hashes, through whatever stages the caller gives
@@ -2731,6 +2803,7 @@ belongs to, Ekorn::Pipeline::Stop, whether it was thrown with `Stop`,
 or by a stage such as `take`:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(Stop);
 use experimental qw(try);
 
 my @safe = $dbh->iterate(
@@ -2799,6 +2872,7 @@ change. These are the changes most code meets first.
   run ended, can follow it.
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck keep_all count_items);
 use DBIx::Squirrel::Sugar statement => {
     every_artist => [music => 'SELECT name FROM artist ORDER BY id', pluck],
 };
@@ -2831,6 +2905,7 @@ say artist('Blur')->single->Id;
 ```
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck keep_single);
 use DBIx::Squirrel::Sugar statement => {
     artist_id => [music => 'SELECT id FROM artist WHERE name = ? LIMIT 1', pluck],
 };

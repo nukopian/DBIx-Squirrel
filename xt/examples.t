@@ -203,4 +203,73 @@ for my $README (grep { -e } qw(README.pod docs/next/README.pod)) {
     };
 }
 
+# In the new documents (roadmap 2026-0052), each example imports what it
+# calls, so it works when copied (2026-0054 and 2026-0055, What
+# happened). Running the examples can't show that, as an import in one
+# reaches every one after it, nor compiling them, where a bareword is
+# a string. So each example's calls of the functions DBIx::Squirrel's
+# modules export, Ekorn's through Tooling among them, are checked
+# against what its own use lines import.
+
+# Return the names DBIx::Squirrel's and Ekorn's modules export, as they
+# may be called in an example.
+sub exported_names () {
+    require DBIx::Squirrel::Tooling;
+    require DBIx::Squirrel::Errors;
+    no warnings 'once';
+    return (@DBIx::Squirrel::Tooling::EXPORT_OK,
+        @DBIx::Squirrel::Errors::EXPORT_OK);
+}
+
+# Return the names a use line imports from a module, given its list.
+sub imported ($module, $list) {
+    return unless eval "require $module; 1";    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    no strict 'refs';                           ## no critic (TestingAndDebugging::ProhibitNoStrict)
+    my @default = @{ "${module}::EXPORT" };
+    return @default unless defined $list;
+    my %tags = %{ "${module}::EXPORT_TAGS" };
+    return map {
+              $_ eq ':DEFAULT' ? @default
+            : m( \A : (\w+) )x ? @{ $tags{$1} // [] }
+            : $_
+    } split ' ', $list;
+}
+
+# Return what an example calls that it doesn't import.
+sub not_imported ($code, $names) {
+    my %have;
+    while ($code
+        =~ m{ ^ \s* use \s+ ([\w:]+) (?: \s+ qw\( ([^)]*) \) | \s* \(\) )? }xmg)
+    {
+        my($module, $list) = ($1, $2);
+        $list = '' if !defined $list && $& =~ m{ \(\) \z }x;
+        $have{$_} = 1 for imported($module, $list);
+    }
+    my $calls = join "\n", map { s( (?: \A | \s ) \# \s .* \z )()xr }
+        grep { !m{ \A \s* use \s+ [\w:]+ \s+ qw\( }x } split m( \n )x, $code;
+    $calls =~ s( ' (?: [^'\\] | \\. )* ' | " (?: [^"\\] | \\. )* " )('')xg;    # strings
+    return grep {
+        !$have{$_} && $calls =~ m( (?<! [\$\@\%\w>:-] ) \b \Q$_\E \b (?! \s* => ) )x
+    } @$names;
+}
+
+my @NEXT = grep { -e }
+    qw(docs/next/HOWTO.md docs/next/REFERENCE.md docs/next/README.pod);
+if (@NEXT) {
+    my @names = exported_names();
+    for my $doc (@NEXT) {
+        subtest "$doc: each example imports what it calls" => sub {
+            my @found;
+            for
+                my $example ($doc =~ m( \.pod \z )x ? pod_examples($doc) : examples($doc))
+            {
+                my($line, $code) = @$example;
+                my @missing = not_imported($code, \@names);
+                push @found, "line $line: @missing" if @missing;
+            }
+            is \@found, [], 'none calls a function it leaves unimported';
+        };
+    }
+}
+
 done_testing;
