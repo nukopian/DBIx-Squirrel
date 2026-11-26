@@ -82,7 +82,7 @@ Newest id first.
 
 - [dump_to's setting, without naming Ekorn](2026-0062-dump-to-setting.md),
   roadmap 2026-0062: open.
-- [is_stage, from a module of DBIx::Squirrel's](2026-0061-is-stage.md),
+- [is_stage, from DBIx::Squirrel::Tooling](2026-0061-is-stage.md),
   roadmap 2026-0061: open.
 - [is_stop, from DBIx::Squirrel::Stop](2026-0060-is-stop.md),
   roadmap 2026-0060: shipped, unreleased.

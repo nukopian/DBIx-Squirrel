@@ -45,18 +45,24 @@ Nothing yet.
 
 ## Next
 
-Nothing yet.
+### 2026-0061. is_stage, from DBIx::Squirrel::Tooling
+
+**Size:** XS (1). From 2026-0057's D4. **Decisions:** D1 settled:
+Tooling's `:core`. [Record](docs/changes/2026-0061-is-stage.md).
+
+**What:** DBIx::Squirrel::Tooling imports Ekorn::Pipeline's `is_stage`
+and holds it in `:core`, so a function taking any number of values,
+then stages, finds the stages with a name from DBIx::Squirrel.
+
+**Why:** Part 2 shows `is_stage` imported from Ekorn::Pipeline; from
+Tooling, it names one module fewer of Ekorn's.
+
+**Done when:** `t/28-tooling.t` checks `:core` holds it, Tooling's POD
+no longer lists it as left out, Part 2 of the reference imports it
+from Tooling, with a `Changes` line, and `yath test -L t xt` passes on
+5.36 and 5.44.
 
 ## Later
-
-### 2026-0061. is_stage, from a module of DBIx::Squirrel's
-
-**Size:** XS (1). From 2026-0057's D4. **Decisions:** D1 open: which
-module exports it. [Record](docs/changes/2026-0061-is-stage.md).
-
-A module of DBIx::Squirrel's exports Ekorn::Pipeline's `is_stage` on
-request, so a function taking any number of values, then stages, can
-find the stages, and Part 1 can show it.
 
 ### 2026-0062. dump_to's setting, without naming Ekorn
 
