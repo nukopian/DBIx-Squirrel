@@ -1,6 +1,6 @@
 # 2026-0062. dump_to's setting, without naming Ekorn
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.2.0
 
 **Decisions:** D1 settled: `$DBIx::Squirrel::Stages::Taps::DumpSecrets`;
 amended: tied to Ekorn's variable, not aliased.

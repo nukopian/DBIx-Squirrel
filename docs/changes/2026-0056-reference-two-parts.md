@@ -1,6 +1,6 @@
 # 2026-0056. The reference in two parts
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.2.0
 
 **Decisions:** None: they're 2026-0052's, and 2026-0053's.
 

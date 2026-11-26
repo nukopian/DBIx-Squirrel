@@ -1,6 +1,6 @@
 # 2026-0059. Tooling exports a list of its own
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.2.0
 
 **Decisions:** None: it's 2026-0057's D1.
 

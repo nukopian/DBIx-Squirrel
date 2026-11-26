@@ -1,6 +1,6 @@
 # 2026-0053. Why Ekorn::Pipeline split from DBIx::Squirrel
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.2.0
 
 **Decisions:** D1 settled: a separation of concerns, the pipeline
 useful beyond databases; principle, not pain; the text is in D1. D2

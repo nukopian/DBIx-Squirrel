@@ -1,6 +1,6 @@
 # 2026-0058. The new documents in place of the old
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.2.0
 
 **Decisions:** None: they're 2026-0052's, and 2026-0053's D2.
 

@@ -1,6 +1,6 @@
 # 2026-0057. What Part 1 still takes from Ekorn::Pipeline's code
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.2.0
 
 **Decisions:** D1 settled: Tooling's own list, 2026-0059. D2 settled:
 the upper bound stays until Ekorn's v1.0.0. D3 settled: `is_stop`,

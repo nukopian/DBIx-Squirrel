@@ -81,29 +81,29 @@ Steps, Done when.
 Newest id first.
 
 - [Ekorn::Pipeline v0.4.3: next, and a way in](2026-0063-ekorn-v0.4.3.md),
-  from a task of Ekorn-Pipeline's: shipped, unreleased.
+  from a task of Ekorn-Pipeline's: shipped in v4.2.0.
 - [dump_to's setting, without naming Ekorn](2026-0062-dump-to-setting.md),
-  roadmap 2026-0062: shipped, unreleased.
+  roadmap 2026-0062: shipped in v4.2.0.
 - [is_stage, from DBIx::Squirrel::Tooling](2026-0061-is-stage.md),
-  roadmap 2026-0061: shipped, unreleased.
+  roadmap 2026-0061: shipped in v4.2.0.
 - [is_stop, from DBIx::Squirrel::Stop](2026-0060-is-stop.md),
-  roadmap 2026-0060: shipped, unreleased.
+  roadmap 2026-0060: shipped in v4.2.0.
 - [Tooling exports a list of its own](2026-0059-tooling-own-list.md),
-  roadmap 2026-0059: shipped, unreleased.
+  roadmap 2026-0059: shipped in v4.2.0.
 - [The new documents in place of the old](2026-0058-new-documents.md),
-  roadmap 2026-0058: shipped, unreleased.
+  roadmap 2026-0058: shipped in v4.2.0.
 - [What Part 1 still takes from Ekorn::Pipeline's code](2026-0057-part-one-coupling.md),
-  roadmap 2026-0057: shipped, unreleased.
+  roadmap 2026-0057: shipped in v4.2.0.
 - [The reference in two parts](2026-0056-reference-two-parts.md),
-  roadmap 2026-0056: shipped, unreleased.
+  roadmap 2026-0056: shipped in v4.2.0.
 - [The guide in two parts](2026-0055-guide-two-parts.md),
-  roadmap 2026-0055: shipped, unreleased.
+  roadmap 2026-0055: shipped in v4.2.0.
 - [The README in two parts](2026-0054-readme-two-parts.md),
-  roadmap 2026-0054: shipped, unreleased.
+  roadmap 2026-0054: shipped in v4.2.0.
 - [Why Ekorn::Pipeline split from DBIx::Squirrel](2026-0053-why-the-split.md),
-  roadmap 2026-0053: shipped, unreleased.
+  roadmap 2026-0053: shipped in v4.2.0.
 - [Two parts: DBIx::Squirrel, then Ekorn::Pipeline](2026-0052-two-parts.md),
-  roadmap 2026-0052: shipped, unreleased.
+  roadmap 2026-0052: shipped in v4.2.0.
 - [Ekorn's names in the index, under Tooling](2026-0051-ekorn-names-in-index.md),
   roadmap 2026-0051: shipped in v4.1.1.
 - [An iterator's all_arrayref](2026-0050-all-arrayref.md),
