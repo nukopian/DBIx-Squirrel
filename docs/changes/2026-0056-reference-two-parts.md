@@ -70,8 +70,9 @@ xt` passes on 5.36 and 5.44, and Iain's sceptical review approves it.
 - **Outcome:** done. `docs/next/REFERENCE.md` is written, and approved
   by Iain's sceptical review with GitHub Copilot (below). Its 81
   examples run, print what their comments say, and import what they
-  call; the D5 test, the POD checks and the index's checks pass on it; and `yath test -L t xt`
-  passes on 5.36 and 5.44, against Ekorn-Pipeline's working copy at
+  call; the D5 test, the POD checks and the index's checks pass on it;
+  and `yath test -L t xt` passes on 5.36 and 5.44, against
+  Ekorn-Pipeline's working copy at
   446058f8873907be8d53f2befd49bbaa70e6f101. Part 1 has `keep_all` none
   of the 25 times today's reference has it, and names Ekorn only in
   Contents, giving Part 2's heading, where today's names it 173 times.
