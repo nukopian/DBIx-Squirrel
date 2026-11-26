@@ -18,7 +18,10 @@ use File::Find qw(find);
 # (its D2), worked out here, so a name Ekorn adds is caught with no
 # change to this file. The attributes named ekorn_, such as ekorn_slice,
 # are DBIx::Squirrel's own, as is the word "stage" or "pipeline" in
-# the text: 1.x had both.
+# the text: 1.x had both. A name with an underscore, such as
+# count_items, is never a plain word, so it counts in the text too. Only
+# Perl is code: a diagram in a fenced block of another kind is text. The
+# Part 2 heading's own words, which Contents gives, are allowed.
 
 my @DOCS = grep { -e } qw(
     docs/next/README.pod
@@ -64,13 +67,13 @@ sub part_one ($file) {
     close $in;
     chomp @lines;
     my $pod = $file =~ m( \.pod \z )x;
-    my(@paragraphs, $fenced);
+    my(@paragraphs, $fenced, $perl);
     for my $n (1 .. @lines) {
         my $line = $lines[$n - 1];
         return @paragraphs if $line =~ $PART_2;
-        if (!$pod && $line =~ m( \A ``` )x) {
-            $fenced = !$fenced;
-            push @paragraphs, [$n + 1, 1, ''] if $fenced;
+        if (!$pod && $line =~ m( \A ``` (\w*) )x) {
+            ($fenced, $perl) = (!$fenced, ($1 // '') =~ m( \A (?: perl )? \z )x);
+            push @paragraphs, [$n + 1, $perl ? 1 : 0, ''] if $fenced;
             next;
         }
         if ($line !~ m( \S )x) {
@@ -78,7 +81,7 @@ sub part_one ($file) {
                 unless $fenced || (@paragraphs && $paragraphs[-1][2] eq '');
             next;
         }
-        my $code = $fenced || ($pod && $line =~ m( \A \s )x);
+        my $code = ($fenced && $perl) || ($pod && $line =~ m( \A \s )x) ? 1 : 0;
         push @paragraphs, [$n, $code, '']
             if !@paragraphs || $paragraphs[-1][1] != $code;
         $paragraphs[-1][2] .= "$line\n";
@@ -88,6 +91,7 @@ sub part_one ($file) {
 
 # Return what a paragraph names of Ekorn's.
 sub named ($code, $text, $names) {
+    $text =~ s( Part\ 2:\ With\ Ekorn::Pipeline )()xg;    # the divider's name, as Contents gives it
     my @named;
     push @named, 'Ekorn' if $text =~ m( \b Ekorn \b )x;
     push @named, 'DBIx::Squirrel::Tooling'
@@ -102,6 +106,10 @@ sub named ($code, $text, $names) {
             $text =~ m( C < ([^<>]*) > )xg,
             $text =~ m( ` ([^`]+) ` )xg,
         );
+
+        # A name with an underscore, such as count_items, is never a
+        # plain word, so it counts wherever it appears.
+        push @code, join ' ', grep { m( _ )x } split m( [^\w:] )x, $text;
     }
     for my $name (@$names) {
         push @named, $name

@@ -41,7 +41,14 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing yet.
+### 2026-0055. The guide in two parts
+
+**Size:** L (5). [Record](docs/changes/2026-0055-guide-two-parts.md).
+
+`docs/next/HOWTO.md`, from `docs/HOWTO.md`: Part 1 is the round trip
+to the database, Part 2 data crossing its edge, opening with
+2026-0053's story. The first draft is written and its tests pass; it
+waits on Iain's review with GitHub Copilot.
 
 ## Next
 
@@ -64,22 +71,6 @@ say what changed for a caller at each version, but not why.
 **Done when:** the text is written, ready for 2026-0055 to place.
 
 ## Later
-
-### 2026-0055. The guide in two parts
-
-**Size:** L (5). **Depends on:** 2026-0052, 2026-0053.
-
-`docs/next/HOWTO.md`, by 2026-0052, from `docs/HOWTO.md`. Part 1 is
-the round trip to the database. It opens with 2026-0052's D8, shows
-each gain in a pair, plain DBI beside DBIx::Squirrel, and says what
-comes back with the iterator's methods; the diagram in "The layers, at
-a glance" ends at the iterator, and "Import everything from one place"
-moves on. Part 2 is data crossing the database's edge. It opens with
-why the two split (2026-0053), then the recipes that put them
-together: sinks, files, JSON and CSV, `feed` for loading in batches,
-`tee`, and pipelines built from pipelines. It closes the gaps
-2026-0052's baseline found. Done when the 2026-0052 test and
-`xt/examples.t` pass on it.
 
 ### 2026-0056. The reference in two parts
 

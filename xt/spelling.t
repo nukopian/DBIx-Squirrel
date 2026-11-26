@@ -38,8 +38,14 @@ my @next = grep { -e "docs/next/$_" } qw(HOWTO.md REFERENCE.md);
 if (@next) {
     require './scripts/manuals';    ## no critic (Modules::RequireBarewordIncludes) a script, not a module
     my %markdown = map { ($_ => Manuals::slurp("docs/next/$_")) } @next;
-    my %sections = map { ($_ => Manuals::sections($markdown{$_})) } @next;
-    my $dir      = tempdir(CLEANUP => 1);
+
+    # Links between the manuals go to the new one where it's written, and
+    # to today's until then.
+    my %sections = map {
+        my $file = -e "docs/next/$_" ? "docs/next/$_" : "docs/$_";
+        ($_ => Manuals::sections(Manuals::slurp($file)));
+    } qw(HOWTO.md REFERENCE.md);
+    my $dir = tempdir(CLEANUP => 1);
     for my $file (@next) {
         my $pod = eval { Manuals::convert($markdown{$file}, \%sections, $file) };
         ok defined $pod, "docs/next/$file converts to POD" or diag $@;

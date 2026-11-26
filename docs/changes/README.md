@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [The guide in two parts](2026-0055-guide-two-parts.md),
+  roadmap 2026-0055: in progress.
 - [The README in two parts](2026-0054-readme-two-parts.md),
   roadmap 2026-0054: shipped, unreleased.
 - [Why Ekorn::Pipeline split from DBIx::Squirrel](2026-0053-why-the-split.md),
