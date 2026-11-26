@@ -1,6 +1,6 @@
 # 2026-0053. Why Ekorn::Pipeline split from DBIx::Squirrel
 
-**Status:** open
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: a separation of concerns, the pipeline
 useful beyond databases; principle, not pain; the text is in D1. D2
@@ -8,6 +8,8 @@ settled: told in full once, at the opening of the guide's Part 2; "only
 now completed" goes in 2026-0058's `Changes` entry.
 
 **Origin:** roadmap, added 2026-11-26
+
+**Finished:** 2026-11-26
 
 ## Background
 
@@ -129,3 +131,14 @@ explained after the fact.
   separation is only now being completed is news for a release, not
   the guide, so it goes in 2026-0058's `Changes` entry, as the
   sceptical review suggested.
+
+## What happened
+
+- **Outcome:** done. The story, settled in D1, opens the guide's Part 2
+  word for word, in `docs/next/HOWTO.md` (2026-0055), and the README's
+  Part 2 tells it in a sentence with a link to it (2026-0054), as D2
+  says. GitHub Copilot's sceptical reviews of both found it concrete,
+  matching the documented history, and not apologising for
+  Ekorn::Pipeline.
+- **What's left:** the reference's sentence and link (2026-0056), and
+  "only now completed" in 2026-0058's `Changes` entry.

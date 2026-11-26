@@ -41,34 +41,11 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0055. The guide in two parts
-
-**Size:** L (5). [Record](docs/changes/2026-0055-guide-two-parts.md).
-
-`docs/next/HOWTO.md`, from `docs/HOWTO.md`: Part 1 is the round trip
-to the database, Part 2 data crossing its edge, opening with
-2026-0053's story. The first draft is written and its tests pass; it
-waits on Iain's review with GitHub Copilot.
+Nothing yet.
 
 ## Next
 
-### 2026-0053. Why Ekorn::Pipeline split from DBIx::Squirrel
-
-**Size:** S (2). **Decisions:** D1 settled: a separation of concerns,
-the pipeline useful beyond databases; principle, not pain; the text is
-in D1. D2 settled: told in full once, at the opening of the guide's
-Part 2; "only now completed" goes in 2026-0058's `Changes` entry.
-[Record](docs/changes/2026-0053-why-the-split.md).
-
-**What:** the story of the split: why the pipeline left DBIx::Squirrel
-for a distribution of its own, and what a reader gains by putting the
-two back together.
-
-**Why:** it's what makes Part 2 read as two pieces recombined on
-purpose, not a dependency explained after the fact. The documents now
-say what changed for a caller at each version, but not why.
-
-**Done when:** the text is written, ready for 2026-0055 to place.
+Nothing yet.
 
 ## Later
 

@@ -1,6 +1,6 @@
 # 2026-0055. The guide in two parts
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** None: they're 2026-0052's, and 2026-0053's.
 
@@ -9,6 +9,8 @@
 **Depends on:** 2026-0052, 2026-0053
 
 **Started:** 2026-11-26
+
+**Finished:** 2026-11-26
 
 ## Background
 
@@ -69,9 +71,9 @@ approves it.
 
 ## What happened
 
-- **So far:** the first draft of `docs/next/HOWTO.md`, for Iain's
-  review with GitHub Copilot. Its 102 examples run and print what
-  their comments say; `xt/part-one.t` and `xt/spelling.t` pass on it;
+- **Outcome:** done. `docs/next/HOWTO.md` is written, and approved by
+  Iain's sceptical review with GitHub Copilot (below). Its 102
+  examples run and print what their comments say; `xt/part-one.t` and `xt/spelling.t` pass on it;
   and `yath test -L t xt` passes on 5.36 and 5.44, against
   Ekorn-Pipeline's working copy at
   446058f8873907be8d53f2befd49bbaa70e6f101. Part 1 has `keep_all`
@@ -112,3 +114,19 @@ approves it.
   a pipeline has `all`, `first` and `single`, but no `next`, where
   DBIx::Squirrel's has, so the guide says to call it; a message to
   Ekorn-Pipeline could suggest one.
+- **The review,** by GitHub Copilot on 2026-11-26, as a sceptical,
+  pragmatic reader: "Approve and move forward", with no change
+  required. Part 1 reads as complete, with its own identity, learning
+  path and stopping point, and Part 2 as additive, not explanatory: a
+  reader can learn DBIx::Squirrel without first learning
+  Ekorn::Pipeline. The pairs worked better than the README's, the
+  page of rows after a test in Perl the strongest, and "End a caller's
+  stages with a sink" shows the relationship meant. Its notes, needing
+  no change: "The layers, at a glance" is where to cut first, if words
+  must go; chapter 13's closing claim is a design argument, not shown
+  by an example; and chapter 10, on caching, is operational, so it
+  isn't to grow. It advised stopping here, but for factual
+  corrections, and putting the effort into the reference.
+- **What's left:** the reference (2026-0056), and the swap (2026-0058),
+  which makes the manual's POD from this guide; the candidates for
+  2026-0057 above.
