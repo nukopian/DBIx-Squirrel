@@ -586,9 +586,14 @@ installed by actions-setup-perl, into `local/`, which it caches
 (roadmap 2026-0033). The cache is keyed on the Perl, `cpanfile`,
 cpanm's arguments and the modules named, and once made it isn't
 updated: a job keeps the versions it first installed until `cpanfile`
-changes. Ekorn::Pipeline is the exception: each job reinstalls the
-newest version in `cpanfile`'s range, so CI tests the release users
-get. That newest comes from cpanmetadb's history of the module, which
+changes. A job with no cache of its own key, as after a change to
+`cpanfile`, restores the newest made on the same Perl, whichever job
+made it, and installs what it lacks on top: so the test jobs may have
+the coverage or style job's modules too. The `minimal` job, which must
+have only the required modules, isn't cached (2026-0064).
+Ekorn::Pipeline is the exception to keeping versions: each job
+reinstalls the newest version in `cpanfile`'s range, so CI tests the
+release users get. That newest comes from cpanmetadb's history of the module, which
 can lag behind the rest of CPAN's indexes by an hour or more after a
 release: a run in that time installs the version before.
 
