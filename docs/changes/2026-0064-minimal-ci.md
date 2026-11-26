@@ -86,3 +86,12 @@ CPAN.
 
 - The check of recommended modules was run locally both ways: with
   them installed it fails, naming both; hidden, it passes.
+- CI passed on every job at b5883208feff5fccb205d13401edb0d8a670b7aa,
+  the `minimal` job's first run among them.
+- `main` requires the new job's check, `perl 5.36, required modules
+  only (ubuntu-24.04)`, set by Iain on 2026-11-26, and MAINTAINING.md's
+  list of required checks has it.
+- A message to Ekorn-Pipeline, that its cache key does cover cpanm's
+  arguments, and the restore keys gave its `minimal` job the coverage
+  job's modules: Ekorn-Pipeline
+  efce6e6c199be3b05b6b045ea6bdb5f044ab09f7.
