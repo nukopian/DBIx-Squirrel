@@ -217,8 +217,10 @@ sub exported_names () {
     require DBIx::Squirrel::Tooling;
     require DBIx::Squirrel::Errors;
     no warnings 'once';
-    return (@DBIx::Squirrel::Tooling::EXPORT_OK,
-        @DBIx::Squirrel::Errors::EXPORT_OK);
+    return (
+        @DBIx::Squirrel::Tooling::EXPORT_OK,
+        @DBIx::Squirrel::Errors::EXPORT_OK,
+    );
 }
 
 # Return the names a use line imports from a module, given its list.
