@@ -6,9 +6,9 @@ use File::Find qw(find);
 
 # Each document comes in two parts: Part 1 is DBIx::Squirrel, complete,
 # and Part 2 is Ekorn::Pipeline, by choice (roadmap 2026-0052). This
-# keeps the line between them (its D5): in a document with a "Part 2:
-# With Ekorn::Pipeline" heading, a "Part 1: DBIx::Squirrel" heading
-# comes first, and nothing before the Part 2 heading names Ekorn, in
+# keeps the line between them (its D5): each of the README, the guide
+# and the reference has a "Part 2: With Ekorn::Pipeline" heading, and a
+# "Part 1: DBIx::Squirrel" heading before it, and nothing before the Part 2 heading names Ekorn, in
 # code or in text, or DBIx::Squirrel::Tooling, or one of Ekorn's names,
 # in code or as code in the text. So a reader learns Ekorn::Pipeline
 # exists only after Part 1.
@@ -19,15 +19,13 @@ use File::Find qw(find);
 # change to this file. The attributes named ekorn_, such as ekorn_slice,
 # are DBIx::Squirrel's own, as is the word "stage" or "pipeline" in
 # the text: 1.x had both. A name with an underscore, such as
-# count_items, is never a plain word, so it counts in the text too. Only
+# count_items, is never a plain word, so it counts anywhere in the
+# text; one that is a plain word counts there only as code of its own,
+# alone or called, not as a word in a message quoted as code. Only
 # Perl is code: a diagram in a fenced block of another kind is text. The
 # Part 2 heading's own words, which Contents gives, are allowed.
 
-my @DOCS = grep { -e } qw(
-    docs/next/README.pod
-    docs/next/HOWTO.md
-    docs/next/REFERENCE.md
-);
+my @DOCS = grep { -e } qw(README.pod docs/HOWTO.md docs/REFERENCE.md);
 
 my $PART_1 = qr( \A (?: =head2 | \#\# ) \s+ Part\ 1:\ DBIx::Squirrel \s* \z )x;
 my $PART_2
@@ -127,15 +125,15 @@ sub named ($code, $text, $names) {
     return @named;
 }
 
-skip_all 'no document in docs/next/ has a Part 2'
-    unless grep { part_one($_) } @DOCS;
+skip_all "the documents aren't here" unless @DOCS;
 
 my @names = ekorn_names();
 ok scalar @names, "Ekorn's names are known: @names";
 
 for my $doc (@DOCS) {
-    my @paragraphs = part_one($doc) or next;
+    my @paragraphs = part_one($doc);
     subtest $doc => sub {
+        ok scalar @paragraphs, 'it has a Part 2 heading' or return;
         ok + (grep { $_->[2] =~ $PART_1 } @paragraphs), 'Part 1 has its heading';
         my @found;
         for my $paragraph (@paragraphs) {

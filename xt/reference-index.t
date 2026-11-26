@@ -18,9 +18,7 @@ use Test2::Plugin::NoWarnings;
 use B          qw();
 use File::Find qw();
 
-# Today's reference, and the new one being written in docs/next/ (roadmap
-# 2026-0056), each checked the same way.
-my @REFERENCES = grep { -e } qw(docs/REFERENCE.md docs/next/REFERENCE.md);
+my @REFERENCES = grep { -e } qw(docs/REFERENCE.md);
 skip_all "the reference isn't here" unless @REFERENCES;
 
 # Modules for DBIx::Squirrel's own use: their entries list nothing.

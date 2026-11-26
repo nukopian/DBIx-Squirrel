@@ -8,9 +8,7 @@ use File::Temp qw(tempdir);
 # Run the examples in docs/HOWTO.md and docs/REFERENCE.md, each document
 # as one program, so they can't drift from the code, and check that each
 # prints what its comments say; those in README.pod are compiled, as the
-# end of this file says. The new documents being written in docs/next/
-# are run and compiled as today's are, where they exist (roadmap
-# 2026-0052). A document's examples share a database, set up by its
+# end of this file says. A document's examples share a database, set up by its
 # first, and follow on from each other: the first runs as it is, and
 # each after it in a block of its own, so their names don't clash. An
 # example marked <!-- not run -->, such as a usage synopsis, or one
@@ -27,12 +25,7 @@ use File::Temp qw(tempdir);
 # In either, ... stands for any text, such as a file's path or a line
 # number.
 
-my @DOCS = grep { -e } qw(
-    docs/HOWTO.md
-    docs/REFERENCE.md
-    docs/next/HOWTO.md
-    docs/next/REFERENCE.md
-);
+my @DOCS = grep { -e } qw(docs/HOWTO.md docs/REFERENCE.md);
 skip_all "the docs aren't here" unless @DOCS;
 
 # Return the Perl examples in a Markdown file, each as the line it starts
@@ -180,7 +173,7 @@ for my $doc (@DOCS) {
 # name DBIx::Squirrel::Tooling exports, as Ekorn-Pipeline compiles its
 # README's (roadmap 2026-0049). One that isn't Perl is marked
 # =for not-run.
-for my $README (grep { -e } qw(README.pod docs/next/README.pod)) {
+for my $README (grep { -e } qw(README.pod)) {
     subtest $README => sub {
         my @examples = pod_examples($README);
         ok @examples, 'it has examples' or return;
@@ -203,8 +196,8 @@ for my $README (grep { -e } qw(README.pod docs/next/README.pod)) {
     };
 }
 
-# In the new documents (roadmap 2026-0052), each example imports what it
-# calls, so it works when copied (2026-0054 and 2026-0055, What
+# In the documents, each example imports what it calls, so it works
+# when copied (2026-0054 and 2026-0055, What
 # happened). Running the examples can't show that, as an import in one
 # reaches every one after it, nor compiling them, where a bareword is
 # a string. So each example's calls of the functions DBIx::Squirrel's
@@ -255,11 +248,10 @@ sub not_imported ($code, $names) {
     } @$names;
 }
 
-my @NEXT = grep { -e }
-    qw(docs/next/HOWTO.md docs/next/REFERENCE.md docs/next/README.pod);
-if (@NEXT) {
+my @IMPORTING = grep { -e } qw(docs/HOWTO.md docs/REFERENCE.md README.pod);
+if (@IMPORTING) {
     my @names = exported_names();
-    for my $doc (@NEXT) {
+    for my $doc (@IMPORTING) {
         subtest "$doc: each example imports what it calls" => sub {
             my @found;
             for

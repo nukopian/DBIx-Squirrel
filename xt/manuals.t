@@ -258,62 +258,38 @@ subtest q(each link to Ekorn's manuals finds its section) => sub {
     ok $n, "and there are some ($n)";
 };
 
-# The new documents being written in docs/next/ (roadmap 2026-0052) are
-# checked as the manuals made from them will be, so a fault shows as the
-# draft is written, not at the swap (2026-0058). A manual not yet in
-# docs/next/ is today's.
+# README.pod links to the manuals' sections, such as the guide's Part 2
+# (roadmap 2026-0054), so a section renamed in one breaks a link in the
+# other: each is checked, with the README's soundness.
 subtest
-    'the manuals docs/next/ will make are sound, and their links find their sections'
-    => sub {
-        my @next = grep { -e "docs/next/$_" } sort keys %Manuals::MANUAL;
-        skip_all 'no manual is in docs/next/ yet' unless @next;
-        my %markdown = map {
-            my $file = -e "docs/next/$_" ? "docs/next/$_" : "docs/$_";
-            ($_ => Manuals::slurp($file));
-        } keys %Manuals::MANUAL;
-        my %sections
-        = map { ($_ => Manuals::sections($markdown{$_})) } keys %markdown;
-
-        # A manual in docs/next/ is converted; today's is as committed.
-        my %pod = map {
-            my($module, $file) = @{ $Manuals::MANUAL{$_} };
-            (
-                $module => -e "docs/next/$_"
-                ? Manuals::convert($markdown{$_}, \%sections, $_)
-                : Manuals::slurp($file),
-            );
-        } keys %markdown;
-        my %heads = map {
-            my $module = $_;
-            ($module => {
-                map { (s( [A-Z]<<? \s? | \s? >?> )()xgr => 1) }
-                $pod{$module} =~ m( ^ =head\d \  (.+) $ )xmg
-            })
-        } keys %pod;
-
-        my %checked
-        = map { ("docs/next/$_" => $pod{$Manuals::MANUAL{$_}[0]}) } @next;
-        $checked{'docs/next/README.pod'} = Manuals::slurp('docs/next/README.pod')
-        if -e 'docs/next/README.pod';
-        for my $file (sort keys %checked) {
-            my $checker = Pod::Checker->new(-warnings => 2, -quiet => 1);
-            open my $in, '<', \$checked{$file} or die "Can't read the POD of $file: $!";
-            $checker->parse_from_file($in, \my $report);
-            is $checker->num_errors, 0, "$file makes POD with no errors";
-            my @warnings = grep { !m( multiple\ occurrences )x }
-            grep { m( WARNING )x } split m( \n )x, $report // '';
-            is \@warnings, [], 'nor warnings, but for a repeated link target';
-            unlike $checked{$file},
-            qr( L< [^>]* github\.com/nukopian/Ekorn-Pipeline/blob )x,
-            "$file links to none of Ekorn's manuals on GitHub";
-            for my $link ($checked{$file}
-                =~ m( L< [^|>]+ \| (DBIx::Squirrel::Manual::\w+ / "[^"]+") > )xg)
-            {
-                my($to, $section) = $link =~ m( \A ([\w:]+) / "(.+)" \z )x;
-                $section =~ s( E<verbar> )(|)xg;
-                ok $heads{$to}{$section}, "$file: $to has $section";
-            }
+    q(README.pod is sound, and its links to the manuals find their sections) =>
+    sub {
+        my $readme = 'README.pod';
+        skip_all "$readme isn't here" unless -e $readme;
+        my %heads;
+        for my $pair (values %Manuals::MANUAL) {
+            my($module, $file) = @$pair;
+            $heads{$module} = {map { (s( [A-Z]<<? \s? | \s? >?> )()xgr => 1) }
+                Manuals::slurp($file) =~ m( ^ =head\d \  (.+) $ )xmg};
         }
+        my $checker = Pod::Checker->new(-warnings => 2, -quiet => 1);
+        $checker->parse_from_file($readme, \my $report);
+        is $checker->num_errors, 0, "$readme has no errors";
+        my @warnings = grep { !m( multiple\ occurrences )x }
+        grep { m( WARNING )x } split m( \n )x, $report // '';
+        is \@warnings, [], 'nor warnings, but for a repeated link target';
+        my $pod = Manuals::slurp($readme);
+        unlike $pod, qr( L< [^>]* github\.com/nukopian/Ekorn-Pipeline/blob )x,
+        "$readme links to none of Ekorn's manuals on GitHub";
+        my $n = 0;
+        for my $link (
+            $pod =~ m( L< [^|>]+ \| (DBIx::Squirrel::Manual::\w+ / "[^"]+") > )xg)
+        {
+            my($to, $section) = $link =~ m( \A ([\w:]+) / "(.+)" \z )x;
+            ok $heads{$to}{$section}, "$readme: $to has $section";
+            $n++;
+        }
+        ok $n, "and there are some ($n)";
     };
 
 done_testing;

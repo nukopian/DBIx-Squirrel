@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [The new documents in place of the old](2026-0058-new-documents.md),
+  roadmap 2026-0058: shipped, unreleased.
 - [The reference in two parts](2026-0056-reference-two-parts.md),
   roadmap 2026-0056: shipped, unreleased.
 - [The guide in two parts](2026-0055-guide-two-parts.md),

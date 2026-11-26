@@ -2,6 +2,43 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    Documentation only: the README, the user guide and the reference
+    each come in two parts, DBIx::Squirrel first, then what
+    Ekorn::Pipeline adds.
+
+    It ships roadmap 2026-0052 to 2026-0056, and 2026-0058. The code is
+    v4.1.1's.
+
+    - Why. Ekorn::Pipeline began as DBIx::Squirrel's pipeline, and
+      moved into a distribution of its own in 2026, as it was useful,
+      and usable, well beyond database rows. The documents went on
+      telling DBIx::Squirrel's story in its words: keep_all, one of
+      Ekorn::Pipeline's sinks, appeared 29 times in the guide and 25 in
+      the reference, and the README used it more than the iterator's
+      own all. So a reader had to learn both libraries to follow
+      either, and the two read as one. The separation the split began
+      is only now being completed, in the documents first (roadmap
+      2026-0052, 2026-0053).
+    - Part 1 of each document is DBIx::Squirrel, complete in itself:
+      placeholders, the iterator and stages, on handles that are still
+      the DBI's, ending where a reader may stop. It opens with what
+      DBIx::Squirrel is, said without Ekorn::Pipeline, and shows its
+      gains beside plain DBI. Results come from the iterator's own
+      methods. An author test keeps Ekorn::Pipeline's names out of it.
+    - Part 2 is a different job, data crossing the database's edge:
+      query results written to files, JSON and CSV, loaded from them
+      in batches, or sent to several places in one run. It opens, in
+      the guide, with why the two split, and shows the two working
+      together: a function written in Part 1's terms takes Part 2's
+      sinks unchanged (roadmap 2026-0054 to 2026-0056).
+    - Each example in the guide and the reference imports what it
+      uses, from the module that makes it, so it works when copied.
+      An author test checks it.
+    - The guide's account of a missing bind value is corrected: plain
+      DBI fails when a ? has no value, and binds NULL, without a word,
+      only for a placeholder bound by name with bind_param. It gains a
+      JSON recipe, and explains a pipeline's iterator.
+
 v4.1.1 2026-11-26
 
     Documentation only: the reference's index lists the names

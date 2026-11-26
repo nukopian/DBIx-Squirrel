@@ -2,22 +2,23 @@
 
 <!-- stopwords: bitwise flatMap -->
 
-DBI, minus the boilerplate, plus a pipeline.
-
-With DBIx::Squirrel, you still write SQL, as you do with the DBI. It
-takes away the friction around it: placeholders in whatever style you
-like, lists of values, iterators over results, rows as objects, and a
-pipeline of stages written beside the query. It's a subclass of the
-DBI, so everything the DBI does still works. Where the two do the same
-thing, they give the same result.
+You write the SQL; DBIx::Squirrel takes away the DBI machinery around
+it, with placeholders in any common style, a list into `IN (...)` from
+one placeholder, and results read through an iterator, and every
+handle is still a DBI handle. Rows can also be changed as they're
+read, by small functions written beside the query.
 
 This reference describes every method, attribute, function and
-message, and the protocols other code can rely on. Its chapters follow
-the [user guide](HOWTO.md)'s, a layer at a time from the DBI up, and
-each links to its chapter there: the guide is the tour, this is the
-map. Each module's own POD says the same things more briefly. Where
-the two differ, the POD is the authority. Every example runs, against
-the database below, and its comments say what it prints.
+message, and the protocols other code can rely on. It comes in two
+parts, as the [user guide](HOWTO.md) does. Part 1 is DBIx::Squirrel:
+the round trip to the database, a query sent and its rows read back,
+complete in itself. Part 2 is data crossing the database's edge, done
+with a distribution of its own, which Part 2 introduces. The chapters
+follow the guide's, and each links to its chapter there: the guide is
+the tour, this is the map. Each module's own POD says the same things
+more briefly. Where the two differ, the POD is the authority. Every
+example runs, against the database below, imports what it uses, and
+its comments say what it prints.
 
 This is version 4. [Upgrading from 3.x](#upgrading-from-3x),
 [Upgrading from 2.x](#upgrading-from-2x) and
@@ -28,25 +29,28 @@ written for earlier versions.
 
 - [The examples' database](#the-examples-database)
 - [At a glance](#at-a-glance)
-- [Importing: DBIx::Squirrel::Tooling](#importing-dbixsquirreltooling)
+- **[Part 1: DBIx::Squirrel](#part-1-dbixsquirrel)**
 - [1. Connecting](#1-connecting)
 - [2. Placeholders](#2-placeholders)
 - [3. Preparing, binding and running](#3-preparing-binding-and-running)
 - [4. Iterators](#4-iterators)
 - [5. Stages and Context](#5-stages-and-context)
-- [6. Stopping a pipeline](#6-stopping-a-pipeline)
+- [6. Stopping early](#6-stopping-early)
 - [7. Gathering: stages made for each run](#7-gathering-stages-made-for-each-run)
-- [8. Sinks](#8-sinks)
-- [9. Result sets and row objects](#9-result-sets-and-row-objects)
-- [10. Pipelines](#10-pipelines)
-- [11. Operators: | and @{}](#11-operators--and-)
-- [12. Sugar: a function for each database and statement](#12-sugar-a-function-for-each-database-and-statement)
-- [13. Caching and connections](#13-caching-and-connections)
-- [14. Writing stages, and functions that take them](#14-writing-stages-and-functions-that-take-them)
-- [15. Protocols](#15-protocols)
-- [16. Errors and diagnostics](#16-errors-and-diagnostics)
-- [Making each kind of part](#making-each-kind-of-part)
+- [8. Result sets and row objects](#8-result-sets-and-row-objects)
+- [9. Sugar: a function for each database and statement](#9-sugar-a-function-for-each-database-and-statement)
+- [10. Caching and connections](#10-caching-and-connections)
+- [11. Writing stages, and functions that take them](#11-writing-stages-and-functions-that-take-them)
+- [12. Errors and diagnostics](#12-errors-and-diagnostics)
 - [Differences from plain DBI](#differences-from-plain-dbi)
+- [Where you can stop](#where-you-can-stop)
+- **[Part 2: With Ekorn::Pipeline](#part-2-with-ekornpipeline)**
+- [13. Import everything from one place](#13-import-everything-from-one-place)
+- [14. Sinks](#14-sinks)
+- [15. Pipelines](#15-pipelines)
+- [16. Operators: | and @{}](#16-operators--and-)
+- [17. Protocols](#17-protocols)
+- [Making each kind of part](#making-each-kind-of-part)
 - [Upgrading from 3.x](#upgrading-from-3x)
 - [Upgrading from 2.x](#upgrading-from-2x)
 - [Upgrading from 1.x](#upgrading-from-1x)
@@ -56,14 +60,13 @@ written for earlier versions.
 
 The examples run against this SQLite database, the user guide's, a
 file called `music.db`. They follow on from each other, so `$dbh` is
-this handle wherever it appears. It imports everything from
-[DBIx::Squirrel::Tooling](#importing-dbixsquirreltooling), so the
-examples needn't.
+this handle wherever it appears. Each example after it imports what
+it uses, from the module that makes it, so it works when copied, with
+a handle of your own as `$dbh`.
 
 ```perl
 use v5.36;
 use DBIx::Squirrel;
-use DBIx::Squirrel::Tooling qw(:all);    # every stage, sink and word
 
 my $dbh = DBIx::Squirrel->connect('dbi:SQLite:dbname=music.db', {RaiseError => 1, PrintError => 0});
 
@@ -85,7 +88,8 @@ $dbh->do('INSERT INTO track (album_id, name, plays) VALUES (?, ?, ?)', @$_)
 ## At a glance
 
 ```perl
-use DBIx::Squirrel::Tooling qw(:all);    # every stage, sink and word
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(drop_if take);
 
 # Placeholders in the style you like: ?, ?1, :1, $1, :name or $name
 my $sth = $dbh->prepare('SELECT name FROM artist WHERE id = :id');
@@ -105,83 +109,26 @@ while (my($row) = $it->next) {
 # Blur
 # Cream
 
-# Stages beside the query, for what SQL can't do, and a sink last to
-# say what comes back: the two most played tracks not yet on a phone
+# Stages beside the query, for what SQL can't do: the two most played
+# tracks not yet on a phone
 my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
 my @next = $dbh->iterate(
     'SELECT name FROM track ORDER BY plays DESC',
     pluck('name'),
     drop_if { $on_my_phone{$_} },
     take(2),
-    keep_all,
-);
+)->all;
 say join ', ', @next;    # Girls & Boys, Knowing Me, Knowing You
-
-# The words in the tracks' names
-say $dbh->iterate('SELECT name FROM track', sub { split ' ', $_->[0] }, count_items);    # 16
 
 # Each row as an object, with a method for each column
 say $dbh->results('SELECT * FROM album WHERE id = ?', 2)->first->title;    # Parklife
 ```
 
-## Importing: DBIx::Squirrel::Tooling
+## Part 1: DBIx::Squirrel
 
-<!-- not run -->
-```perl
-use DBIx::Squirrel::Tooling qw(:all);               # everything below
-use DBIx::Squirrel::Tooling qw(:stages :sinks);     # or some tags
-use DBIx::Squirrel::Tooling qw(pluck keep_all);     # or some names
-```
-
-What a caller uses to do work is made in several modules, each
-described below. DBIx::Squirrel::Tooling exports all of it, from one
-place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
-`:rows` and `:context` besides:
-
-| Tag | Holds | Made in |
-|---|---|---|
-| `:core` | `Stop`, `gather` | [Stop](#6-stopping-a-pipeline), [Gather](#7-gathering-stages-made-for-each-run) |
-| `:flow` | `take`, `take_first`, `take_last`, `take_single`, `take_if`, `take_while`, `drop`, `drop_if`, `drop_while` | [Stages::Flow](#taking-and-dropping) |
-| `:batch` | `batch`, `collect` | [Stages::Batch](#batching-and-collecting) |
-| `:taps` | `peek`, `count_into`, `dump_to`, `tee` | [Stages::Taps](#canned-stages) |
-| `:rows` | `pluck`, `as_hash` | [Stages::Rows](#canned-stages) |
-| `:stages` | `:flow`, `:batch`, `:taps` and `:rows` | |
-| `:context` | `iterator`, `result_number`, `result_original` | [Context](#context) |
-| `:sources` | `from_array`, `from_fh`, `from_file`, `counter` | Ekorn::Pipeline::Sources |
-| `:sinks` | `count_items`, `keep`, `keep_all`, `keep_first`, `keep_last`, `keep_single`, `to_fh`, `to_file` | [Sinks](#8-sinks) |
-| `:json` | `from_json`, `from_jsonl`, `to_json`, `to_jsonl` | Ekorn::Pipeline::JSON |
-| `:csv` | `from_csv`, `to_csv` | Ekorn::Pipeline::CSV |
-| `:words` | `pipeline`, `stage`, `gather`, `source`, `generator`, `yield`, `sink_one`, `sink_many` | Ekorn::Pipeline::Factories |
-| `:all` | all of the above | |
-
-- **Nothing by default.** Ask for tags, names, or both. An unknown tag
-  or name is Exporter's error: it warns `"%s" is not defined in
-  %DBIx::Squirrel::Tooling::EXPORT_TAGS`, or `"%s" is not exported by
-  the DBIx::Squirrel::Tooling module`, and dies `Can't continue after
-  import errors`.
-- **The same subs.** Each name is the sub its own module exports,
-  prototype and all, so `take_if { ... }` and `stage { ... }` parse as
-  they do imported from there, and importing a name from both does no
-  harm.
-- **DBIx::Squirrel's, where both export a name.** Each name comes from
-  DBIx::Squirrel's own module where it has one, and from
-  Ekorn::Pipeline's only where it has none. Today each name both
-  export is the same sub, so importing Ekorn::Pipeline::Tooling too,
-  in either order, gives the same subs. A test fails if that changes.
-- **What's left out.** What's for extending DBIx::Squirrel rather than
-  using it, such as `croakf`, from DBIx::Squirrel::Errors, and
-  `is_stage`, from Ekorn::Pipeline; [the
-  Sugar](#12-sugar-a-function-for-each-database-and-statement), whose
-  `use` makes functions; and [`|`](#11-operators--and-), which only
-  `use Ekorn::Pipeline::Operators` puts in force, in its own scope.
-- **JSON.pm's names.** JSON exports a `from_json` and a `to_json` of
-  its own, by default, so a module using both imports `:all` or `:json`
-  from only one of them, or calls the other's by its full name.
-- **Text::CSV.** `:csv`'s names need it, but load it only when one
-  is first called, so `:csv` and `:all` import without it.
-- **What a tag holds is public.** A name may be added to one in a
-  release that only adds, but is dropped or renamed only in a major
-  release.
+Everything in this part is DBIx::Squirrel's own: the DBI's handles,
+extended, with placeholders, the iterator and stages. It's the whole
+library, and nothing in it needs Part 2.
 
 ## 1. Connecting
 
@@ -726,6 +673,8 @@ one reference, so a stage gets all of it at once: every row, for
 `selectall_arrayref`.
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 my @slugs = $dbh->selectall_array('SELECT title FROM album ORDER BY year', pluck, sub { lc s( \W+ )(-)xgr });
 say "@slugs";    # disraeli-gears arrival parklife the-great-escape
 
@@ -761,15 +710,16 @@ An iterator is the usual way to read a statement's results here: it
 fetches rows as they're wanted, and hands out each after it has run
 through the stages. The bind values are in any form `execute` takes,
 and, as with `do`, the attributes may be left out. The **stages** are
-at the end of the arguments: code references, pipelines, or any of
-Ekorn::Pipeline's stages. Each row is run through them, in order. See
+at the end of the arguments: code references, or stages made by
+DBIx::Squirrel's modules. Each row is run through them, in order. See
 [Stages](#stages).
 
-**A sink given last says what comes back.** If the last stage is one
-of Ekorn::Pipeline's [sinks](#8-sinks), `iterate` reads the run to its
-end and returns the sink's result, not an iterator.
+**A sink given last says what comes back,** in place of an iterator,
+as [chapter 14](#14-sinks), in Part 2, describes.
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 my $it = $dbh->iterate('SELECT name FROM artist WHERE name LIKE :pattern ORDER BY id', pattern => '%r%', pluck);
 while (my($name) = $it->next) {
     say $name;
@@ -780,7 +730,7 @@ while (my($name) = $it->next) {
 
 The statement isn't executed until the first result is asked for. It's
 finished when the results run out, when the run is ended early, by a
-[stop](#6-stopping-a-pipeline), or by `first` or `single`, and when
+[stop](#6-stopping-early), or by `first` or `single`, and when
 the iterator is let go.
 
 ### How rows are fetched
@@ -819,6 +769,8 @@ the run, so after `next` they start from the next result, and each
 finishes the statement, so the rest of its rows aren't fetched:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 my $it = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck);
 my($abba) = $it->next;
 say $abba;                   # Abba
@@ -839,6 +791,8 @@ list, flattened into what's around it, unless you write `scalar`.
 run to its end as `all` does:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 my %artists = (
     names => $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck)->all_arrayref,
     table => 'artist',
@@ -870,9 +824,11 @@ say "@seen";    # Abba (none) Cream
 second result, or by a stage that stopped, and `died` when a stage
 died. It returns nothing while a run is going, or after `reset` starts
 a new one. A run read with `|` or `@{}` is the iterator's last run too
-(see [11. Operators](#11-operators--and-)).
+(see [16. Operators](#16-operators--and-)).
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 my $it = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck);
 $it->all;
 say $it->ended;                   # done
@@ -903,6 +859,8 @@ handle that isn't DBIx::Squirrel's croaks, `Expected a DBIx::Squirrel
 statement handle`.
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 my $sth = $dbh->prepare('SELECT name FROM artist WHERE id = ?');
 say DBIx::Squirrel::Iterator->new($sth, 3, pluck)->first;    # Cream
 ```
@@ -915,6 +873,8 @@ its own, each kept until others are given. A run still going is
 finished first, and whatever it held goes with it:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 my $it = $dbh->iterate('SELECT name FROM artist WHERE id > ? ORDER BY id', 0, pluck);
 say join ' ', $it->all;                      # Abba Blur Cream
 say join ' ', $it->reset(1)->all;            # Blur Cream
@@ -993,11 +953,10 @@ The filter here tests words a stage made, which no `WHERE` can see. A
 row the database could leave out, it should: a `WHERE` is quicker,
 and fewer rows cross the wire.
 
-A stage can be a code reference, a [pipeline](#10-pipelines), or one
-of Ekorn::Pipeline's stage objects, such as those its words and the
-canned stages make. [How values go through
-stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#how-values-go-through-stages),
-in Ekorn's reference, has the details.
+A stage can be a code reference, or a stage made by one of
+DBIx::Squirrel's modules, such as the canned stages below, and
+`gather`'s. Part 2's [pipelines](#15-pipelines) go wherever a stage
+goes, too.
 
 ### Context
 
@@ -1010,20 +969,18 @@ from, and the iterator reading them. None is exported by default.
 use DBIx::Squirrel::Context qw(iterator result_number result_original);
 ```
 
-`result_number` works in any run, as Ekorn::Pipeline counts every
-run's results: an iterator's or result set's own stages, a chain made
-with `|`, and a pipeline of yours, each counting its own.
-`result_original` gives a statement's row in any run reading one,
-chains included: it's Ekorn::Pipeline::Context's, and the statement's
-source gives Ekorn the row as its original, which Ekorn passes through
-chains. In a run reading no statement, it's the value the run's source
-gave, or that was pushed.
+`result_number` works in any run of stages, each counting its own: an
+iterator's or result set's own stages, and those given to a select
+method. `result_original` gives the row a result is being made from,
+as the statement gave it, whatever the stages before have done to it.
 `iterator` works only in an iterator's or result set's own stages, run
-by its `next`, `all`, `first` or `single`, or by a sink given last to
-the call that made it. Elsewhere it returns `undef`, and outside a run
-all three do.
+by its `next`, `all`, `first` or `single`. Elsewhere it returns
+`undef`, and outside a run all three do. Part 2's [The run's
+context](#the-runs-context) says how each works in its runs.
 
 ```perl
+use DBIx::Squirrel::Context qw(result_number result_original);
+
 my @chart = $dbh->iterate(
     'SELECT name, plays FROM track ORDER BY plays DESC',
     sub { $_->[0] },
@@ -1038,6 +995,9 @@ one row is a result of its own. So numbering after a filter numbers
 what's left:
 
 ```perl
+use DBIx::Squirrel::Stages::Flow qw(drop_if);
+use DBIx::Squirrel::Context qw(result_number);
+
 my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
 
 my @to_copy = $dbh->iterate(
@@ -1058,6 +1018,9 @@ result set, it's the row object. In a flush of a stage made with
 flush gives comes from every row, not one.
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Context qw(result_original);
+
 my @plays = $dbh->iterate(
     'SELECT name, plays FROM track ORDER BY plays DESC LIMIT 2',
     pluck('name'),
@@ -1073,6 +1036,8 @@ statement handle's `Database` is the database handle, and its
 `column_names` are the statement's columns.
 
 ```perl
+use DBIx::Squirrel::Context qw(iterator);
+
 my($columns) = $dbh->iterate(
     'SELECT id, name FROM artist WHERE id = 1',
     sub { join ',', iterator()->column_names },
@@ -1098,12 +1063,8 @@ use DBIx::Squirrel::Stages::Flow qw(:DEFAULT take_while);
 
 Flow's are discussed in [Taking and dropping](#taking-and-dropping),
 and Batch's in [Batching and collecting](#batching-and-collecting).
-Flow's, Batch's and Taps' stages are Ekorn::Pipeline's, exported from
-a list of DBIx::Squirrel's own; its reference's [Canned
-stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#canned-stages)
-describes them too. Rows' stages are DBIx::Squirrel's own. Each is a
-function that makes a stage, checking what it's given when it's
-called, not on each value.
+Each is a function that makes a stage, checking what it's given when
+it's called, not on each value.
 
 #### Reshaping rows
 
@@ -1114,6 +1075,8 @@ column, it takes a row's only column, so a one-column query gives
 plain values:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
 my @names = $dbh->iterate('SELECT id, name FROM artist ORDER BY id', pluck('name'))->all;
 say "@names";    # Abba Blur Cream
 
@@ -1136,6 +1099,8 @@ for a hash row reads the hash's own keys, so it works anywhere.
 written for the DBI's hashes:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(as_hash);
+
 my $album = $dbh->iterate('SELECT title, year FROM album WHERE id = 2', as_hash)->first;
 say "$album->{title} ($album->{year})";    # Parklife (1994)
 ```
@@ -1147,16 +1112,15 @@ as it would be without them. A name the row hasn't got croaks, so a
 query that lost a column shows at once:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(as_hash);
+
 my @artists = $dbh->iterate('SELECT * FROM artist ORDER BY id LIMIT 2', as_hash('NAME'))->all;
 say join ' ', keys %{ $artists[0] };              # name
 say join ' ', map { $_->{name} } @artists;       # Abba Blur
 ```
 
 The run's context still names every column the statement has, so a
-stage reading it sees them all. `to_csv`'s `header => 1` is one: after
-`as_hash` with names, give `to_csv` the same names as its header,
-`header => [qw(name plays)]`, or it writes a column for each, empty
-for those left out.
+stage reading it sees them all.
 
 **`pluck` reads the statement's columns, not the row's.** After a
 stage that reshapes rows, a name or position for an array row picks
@@ -1164,6 +1128,8 @@ the wrong field, and says nothing. Make the rows hashes first, with
 `as_hash`. Then `pluck` by name reads each hash's own keys:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck as_hash);
+
 my $sql = 'SELECT id, name FROM artist ORDER BY id';
 
 my @wrong = $dbh->iterate(
@@ -1190,6 +1156,9 @@ it gives. `peek` calls a block with each value; `count_into` counts
 them into a variable, from 0 on each run:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Taps qw(peek count_into);
+
 my @seen;
 my @names = $dbh->iterate(
     'SELECT name FROM artist ORDER BY id',
@@ -1213,14 +1182,16 @@ it writes each secret that module's rules find as `*REDACTED*`, in the
 text it writes only: the value passed on is as it came. The rules find
 a long, random password, token or key, such as the password in a DSN,
 but not a short or ordinary password, so a dump can still hold
-secrets. Without the module, or while
-`local $Ekorn::Pipeline::Stages::Taps::DumpSecrets = 1` is set, it
-writes each value in full; with the module there but broken, it
-croaks rather than write a dump. It doesn't escape control characters
-in strings, so a value from outside can send escape sequences to a
-terminal.
+secrets. Without the module, it writes each value in full, and Part
+2's [Settings of the pipeline](#settings-of-the-pipeline) says how to
+have that with it; with the module there but broken, it croaks rather
+than write a dump. It doesn't escape control characters in strings, so
+a value from outside can send escape sequences to a terminal.
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(as_hash);
+use DBIx::Squirrel::Stages::Taps qw(dump_to);
+
 open my $fh, '>', \my $dump or die $!;
 $dbh->iterate('SELECT id, name FROM artist WHERE id = 1', as_hash, dump_to($fh))->all;
 close $fh;
@@ -1243,6 +1214,10 @@ the branch, so its flushes run, and what it holds, such as a
 part-filled `batch`, is handed on, as when the input runs out.
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(take_if);
+use DBIx::Squirrel::Stages::Taps qw(tee);
+
 my @hits;
 my @names = $dbh->iterate(
     'SELECT name, plays FROM track ORDER BY id',
@@ -1252,7 +1227,7 @@ my @names = $dbh->iterate(
 say scalar(@names), ' tracks; hits: ', join ', ', @hits;    # 6 tracks; hits: Dancing Queen, Girls & Boys, Sunshine of Your Love
 ```
 
-## 6. Stopping a pipeline
+## 6. Stopping early
 
 The user guide's [chapter 6](HOWTO.md#6-stopping-early).
 
@@ -1273,6 +1248,8 @@ one that stopped, made with
 flushes called.
 
 ```perl
+use DBIx::Squirrel::Stop qw(Stop);
+
 my @upto = $dbh->iterate(
     'SELECT title, year FROM album ORDER BY year',
     sub { $_->[1] >= 1990 ? Stop($_) : $_ },    # this one, then no more
@@ -1281,24 +1258,21 @@ my @upto = $dbh->iterate(
 say "@upto";    # Disraeli Gears Arrival Parklife
 ```
 
-`Stop` is exported by default. `Ekorn::Pipeline::Stop->throw(@values)`
-does the same without importing it. To keep `Stop` out of your
-namespace, `use DBIx::Squirrel::Stop ()`.
+`Stop` is exported by default. To keep it out of your namespace,
+`use DBIx::Squirrel::Stop ()`, and call it by its full name,
+`DBIx::Squirrel::Stop::Stop()`.
 
-### What a stop is
+### Catch errors, but let a stop through
 
-A stop is an exception, an `Ekorn::Pipeline::Stop`, which the pipeline
-catches. DBIx::Squirrel::Stop isn't a class: it exports Ekorn's
-`Stop`. A subclass of your own is a subclass of
-`Ekorn::Pipeline::Stop`, and stops a pipeline as `Stop` does. Ekorn's
-reference says what a stop holds, in [The stop
-object](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#the-stop-object).
-
-A stage that catches errors itself, with `eval` or `try`, should throw
-a stop on again. Check for `Ekorn::Pipeline::Stop`. Every stop is one,
-including those the canned stages throw, such as `take`'s:
+A stop is an exception, an object, which the run catches. So a stage
+that catches errors itself, with `eval` or `try`, should throw a stop
+on again. An error from `die` with a message is a string, so passing
+on each error that's an object passes on every stop, including those
+the canned stages throw, such as `take`'s. Part 2's [What a stop
+is](#what-a-stop-is) gives its class, to pass on stops alone:
 
 ```perl
+use DBIx::Squirrel::Stop qw(Stop);
 use experimental qw(try);
 
 my @safe = $dbh->iterate(
@@ -1309,7 +1283,7 @@ my @safe = $dbh->iterate(
             return uc $row->[0];
         }
         catch ($e) {
-            die $e if $e isa 'Ekorn::Pipeline::Stop';
+            die $e if ref $e;    # a stop, or another error object
             return 'unknown';
         }
     },
@@ -1333,6 +1307,9 @@ passes on values 21 to 30. `take` stops the run at its last
 value, so the statement is finished then:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(drop_if drop take);
+
 my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
 
 my @page = $dbh->iterate(
@@ -1345,14 +1322,16 @@ my @page = $dbh->iterate(
 say join ', ', @page;    # Girls & Boys, Country House
 ```
 
-`take_first`, `take_last` and `take_single` each pass on one value,
-and are the stages of the sinks `keep_first`, `keep_last` and
-`keep_single`, so a pipeline can go on after them. `take_last` reads
-every value to find the last. `take_single` is for a statement meant
-to give one row: at a second, it warns and stops, so a forgotten
-limit is found.
+`take_first`, `take_last` and `take_single` each pass on one value, so
+the stages after them go on working with it. `take_last` reads every
+value to find the last. `take_single` is for a statement meant to give
+one row: at a second, it warns and stops, so a forgotten limit is
+found.
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(take_first take_last take_single);
+
 say $dbh->iterate('SELECT title FROM album ORDER BY year', pluck, take_first)->all;    # Disraeli Gears
 
 my @newest = $dbh->iterate(
@@ -1370,6 +1349,9 @@ does, and never stop the run. A plain stage ending in a test passes on
 what the test returns, true or false; `take_if` passes on the value:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(take_if drop_if);
+
 my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
 
 my @copied = $dbh->iterate(
@@ -1392,6 +1374,9 @@ A test the database could do, such as `plays > 6000`, belongs in the
 query's rows without touching the query, before it goes in the SQL:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(take_if);
+
 my @would_keep = $dbh->iterate(
     'SELECT name, plays FROM track ORDER BY id',
     take_if { $_->[1] > 6000 },    # trying it out, before it goes in a WHERE
@@ -1407,6 +1392,9 @@ every row; `drop_while` passes on everything from there, without
 testing again:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Flow qw(take_while drop_while drop);
+
 my $half   = $dbh->selectrow_array('SELECT SUM(plays) FROM track') / 2;
 my $so_far = 0;
 
@@ -1446,7 +1434,7 @@ fresh each time. The block returns:
 - **optionally, the flush:** called with no arguments once the values
   run out, even if there were none. What it returns goes through the
   rest of the stages, as what a stage returns does. After a
-  [stop](#6-stopping-a-pipeline), only the flushes of the stages after
+  [stop](#6-stopping-early), only the flushes of the stages after
   the one that stopped are called;
 - **optionally, the end:** called once the run has ended, however it
   ended, and told how: `done`, `stopped` or `died`. An iterator's run
@@ -1459,6 +1447,9 @@ hash reference with the keys `step`, `flush` and `end`, giving only
 those the stage has.
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Gather qw(gather);
+
 # Each value, then, once they run out, how many there were
 sub and_count () {
     return gather {
@@ -1484,13 +1475,11 @@ say "@how";    # stopped
 A block that returns anything else croaks as the run starts:
 `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end`.
 `gather` given something other than a block or code reference croaks
-`Expected a code reference`. Ekorn's reference gives the order flushes
-and ends are called in, in [Flushes and
-ends](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#flushes-and-ends).
+`Expected a code reference`.
 
-A stage made with `gather` is an `Ekorn::Pipeline::Gather`, an object
-that can go wherever a stage can. `gather` is exported by default; to
-keep it out of your namespace, `use DBIx::Squirrel::Gather ()`.
+A stage made with `gather` is an object that can go wherever a stage
+can. `gather` is exported by default; to keep it out of your
+namespace, `use DBIx::Squirrel::Gather ()`.
 
 ### Batching and collecting
 
@@ -1503,6 +1492,9 @@ than one batch at a time; the last batch, given when the values run
 out, may be shorter, and with no values there's no batch at all:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Batch qw(batch);
+
 my @batches = $dbh->iterate(
     'SELECT name FROM track ORDER BY id',
     pluck('name'),
@@ -1519,6 +1511,9 @@ them all, which can be nothing, one value, or several; the block is
 called even with no values, so `collect` always gives a result:
 
 ```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Stages::Batch qw(collect);
+
 my($ids) = $dbh->iterate('SELECT id FROM artist ORDER BY id', pluck, collect)->all;
 say "@$ids";    # 1 2 3
 
@@ -1530,93 +1525,9 @@ say $dbh->iterate(
 # Abba+Blur+Cream
 ```
 
-## 8. Sinks
+## 8. Result sets and row objects
 
-The user guide's [chapter
-8](HOWTO.md#8-sinks-saying-what-you-want-back).
-
-A sink is a last stage that says what a run gives. Given last to
-`iterate`, `results`, a Sugar function, or a select method, it makes
-the call read the run through and give the sink's result, not an
-iterator. The sinks are Ekorn::Pipeline's, from
-Ekorn::Pipeline::Sinks, which exports none by default, and
-DBIx::Squirrel::Tooling's `:sinks` exports them all:
-
-<!-- not run -->
-```perl
-use Ekorn::Pipeline::Sinks qw(keep_all keep_first keep_last keep_single keep count_items to_file to_fh);
-```
-
-| Sink | Gives | Stops the run early? |
-|---|---|---|
-| `keep_all` | every result, as a list; or, where one value is asked for, an array reference of them | no |
-| `keep_first` | the first result, or `undef` if none | yes |
-| `keep_last` | the last result, reading every one to find it, or `undef` if none | no |
-| `keep_single` | the one result, or `undef` if none; at a second, a warning, `Expected only one item, but there were more`, and the first | at a second |
-| `keep($n)` | the first `$n` results, as a list, or an array reference where one value is asked for | yes, at `$n` |
-| `count_items` | how many results there were | no |
-| `to_file($path)` | writes each result to the file, a line each, and gives how many; it closes the file however the run ends | no |
-| `to_fh($fh)` | prints each result to your filehandle, a line each, and gives how many; you close it | no |
-
-A sink of many, `keep_all` or `keep`, never gives a count: for that,
-use `count_items`. An empty result is an empty array reference, which
-is true, so test it with `@$rows`.
-
-Ekorn::Pipeline::JSON's `to_json` and `to_jsonl`, from Tooling's
-[`:json`](#importing-dbixsquirreltooling), are sinks too, given a
-`file` or an `fh`: they write each result as JSON, and give how many.
-
-```perl
-my @names = $dbh->iterate(
-    'SELECT name FROM artist ORDER BY id',
-    pluck('name'),
-    keep_all,
-);
-my $names = $dbh->iterate(
-    'SELECT name FROM artist ORDER BY id',
-    pluck('name'),
-    keep_all,
-);
-say "@names";            # Abba Blur Cream
-say scalar @$names;      # 3
-
-say $dbh->iterate(
-    'SELECT name FROM track ORDER BY plays',
-    pluck('name'),
-    keep_last,
-);
-# Dancing Queen
-
-say $dbh->iterate(
-    'SELECT name FROM artist WHERE id = ?', 2,
-    pluck('name'),
-    keep_single,
-);
-# Blur
-
-say join ', ', $dbh->iterate(
-    'SELECT name FROM track ORDER BY plays DESC',
-    pluck('name'),
-    keep(2),
-);
-# Dancing Queen, Sunshine of Your Love
-
-say $dbh->iterate('SELECT title FROM album', sub { split ' ', $_->[0] }, count_items);    # 7
-```
-
-The iterator's methods and the sinks overlap: `all` and `keep_all`,
-`first` and `keep_first`, `single` and `keep_single`. A method takes
-what's left of an iterator you have; a sink says, in the call, what it
-gives, and is the only way to have a count, the last, the first few,
-or a file. `all` without stages is quicker than `keep_all`, as it
-fetches every row in one go.
-
-Ekorn's reference has the sinks in full, and how to write one, in
-[Sinks](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#sinks-ekornpipelinesinks).
-
-## 9. Result sets and row objects
-
-The user guide's [chapter 9](HOWTO.md#9-rows-as-objects).
+The user guide's [chapter 8](HOWTO.md#8-rows-as-objects).
 
 ### results
 
@@ -1693,10 +1604,630 @@ say $artist->shout;    # BLUR
 A class that isn't a subclass of `DBIx::Squirrel::Result` croaks:
 `Expected ekorn_result_class to be a subclass of DBIx::Squirrel::Result (My::Other)`.
 
-## 10. Pipelines
+## 9. Sugar: a function for each database and statement
 
 The user guide's [chapter
-10](HOWTO.md#10-building-pipelines-from-pipelines).
+9](HOWTO.md#9-a-function-for-each-database-and-statement).
+
+`DBIx::Squirrel::Sugar` gives each database a name. The package that
+names it gets a function of that name, which returns the database
+handle or runs a statement on it. A statement gets a function too,
+which runs it with the bind values and any stages given.
+
+### Defining them on use
+
+<!-- not run -->
+```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Sugar database => {
+    music => [$data_source, $username, $password, \%attr],
+};
+use DBIx::Squirrel::Sugar statement => {
+    artist_names => [music => 'SELECT name FROM artist', pluck],
+    artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
+};
+use DBIx::Squirrel::Sugar pipeline => {loud => [sub {uc}]};
+use DBIx::Squirrel::Sugar qw(database statement);
+```
+
+Given a hash reference after `database` or `statement`, `use` defines
+each database or statement named in it, with its arguments in an array
+reference. Part 2's [The Sugar's pipelines](#the-sugars-pipelines)
+adds a third key, for naming pipelines. It gives the package each
+function while the package is compiled, so the function can be called
+without parentheses. The arguments are worked out then too: the
+environment, literals, and what a `BEGIN` block has set are there, but
+a variable the program sets as it runs is not yet. `use` also gives
+the package the `database` and `statement` functions, and, given just
+their names, only those.
+
+### Defining them as the program runs
+
+`use` defines databases and statements as the program compiles, from
+what's known then. Where the arguments aren't known until the program
+runs, such as a data source read from a configuration file, `database`
+and `statement` define them then, and give the package the same
+functions. A function defined so isn't known as the program compiles,
+so it's called with parentheses. Given just a name, `database` is the
+handle, from anywhere in the program:
+
+```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
+database(archive => 'dbi:SQLite:dbname=music.db', {RaiseError => 1});
+statement(albums_of => archive => 'SELECT title FROM album WHERE artist_id = ? ORDER BY year', pluck);
+
+say join ', ', albums_of(2)->all;    # Parklife, The Great Escape
+say ref database('archive');           # DBIx::Squirrel::db
+```
+
+A statement's database is found when its function runs, so it can be
+defined after the statement. Each database is defined once in a
+program, by a name a function can have, which the package can't have
+a function of already.
+
+### The function a database is given
+
+<!-- not run -->
+```perl
+$dbh     = music();
+$sth     = music($statement, @bind_values);
+$sth     = music($statement, \%attr, @bind_values);
+$it      = music($statement, @bind_values, @stages);
+```
+
+| Called with | It |
+|---|---|
+| nothing | returns the database handle. |
+| a statement and bind values | prepares the statement, executes it, and returns the statement handle, or nothing if it couldn't be executed. |
+| those, and stages at the end | returns what `iterate` does: an iterator over the results. |
+
+An unblessed hash reference or `undef` straight after the statement is
+the attributes to prepare it with. The statement can be a statement
+handle, which is itself executed, or iterated over.
+
+```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Sugar database => {music => ['dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1}]};
+
+say music('SELECT name FROM artist WHERE id = ?', 1)->fetchrow_arrayref->[0];    # Abba
+say ref music('SELECT name FROM artist', pluck);                                 # DBIx::Squirrel::Iterator
+say join ' ', music('SELECT name FROM artist ORDER BY id', pluck)->all;    # Abba Blur Cream
+```
+
+### The function a statement is given
+
+<!-- not run -->
+```perl
+$sth     = artist(@bind_values);
+$it      = artist(@bind_values, @stages);
+```
+
+It executes the statement with the bind values, and returns the
+statement handle, or nothing if it couldn't be executed. With stages,
+its own or those given after the bind values, it returns an iterator
+over the results, as `iterate` does. The results go through its own stages, then those
+given. Stages given are for that call only. A string given is always a
+bind value, never a pipeline's name.
+
+```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+use DBIx::Squirrel::Sugar
+    statement => {
+        artist_names => [music => 'SELECT name FROM artist ORDER BY id', pluck],
+        artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
+    };
+
+say ref artist_names;                              # DBIx::Squirrel::Iterator
+say join ' ', artist_names->all;                  # Abba Blur Cream
+say join ' ', artist_names(sub {lc})->all;        # abba blur cream
+say artist_names->first;                           # Abba
+say artist(id => 3)->fetchrow_hashref->{name};     # Cream
+```
+
+A stage imported is a function of your package, so a statement can't
+be given its name: `Expected no function of the name in main already
+(pluck)`. Import only the names you call, or call a stage by its full
+name, as `DBIx::Squirrel::Stages::Rows::pluck(...)`.
+
+The statement is prepared once for each database handle, with
+`prepare_cached`. Its handle may be in use: by a statement handle not
+read to the end, or by an iterator of an earlier call still reading. A
+call then prepares one of its own. A statement taking a [list](#lists)
+is prepared for each call's values instead, and isn't cached.
+
+## 10. Caching and connections
+
+The user guide's [chapter 10](HOWTO.md#10-caching-and-connections).
+
+### prepare_cached
+
+The DBI's cache of statement handles works as it does with the DBI,
+but for two things: how a statement's placeholders, and an iterator
+reading a handle, bear on which handle is handed out.
+
+Two statements can be rewritten the same: `SELECT :a, :b` and
+`SELECT :b, :a` both become `SELECT ?, ?`. Each still has a handle of
+its own, as the statement as written is part of the cache's key.
+DBIx::Squirrel's own attributes are part of the key too. So a
+statement prepared with `{ekorn_slice => {}}` and one prepared without
+have different handles.
+
+The DBI finishes a cached handle that's still active before handing it
+out. If an iterator is part way through the handle, that would cut its
+results short. So such a handle isn't handed out or finished. A new
+handle is made instead, and cached in its place. The exception is
+`$if_active` of 2, which asks for the cached handle, unchanged.
+Otherwise, `$if_active` means what it does to the DBI. A cached handle
+that's active, with no iterator, is finished, after a warning, unless
+`$if_active` says otherwise.
+
+```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
+my $sql   = 'SELECT name FROM artist ORDER BY id';
+my $first = $dbh->prepare_cached($sql)->iterate(pluck);
+$first->next;
+my $second = $dbh->prepare_cached($sql)->iterate(pluck);
+say $first->sth == $second->sth ? 'shared' : 'a handle each';    # a handle each
+say join ' ', $second->all;    # Abba Blur Cream
+say join ' ', $first->all;     # Blur Cream
+```
+
+### connect_cached
+
+Code that connects in several places, such as a function for each
+request, shares one connection by connecting with `connect_cached`.
+It takes its arguments as `connect` does, and calls `connect` when it
+needs a new connection, so it croaks on failure too. DBIx::Squirrel's
+own attributes are part of its key, so a handle made to fetch rows as
+hashes isn't handed to code expecting arrays:
+
+```perl
+my $one   = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', {RaiseError => 1});
+my $two   = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', {RaiseError => 1});
+my $hashy = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', {RaiseError => 1, ekorn_slice => {}});
+say $one == $two   ? 'shared' : 'apart';    # shared
+say $one == $hashy ? 'shared' : 'apart';    # apart
+```
+
+### The Sugar's connections
+
+A Sugar database is connected to when it's first used, not when it's
+defined, with `connect_cached`. So two databases defined with the same
+arguments share a handle. The handle is kept, and each use has the
+same one, without a ping to the database each time. It's pinged only
+while its last call has failed, which leaves the error to be read.
+It's made again if the connection has gone, or if the handle has been
+disconnected. So the call after a connection drops fails, as it would
+with plain DBI, and the call after that has a new connection.
+
+## 11. Writing stages, and functions that take them
+
+The user guide's [chapter
+11](HOWTO.md#11-functions-that-take-stages-and-stages-for-others).
+
+### A function that takes stages
+
+A function can take stages from its caller, at the end of its
+arguments, and hand them to `iterate` after its values. Its caller
+then gets an iterator. A function taking a fixed number of values
+takes the rest as stages, as here; Part 2's [What a call takes as
+stages](#what-a-call-takes-as-stages) says how to find the stages at
+the end of any list:
+
+```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
+sub albums_since ($year, @stages) {
+    return $dbh->iterate('SELECT title FROM album WHERE year >= ? ORDER BY year', $year, @stages);
+}
+
+say join ', ', albums_since(1990, pluck)->all;    # Parklife, The Great Escape
+```
+
+### Stages for others
+
+A stage of your own is a code reference, or a function that makes
+one, as the canned stages are. Part 2's [Making each kind of
+part](#making-each-kind-of-part) shows more ways. To work alongside
+the canned stages, it should:
+
+- a function that makes it, checking its options once;
+- state in a `gather` block, so it starts afresh on each run;
+- a flush, for a stage that holds values, and an end, for one that
+  holds something to release;
+- `Stop`, for one that knows no more are wanted;
+- a tap that returns the value it was given;
+- names, exports and tests.
+
+What follows is what's particular to stages for rows.
+
+**The shapes of a row.** A row can be an array, a hash (with the
+`ekorn_slice` attribute), or a row object (from `results`). A stage
+for others should say which it takes, or take all three, as `pluck`
+does. A stage that needs the statement's column names reads them from
+the [run's context](#the-runs-context).
+
+**Errors.** A function that makes a stage croaks when it's given the
+wrong things, so the message names the line that called it. A module
+of stages sets its `@CARP_NOT` to DBIx::Squirrel's internal packages,
+which take in the DBI's and those of the modules underneath. Then what
+it croaks while a row goes through its stage is reported at the line
+that asked for the result, not inside DBIx::Squirrel:
+
+```perl
+use DBIx::Squirrel::Stages::Rows qw(pluck);
+
+package My::Stages {
+    use DBIx::Squirrel::Errors qw(croakf);
+
+    our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
+
+    sub prefixed ($prefix) {
+        croakf 'Expected a prefix' unless defined $prefix && length $prefix;
+        return sub ($value) {"$prefix$value"};
+    }
+}
+
+say join ' ', $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck,
+    My::Stages::prefixed('#'),
+)->all;
+# #Abba #Blur #Cream
+
+eval { My::Stages::prefixed('') };
+print $@;    # Expected a prefix at ... line ...
+```
+
+`croakf` makes its message with `sprintf`. The format is a literal,
+written in the code; values go in as arguments, through `%s` and the
+like, never as the format. A format made from data does whatever its
+`%` directives say: `%999999999s` makes a string of a gigabyte. A
+literal `%` is `%%`.
+
+```perl
+package My::Columns {
+    use DBIx::Squirrel::Errors qw(croakf);
+
+    sub exactly ($n) {
+        croakf 'Expected %d %s, not %d%%', 3, 'columns', $n unless $n == 3;
+        return $n;
+    }
+}
+
+eval { My::Columns::exactly(50) };
+print $@;    # Expected 3 columns, not 50% at ... line ...
+```
+
+**Where they go.** A stage goes where what it needs to know is. One
+that needs a database, a statement, a row's column names, or the row a
+result came from goes under `DBIx::Squirrel::Stages::`. One that would
+work on values from anywhere belongs with the pipeline itself, as
+Part 2's [Making each kind of part](#making-each-kind-of-part) says.
+The user guide's [Decide where a stage
+belongs](HOWTO.md#decide-where-a-stage-belongs) says how to choose.
+
+**Testing.** A pipeline called with values tests a stage without a
+database. Run it twice, to show it starts afresh. Then run it on rows
+from an in-memory SQLite database, in each shape it takes.
+
+**Publishing.** Name a module of stages for its job, as
+`DBIx::Squirrel::Stages::CSV`, in a distribution named
+`DBIx-Squirrel-Stages-CSV`. Have it require the DBIx::Squirrel it was
+tested with: v3.0.0 is the first with sinks, `|` and the run's context
+described in [17. Protocols](#17-protocols).
+
+## 12. Errors and diagnostics
+
+The user guide's [chapter 12](HOWTO.md#12-when-things-go-wrong).
+
+### Errors
+
+Errors are reported at the line of your code that called
+DBIx::Squirrel, never at a line inside it or the DBI. That includes
+the DBI's own errors under `RaiseError`, such as
+`DBD::SQLite::db prepare failed: near "SELEC": syntax error`, which
+keep the DBI's message.
+
+DBIx::Squirrel croaks where the DBI would return `undef` in `connect`,
+`prepare` and `prepare_cached`. The error then has the message the DBI
+raises under `RaiseError`, so it reads the same whatever `RaiseError`
+is set to.
+
+Each error names the method you called, as plain DBI does: `do` and
+the select methods, not the `prepare` or `execute` they call;
+`selectall_array`'s errors name `selectall_arrayref`, as the DBI's do.
+
+An error from a `HandleError` callback, or one that isn't a string, is
+passed on unchanged. The DBI's warnings, under `PrintError`, its
+default, are reported the same way plain DBI reports them: at your
+line, naming the method you called.
+
+```perl
+eval { $dbh->prepare('SELEC name FROM artist') };
+print $@;    # DBD::SQLite::db prepare failed: near "SELEC": syntax error at ... line ...
+```
+
+### Diagnostics
+
+These are the messages a user of Part 1 meets, from DBIx::Squirrel and
+the stages it exports. Each is reported at the caller's line. Those
+starting "Expected" say what was expected. Part 2's [Messages of the
+pipeline](#messages-of-the-pipeline) has those of what it adds.
+
+#### Connecting, preparing and binding
+
+| Message | Cause |
+|---|---|
+| `Expected a statement` | The statement was blank, or a reference other than those `prepare` takes. |
+| `Expected one placeholder style, not several (%s)` | The statement mixed styles, such as `?` and `:name`. Each is listed as an example. |
+| `Expected placeholders numbered from 1 (%s)` | A numbered placeholder such as `$0`. |
+| `Expected ekorn_slice to be a reference to an ARRAY or HASH` | `ekorn_slice` was something else. |
+| `Expected a reference to a HASH or ARRAY` | The first argument after the statement in `do`, `iterate`, `results` or a select method was an unblessed reference, but not to a hash or an array. An object there is a bind value. |
+| `Expected %d bind values, not %d` | A statement with numbered placeholders was given more or fewer values than its highest number; or a row given to `execute_for_fetch` had more or fewer values than the statement has placeholders. |
+| `Expected names and values in pairs` | A statement with named placeholders was given an odd number of values. |
+| `Expected a placeholder of the statement (%s)` | A value was given for a placeholder the statement doesn't have. |
+| `Expected no list placeholder in a statement for rows of values (%s)` | `execute_array`, `execute_for_fetch` or `bind_param_array` was called on a statement with a list placeholder, whose handle is prepared for lists of one length. |
+| `Expected a row of values: an array, or a hash for named placeholders` | A row given to `execute_for_fetch`, or by `ArrayTupleFetch`, was neither an array, nor, for named placeholders, a hash. |
+| `Expected a value for each placeholder (none for %s)` | A statement with named placeholders wasn't given a value for each name, or a statement with numbered or named placeholders was executed without values when some had none bound. |
+| `Expected one value for each placeholder (two for %s)` | A statement with named placeholders was given a value for a name twice, written with and without its sigil, as `:id` and `id`. |
+| `Expected bind values with a statement taking a list (%s)` | `prepare` or `prepare_cached` was given a statement taking a [list](#lists). Each list placeholder is named, and a `?` is named by its position: `...? at 2`. |
+| `Expected a placeholder to take a list everywhere or nowhere (%s)` | A placeholder was used with `...` in one place and without it in another. |
+| `Expected no list placeholder with pg_placeholder_dollaronly (%s)` | A `$1` placeholder took a list under DBD::Pg's `pg_placeholder_dollaronly`. |
+| `Expected a reference to an ARRAY for a list (%s)` | A list placeholder was given a plain value, `undef`, or a reference to something other than an array. |
+| `Expected at least one value in a list (%s)` | A list placeholder was given an empty list. |
+| `Expected plain values in a list (%s)` | A list held an unblessed reference, as `[[1, 2]]` does to a statement whose one value is a list. |
+| `Expected %d values in a list, as prepared, not %d (%s)` | The handle of a statement taking a list was executed or bound with a list of another length. |
+
+#### Iterators and result sets
+
+| Message | Cause |
+|---|---|
+| `Expected a DBIx::Squirrel statement handle` | `DBIx::Squirrel::Iterator->new` wasn't given a `DBIx::Squirrel::st`. |
+| `Expected only one item, but there were more` | A warning: `single` or `take_single` found a second result, and gave the first. |
+| `Expected the statement handle's other iterator to be finished` | Another iterator over the same statement handle has results left. |
+| `Expected ekorn_result_class to be a subclass of DBIx::Squirrel::Result (%s)` | `ekorn_result_class` named a class that isn't one. |
+| `Expected a column of the row (%s)` | `get_column`, `pluck` or `as_hash` was given a name or position the row doesn't have. |
+
+#### Pipelines
+
+| Message | Cause |
+|---|---|
+| `Expected a code reference` | The block given to `gather`, `take_while`, `drop_while`, `take_if`, `drop_if`, `collect` or `peek` wasn't a code reference. |
+| `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end` | The block given to `gather` for that stage returned something else. |
+| `Pipeline stage #%s failed at %s line %d:` | A stage, or its flush, died. The message it died with follows, indented. See [When a stage dies](#when-a-stage-dies). |
+| `Pipeline end of %s failed at %s line %d:` | An end died, in a run that hadn't died already: the source's, as `the source`, or a stage's, as `stage #2`. |
+| `The end of %s died while the run was already dying: %s` | A warning: an end died in a run that had died already. The run's own error is the one thrown. |
+| `Stop used outside a pipeline` | `Stop` was called where no pipeline was running to catch it. |
+
+#### Canned stages and sinks
+
+| Message | Cause |
+|---|---|
+| `Expected a count of 0 or more` | `take` or `drop` was given something other than a whole number. |
+| `Expected a batch size of 1 or more` | `batch` was given something other than a whole number above 0. |
+| `Expected a column, by name or position` | `pluck` was given an undefined column, or an empty name. |
+| `Expected a column name` | `as_hash` was given an undefined or empty column name. |
+| `Expected one column to pluck, not %d` | `pluck`, given no column, had a row of more than one column, or of none. |
+| `Expected a statement to read, for the column names` | `as_hash`, or `pluck` with a name for an array row or a position for a hash row, ran where no statement was being read, such as in a pipeline called with values. |
+| `Expected a row: an array, a hash or a row object` | `pluck` or `as_hash` was given a value that isn't a row. |
+| `Expected a reference to a scalar` | `count_into` was given something else. |
+| `Expected an open filehandle` | `dump_to` was given something else. |
+
+#### Sugar
+
+| Message | Cause |
+|---|---|
+| `Expected the arguments to connect to %s in an ARRAY` | A database's definition, given to `use`, wasn't an array reference. |
+| `Expected the statement %s in an ARRAY` | A statement's definition, given to `use`, wasn't an array reference. |
+| `Expected a name for a database (%s)` | The name can't be a function's. |
+| `Expected a name for a statement (%s)` | The name can't be a function's. |
+| `Expected a database defined once (%s)` | The name was given to another database already. |
+| `Expected a database named %s` | `database` was given a name no database has. |
+| `Expected a database and a statement for %s` | A statement's definition didn't name its database, or have its SQL. |
+| `Expected only stages after the statement for %s: code references, pipelines or their names, or objects offering a stage's role method` | A statement's definition had something after the statement and its attributes that's neither a stage nor a pipeline's name. |
+| `Expected no function of the name in %s already (%s)` | The package has a function of that name already, such as a stage it imported. |
+
+## Differences from plain DBI
+
+Where DBIx::Squirrel and plain DBI do the same thing, they give the
+same result. These are the places they differ.
+
+| | Plain DBI | DBIx::Squirrel |
+|---|---|---|
+| Placeholders | `?`, and whatever the driver adds. | `?`, `?1`, `:1`, `$1`, `:name` and `$name`, rewritten as `?` for the DBI. |
+| Numbered and named placeholders | Bound by position. | Bound once, by number or name, wherever they appear. |
+| Lists, as for `IN` | A `?` for each value, written out. | `...?`, `...$1` or `...:name`, written as a `?` for each value of the list given. |
+| `connect` failing | Returns `undef`, unless `RaiseError`. | Always croaks, with the DBI's `RaiseError` message. |
+| `prepare` failing | Returns `undef`, unless `RaiseError`. | Always croaks, with the DBI's `RaiseError` message. |
+| Attributes in `do` and the select methods | Required, or `undef`, before the bind values. | May be left out. |
+| A lone array reference of bind values | A value. | The values in it, except for a statement taking one value that's a list, or with DBD::Pg. |
+| Where errors and warnings are reported | The line inside the module that called the DBI. | The line of your code that called DBIx::Squirrel. |
+| Statements | A string. | A string, lines in an array reference, a code reference returning either, or a statement handle. |
+| Executing an active statement | Left to the driver. | The same, or finished first with `ekorn_finish_active`. |
+| Executing with placeholders unbound | Left to the driver, which most read as `NULL`. | Croaks, for numbered and named placeholders: `Expected a value for each placeholder (none for id)`. |
+| `execute_array`, `execute_for_fetch` and `bind_param_array` | For `?`, and other styles as far as the driver reads them. | For every style: a row's values in placeholder order, or a hash by name; `bind_param_array` by name. |
+| Stages after the select methods' values | None. | What the DBI gives is pushed through them. |
+| Iterators, result sets, pipelines | None. | `iterate`, `results`, sinks, `\|` and `@{}`, `pipe`, `tap` and the Sugar. |
+
+## Where you can stop
+
+That's DBIx::Squirrel: placeholders in any style, values checked
+before they reach the database, the iterator, and stages beside the
+query, on handles that are still the DBI's. If that does what you
+need, nothing in Part 2 is needed.
+
+## Part 2: With Ekorn::Pipeline
+
+Part 1 is the round trip to the database. Part 2 is data crossing the
+database's edge: query results written to files, JSON and CSV, loaded
+from them in batches, or sent to several places in one run. That's
+done with [Ekorn::Pipeline](https://github.com/nukopian/Ekorn-Pipeline),
+the pipeline behind DBIx::Squirrel's stages, which moved into a
+distribution of its own in 2026, as [the guide's Part
+2](HOWTO.md#part-2-with-ekornpipeline) tells. This part describes what
+the two do together: importing both from one module, sinks, pipelines,
+operators, and the protocols between them.
+
+## 13. Import everything from one place
+
+<!-- not run -->
+```perl
+use DBIx::Squirrel::Tooling qw(:all);               # everything below
+use DBIx::Squirrel::Tooling qw(:stages :sinks);     # or some tags
+use DBIx::Squirrel::Tooling qw(pluck keep_all);     # or some names
+```
+
+What a caller uses to do work is made in several modules, each
+described below. DBIx::Squirrel::Tooling exports all of it, from one
+place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
+`:rows` and `:context` besides:
+
+| Tag | Holds | Made in |
+|---|---|---|
+| `:core` | `Stop`, `gather` | [Stop](#6-stopping-early), [Gather](#7-gathering-stages-made-for-each-run) |
+| `:flow` | `take`, `take_first`, `take_last`, `take_single`, `take_if`, `take_while`, `drop`, `drop_if`, `drop_while` | [Stages::Flow](#taking-and-dropping) |
+| `:batch` | `batch`, `collect` | [Stages::Batch](#batching-and-collecting) |
+| `:taps` | `peek`, `count_into`, `dump_to`, `tee` | [Stages::Taps](#canned-stages) |
+| `:rows` | `pluck`, `as_hash` | [Stages::Rows](#canned-stages) |
+| `:stages` | `:flow`, `:batch`, `:taps` and `:rows` | |
+| `:context` | `iterator`, `result_number`, `result_original` | [Context](#context) |
+| `:sources` | `from_array`, `from_fh`, `from_file`, `counter` | Ekorn::Pipeline::Sources |
+| `:sinks` | `count_items`, `keep`, `keep_all`, `keep_first`, `keep_last`, `keep_single`, `to_fh`, `to_file` | [Sinks](#14-sinks) |
+| `:json` | `from_json`, `from_jsonl`, `to_json`, `to_jsonl` | Ekorn::Pipeline::JSON |
+| `:csv` | `from_csv`, `to_csv` | Ekorn::Pipeline::CSV |
+| `:words` | `pipeline`, `stage`, `gather`, `source`, `generator`, `yield`, `sink_one`, `sink_many` | Ekorn::Pipeline::Factories |
+| `:all` | all of the above | |
+
+- **Nothing by default.** Ask for tags, names, or both. An unknown tag
+  or name is Exporter's error: it warns `"%s" is not defined in
+  %DBIx::Squirrel::Tooling::EXPORT_TAGS`, or `"%s" is not exported by
+  the DBIx::Squirrel::Tooling module`, and dies `Can't continue after
+  import errors`.
+- **The same subs.** Each name is the sub its own module exports,
+  prototype and all, so `take_if { ... }` and `stage { ... }` parse as
+  they do imported from there, and importing a name from both does no
+  harm.
+- **DBIx::Squirrel's, where both export a name.** Each name comes from
+  DBIx::Squirrel's own module where it has one, and from
+  Ekorn::Pipeline's only where it has none. Today each name both
+  export is the same sub, so importing Ekorn::Pipeline::Tooling too,
+  in either order, gives the same subs. A test fails if that changes.
+- **What's left out.** What's for extending DBIx::Squirrel rather than
+  using it, such as `croakf`, from DBIx::Squirrel::Errors, and
+  `is_stage`, from Ekorn::Pipeline; [the
+  Sugar](#9-sugar-a-function-for-each-database-and-statement), whose
+  `use` makes functions; and [`|`](#16-operators--and-), which only
+  `use Ekorn::Pipeline::Operators` puts in force, in its own scope.
+- **JSON.pm's names.** JSON exports a `from_json` and a `to_json` of
+  its own, by default, so a module using both imports `:all` or `:json`
+  from only one of them, or calls the other's by its full name.
+- **Text::CSV.** `:csv`'s names need it, but load it only when one
+  is first called, so `:csv` and `:all` import without it.
+- **What a tag holds is public.** A name may be added to one in a
+  release that only adds, but is dropped or renamed only in a major
+  release.
+
+## 14. Sinks
+
+The user guide's [chapter
+15](HOWTO.md#15-sinks-saying-what-you-want-back).
+
+A sink is a last stage that says what a run gives. Given last to
+`iterate`, `results`, a Sugar function, or a select method, it makes
+the call read the run through and give the sink's result, not an
+iterator. The sinks are Ekorn::Pipeline's, from
+Ekorn::Pipeline::Sinks, which exports none by default, and
+DBIx::Squirrel::Tooling's `:sinks` exports them all:
+
+<!-- not run -->
+```perl
+use Ekorn::Pipeline::Sinks qw(keep_all keep_first keep_last keep_single keep count_items to_file to_fh);
+```
+
+| Sink | Gives | Stops the run early? |
+|---|---|---|
+| `keep_all` | every result, as a list; or, where one value is asked for, an array reference of them | no |
+| `keep_first` | the first result, or `undef` if none | yes |
+| `keep_last` | the last result, reading every one to find it, or `undef` if none | no |
+| `keep_single` | the one result, or `undef` if none; at a second, a warning, `Expected only one item, but there were more`, and the first | at a second |
+| `keep($n)` | the first `$n` results, as a list, or an array reference where one value is asked for | yes, at `$n` |
+| `count_items` | how many results there were | no |
+| `to_file($path)` | writes each result to the file, a line each, and gives how many; it closes the file however the run ends | no |
+| `to_fh($fh)` | prints each result to your filehandle, a line each, and gives how many; you close it | no |
+
+A sink of many, `keep_all` or `keep`, never gives a count: for that,
+use `count_items`. An empty result is an empty array reference, which
+is true, so test it with `@$rows`.
+
+Ekorn::Pipeline::JSON's `to_json` and `to_jsonl`, from Tooling's
+[`:json`](#13-import-everything-from-one-place), are sinks too, given a
+`file` or an `fh`: they write each result as JSON, and give how many.
+
+```perl
+use DBIx::Squirrel::Tooling qw(pluck keep_all keep_last keep_single keep count_items);
+
+my @names = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck('name'),
+    keep_all,
+);
+my $names = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    pluck('name'),
+    keep_all,
+);
+say "@names";            # Abba Blur Cream
+say scalar @$names;      # 3
+
+say $dbh->iterate(
+    'SELECT name FROM track ORDER BY plays',
+    pluck('name'),
+    keep_last,
+);
+# Dancing Queen
+
+say $dbh->iterate(
+    'SELECT name FROM artist WHERE id = ?', 2,
+    pluck('name'),
+    keep_single,
+);
+# Blur
+
+say join ', ', $dbh->iterate(
+    'SELECT name FROM track ORDER BY plays DESC',
+    pluck('name'),
+    keep(2),
+);
+# Dancing Queen, Sunshine of Your Love
+
+say $dbh->iterate('SELECT title FROM album', sub { split ' ', $_->[0] }, count_items);    # 7
+```
+
+The iterator's methods and the sinks overlap: `all` and `keep_all`,
+`first` and `keep_first`, `single` and `keep_single`. A method takes
+what's left of an iterator you have; a sink says, in the call, what it
+gives, and is the only way to have a count, the last, the first few,
+or a file. `all` without stages is quicker than `keep_all`, as it
+fetches every row in one go.
+
+Ekorn's reference has the sinks in full, and how to write one, in
+[Sinks](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#sinks-ekornpipelinesinks).
+
+`keep_first`, `keep_last` and `keep_single` are the sinks of the
+stages `take_first`, `take_last` and `take_single`, so the stages are
+for a pipeline that goes on after them. After `as_hash` with names,
+give `to_csv` the same names as its header, `header => [qw(name
+plays)]`, as the run's context still names every column the statement
+has, so `header => 1` writes a column for each, empty for those left
+out.
+
+## 15. Pipelines
+
+The user guide's [chapter
+17](HOWTO.md#17-building-pipelines-from-pipelines).
 
 The pipeline is
 [Ekorn::Pipeline](https://github.com/nukopian/Ekorn-Pipeline)'s. It
@@ -1747,6 +2278,7 @@ pipeline's stages, in order, a pipeline given as a stage appearing as
 the stages it was made of.
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck);
 use Ekorn::Pipeline;
 
 my $shout = Ekorn::Pipeline->new(
@@ -1770,6 +2302,7 @@ stages run in its place, as if written out there, so a `take` inside
 it limits the whole run:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(drop_if pluck take);
 use Ekorn::Pipeline;
 
 my %on_my_phone = map { $_ => 1 } 'Dancing Queen', 'Parklife', 'Sunshine of Your Love';
@@ -1814,6 +2347,7 @@ well. Ekorn's reference has the rules, in [Named
 pipelines](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#named-pipelines).
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pipeline take);
 use Ekorn::Pipeline;
 
 Ekorn::Pipeline->named(first_column => sub { $_->[0] });
@@ -1895,9 +2429,59 @@ runs the statement again, from the start. To pass over a value a stage
 can't handle, the stage catches its own error and returns nothing for
 it, as [What a stop is](#what-a-stop-is) shows.
 
-## 11. Operators: | and @{}
+### The Sugar's pipelines
 
-The user guide's [chapter 11](HOWTO.md#11-chaining-with--and-).
+<!-- not run -->
+```perl
+use DBIx::Squirrel::Tooling qw(pipeline);
+
+@results = shouted(@values);
+@results = shouted(@values, $pipeline);
+$it      = music($statement, @bind_values, pipeline('shouted'));
+$it      = artist_names(@bind_values, pipeline('shouted'));
+```
+
+Each pipeline after `pipeline`, on `use`, is named in the package, and
+the package gets a function of its name. The function runs the values
+it's given through the pipeline, and returns what comes out: a list in
+list context, and in scalar context a sink's result, or how many values
+came out. A pipeline given last adds its stages to that call.
+
+A string given to a database's or a statement's function is a bind
+value, so to use a named pipeline for one call, give the pipeline
+itself: `pipeline`, given a name alone, returns the pipeline of that
+name.
+
+```perl
+use DBIx::Squirrel::Tooling qw(pipeline keep_all pluck);
+use DBIx::Squirrel::Sugar
+    statement => {
+        loud_names => [music => 'SELECT name FROM artist ORDER BY id', pluck, 'shouted'],
+    },
+    pipeline => {shouted => [sub {uc}]};
+
+say join ' ', loud_names keep_all;                           # ABBA BLUR CREAM
+say join ' ', shouted('abba', 'blur');                       # ABBA BLUR
+say join ' ', artist_names pipeline('shouted'), keep_all;    # ABBA BLUR CREAM
+
+my @loud = music 'SELECT name FROM artist ORDER BY id',
+    pluck('name'), pipeline('shouted'), keep_all;
+say "@loud";    # ABBA BLUR CREAM
+```
+
+A stage in a Sugar statement's definition can be a pipeline's
+**name**, as Ekorn::Pipeline names them with `named`: words joined by
+`::`. A name is looked up as the statement is defined, in the package
+defining it, unless it's qualified, as `My::Module::clean`, and stands
+in its place among the stages. So it must be defined first, and one
+that isn't croaks then: `No pipeline named main::clean`. On `use`, the
+definition is made as the program compiles, so give the pipeline after
+`pipeline`, in the same `use` or one before it, or name it in a
+`BEGIN` block above it.
+
+## 16. Operators: | and @{}
+
+The user guide's [chapter 20](HOWTO.md#20-chaining-with--and-).
 
 <!-- not run -->
 ```perl
@@ -1937,6 +2521,7 @@ had going, so `next` returns nothing after, and `ended` says how the
 `|` or `@{}` run ended, until `reset`.
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck keep_all count_items);
 use Ekorn::Pipeline::Operators;
 
 my $it    = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck('name'));
@@ -1955,381 +2540,7 @@ own, runs, but Perl warns "Useless use of numeric bitwise or (|) in
 void context" as it compiles the line, before any operator is called.
 Keep the result: `my $n = $it | to_file($path)`.
 
-## 12. Sugar: a function for each database and statement
-
-The user guide's [chapter
-12](HOWTO.md#12-a-function-for-each-database-and-statement).
-
-`DBIx::Squirrel::Sugar` gives each database a name. The package that
-names it gets a function of that name, which returns the database
-handle or runs a statement on it. A statement gets a function too,
-which runs it with the bind values and any stages given.
-
-### Defining them on use
-
-<!-- not run -->
-```perl
-use DBIx::Squirrel::Sugar database => {
-    music => [$data_source, $username, $password, \%attr],
-};
-use DBIx::Squirrel::Sugar statement => {
-    artist_names => [music => 'SELECT name FROM artist', pluck],
-    artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
-};
-use DBIx::Squirrel::Sugar pipeline => {loud => [sub {uc}]};
-use DBIx::Squirrel::Sugar qw(database statement);
-```
-
-Given a hash reference after `database` or `statement`, `use` defines
-each database or statement named in it, with its arguments in an array
-reference. After `pipeline`, it takes what Ekorn::Pipeline::Sugar
-takes, a hash reference, or an array reference of names and stages in
-turn, and names each pipeline, with a function of its name, as that
-module does. It names them before it defines any statement, wherever
-they're given, so a statement in the same `use` can name one. It
-doesn't give the word `pipeline`, which Ekorn::Pipeline::Factories
-exports, and Tooling too: [The Sugar's
-pipelines](#the-sugars-pipelines) says how to use them. It gives the
-package each function while the package is
-compiled, so the function can be called without parentheses. The
-arguments are worked out then too: the environment, literals, and what
-a `BEGIN` block has set are there, but a variable the program sets as
-it runs is not yet. `use` also gives the package the `database` and
-`statement` functions, and, given just their names, only those.
-
-### Defining them as the program runs
-
-`use` defines databases and statements as the program compiles, from
-what's known then. Where the arguments aren't known until the program
-runs, such as a data source read from a configuration file, `database`
-and `statement` define them then, and give the package the same
-functions. A function defined so isn't known as the program compiles,
-so it's called with parentheses. Given just a name, `database` is the
-handle, from anywhere in the program:
-
-```perl
-database(archive => 'dbi:SQLite:dbname=music.db', {RaiseError => 1});
-statement(albums_of => archive => 'SELECT title FROM album WHERE artist_id = ? ORDER BY year', pluck);
-
-say join ', ', albums_of(2, keep_all);    # Parklife, The Great Escape
-say ref database('archive');              # DBIx::Squirrel::db
-```
-
-A statement's database is found when its function runs, so it can be
-defined after the statement. Each database is defined once in a
-program, by a name a function can have, which the package can't have
-a function of already.
-
-A stage in a definition can be a pipeline's **name**, as
-Ekorn::Pipeline names them with `named`: words joined by `::`. A name
-is looked up as the statement is defined, in the package defining it,
-unless it's qualified, as `My::Module::clean`, and stands in its place
-among the stages. So it must be defined first, and one that isn't
-croaks then: `No pipeline named main::clean`. On `use`, the definition
-is made as the program compiles, so give the pipeline after
-`pipeline`, in the same `use` or one before it, or name it in a
-`BEGIN` block above it.
-
-### The function a database is given
-
-<!-- not run -->
-```perl
-$dbh     = music();
-$sth     = music($statement, @bind_values);
-$sth     = music($statement, \%attr, @bind_values);
-$it      = music($statement, @bind_values, @stages);
-@results = music($statement, @bind_values, @stages, $sink);
-```
-
-| Called with | It |
-|---|---|
-| nothing | returns the database handle. |
-| a statement and bind values | prepares the statement, executes it, and returns the statement handle, or nothing if it couldn't be executed. |
-| those, and stages at the end | returns what `iterate` does: an iterator over the results, or, if the last stage is a sink, the sink's result. |
-
-An unblessed hash reference or `undef` straight after the statement is
-the attributes to prepare it with. The statement can be a statement
-handle, which is itself executed, or iterated over.
-
-```perl
-use DBIx::Squirrel::Sugar database => {music => ['dbi:SQLite:dbname=music.db', '', '', {RaiseError => 1}]};
-
-say music('SELECT name FROM artist WHERE id = ?', 1)->fetchrow_arrayref->[0];    # Abba
-say ref music('SELECT name FROM artist', pluck);                                 # DBIx::Squirrel::Iterator
-say join ' ', music(
-    'SELECT name FROM artist ORDER BY id',
-    pluck,
-    keep_all,
-);
-# Abba Blur Cream
-```
-
-### The function a statement is given
-
-<!-- not run -->
-```perl
-$sth     = artist(@bind_values);
-$it      = artist(@bind_values, @stages);
-@results = artist(@bind_values, @stages, $sink);
-```
-
-It executes the statement with the bind values, and returns the
-statement handle, or nothing if it couldn't be executed. With stages,
-its own or those given after the bind values, it returns an iterator
-over the results, or, if the last stage is a sink, the sink's result,
-as `iterate` does. The results go through its own stages, then those
-given. Stages given are for that call only. A string given is always a
-bind value, never a pipeline's name.
-
-```perl
-use DBIx::Squirrel::Sugar
-    statement => {
-        artist_names => [music => 'SELECT name FROM artist ORDER BY id', pluck],
-        loud_names   => [music => 'SELECT name FROM artist ORDER BY id', pluck, 'shouted'],
-        artist       => [music => 'SELECT * FROM artist WHERE id = :id'],
-    },
-    pipeline => {shouted => [sub {uc}]};
-
-say ref artist_names;                            # DBIx::Squirrel::Iterator
-say join ' ', artist_names keep_all;             # Abba Blur Cream
-say join ' ', artist_names sub {lc}, keep_all;   # abba blur cream
-say artist_names count_items;                    # 3
-say join ' ', loud_names keep_all;               # ABBA BLUR CREAM
-say artist(id => 3)->fetchrow_hashref->{name};   # Cream
-```
-
-A sink, imported, is a function of your package, so a statement can't
-be given its name: `Expected no function of the name in main already
-(count_items)`. With Tooling's `:all`, that's any name it exports.
-Import fewer tags, or by name, or call one by its full name,
-`Ekorn::Pipeline::Sinks::count_items()`.
-
-The statement is prepared once for each database handle, with
-`prepare_cached`. Its handle may be in use: by a statement handle not
-read to the end, or by an iterator of an earlier call still reading. A
-call then prepares one of its own. A statement taking a [list](#lists)
-is prepared for each call's values instead, and isn't cached.
-
-### The Sugar's pipelines
-
-<!-- not run -->
-```perl
-@results = shouted(@values);
-@results = shouted(@values, $pipeline);
-$it      = music($statement, @bind_values, pipeline('shouted'));
-$it      = artist_names(@bind_values, pipeline('shouted'));
-```
-
-Each pipeline after `pipeline`, on `use`, is named in the package, and
-the package gets a function of its name. The function runs the values
-it's given through the pipeline, and returns what comes out: a list in
-list context, and in scalar context a sink's result, or how many values
-came out. A pipeline given last adds its stages to that call.
-
-A string given to a database's or a statement's function is a bind
-value, so to use a named pipeline for one call, give the pipeline
-itself: `pipeline`, given a name alone, returns the pipeline of that
-name.
-
-```perl
-say join ' ', shouted('abba', 'blur');                       # ABBA BLUR
-say join ' ', artist_names pipeline('shouted'), keep_all;    # ABBA BLUR CREAM
-
-my @loud = music 'SELECT name FROM artist ORDER BY id',
-    pluck('name'), pipeline('shouted'), keep_all;
-say "@loud";    # ABBA BLUR CREAM
-```
-
-## 13. Caching and connections
-
-The user guide's [chapter 13](HOWTO.md#13-caching-and-connections).
-
-### prepare_cached
-
-The DBI's cache of statement handles works as it does with the DBI,
-but for two things: how a statement's placeholders, and an iterator
-reading a handle, bear on which handle is handed out.
-
-Two statements can be rewritten the same: `SELECT :a, :b` and
-`SELECT :b, :a` both become `SELECT ?, ?`. Each still has a handle of
-its own, as the statement as written is part of the cache's key.
-DBIx::Squirrel's own attributes are part of the key too. So a
-statement prepared with `{ekorn_slice => {}}` and one prepared without
-have different handles.
-
-The DBI finishes a cached handle that's still active before handing it
-out. If an iterator is part way through the handle, that would cut its
-results short. So such a handle isn't handed out or finished. A new
-handle is made instead, and cached in its place. The exception is
-`$if_active` of 2, which asks for the cached handle, unchanged.
-Otherwise, `$if_active` means what it does to the DBI. A cached handle
-that's active, with no iterator, is finished, after a warning, unless
-`$if_active` says otherwise.
-
-```perl
-my $sql   = 'SELECT name FROM artist ORDER BY id';
-my $first = $dbh->prepare_cached($sql)->iterate(pluck);
-$first->next;
-my $second = $dbh->prepare_cached($sql)->iterate(pluck);
-say $first->sth == $second->sth ? 'shared' : 'a handle each';    # a handle each
-say join ' ', $second->all;    # Abba Blur Cream
-say join ' ', $first->all;     # Blur Cream
-```
-
-### connect_cached
-
-Code that connects in several places, such as a function for each
-request, shares one connection by connecting with `connect_cached`.
-It takes its arguments as `connect` does, and calls `connect` when it
-needs a new connection, so it croaks on failure too. DBIx::Squirrel's
-own attributes are part of its key, so a handle made to fetch rows as
-hashes isn't handed to code expecting arrays:
-
-```perl
-my $one   = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', {RaiseError => 1});
-my $two   = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', {RaiseError => 1});
-my $hashy = DBIx::Squirrel->connect_cached('dbi:SQLite:dbname=music.db', {RaiseError => 1, ekorn_slice => {}});
-say $one == $two   ? 'shared' : 'apart';    # shared
-say $one == $hashy ? 'shared' : 'apart';    # apart
-```
-
-### The Sugar's connections
-
-A Sugar database is connected to when it's first used, not when it's
-defined, with `connect_cached`. So two databases defined with the same
-arguments share a handle. The handle is kept, and each use has the
-same one, without a ping to the database each time. It's pinged only
-while its last call has failed, which leaves the error to be read.
-It's made again if the connection has gone, or if the handle has been
-disconnected. So the call after a connection drops fails, as it would
-with plain DBI, and the call after that has a new connection.
-
-## 14. Writing stages, and functions that take them
-
-The user guide's [chapter
-14](HOWTO.md#14-functions-that-take-stages-and-stages-for-others).
-
-### A function that takes stages
-
-A function can take stages from its caller, at the end of its
-arguments, and hand them to `iterate` after its values. Its caller
-then gets an iterator, or, with a sink last, the sink's result. To
-find the stages at the end of a list of arguments, test each from the
-end with Ekorn::Pipeline's `is_stage`, which is true of code
-references, pipelines and Ekorn's stage objects, and false of strings
-and other values:
-
-```perl
-use Ekorn::Pipeline qw(is_stage);
-
-sub albums_since ($year, @stages) {
-    return $dbh->iterate('SELECT title FROM album WHERE year >= ? ORDER BY year', $year, @stages);
-}
-
-say albums_since(1990, count_items);    # 2
-say is_stage(sub {1}) ? 'a stage' : 'a value';    # a stage
-say is_stage('name') ? 'a stage' : 'a value';     # a value
-```
-
-### Stages for others
-
-A stage of your own is a code reference, or a pipeline of other
-stages. Ekorn's reference, in [Writing
-stages](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#writing-stages),
-and its user guide, in [Building parts for
-others](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#10-building-parts-for-others),
-say how to write one that works alongside the canned stages:
-
-- a function that makes it, checking its options once;
-- state in a `gather` block, so it starts afresh on each run;
-- a flush, for a stage that holds values, and an end, for one that
-  holds something to release;
-- `Stop`, for one that knows no more are wanted;
-- a tap that returns the value it was given;
-- names, exports and tests.
-
-What follows is what's particular to stages for rows.
-
-**The shapes of a row.** A row can be an array, a hash (with the
-`ekorn_slice` attribute), or a row object (from `results`). A stage
-for others should say which it takes, or take all three, as `pluck`
-does. A stage that needs the statement's column names reads them from
-the [run's context](#the-runs-context).
-
-**Errors.** A function that makes a stage croaks when it's given the
-wrong things, so the message names the line that called it. A module
-of stages sets its `@CARP_NOT` to DBIx::Squirrel's internal packages,
-which take in the DBI's and Ekorn::Pipeline's. Then what it croaks
-while a row goes through its stage is reported at the line that asked
-for the result, not inside DBIx::Squirrel:
-
-```perl
-package My::Stages {
-    use DBIx::Squirrel::Errors qw(croakf);
-
-    our @CARP_NOT = @DBIx::Squirrel::Errors::INTERNAL;
-
-    sub prefixed ($prefix) {
-        croakf 'Expected a prefix' unless defined $prefix && length $prefix;
-        return sub ($value) {"$prefix$value"};
-    }
-}
-
-say join ' ', $dbh->iterate(
-    'SELECT name FROM artist ORDER BY id',
-    pluck,
-    My::Stages::prefixed('#'),
-)->all;
-# #Abba #Blur #Cream
-
-eval { My::Stages::prefixed('') };
-print $@;    # Expected a prefix at ... line ...
-```
-
-`croakf` makes its message with `sprintf`. The format is a literal,
-written in the code; values go in as arguments, through `%s` and the
-like, never as the format. A format made from data does whatever its
-`%` directives say: `%999999999s` makes a string of a gigabyte. A
-literal `%` is `%%`.
-
-```perl
-package My::Columns {
-    use DBIx::Squirrel::Errors qw(croakf);
-
-    sub exactly ($n) {
-        croakf 'Expected %d %s, not %d%%', 3, 'columns', $n unless $n == 3;
-        return $n;
-    }
-}
-
-eval { My::Columns::exactly(50) };
-print $@;    # Expected 3 columns, not 50% at ... line ...
-```
-
-**Where they go.** A stage goes where what it needs to know is. One
-that needs a database, a statement, a row's column names, or the row a
-result came from goes under `DBIx::Squirrel::Stages::`. One that would
-work on values from anywhere belongs under
-`Ekorn::Pipeline::Stages::`, where any function's stages can use it,
-even if it was written for rows. Ekorn::Pipeline can't depend on
-DBIx::Squirrel, so a stage that would `use` DBIx::Squirrel goes under
-`DBIx::Squirrel::Stages::`. A stage added under
-`Ekorn::Pipeline::Stages::` reaches DBIx::Squirrel's users only once
-DBIx::Squirrel adds it to the names its own modules of stages export.
-The user guide's [Decide where a stage
-belongs](HOWTO.md#decide-where-a-stage-belongs) says how to choose.
-
-**Testing.** A pipeline called with values tests a stage without a
-database. Run it twice, to show it starts afresh. Then run it on rows
-from an in-memory SQLite database, in each shape it takes.
-
-**Publishing.** Name a module of stages for its job, as
-`DBIx::Squirrel::Stages::CSV`, in a distribution named
-`DBIx-Squirrel-Stages-CSV`. Have it require the DBIx::Squirrel it was
-tested with: v3.0.0 is the first with sinks, `|` and the run's context
-described in [15. Protocols](#15-protocols).
-
-## 15. Protocols
+## 17. Protocols
 
 What other code can rely on: the contracts between DBIx::Squirrel and
 Ekorn::Pipeline, and between a statement's run and the stages reading
@@ -2360,6 +2571,7 @@ A run reading the iterator reads on even if the iterator itself is let
 go first, and finishes the statement when it ends.
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck);
 use Ekorn::Pipeline;
 
 my $it   = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck);
@@ -2402,6 +2614,15 @@ say join '; ', $dbh->iterate('SELECT id, name FROM artist ORDER BY id', $columns
 The context is the run's: a pipeline called inside a stage has its
 own, which has no row unless it too reads a statement.
 
+In Part 2's runs, `result_number` counts every run's results: a chain
+made with `|`, and a pipeline of yours, each counting its own.
+`result_original` gives a statement's row in any run reading one,
+chains included: it's Ekorn::Pipeline::Context's, and the statement's
+source gives Ekorn the row as its original, which Ekorn passes through
+chains. In a run reading no statement, it's the value the run's source
+gave, or that was pushed. `iterator` works in a sink given last to the
+call that made the iterator, too.
+
 ### What a call takes as stages
 
 `iterate`, `results`, an iterator's `reset`, the select methods,
@@ -2411,7 +2632,7 @@ true of: a code reference, a pipeline, or one of Ekorn's stage
 objects. Those include stages made with `gather`, Ekorn's words and
 the canned stages, and its sinks. Anything else is a bind value, so an
 object of your own given as a value stays one. A sink, if one is last,
-says what the call gives (see [8. Sinks](#8-sinks)). Only a Sugar
+says what the call gives (see [14. Sinks](#14-sinks)). Only a Sugar
 statement's definition takes pipelines' names, as strings.
 
 ### What a gather's block returns
@@ -2422,123 +2643,83 @@ reference (see [gather](#gather)). DBIx::Squirrel adds nothing to it;
 Ekorn's reference has it in full, in
 [gather](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#gather).
 
-## 16. Errors and diagnostics
+### Finding the stages at the end of a list
 
-The user guide's [chapter 15](HOWTO.md#15-when-things-go-wrong).
-
-### Errors
-
-Errors are reported at the line of your code that called
-DBIx::Squirrel, never at a line inside it or the DBI. That includes
-the DBI's own errors under `RaiseError`, such as
-`DBD::SQLite::db prepare failed: near "SELEC": syntax error`, which
-keep the DBI's message.
-
-DBIx::Squirrel croaks where the DBI would return `undef` in `connect`,
-`prepare` and `prepare_cached`. The error then has the message the DBI
-raises under `RaiseError`, so it reads the same whatever `RaiseError`
-is set to.
-
-Each error names the method you called, as plain DBI does: `do` and
-the select methods, not the `prepare` or `execute` they call;
-`selectall_array`'s errors name `selectall_arrayref`, as the DBI's do.
-
-An error from a `HandleError` callback, or one that isn't a string, is
-passed on unchanged. The DBI's warnings, under `PrintError`, its
-default, are reported the same way plain DBI reports them: at your
-line, naming the method you called.
+To find the stages at the end of a list of arguments, test each from
+the end with Ekorn::Pipeline's `is_stage`, which is true of code
+references, pipelines and Ekorn's stage objects, and false of strings
+and other values. A sink given last is a stage too, so a caller can
+end with one:
 
 ```perl
-eval { $dbh->prepare('SELEC name FROM artist') };
-print $@;    # DBD::SQLite::db prepare failed: near "SELEC": syntax error at ... line ...
+use DBIx::Squirrel::Tooling qw(count_items);
+use Ekorn::Pipeline qw(is_stage);
+
+say albums_since(1990, count_items);              # 2
+say is_stage(sub {1}) ? 'a stage' : 'a value';    # a stage
+say is_stage('name') ? 'a stage' : 'a value';     # a value
 ```
 
-### Diagnostics
+### What a stop is
 
-These are DBIx::Squirrel's own messages, and the messages of
-Ekorn::Pipeline's that its users meet. Each is reported at the
-caller's line. Those starting "Expected" say what was expected.
+A stop is an exception, an `Ekorn::Pipeline::Stop`, which the pipeline
+catches. DBIx::Squirrel::Stop isn't a class: it exports Ekorn's
+`Stop`. `Ekorn::Pipeline::Stop->throw(@values)` does what `Stop` does,
+without importing it. A subclass of your own is a subclass of
+`Ekorn::Pipeline::Stop`, and stops a pipeline as `Stop` does. Ekorn's
+reference says what a stop holds, in [The stop
+object](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#the-stop-object).
+A stage made with `gather` is an `Ekorn::Pipeline::Gather`.
 
-#### Connecting, preparing and binding
+A stage that catches errors, and should pass on stops alone, checks
+for `Ekorn::Pipeline::Stop`. Every stop is one, including those the
+canned stages throw, such as `take`'s:
+
+```perl
+use experimental qw(try);
+use DBIx::Squirrel::Tooling qw(Stop);
+
+my @safe = $dbh->iterate(
+    'SELECT name FROM artist ORDER BY id',
+    sub ($row) {
+        try {
+            Stop() if $row->[0] eq 'Cream';
+            return uc $row->[0];
+        }
+        catch ($e) {
+            die $e if $e isa 'Ekorn::Pipeline::Stop';
+            return 'unknown';
+        }
+    },
+)->all;
+say "@safe";    # ABBA BLUR
+```
+
+### Settings of the pipeline
+
+While `local $Ekorn::Pipeline::Stages::Taps::DumpSecrets = 1` is set,
+`dump_to` writes each value in full, Text::Redact::Secrets installed
+or not.
+
+### Messages of the pipeline
+
+These are the messages of what Part 2 adds, from DBIx::Squirrel and
+Ekorn::Pipeline, as its users meet them. Each is reported at the
+caller's line.
 
 | Message | Cause |
 |---|---|
-| `Expected a statement` | The statement was blank, or a reference other than those `prepare` takes. |
-| `Expected one placeholder style, not several (%s)` | The statement mixed styles, such as `?` and `:name`. Each is listed as an example. |
-| `Expected placeholders numbered from 1 (%s)` | A numbered placeholder such as `$0`. |
-| `Expected ekorn_slice to be a reference to an ARRAY or HASH` | `ekorn_slice` was something else. |
-| `Expected a reference to a HASH or ARRAY` | The first argument after the statement in `do`, `iterate`, `results` or a select method was an unblessed reference, but not to a hash or an array. An object there is a bind value. |
-| `Expected %d bind values, not %d` | A statement with numbered placeholders was given more or fewer values than its highest number; or a row given to `execute_for_fetch` had more or fewer values than the statement has placeholders. |
-| `Expected names and values in pairs` | A statement with named placeholders was given an odd number of values. |
-| `Expected a placeholder of the statement (%s)` | A value was given for a placeholder the statement doesn't have. |
-| `Expected no list placeholder in a statement for rows of values (%s)` | `execute_array`, `execute_for_fetch` or `bind_param_array` was called on a statement with a list placeholder, whose handle is prepared for lists of one length. |
-| `Expected a row of values: an array, or a hash for named placeholders` | A row given to `execute_for_fetch`, or by `ArrayTupleFetch`, was neither an array, nor, for named placeholders, a hash. |
-| `Expected a value for each placeholder (none for %s)` | A statement with named placeholders wasn't given a value for each name, or a statement with numbered or named placeholders was executed without values when some had none bound. |
-| `Expected one value for each placeholder (two for %s)` | A statement with named placeholders was given a value for a name twice, written with and without its sigil, as `:id` and `id`. |
-| `Expected bind values with a statement taking a list (%s)` | `prepare` or `prepare_cached` was given a statement taking a [list](#lists). Each list placeholder is named, and a `?` is named by its position: `...? at 2`. |
-| `Expected a placeholder to take a list everywhere or nowhere (%s)` | A placeholder was used with `...` in one place and without it in another. |
-| `Expected no list placeholder with pg_placeholder_dollaronly (%s)` | A `$1` placeholder took a list under DBD::Pg's `pg_placeholder_dollaronly`. |
-| `Expected a reference to an ARRAY for a list (%s)` | A list placeholder was given a plain value, `undef`, or a reference to something other than an array. |
-| `Expected at least one value in a list (%s)` | A list placeholder was given an empty list. |
-| `Expected plain values in a list (%s)` | A list held an unblessed reference, as `[[1, 2]]` does to a statement whose one value is a list. |
-| `Expected %d values in a list, as prepared, not %d (%s)` | The handle of a statement taking a list was executed or bound with a list of another length. |
-
-#### Iterators and result sets
-
-| Message | Cause |
-|---|---|
-| `Expected a DBIx::Squirrel statement handle` | `DBIx::Squirrel::Iterator->new` wasn't given a `DBIx::Squirrel::st`. |
-| `Expected only one item, but there were more` | A warning: `single`, `keep_single` or `take_single` found a second result, and gave the first. |
-| `Expected the statement handle's other iterator to be finished` | Another iterator over the same statement handle has results left. |
-| `Expected ekorn_result_class to be a subclass of DBIx::Squirrel::Result (%s)` | `ekorn_result_class` named a class that isn't one. |
-| `Expected a column of the row (%s)` | `get_column`, `pluck` or `as_hash` was given a name or position the row doesn't have. |
 | `Expected use Ekorn::Pipeline::Operators in scope, for %s` | `\|` or `@{}` was used on an iterator where the operators aren't in force. |
-
-#### Pipelines
-
-| Message | Cause |
-|---|---|
 | `Expected stage #%d to be a stage: a code reference, a pipeline, or an object offering a stage's role method` | Something passed as a stage to a pipeline, `pipe` or `tap` wasn't one. No stage runs. |
 | `Expected stage #%d to be a stage: a code reference, a pipeline or its name, or an object offering a stage's role method` | Something given to `pipeline`, or to `named`, wasn't a stage or a pipeline's name. |
-| `Expected a code reference` | The block given to `gather`, `take_while`, `drop_while`, `take_if`, `drop_if`, `collect` or `peek` wasn't a code reference. |
 | `Expected a source: a code reference, or an object offering EKORN_SOURCE` | A pipeline's `iterator` was given something it can't read. |
-| `Expected stage #%s, made with gather, to return a code reference or a pipeline, and optionally a flush and an end` | The block given to `gather` for that stage returned something else. |
-| `Pipeline stage #%s failed at %s line %d:` | A stage, or its flush, died. The message it died with follows, indented. See [When a stage dies](#when-a-stage-dies). |
-| `Pipeline end of %s failed at %s line %d:` | An end died, in a run that hadn't died already: the source's, as `the source`, or a stage's, as `stage #2`. |
-| `The end of %s died while the run was already dying: %s` | A warning: an end died in a run that had died already. The run's own error is the one thrown. |
-| `Stop used outside a pipeline` | `Stop` was called where no pipeline was running to catch it. |
 | `No pipeline named %s` | A name, in a Sugar statement's definition or given to `pipeline`, has no pipeline. |
-
-#### Canned stages and sinks
-
-| Message | Cause |
-|---|---|
-| `Expected a count of 0 or more` | `take`, `drop` or `keep` was given something other than a whole number. |
-| `Expected a batch size of 1 or more` | `batch` was given something other than a whole number above 0. |
-| `Expected a column, by name or position` | `pluck` was given an undefined column, or an empty name. |
-| `Expected a column name` | `as_hash` was given an undefined or empty column name. |
-| `Expected one column to pluck, not %d` | `pluck`, given no column, had a row of more than one column, or of none. |
-| `Expected a statement to read, for the column names` | `as_hash`, or `pluck` with a name for an array row or a position for a hash row, ran where no statement was being read, such as in a pipeline called with values. |
-| `Expected a row: an array, a hash or a row object` | `pluck` or `as_hash` was given a value that isn't a row. |
-| `Expected a reference to a scalar` | `count_into` was given something else. |
-| `Expected an open filehandle` | `dump_to` or `to_fh` was given something else. |
-
-#### Sugar
-
-| Message | Cause |
-|---|---|
 | `Expected database, pipeline or statement, not %s` | `use DBIx::Squirrel::Sugar` was given something else. |
-| `Expected the pipelines after pipeline in a HASH or an ARRAY of pairs` | What came after `pipeline` was something else. This, and the other errors in the pipelines' definitions, are Ekorn::Pipeline::Sugar's. |
+| `Expected the pipelines after pipeline in a HASH or an ARRAY of pairs` | What came after `pipeline` was something else. It, and the next, are Ekorn::Pipeline::Sugar's. |
 | `Expected the pipelines after pipeline in pairs of a name and an ARRAY` | The array reference after `pipeline` had an odd number of items. |
-| `Expected the arguments to connect to %s in an ARRAY` | A database's definition, given to `use`, wasn't an array reference. |
-| `Expected the statement %s in an ARRAY` | A statement's definition, given to `use`, wasn't an array reference. |
-| `Expected a name for a database (%s)` | The name can't be a function's. |
-| `Expected a name for a statement (%s)` | The name can't be a function's. |
-| `Expected a database defined once (%s)` | The name was given to another database already. |
-| `Expected a database named %s` | `database` was given a name no database has. |
-| `Expected a database and a statement for %s` | A statement's definition didn't name its database, or have its SQL. |
-| `Expected only stages after the statement for %s: code references, pipelines or their names, or objects offering a stage's role method` | A statement's definition had something after the statement and its attributes that's neither a stage nor a pipeline's name. |
-| `Expected no function of the name in %s already (%s)` | The package has a function of that name already, such as a sink it imported. |
+| `Expected a count of 0 or more` | `keep` was given something other than a whole number. |
+| `Expected an open filehandle` | `to_fh` was given something else. |
+| `Expected only one item, but there were more` | A warning: `keep_single` found a second result, and gave the first. |
 
 ## Making each kind of part
 
@@ -2582,6 +2763,8 @@ others](#stages-for-others) says, so the message names the caller's
 line:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(take);
+
 package My::Stages {
     use DBIx::Squirrel::Errors qw(croakf);
     use DBIx::Squirrel::Tooling qw(gather);
@@ -2675,6 +2858,8 @@ if the run ended `done`, so a run that dies, or is stopped, leaves the
 table as it was:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(sink_one pluck);
+
 sub into ($dbh, $table) {
     return sink_one {
         my $n = 0;
@@ -2722,6 +2907,8 @@ A class offers `EKORN_SINK_ONE` for a sink of one result, or
 `EKORN_SINK_MANY` for a sink of many, returning the same pieces:
 
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck take);
+
 package My::Into {
     sub new ($class, $dbh, $table) { bless {dbh => $dbh, table => $table}, $class }
 
@@ -2759,28 +2946,6 @@ DBIx::Squirrel::Result with methods of your own: see [Methods of your
 own](#methods-of-your-own). A function that takes stages from its
 caller hands them to `iterate`: see [A function that takes
 stages](#a-function-that-takes-stages). Neither has pieces of its own.
-
-## Differences from plain DBI
-
-Where DBIx::Squirrel and plain DBI do the same thing, they give the
-same result. These are the places they differ.
-
-| | Plain DBI | DBIx::Squirrel |
-|---|---|---|
-| Placeholders | `?`, and whatever the driver adds. | `?`, `?1`, `:1`, `$1`, `:name` and `$name`, rewritten as `?` for the DBI. |
-| Numbered and named placeholders | Bound by position. | Bound once, by number or name, wherever they appear. |
-| Lists, as for `IN` | A `?` for each value, written out. | `...?`, `...$1` or `...:name`, written as a `?` for each value of the list given. |
-| `connect` failing | Returns `undef`, unless `RaiseError`. | Always croaks, with the DBI's `RaiseError` message. |
-| `prepare` failing | Returns `undef`, unless `RaiseError`. | Always croaks, with the DBI's `RaiseError` message. |
-| Attributes in `do` and the select methods | Required, or `undef`, before the bind values. | May be left out. |
-| A lone array reference of bind values | A value. | The values in it, except for a statement taking one value that's a list, or with DBD::Pg. |
-| Where errors and warnings are reported | The line inside the module that called the DBI. | The line of your code that called DBIx::Squirrel. |
-| Statements | A string. | A string, lines in an array reference, a code reference returning either, or a statement handle. |
-| Executing an active statement | Left to the driver. | The same, or finished first with `ekorn_finish_active`. |
-| Executing with placeholders unbound | Left to the driver, which most read as `NULL`. | Croaks, for numbered and named placeholders: `Expected a value for each placeholder (none for id)`. |
-| `execute_array`, `execute_for_fetch` and `bind_param_array` | For `?`, and other styles as far as the driver reads them. | For every style: a row's values in placeholder order, or a hash by name; `bind_param_array` by name. |
-| Stages after the select methods' values | None. | What the DBI gives is pushed through them. |
-| Iterators, result sets, pipelines | None. | `iterate`, `results`, sinks, `\|` and `@{}`, `pipe`, `tap` and the Sugar. |
 
 ## Upgrading from 3.x
 
@@ -2857,6 +3022,8 @@ cpanm DBIx::Squirrel@1.6.5
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck);
+
 # 1.x
 use DBIx::Squirrel database_entities => [qw(db artist)];
 db(DBIx::Squirrel->connect($dsn, $user, $pass));
@@ -2941,7 +3108,7 @@ distributions of their own.
 | 1.x | Instead |
 |---|---|
 | `DBIx::Squirrel::Crypt::Fernet`, and `decrypt` from DBIx::Squirrel::util. | A Fernet module from CPAN. |
-| `DBIx::Squirrel::Transform::JSON::Syck` and `DBIx::Squirrel::Transform::YAML::Syck`. | For JSON, `from_json` and `to_json`, from Ekorn::Pipeline::JSON, by Tooling's [`:json`](#importing-dbixsquirreltooling). For YAML, a stage of your own calling a YAML module: see [Stages for others](#stages-for-others). |
+| `DBIx::Squirrel::Transform::JSON::Syck` and `DBIx::Squirrel::Transform::YAML::Syck`. | For JSON, `from_json` and `to_json`, from Ekorn::Pipeline::JSON, by Tooling's [`:json`](#13-import-everything-from-one-place). For YAML, a stage of your own calling a YAML module: see [Stages for others](#stages-for-others). |
 | `get_file_contents`, `slurp`, `uncompress`, `unmarshal` and `utf8decode`, from DBIx::Squirrel::util. | Path::Tiny, IO::Uncompress::Bunzip2, a JSON module, and Encode. |
 | `load_tuples`, on a database handle. | `prepare` and `execute`, in a loop. |
 | `statement_digest`, `statement_normalise`, `statement_study` and `statement_trim`, on a statement handle. | Gone. DBIx::Squirrel::Placeholders has `study_sql` and `trim_sql`, but they're internal, and may change. |
@@ -3004,6 +3171,8 @@ each upon request, and in Tooling's `:context`.
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(iterator);
+
 $it = iterator();
 ```
 
@@ -3020,6 +3189,8 @@ See [Context](#context).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(result_number);
+
 $n = result_number();
 ```
 
@@ -3038,6 +3209,8 @@ See [Context](#context).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(result_original);
+
 $row = result_original();
 ```
 
@@ -3092,6 +3265,8 @@ See [iterate](#iterate).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(keep_first);
+
 @results = $dbh->pipe(@stages);
 $count   = $dbh->pipe(@stages);
 ($first) = $dbh->pipe(@stages);
@@ -3342,7 +3517,7 @@ See [gather](#gather).
 An iterator over a statement's results, and a source for
 Ekorn::Pipeline. Where `use Ekorn::Pipeline::Operators` is in force,
 `|` runs it through a sink or stages, and `@{}` gives every result
-(see [11. Operators](#11-operators--and-)). Exports nothing.
+(see [16. Operators](#16-operators--and-)). Exports nothing.
 
 #### all
 
@@ -3421,7 +3596,7 @@ second result, or by a stage that stopped, and `died` when a stage
 died. While a run is going, and before one has started, it returns
 nothing; [reset](#reset) starts a new run, so it returns nothing after
 one. A run read with `|` or `@{}` is the iterator's last run too (see
-[11. Operators](#11-operators--and-)).
+[16. Operators](#16-operators--and-)).
 
 See [The iterator's methods](#the-iterators-methods).
 
@@ -3690,6 +3865,8 @@ See [iterate](#iterate).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(keep_first);
+
 @results = $sth->pipe(@stages);
 $count   = $sth->pipe(@stages);
 ($first) = $sth->pipe(@stages);
@@ -3746,6 +3923,8 @@ Canned stages gathering values. Both by default, and in Tooling's
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(batch);
+
 batch($n)
 ```
 
@@ -3762,6 +3941,8 @@ See [Batching and collecting](#batching-and-collecting).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(collect);
+
 collect
 collect { ... }
 collect(\&code)
@@ -3787,6 +3968,8 @@ the others upon request; all in Tooling's `:flow`.
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(drop);
+
 drop($n)
 ```
 
@@ -3801,6 +3984,8 @@ See [Taking and dropping](#taking-and-dropping).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(drop_if);
+
 drop_if { ... }
 drop_if(\&code)
 ```
@@ -3816,6 +4001,8 @@ See [Taking and dropping](#taking-and-dropping).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(drop_while);
+
 drop_while { ... }
 drop_while(\&code)
 ```
@@ -3832,6 +4019,8 @@ See [Taking and dropping](#taking-and-dropping).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(take);
+
 take($n)
 ```
 
@@ -3847,6 +4036,8 @@ See [Taking and dropping](#taking-and-dropping).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(take_first);
+
 take_first
 ```
 
@@ -3859,6 +4050,8 @@ See [Taking and dropping](#taking-and-dropping).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(take_if);
+
 take_if { ... }
 take_if(\&code)
 ```
@@ -3876,6 +4069,8 @@ See [Taking and dropping](#taking-and-dropping).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(take_last);
+
 take_last
 ```
 
@@ -3889,6 +4084,8 @@ See [Taking and dropping](#taking-and-dropping).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(take_single);
+
 take_single
 ```
 
@@ -3903,6 +4100,8 @@ See [Taking and dropping](#taking-and-dropping).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(take_while);
+
 take_while { ... }
 take_while(\&code)
 ```
@@ -3925,6 +4124,8 @@ Canned stages reshaping rows. Both by default, and in Tooling's
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(as_hash);
+
 as_hash
 as_hash(@names)
 ```
@@ -3950,6 +4151,8 @@ See [Reshaping rows](#reshaping-rows).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(pluck);
+
 pluck($name)
 pluck($position)
 pluck
@@ -3978,6 +4181,8 @@ default, `dump_to` and `tee` upon request; all in Tooling's `:taps`.
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(count_into);
+
 count_into(\$n)
 ```
 
@@ -3992,6 +4197,8 @@ See [Taps](#taps).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(dump_to);
+
 dump_to($fh)
 dump_to
 ```
@@ -4018,6 +4225,8 @@ See [Taps](#taps).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(peek);
+
 peek { ... }
 peek(\&code)
 ```
@@ -4033,6 +4242,8 @@ See [Taps](#taps).
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(tee);
+
 tee(@stages)
 ```
 
@@ -4121,7 +4332,7 @@ Exports what callers use to do work, from one place, by tags. Nothing
 by default: ask for the names, or the tags that hold them, `:all`,
 `:batch`, `:context`, `:core`, `:csv`, `:flow`, `:json`, `:rows`,
 `:sinks`, `:sources`, `:stages`, `:taps` and `:words` (see
-[Importing](#importing-dbixsquirreltooling)). The names below are
+[Importing](#13-import-everything-from-one-place)). The names below are
 those it exports from Ekorn::Pipeline's modules; DBIx::Squirrel's own,
 such as `take` and `pluck`, are under their modules above. Ekorn's
 reference has each in full.
@@ -4130,18 +4341,22 @@ reference has each in full.
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(count_items);
+
 count_items
 ```
 
 A sink giving how many results there were. From
 Ekorn::Pipeline::Sinks. Exported upon request.
 
-See [8. Sinks](#8-sinks).
+See [14. Sinks](#14-sinks).
 
 #### counter
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(counter);
+
 counter()
 counter($start)
 counter($start, $step)
@@ -4157,6 +4372,8 @@ See [Sources: Ekorn::Pipeline::Sources](https://github.com/nukopian/Ekorn-Pipeli
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(from_array);
+
 from_array(@values)
 ```
 
@@ -4169,6 +4386,8 @@ See [Sources: Ekorn::Pipeline::Sources](https://github.com/nukopian/Ekorn-Pipeli
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(from_csv);
+
 my $source = from_csv(file => $path);
 my $source = from_csv(file => $path, header => 1, munge => 'db');
 my $source = from_csv(fh => $fh, header => 'skip', csv => {sep_char => "\t"});
@@ -4187,6 +4406,8 @@ See [CSV: Ekorn::Pipeline::CSV](https://github.com/nukopian/Ekorn-Pipeline/blob/
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(from_fh);
+
 from_fh($fh)
 ```
 
@@ -4200,6 +4421,8 @@ See [Sources: Ekorn::Pipeline::Sources](https://github.com/nukopian/Ekorn-Pipeli
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(from_file);
+
 from_file($path)
 from_file($path, $layers)
 ```
@@ -4215,6 +4438,8 @@ See [Sources: Ekorn::Pipeline::Sources](https://github.com/nukopian/Ekorn-Pipeli
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(from_json);
+
 my $source = from_json(file => $path);
 my $source = from_json(fh => $fh, json => \%settings);
 my $stage  = from_json();
@@ -4232,6 +4457,8 @@ See [JSON: Ekorn::Pipeline::JSON](https://github.com/nukopian/Ekorn-Pipeline/blo
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(from_jsonl);
+
 my $source = from_jsonl(file => $path);
 my $source = from_jsonl(fh => $fh, json => \%settings);
 my $stage  = from_jsonl();
@@ -4249,6 +4476,8 @@ See [JSON: Ekorn::Pipeline::JSON](https://github.com/nukopian/Ekorn-Pipeline/blo
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(generator yield);
+
 my $source = generator { ...; yield @values; ... };
 ```
 
@@ -4262,6 +4491,8 @@ See [generator and yield](https://github.com/nukopian/Ekorn-Pipeline/blob/main/d
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(keep);
+
 keep($n)
 ```
 
@@ -4269,12 +4500,14 @@ A sink giving the first `$n` results, as a list, or an array reference
 where one value is asked for, and stopping the run once it has them.
 From Ekorn::Pipeline::Sinks. Exported upon request.
 
-See [8. Sinks](#8-sinks).
+See [14. Sinks](#14-sinks).
 
 #### keep_all
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(keep_all);
+
 keep_all
 ```
 
@@ -4282,12 +4515,14 @@ A sink giving every result, as a list, or an array reference where one
 value is asked for. From Ekorn::Pipeline::Sinks. Exported upon
 request.
 
-See [8. Sinks](#8-sinks).
+See [14. Sinks](#14-sinks).
 
 #### keep_first
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(keep_first);
+
 keep_first
 ```
 
@@ -4295,12 +4530,14 @@ A sink giving the first result, or `undef` if there's none, and
 stopping the run once it has it. From Ekorn::Pipeline::Sinks.
 Exported upon request.
 
-See [8. Sinks](#8-sinks).
+See [14. Sinks](#14-sinks).
 
 #### keep_last
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(keep_last);
+
 keep_last
 ```
 
@@ -4308,12 +4545,14 @@ A sink giving the last result, reading every one to find it, or
 `undef` if there's none. From Ekorn::Pipeline::Sinks. Exported upon
 request.
 
-See [8. Sinks](#8-sinks).
+See [14. Sinks](#14-sinks).
 
 #### keep_single
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(keep_single);
+
 keep_single
 ```
 
@@ -4322,12 +4561,14 @@ it warns, "Expected only one item, but there were more", stops the
 run, and gives the first. From Ekorn::Pipeline::Sinks. Exported upon
 request.
 
-See [8. Sinks](#8-sinks).
+See [14. Sinks](#14-sinks).
 
 #### pipeline
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(pipeline);
+
 my $p = pipeline(@stages);
 my $p = pipeline($name);
 my $p = pipeline($name, @stages);
@@ -4337,12 +4578,14 @@ Returns a new pipeline of `@stages`, each a stage or the name of a
 pipeline; given one name alone, the pipeline it names. From
 Ekorn::Pipeline::Factories. Exported upon request.
 
-See [10. Pipelines](#10-pipelines).
+See [15. Pipelines](#15-pipelines).
 
 #### sink_many
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(sink_many);
+
 my $sink = sink_many { ...; return ($step, $flush, $end) };
 my $sink = sink_many { ...; return ($step, $flush) };
 my $sink = sink_many { ...; return {step => $step, flush => $flush} };
@@ -4359,6 +4602,8 @@ See [sink_one and sink_many](https://github.com/nukopian/Ekorn-Pipeline/blob/mai
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(sink_one);
+
 my $sink = sink_one { ...; return ($step, $flush, $end) };
 my $sink = sink_one { ...; return ($step, $flush) };
 my $sink = sink_one { ...; return {step => $step, flush => $flush} };
@@ -4376,6 +4621,8 @@ See [A sink into a table, with the word
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(source);
+
 my $source = source { ...; return ($step, $end, $context) };
 my $source = source { ...; return ($step, $end) };
 my $source = source { ...; return $step };
@@ -4394,6 +4641,8 @@ See [source](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(stage);
+
 my $stage = stage { ... };
 my $stage = stage sub ($value) { ... };
 my $stage = stage(\&code);
@@ -4409,6 +4658,8 @@ See [stage](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(to_csv);
+
 my $sink  = to_csv(file => $path);
 my $sink  = to_csv(file => $path, header => [qw(title plays)]);
 my $sink  = to_csv(fh => $fh, header => 1, csv => {eol => "\r\n"});
@@ -4427,6 +4678,8 @@ See [CSV: Ekorn::Pipeline::CSV](https://github.com/nukopian/Ekorn-Pipeline/blob/
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(to_fh);
+
 to_fh($fh)
 ```
 
@@ -4434,12 +4687,14 @@ A sink printing each result to `$fh`, a line each, and giving how many
 it printed. It leaves `$fh` open. From Ekorn::Pipeline::Sinks.
 Exported upon request.
 
-See [8. Sinks](#8-sinks).
+See [14. Sinks](#14-sinks).
 
 #### to_file
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(to_file);
+
 to_file($path)
 to_file($path, $layers)
 ```
@@ -4449,12 +4704,14 @@ giving how many it wrote. It opens the file, emptied, as the run
 starts, and closes it however the run ends. From
 Ekorn::Pipeline::Sinks. Exported upon request.
 
-See [8. Sinks](#8-sinks).
+See [14. Sinks](#14-sinks).
 
 #### to_json
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(to_json);
+
 my $sink  = to_json(file => $path);
 my $sink  = to_json(fh => $fh, json => \%settings);
 my $stage = to_json();
@@ -4466,12 +4723,14 @@ array, and giving how many it wrote; given neither, a stage passing on
 the array's text once every value has come. From
 Ekorn::Pipeline::JSON. Exported upon request.
 
-See [8. Sinks](#8-sinks).
+See [14. Sinks](#14-sinks).
 
 #### to_jsonl
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(to_jsonl);
+
 my $sink  = to_jsonl(file => $path);
 my $sink  = to_jsonl(fh => $fh, json => \%settings);
 my $stage = to_jsonl();
@@ -4482,12 +4741,14 @@ Given a `file` or an `fh`, a sink writing each result as a line of
 JSON, and giving how many it wrote; given neither, a stage passing on
 each value's line. From Ekorn::Pipeline::JSON. Exported upon request.
 
-See [8. Sinks](#8-sinks).
+See [14. Sinks](#14-sinks).
 
 #### yield
 
 <!-- not run -->
 ```perl
+use DBIx::Squirrel::Tooling qw(yield);
+
 yield @values;
 ```
 

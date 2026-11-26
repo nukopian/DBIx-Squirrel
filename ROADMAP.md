@@ -49,19 +49,6 @@ Nothing yet.
 
 ## Later
 
-### 2026-0058. The new documents in place of the old
-
-**Size:** XS (1). **Depends on:** 2026-0054, 2026-0055, 2026-0056.
-
-One commit moves `docs/next/`'s README, guide and reference over
-today's, which git's history then keeps, and runs `scripts/manuals`;
-the tests read `docs/` alone again. Its `Changes` entry is the one
-readers see for 2026-0052 to 2026-0056, and says why, as 2026-0052's
-record asks: the coupling the documents showed, the synergy the two
-parts aim for, and that the split's separation is only now being
-completed (2026-0053's D2). Done when `yath test -L t xt` passes on
-5.36 and 5.44, and `docs/next/` is gone.
-
 ### 2026-0057. What Part 1 still takes from Ekorn::Pipeline's code
 
 **Size:** S (2). **Depends on:** 2026-0058.
@@ -73,8 +60,9 @@ seen: Tooling exporting a stated list of Ekorn's names, not every name
 Ekorn's Tooling has, so `xt/ekorn-tooling.t` can go; the range's upper
 bound, which makes each minor version of Ekorn's a release of ours;
 and a message to Ekorn-Pipeline suggesting a way into its documents
-for readers coming from DBIx::Squirrel. Done when each is an item, or
-dropped with the reason.
+for readers coming from DBIx::Squirrel; and those 2026-0055's and
+2026-0056's records list, such as a stop's class, which Part 1 can't
+name. Done when each is an item, or dropped with the reason.
 
 ## Ideas
 
