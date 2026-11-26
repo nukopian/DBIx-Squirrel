@@ -2294,7 +2294,7 @@ say join ' ', $shout->('hello', 'world');    # HELLO! WORLD!
 
 my $next  = Ekorn::Pipeline->new(pluck)->iterator($dbh->iterate('SELECT name FROM artist ORDER BY id'));
 my @names;
-while (my($name) = $next->()) { push @names, $name }
+while (my($name) = $next->next) { push @names, $name }
 say "@names";    # Abba Blur Cream
 ```
 
@@ -2583,7 +2583,7 @@ my $it   = $dbh->iterate('SELECT name FROM artist ORDER BY id', pluck);
 my $next = Ekorn::Pipeline->new(sub {uc})->iterator($it);
 undef $it;
 my @names;
-while (my($name) = $next->()) { push @names, $name }
+while (my($name) = $next->next) { push @names, $name }
 say "@names";    # ABBA BLUR CREAM
 ```
 

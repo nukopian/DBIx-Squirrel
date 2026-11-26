@@ -1978,6 +1978,12 @@ A DBIx::Squirrel iterator is one of Ekorn::Pipeline's sources, so
 everything here works on query results as it stands, and Part 1's
 stages work in Ekorn::Pipeline's pipelines.
 
+Ekorn::Pipeline's own guide has a way in for readers coming from
+here, [Coming from
+DBIx::Squirrel](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/HOWTO.md#coming-from-dbixsquirrel):
+what you know already, under its names, what's new, and where to
+start.
+
 ## 14. Import everything from one place
 
 Part 1 imported each stage from the DBIx::Squirrel module that makes
@@ -2352,9 +2358,9 @@ reads the rows as arrays, for `?` placeholders, and `csv => {sep_char
 The load is a pipeline, `Ekorn::Pipeline->new(...)`, run over the file
 by its `iterator`. Given a source, such as `from_csv`'s, `iterator`
 gives an iterator over what comes out of the pipeline's stages, much
-as `iterate` does for a query: `all`, `first` and `single` work as they
-do on a query's, and the next value comes from calling it, as
-`$it->()`, where a query's has `next`. Here the stage that writes each
+as `iterate` does for a query: `next`, `all`, `first` and `single`
+work as they do on a query's, but there's no `reset`: an iterator from
+a pipeline is one run, so make another with `iterator`. Here the stage that writes each
 batch gives how many it wrote, so `all` gives one count a batch.
 
 ## 17. Building pipelines from pipelines

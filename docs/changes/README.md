@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [Ekorn::Pipeline v0.4.3: next, and a way in](2026-0063-ekorn-v0.4.3.md),
+  from a task of Ekorn-Pipeline's: shipped, unreleased.
 - [dump_to's setting, without naming Ekorn](2026-0062-dump-to-setting.md),
   roadmap 2026-0062: shipped, unreleased.
 - [is_stage, from DBIx::Squirrel::Tooling](2026-0061-is-stage.md),

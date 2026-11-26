@@ -2039,6 +2039,12 @@ A DBIx::Squirrel iterator is one of Ekorn::Pipeline's sources, so
 everything here works on query results as it stands, and Part 1's
 stages work in Ekorn::Pipeline's pipelines.
 
+Ekorn::Pipeline's own guide has a way in for readers coming from
+here, L<Coming from
+DBIx::Squirrel|Ekorn::Pipeline::Manual::HowTo/"Coming from DBIx::Squirrel">:
+what you know already, under its names, what's new, and where to
+start.
+
 =head1 14. Import everything from one place
 
 Part 1 imported each stage from the DBIx::Squirrel module that makes
@@ -2496,9 +2502,9 @@ Z<>=> "\t"} >> reads TSV. Ekorn::Pipeline::CSV's documentation has the rest.
 The load is a pipeline, C<< Ekorn::Pipeline->new(...) >>, run over the file
 by its C<iterator>. Given a source, such as C<from_csv>'s, C<iterator>
 gives an iterator over what comes out of the pipeline's stages, much
-as C<iterate> does for a query: C<all>, C<first> and C<single> work as they
-do on a query's, and the next value comes from calling it, as
-C<< $it->() >>, where a query's has C<next>. Here the stage that writes each
+as C<iterate> does for a query: C<next>, C<all>, C<first> and C<single>
+work as they do on a query's, but there's no C<reset>: an iterator from
+a pipeline is one run, so make another with C<iterator>. Here the stage that writes each
 batch gives how many it wrote, so C<all> gives one count a batch.
 
 =head1 17. Building pipelines from pipelines

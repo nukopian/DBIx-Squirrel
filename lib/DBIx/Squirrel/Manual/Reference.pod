@@ -2842,7 +2842,7 @@ the stages it was made of.
 
     my $next  = Ekorn::Pipeline->new(pluck)->iterator($dbh->iterate('SELECT name FROM artist ORDER BY id'));
     my @names;
-    while (my($name) = $next->()) { push @names, $name }
+    while (my($name) = $next->next) { push @names, $name }
     say "@names";    # Abba Blur Cream
 
 =head2 A pipeline as a stage
@@ -3136,7 +3136,7 @@ go first, and finishes the statement when it ends.
     my $next = Ekorn::Pipeline->new(sub {uc})->iterator($it);
     undef $it;
     my @names;
-    while (my($name) = $next->()) { push @names, $name }
+    while (my($name) = $next->next) { push @names, $name }
     say "@names";    # ABBA BLUR CREAM
 
 =head2 The run's context

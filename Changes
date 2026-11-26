@@ -8,7 +8,9 @@ Unreleased
     Ekorn::Pipeline changes nothing a caller imports, and is_stop, from
     DBIx::Squirrel::Stop, tells a stop from any other error.
 
-    It ships roadmap 2026-0052 to 2026-0056, and 2026-0058 to 2026-0062.
+    It ships roadmap 2026-0052 to 2026-0056, and 2026-0058 to 2026-0063.
+    Requires Ekorn::Pipeline >= v0.4.3, < v0.5.0, which gives a
+    pipeline's iterator its next.
 
     - Why. Ekorn::Pipeline began as DBIx::Squirrel's pipeline, and
       moved into a distribution of its own in 2026, as it was useful,
@@ -61,6 +63,12 @@ Unreleased
       Ekorn::Pipeline's setting under DBIx::Squirrel's name, tied to
       it, so local on either sets both, as it does Data::Dumper's
       (roadmap 2026-0062).
+    - Requires Ekorn::Pipeline v0.4.3 or later, below v0.5.0, where it
+      was v0.4.0: its iterator has next, as DBIx::Squirrel's has, so the
+      guide shows one loop that reads either, and the reference's
+      examples use it. The guide's Part 2 links to Ekorn::Pipeline's
+      new way in for readers coming from DBIx::Squirrel (roadmap
+      2026-0063).
 
 v4.1.1 2026-11-26
 
