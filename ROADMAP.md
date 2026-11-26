@@ -61,10 +61,13 @@ measured by the D5 test, a cold reader given Part 1 alone and then
 both parts, coupling before and after, and Iain's sceptical review;
 the README and the guide carry the sales pitch, for sceptical and
 enthusiastic readers alike; amended after a first review, with the
-cold reader's tasks, and every claimed gain shown in code. D8 open:
-the smallest description of DBIx::Squirrel that stays true if
-Ekorn::Pipeline disappeared, as Part 1's foundation, leading with
-control of SQL.
+cold reader's tasks, and every claimed gain shown in code. D8 settled:
+Part 1's foundation, true without Ekorn::Pipeline: "You write the SQL;
+DBIx::Squirrel takes away the DBI machinery around it, with
+placeholders in any common style, a list into `IN (...)` from one
+placeholder, and results read through an iterator, and every handle is
+still a DBI handle. Rows can also be changed as they're read, by small
+functions written beside the query."
 [Record](docs/changes/2026-0052-two-parts.md).
 
 **What:** where the line between the two parts falls, the same in the
@@ -83,7 +86,7 @@ not dependency.
 
 **Done when:** `xt/examples.t` and `xt/spelling.t` read `docs/next/`
 as they read `docs/`, `yath test -L xt` passes, the cold reader's
-baseline is in the record, and D8 is settled.
+baseline is in the record.
 
 ### 2026-0053. Why Ekorn::Pipeline split from DBIx::Squirrel
 

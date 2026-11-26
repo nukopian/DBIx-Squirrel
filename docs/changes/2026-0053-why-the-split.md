@@ -22,6 +22,44 @@ Iain confirmed on 2026-11-26. It answers a question from the first
 sceptical review of 2026-0052's plan, whether DBIx::Squirrel has
 stages only because Ekorn::Pipeline does.
 
+The review asked that the account be pinned to a primary source, so
+it doesn't become folklore. DBIx::Squirrel 1.6.5, the last of 1.x,
+still on CPAN (CPANIC/DBIx-Squirrel-1.6.5, 2025-04-18), says in
+`lib/DBIx/Squirrel.pod`, under DESCRIPTION:
+
+> Just as with the DBI, all database queries are crafted with SQL,
+> keeping you close to the data. With its built-in support for named,
+> positional and legacy parameter placeholders, DBIx-Squirrel makes
+> the task of crafting that SQL a lot less bothersome, while its
+> iterators and transformations offer a clean and elegant way to
+> process results.
+>
+> Most comforting of all, everything that could be done with the DBI
+> can still be done using DBIx-Squirrel.
+
+And under TRANSFORMING RESULTS:
+
+> All `DBIx::Squirrel` iterators support an optional processing step
+> called *transformation*.
+>
+> Transformation can be summarised as the automatic, just-in-time
+> processing, re-shaping or filtering of results, as they are fetched
+> from the database and before they are handed-off to the caller.
+>
+> A transformation is comprised of one or more processing stages.
+
+It goes on to call `[@transforms]` "the transformation pipeline", and
+says that returning nothing from a stage "will filter the result out
+entirely". So 1.x had iterators, a pipeline and its stages, by those
+names. Its `Changes` has an example script for transformations in
+1.2.8, on 2024-08-16, the same day as 1.2.7, "First version, released
+on an unsuspecting world". Ekorn::Pipeline's first release was
+v0.1.0-TRIAL, on 2026-11-07, according to MetaCPAN.
+
+1.6.5's DESCRIPTION is close to 2026-0052's D8, two years apart: SQL
+kept close, placeholders made less bothersome, iterators and
+transformations for results, and everything the DBI does still done.
+
 By DBIx::Squirrel 2, its pipeline was Ekorn::Pipeline, a distribution
 of its own, with `DBIx::Squirrel::Pipeline` a facade over it; version 3
 dropped the facades and was built on Ekorn::Pipeline as it is
