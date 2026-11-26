@@ -4737,11 +4737,308 @@ runs|/"Defining them as the program runs">.
 =head2 DBIx::Squirrel::Tooling
 
 Exports what callers use to do work, from one place, by tags. Nothing
-by default: ask for the names in the modules above, or the tags that
-hold them, C<:all>, C<:batch>, C<:context>, C<:core>, C<:csv>, C<:flow>,
-C<:json>, C<:rows>, C<:sinks>, C<:sources>, C<:stages>, C<:taps> and
-C<:words> (see
-L<Importing|/"Importing: DBIx::Squirrel::Tooling">).
+by default: ask for the names, or the tags that hold them, C<:all>,
+C<:batch>, C<:context>, C<:core>, C<:csv>, C<:flow>, C<:json>, C<:rows>,
+C<:sinks>, C<:sources>, C<:stages>, C<:taps> and C<:words> (see
+L<Importing|/"Importing: DBIx::Squirrel::Tooling">). The names below are
+those it exports from Ekorn::Pipeline's modules; DBIx::Squirrel's own,
+such as C<take> and C<pluck>, are under their modules above. Ekorn's
+reference has each in full.
+
+=head3 count_items
+
+    count_items
+
+A sink giving how many results there were. From
+Ekorn::Pipeline::Sinks. Exported upon request.
+
+See L<8. Sinks|/"8. Sinks">.
+
+=head3 counter
+
+    counter()
+    counter($start)
+    counter($start, $step)
+
+A source of C<$start>, then on by C<$step>, without end, 1 and 1 by
+default: give it a stage that stops, such as C<take>. From
+Ekorn::Pipeline::Sources. Exported upon request.
+
+See L<Sources: Ekorn::Pipeline::Sources|Ekorn::Pipeline::Manual::Reference/"Sources: Ekorn::Pipeline::Sources">.
+
+=head3 from_array
+
+    from_array(@values)
+
+A source of the values given, in order. From Ekorn::Pipeline::Sources.
+Exported upon request.
+
+See L<Sources: Ekorn::Pipeline::Sources|Ekorn::Pipeline::Manual::Reference/"Sources: Ekorn::Pipeline::Sources">.
+
+=head3 from_csv
+
+    my $source = from_csv(file => $path);
+    my $source = from_csv(file => $path, header => 1, munge => 'db');
+    my $source = from_csv(fh => $fh, header => 'skip', csv => {sep_char => "\t"});
+    my $stage  = from_csv();
+
+Given a C<file> or an C<fh>, a source of its rows, as array references,
+or, with C<header> true, hash references keyed by the header's names;
+given neither, a stage parsing each value into its rows. From
+Ekorn::Pipeline::CSV; it loads Text::CSV when first called. Exported
+upon request.
+
+See L<CSV: Ekorn::Pipeline::CSV|Ekorn::Pipeline::Manual::Reference/"CSV: Ekorn::Pipeline::CSV">.
+
+=head3 from_fh
+
+    from_fh($fh)
+
+A source of a filehandle's lines, each without its line end, as
+C<chomp> removes it. It leaves C<$fh> open. From
+Ekorn::Pipeline::Sources. Exported upon request.
+
+See L<Sources: Ekorn::Pipeline::Sources|Ekorn::Pipeline::Manual::Reference/"Sources: Ekorn::Pipeline::Sources">.
+
+=head3 from_file
+
+    from_file($path)
+    from_file($path, $layers)
+
+A source of a file's lines, each without its line end, read through
+the I/O layers given, such as C<':encoding(UTF-8)'>. It opens the file
+as the run starts, and closes it however the run ends. From
+Ekorn::Pipeline::Sources. Exported upon request.
+
+See L<Sources: Ekorn::Pipeline::Sources|Ekorn::Pipeline::Manual::Reference/"Sources: Ekorn::Pipeline::Sources">.
+
+=head3 from_json
+
+    my $source = from_json(file => $path);
+    my $source = from_json(fh => $fh, json => \%settings);
+    my $stage  = from_json();
+    my $stage  = from_json(json => $encoder);
+
+Given a C<file> or an C<fh>, a source of one JSON document, read whole:
+an array's elements, or the document itself; given neither, a stage
+decoding each value the same way. From Ekorn::Pipeline::JSON.
+Exported upon request.
+
+See L<JSON: Ekorn::Pipeline::JSON|Ekorn::Pipeline::Manual::Reference/"JSON: Ekorn::Pipeline::JSON">.
+
+=head3 from_jsonl
+
+    my $source = from_jsonl(file => $path);
+    my $source = from_jsonl(fh => $fh, json => \%settings);
+    my $stage  = from_jsonl();
+    my $stage  = from_jsonl(json => $encoder);
+
+Given a C<file> or an C<fh>, a source of JSON Lines, each line's
+document a value; given neither, a stage decoding each value, a text
+of one or more lines, into each line's document. From
+Ekorn::Pipeline::JSON. Exported upon request.
+
+See L<JSON: Ekorn::Pipeline::JSON|Ekorn::Pipeline::Manual::Reference/"JSON: Ekorn::Pipeline::JSON">.
+
+=head3 generator
+
+    my $source = generator { ...; yield @values; ... };
+
+A source of every value its block passes to C<yield>, in order. Each
+run calls the block once, to its end. From Ekorn::Pipeline::Factories.
+Exported upon request.
+
+See L<generator and yield|Ekorn::Pipeline::Manual::Reference/"generator and yield">.
+
+=head3 keep
+
+    keep($n)
+
+A sink giving the first C<$n> results, as a list, or an array reference
+where one value is asked for, and stopping the run once it has them.
+From Ekorn::Pipeline::Sinks. Exported upon request.
+
+See L<8. Sinks|/"8. Sinks">.
+
+=head3 keep_all
+
+    keep_all
+
+A sink giving every result, as a list, or an array reference where one
+value is asked for. From Ekorn::Pipeline::Sinks. Exported upon
+request.
+
+See L<8. Sinks|/"8. Sinks">.
+
+=head3 keep_first
+
+    keep_first
+
+A sink giving the first result, or C<undef> if there's none, and
+stopping the run once it has it. From Ekorn::Pipeline::Sinks.
+Exported upon request.
+
+See L<8. Sinks|/"8. Sinks">.
+
+=head3 keep_last
+
+    keep_last
+
+A sink giving the last result, reading every one to find it, or
+C<undef> if there's none. From Ekorn::Pipeline::Sinks. Exported upon
+request.
+
+See L<8. Sinks|/"8. Sinks">.
+
+=head3 keep_single
+
+    keep_single
+
+A sink giving the one result, or C<undef> if there's none; at a second,
+it warns, "Expected only one item, but there were more", stops the
+run, and gives the first. From Ekorn::Pipeline::Sinks. Exported upon
+request.
+
+See L<8. Sinks|/"8. Sinks">.
+
+=head3 pipeline
+
+    my $p = pipeline(@stages);
+    my $p = pipeline($name);
+    my $p = pipeline($name, @stages);
+
+Returns a new pipeline of C<@stages>, each a stage or the name of a
+pipeline; given one name alone, the pipeline it names. From
+Ekorn::Pipeline::Factories. Exported upon request.
+
+See L<10. Pipelines|/"10. Pipelines">.
+
+=head3 sink_many
+
+    my $sink = sink_many { ...; return ($step, $flush, $end) };
+    my $sink = sink_many { ...; return ($step, $flush) };
+    my $sink = sink_many { ...; return {step => $step, flush => $flush} };
+
+A sink of many, made for each run by its block, which returns a step,
+called with each value, a flush, giving the result, a list, and,
+optionally, an end. From Ekorn::Pipeline::Factories. Exported upon
+request.
+
+See L<sink_one and sink_many|Ekorn::Pipeline::Manual::Reference/"sink_one and sink_many">.
+
+=head3 sink_one
+
+    my $sink = sink_one { ...; return ($step, $flush, $end) };
+    my $sink = sink_one { ...; return ($step, $flush) };
+    my $sink = sink_one { ...; return {step => $step, flush => $flush} };
+
+A sink of one, made for each run by its block, which returns a step,
+called with each value, a flush, giving the result, one value, and,
+optionally, an end. From Ekorn::Pipeline::Factories. Exported upon
+request.
+
+See L<A sink into a table, with the word
+C<sink_one>|/"A sink into a table, with the word sink_one">.
+
+=head3 source
+
+    my $source = source { ...; return ($step, $end, $context) };
+    my $source = source { ...; return ($step, $end) };
+    my $source = source { ...; return $step };
+    my $source = source { ...; return {step => $step, context => $context} };
+    my $source = source { ...; return {step => $step, original => $original} };
+
+A source, made for each run by its block, which returns a step, giving
+the next value or values, or nothing when there are no more, and,
+optionally, an end, a context and an original. From
+Ekorn::Pipeline::Factories. Exported upon request.
+
+See L<source|Ekorn::Pipeline::Manual::Reference/"source">.
+
+=head3 stage
+
+    my $stage = stage { ... };
+    my $stage = stage sub ($value) { ... };
+    my $stage = stage(\&code);
+
+A stage of the block, called with each value, in C<$_> and as its
+argument, as any stage is, but one of Ekorn::Pipeline's types from the
+start. From Ekorn::Pipeline::Factories. Exported upon request.
+
+See L<stage|Ekorn::Pipeline::Manual::Reference/"stage">.
+
+=head3 to_csv
+
+    my $sink  = to_csv(file => $path);
+    my $sink  = to_csv(file => $path, header => [qw(title plays)]);
+    my $sink  = to_csv(fh => $fh, header => 1, csv => {eol => "\r\n"});
+    my $stage = to_csv();
+
+Given a C<file> or an C<fh>, a sink writing each row, an array or a hash
+reference, as a line, after the header's, and giving how many rows it
+wrote; given neither, a stage passing on each row's line. From
+Ekorn::Pipeline::CSV; it loads Text::CSV when first called. Exported
+upon request.
+
+See L<CSV: Ekorn::Pipeline::CSV|Ekorn::Pipeline::Manual::Reference/"CSV: Ekorn::Pipeline::CSV">.
+
+=head3 to_fh
+
+    to_fh($fh)
+
+A sink printing each result to C<$fh>, a line each, and giving how many
+it printed. It leaves C<$fh> open. From Ekorn::Pipeline::Sinks.
+Exported upon request.
+
+See L<8. Sinks|/"8. Sinks">.
+
+=head3 to_file
+
+    to_file($path)
+    to_file($path, $layers)
+
+A sink writing each result to the file at C<$path>, a line each, and
+giving how many it wrote. It opens the file, emptied, as the run
+starts, and closes it however the run ends. From
+Ekorn::Pipeline::Sinks. Exported upon request.
+
+See L<8. Sinks|/"8. Sinks">.
+
+=head3 to_json
+
+    my $sink  = to_json(file => $path);
+    my $sink  = to_json(fh => $fh, json => \%settings);
+    my $stage = to_json();
+    my $stage = to_json(json => $encoder);
+
+Given a C<file> or an C<fh>, a sink writing every result into one JSON
+array, and giving how many it wrote; given neither, a stage passing on
+the array's text once every value has come. From
+Ekorn::Pipeline::JSON. Exported upon request.
+
+See L<8. Sinks|/"8. Sinks">.
+
+=head3 to_jsonl
+
+    my $sink  = to_jsonl(file => $path);
+    my $sink  = to_jsonl(fh => $fh, json => \%settings);
+    my $stage = to_jsonl();
+    my $stage = to_jsonl(json => $encoder);
+
+Given a C<file> or an C<fh>, a sink writing each result as a line of
+JSON, and giving how many it wrote; given neither, a stage passing on
+each value's line. From Ekorn::Pipeline::JSON. Exported upon request.
+
+See L<8. Sinks|/"8. Sinks">.
+
+=head3 yield
+
+    yield @values;
+
+In a generator's block, gives C<@values>, in order, as the generator's
+next values. From Ekorn::Pipeline::Factories. Exported upon request.
+
+See L<generator and yield|Ekorn::Pipeline::Manual::Reference/"generator and yield">.
 
 =head2 DBIx::Squirrel::Util
 

@@ -4118,11 +4118,383 @@ runs](#defining-them-as-the-program-runs).
 ### DBIx::Squirrel::Tooling
 
 Exports what callers use to do work, from one place, by tags. Nothing
-by default: ask for the names in the modules above, or the tags that
-hold them, `:all`, `:batch`, `:context`, `:core`, `:csv`, `:flow`,
-`:json`, `:rows`, `:sinks`, `:sources`, `:stages`, `:taps` and
-`:words` (see
-[Importing](#importing-dbixsquirreltooling)).
+by default: ask for the names, or the tags that hold them, `:all`,
+`:batch`, `:context`, `:core`, `:csv`, `:flow`, `:json`, `:rows`,
+`:sinks`, `:sources`, `:stages`, `:taps` and `:words` (see
+[Importing](#importing-dbixsquirreltooling)). The names below are
+those it exports from Ekorn::Pipeline's modules; DBIx::Squirrel's own,
+such as `take` and `pluck`, are under their modules above. Ekorn's
+reference has each in full.
+
+#### count_items
+
+<!-- not run -->
+```perl
+count_items
+```
+
+A sink giving how many results there were. From
+Ekorn::Pipeline::Sinks. Exported upon request.
+
+See [8. Sinks](#8-sinks).
+
+#### counter
+
+<!-- not run -->
+```perl
+counter()
+counter($start)
+counter($start, $step)
+```
+
+A source of `$start`, then on by `$step`, without end, 1 and 1 by
+default: give it a stage that stops, such as `take`. From
+Ekorn::Pipeline::Sources. Exported upon request.
+
+See [Sources: Ekorn::Pipeline::Sources](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#sources-ekornpipelinesources).
+
+#### from_array
+
+<!-- not run -->
+```perl
+from_array(@values)
+```
+
+A source of the values given, in order. From Ekorn::Pipeline::Sources.
+Exported upon request.
+
+See [Sources: Ekorn::Pipeline::Sources](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#sources-ekornpipelinesources).
+
+#### from_csv
+
+<!-- not run -->
+```perl
+my $source = from_csv(file => $path);
+my $source = from_csv(file => $path, header => 1, munge => 'db');
+my $source = from_csv(fh => $fh, header => 'skip', csv => {sep_char => "\t"});
+my $stage  = from_csv();
+```
+
+Given a `file` or an `fh`, a source of its rows, as array references,
+or, with `header` true, hash references keyed by the header's names;
+given neither, a stage parsing each value into its rows. From
+Ekorn::Pipeline::CSV; it loads Text::CSV when first called. Exported
+upon request.
+
+See [CSV: Ekorn::Pipeline::CSV](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#csv-ekornpipelinecsv).
+
+#### from_fh
+
+<!-- not run -->
+```perl
+from_fh($fh)
+```
+
+A source of a filehandle's lines, each without its line end, as
+`chomp` removes it. It leaves `$fh` open. From
+Ekorn::Pipeline::Sources. Exported upon request.
+
+See [Sources: Ekorn::Pipeline::Sources](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#sources-ekornpipelinesources).
+
+#### from_file
+
+<!-- not run -->
+```perl
+from_file($path)
+from_file($path, $layers)
+```
+
+A source of a file's lines, each without its line end, read through
+the I/O layers given, such as `':encoding(UTF-8)'`. It opens the file
+as the run starts, and closes it however the run ends. From
+Ekorn::Pipeline::Sources. Exported upon request.
+
+See [Sources: Ekorn::Pipeline::Sources](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#sources-ekornpipelinesources).
+
+#### from_json
+
+<!-- not run -->
+```perl
+my $source = from_json(file => $path);
+my $source = from_json(fh => $fh, json => \%settings);
+my $stage  = from_json();
+my $stage  = from_json(json => $encoder);
+```
+
+Given a `file` or an `fh`, a source of one JSON document, read whole:
+an array's elements, or the document itself; given neither, a stage
+decoding each value the same way. From Ekorn::Pipeline::JSON.
+Exported upon request.
+
+See [JSON: Ekorn::Pipeline::JSON](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#json-ekornpipelinejson).
+
+#### from_jsonl
+
+<!-- not run -->
+```perl
+my $source = from_jsonl(file => $path);
+my $source = from_jsonl(fh => $fh, json => \%settings);
+my $stage  = from_jsonl();
+my $stage  = from_jsonl(json => $encoder);
+```
+
+Given a `file` or an `fh`, a source of JSON Lines, each line's
+document a value; given neither, a stage decoding each value, a text
+of one or more lines, into each line's document. From
+Ekorn::Pipeline::JSON. Exported upon request.
+
+See [JSON: Ekorn::Pipeline::JSON](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#json-ekornpipelinejson).
+
+#### generator
+
+<!-- not run -->
+```perl
+my $source = generator { ...; yield @values; ... };
+```
+
+A source of every value its block passes to `yield`, in order. Each
+run calls the block once, to its end. From Ekorn::Pipeline::Factories.
+Exported upon request.
+
+See [generator and yield](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#generator-and-yield).
+
+#### keep
+
+<!-- not run -->
+```perl
+keep($n)
+```
+
+A sink giving the first `$n` results, as a list, or an array reference
+where one value is asked for, and stopping the run once it has them.
+From Ekorn::Pipeline::Sinks. Exported upon request.
+
+See [8. Sinks](#8-sinks).
+
+#### keep_all
+
+<!-- not run -->
+```perl
+keep_all
+```
+
+A sink giving every result, as a list, or an array reference where one
+value is asked for. From Ekorn::Pipeline::Sinks. Exported upon
+request.
+
+See [8. Sinks](#8-sinks).
+
+#### keep_first
+
+<!-- not run -->
+```perl
+keep_first
+```
+
+A sink giving the first result, or `undef` if there's none, and
+stopping the run once it has it. From Ekorn::Pipeline::Sinks.
+Exported upon request.
+
+See [8. Sinks](#8-sinks).
+
+#### keep_last
+
+<!-- not run -->
+```perl
+keep_last
+```
+
+A sink giving the last result, reading every one to find it, or
+`undef` if there's none. From Ekorn::Pipeline::Sinks. Exported upon
+request.
+
+See [8. Sinks](#8-sinks).
+
+#### keep_single
+
+<!-- not run -->
+```perl
+keep_single
+```
+
+A sink giving the one result, or `undef` if there's none; at a second,
+it warns, "Expected only one item, but there were more", stops the
+run, and gives the first. From Ekorn::Pipeline::Sinks. Exported upon
+request.
+
+See [8. Sinks](#8-sinks).
+
+#### pipeline
+
+<!-- not run -->
+```perl
+my $p = pipeline(@stages);
+my $p = pipeline($name);
+my $p = pipeline($name, @stages);
+```
+
+Returns a new pipeline of `@stages`, each a stage or the name of a
+pipeline; given one name alone, the pipeline it names. From
+Ekorn::Pipeline::Factories. Exported upon request.
+
+See [10. Pipelines](#10-pipelines).
+
+#### sink_many
+
+<!-- not run -->
+```perl
+my $sink = sink_many { ...; return ($step, $flush, $end) };
+my $sink = sink_many { ...; return ($step, $flush) };
+my $sink = sink_many { ...; return {step => $step, flush => $flush} };
+```
+
+A sink of many, made for each run by its block, which returns a step,
+called with each value, a flush, giving the result, a list, and,
+optionally, an end. From Ekorn::Pipeline::Factories. Exported upon
+request.
+
+See [sink_one and sink_many](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#sink_one-and-sink_many).
+
+#### sink_one
+
+<!-- not run -->
+```perl
+my $sink = sink_one { ...; return ($step, $flush, $end) };
+my $sink = sink_one { ...; return ($step, $flush) };
+my $sink = sink_one { ...; return {step => $step, flush => $flush} };
+```
+
+A sink of one, made for each run by its block, which returns a step,
+called with each value, a flush, giving the result, one value, and,
+optionally, an end. From Ekorn::Pipeline::Factories. Exported upon
+request.
+
+See [A sink into a table, with the word
+`sink_one`](#a-sink-into-a-table-with-the-word-sink_one).
+
+#### source
+
+<!-- not run -->
+```perl
+my $source = source { ...; return ($step, $end, $context) };
+my $source = source { ...; return ($step, $end) };
+my $source = source { ...; return $step };
+my $source = source { ...; return {step => $step, context => $context} };
+my $source = source { ...; return {step => $step, original => $original} };
+```
+
+A source, made for each run by its block, which returns a step, giving
+the next value or values, or nothing when there are no more, and,
+optionally, an end, a context and an original. From
+Ekorn::Pipeline::Factories. Exported upon request.
+
+See [source](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#source).
+
+#### stage
+
+<!-- not run -->
+```perl
+my $stage = stage { ... };
+my $stage = stage sub ($value) { ... };
+my $stage = stage(\&code);
+```
+
+A stage of the block, called with each value, in `$_` and as its
+argument, as any stage is, but one of Ekorn::Pipeline's types from the
+start. From Ekorn::Pipeline::Factories. Exported upon request.
+
+See [stage](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#stage).
+
+#### to_csv
+
+<!-- not run -->
+```perl
+my $sink  = to_csv(file => $path);
+my $sink  = to_csv(file => $path, header => [qw(title plays)]);
+my $sink  = to_csv(fh => $fh, header => 1, csv => {eol => "\r\n"});
+my $stage = to_csv();
+```
+
+Given a `file` or an `fh`, a sink writing each row, an array or a hash
+reference, as a line, after the header's, and giving how many rows it
+wrote; given neither, a stage passing on each row's line. From
+Ekorn::Pipeline::CSV; it loads Text::CSV when first called. Exported
+upon request.
+
+See [CSV: Ekorn::Pipeline::CSV](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#csv-ekornpipelinecsv).
+
+#### to_fh
+
+<!-- not run -->
+```perl
+to_fh($fh)
+```
+
+A sink printing each result to `$fh`, a line each, and giving how many
+it printed. It leaves `$fh` open. From Ekorn::Pipeline::Sinks.
+Exported upon request.
+
+See [8. Sinks](#8-sinks).
+
+#### to_file
+
+<!-- not run -->
+```perl
+to_file($path)
+to_file($path, $layers)
+```
+
+A sink writing each result to the file at `$path`, a line each, and
+giving how many it wrote. It opens the file, emptied, as the run
+starts, and closes it however the run ends. From
+Ekorn::Pipeline::Sinks. Exported upon request.
+
+See [8. Sinks](#8-sinks).
+
+#### to_json
+
+<!-- not run -->
+```perl
+my $sink  = to_json(file => $path);
+my $sink  = to_json(fh => $fh, json => \%settings);
+my $stage = to_json();
+my $stage = to_json(json => $encoder);
+```
+
+Given a `file` or an `fh`, a sink writing every result into one JSON
+array, and giving how many it wrote; given neither, a stage passing on
+the array's text once every value has come. From
+Ekorn::Pipeline::JSON. Exported upon request.
+
+See [8. Sinks](#8-sinks).
+
+#### to_jsonl
+
+<!-- not run -->
+```perl
+my $sink  = to_jsonl(file => $path);
+my $sink  = to_jsonl(fh => $fh, json => \%settings);
+my $stage = to_jsonl();
+my $stage = to_jsonl(json => $encoder);
+```
+
+Given a `file` or an `fh`, a sink writing each result as a line of
+JSON, and giving how many it wrote; given neither, a stage passing on
+each value's line. From Ekorn::Pipeline::JSON. Exported upon request.
+
+See [8. Sinks](#8-sinks).
+
+#### yield
+
+<!-- not run -->
+```perl
+yield @values;
+```
+
+In a generator's block, gives `@values`, in order, as the generator's
+next values. From Ekorn::Pipeline::Factories. Exported upon request.
+
+See [generator and yield](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#generator-and-yield).
 
 ### DBIx::Squirrel::Util
 

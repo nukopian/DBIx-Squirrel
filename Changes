@@ -2,6 +2,18 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
+    The reference's index lists the names DBIx::Squirrel::Tooling
+    exports from Ekorn::Pipeline.
+
+    It ships roadmap 2026-0051.
+
+    - The reference's index has an entry, under
+      DBIx::Squirrel::Tooling, for each of the 25 names it exports from
+      Ekorn::Pipeline's modules: its sources, sinks, JSON and CSV, and
+      its words, such as pipeline, generator and yield. Each says what
+      it does and which module it's from, and links to where this
+      reference or Ekorn's shows it in use (roadmap 2026-0051).
+
 v4.1.0 2026-11-25
 
     An iterator's all_arrayref, which always gives an array reference,

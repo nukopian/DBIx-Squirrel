@@ -1,11 +1,16 @@
 # 2026-0051. Ekorn's names in the index, under Tooling
 
-**Status:** open
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: under Tooling. D2 settled: a short entry.
-D3 settled: a link to Ekorn's reference where ours has no section.
+D3 settled, amended: where Ekorn's index links, where ours has no
+section.
 
 **Origin:** roadmap, added 2026-11-26
+
+**Started:** 2026-11-26
+
+**Finished:** 2026-11-26
 
 ## Background
 
@@ -50,3 +55,80 @@ incomplete without the 25, on 2026-11-26.
   changes to allow that link. Writing a section here for each name
   without one, as 2026-0040 did, was the alternative, at more cost for
   little gain.
+
+  Amended by Iain on 2026-11-26, once work had started: a link to
+  Ekorn's reference goes where Ekorn's own index links the name, the
+  section that shows it in use, not to its index entry. `stage` and
+  `source` have index entries whose headings come second in Ekorn's
+  reference, after sections of the same name, as `#stage-1` and
+  `#source-1`, and `scripts/manuals` can't make a POD link to a second
+  heading of a name. Linking to the sections works for all 13, and
+  matches the rule for links within this reference.
+
+## The plan
+
+**What:** under DBIx::Squirrel::Tooling in the reference's index, a
+`####` entry for each name Tooling exports that no other module of
+DBIx::Squirrel's does, which are the 25 from Ekorn::Pipeline's
+modules; and `xt/reference-index.t` checking Tooling's entries as it
+checks other modules'.
+
+**Why:** the index looks incomplete without them, and some appear in
+the reference only in the tag table (Background).
+
+**Steps:**
+
+1. `docs/REFERENCE.md`, the index: Tooling's opening says its entries
+   are the names it exports from Ekorn::Pipeline, and that its own
+   modules' names are under them; then an entry for each of the 25,
+   A to Z: its synopsis, from Ekorn's index entry, marked
+   `<!-- not run -->`; a line or two on what it does, naming the
+   Ekorn module it's from; "Exported upon request."; and a link (D3):
+   - to [8. Sinks](#8-sinks), for `count_items`, `keep`, `keep_all`,
+     `keep_first`, `keep_last`, `keep_single`, `to_fh`, `to_file`,
+     `to_json` and `to_jsonl`;
+   - to [10. Pipelines](#10-pipelines), for `pipeline`;
+   - to "A sink into a table, with the word `sink_one`", for
+     `sink_one`;
+   - for the other 13, to the name's entry in Ekorn's reference on
+     `main`, as
+     `https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#from_array`;
+     `stage` and `source` are `#stage-1` and `#source-1`, as headings
+     of the same name come before them there.
+2. `xt/reference-index.t`: Tooling's listed names are exactly those it
+   exports that no other DBIx::Squirrel module exports; each says
+   "Exported upon request."; it still names each tag. A link may go to
+   Ekorn's reference on `main`, as above, and then its anchor must be
+   that of the name's entry in Ekorn's index, worked out from the
+   installed Ekorn::Pipeline::Manual::Reference's headings, which are
+   the Markdown's, with NAME and DESCRIPTION for its title, and SEE
+   ALSO, AUTHOR and LICENSE after; skipped if that POD isn't found.
+3. `scripts/manuals` run; `xt/manuals.t`, `xt/examples.t`,
+   `xt/reference-index.t` and `xt/spelling.t` passing.
+4. `Changes`, under Unreleased: the entry, and a precis naming roadmap
+   2026-0051; the item leaves `ROADMAP.md` in the same commit.
+
+**Done when:** each of the 25 has an entry, the index test checks
+them, and fails if one is missing, unlisted, or links to an anchor
+Ekorn's reference lacks; `yath test -L t xt` passes on 5.36 and 5.44;
+perlcritic and perltidy are clean.
+
+## What happened
+
+- **Outcome:** done, with D3 amended. Tooling's entry in the index
+  has the 25 names, A to Z, each with its synopsis, a line or two
+  naming its Ekorn module, "Exported upon request." and a link: ten
+  sinks to 8. Sinks, `pipeline` to 10. Pipelines, `sink_one` to "A
+  sink into a table, with the word `sink_one`", and the other 13 to
+  the sections of Ekorn's reference that its index links them to.
+  `xt/reference-index.t` checks that Tooling lists exactly the names
+  it exports that no other module of DBIx::Squirrel's does, each upon
+  request, and that each link to Ekorn's reference goes where Ekorn's
+  index links the name, read from the installed
+  Ekorn::Pipeline::Manual::Reference. Broken by hand, it failed for a
+  missing entry, a name Tooling doesn't export, and a wrong anchor.
+- **Changes from the plan:** the 13 links go to Ekorn's sections, not
+  its index entries (D3, amended), so the test reads where Ekorn's
+  index links each name, not the entries' own anchors; `scripts/manuals`
+  needed no change.
+- **What's left:** nothing.

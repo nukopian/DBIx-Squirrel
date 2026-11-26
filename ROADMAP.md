@@ -45,23 +45,7 @@ Nothing yet.
 
 ## Next
 
-### 2026-0051. Ekorn's names in the index, under Tooling
-
-**Size:** M (3). **Decisions:** D1 settled: under Tooling. D2 settled:
-a short entry. D3 settled: a link to Ekorn's reference where ours has
-no section. [Record](docs/changes/2026-0051-ekorn-names-in-index.md).
-
-**What:** an entry in the reference's index, under
-DBIx::Squirrel::Tooling, for each of the 25 names it exports from
-Ekorn::Pipeline: its sources, sinks, JSON and CSV, and its words.
-
-**Why:** a caller imports them from Tooling, but the index has none of
-them, so it looks incomplete, and a name such as `counter` or `yield`
-appears in the reference only in the tag table.
-
-**Done when:** each of the 25 has an entry, `xt/reference-index.t`
-checks Tooling's names as it does other modules', allowing a link to
-Ekorn's reference, and the manuals are generated again.
+Nothing yet.
 
 ## Later
 
