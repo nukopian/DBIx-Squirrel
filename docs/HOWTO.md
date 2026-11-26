@@ -1991,7 +1991,7 @@ DBIx::Squirrel that adds it.
 
 | Tag | What it gives you | Made in |
 |---|---|---|
-| `:core` | `Stop`, `is_stop` and `gather` | DBIx::Squirrel::Stop and ::Gather |
+| `:core` | `Stop`, `is_stop`, `gather` and `is_stage` | DBIx::Squirrel::Stop and ::Gather, and Ekorn::Pipeline |
 | `:flow` | `take`, `drop`, `take_if`, `take_while` and the rest | DBIx::Squirrel::Stages::Flow |
 | `:batch` | `batch` and `collect` | DBIx::Squirrel::Stages::Batch |
 | `:taps` | `peek`, `count_into`, `dump_to` and `tee` | DBIx::Squirrel::Stages::Taps |

@@ -2516,9 +2516,9 @@ DBIx::Squirrel's own C<:rows> and C<:context> besides:
 
 =item C<:core>
 
-B<Holds:> C<Stop>, C<is_stop>, C<gather>
+B<Holds:> C<Stop>, C<is_stop>, C<gather>, C<is_stage>
 
-B<Made in:> L<Stop|/"6. Stopping early">, L<Gather|/"7. Gathering: stages made for each run">
+B<Made in:> L<Stop|/"6. Stopping early">, L<Gather|/"7. Gathering: stages made for each run">, Ekorn::Pipeline
 
 =item C<:flow>
 
@@ -2619,7 +2619,7 @@ in either order, gives the same subs. A test fails if that changes.
 
 B<What's left out.> What's for extending DBIx::Squirrel rather than
 using it, such as C<croakf>, from DBIx::Squirrel::Errors, and
-C<is_stage>, from Ekorn::Pipeline; L<the
+C<is_sink>, from Ekorn::Pipeline; L<the
 Sugar|/"9. Sugar: a function for each database and statement">, whose
 C<use> makes functions; and L<C<E<verbar>>|/"16. Operators: E<verbar> and @{}">, which only
 C<use Ekorn::Pipeline::Operators> puts in force, in its own scope.
@@ -3211,13 +3211,12 @@ L<gather|Ekorn::Pipeline::Manual::Reference/"gather">.
 =head2 Finding the stages at the end of a list
 
 To find the stages at the end of a list of arguments, test each from
-the end with Ekorn::Pipeline's C<is_stage>, which is true of code
-references, pipelines and Ekorn's stage objects, and false of strings
-and other values. A sink given last is a stage too, so a caller can
+the end with C<is_stage>, Ekorn::Pipeline's, which Tooling's C<:core>
+holds. It's true of code references, pipelines and Ekorn's stage
+objects, and false of strings and other values. A sink given last is a stage too, so a caller can
 end with one:
 
-    use DBIx::Squirrel::Tooling qw(count_items);
-    use Ekorn::Pipeline qw(is_stage);
+    use DBIx::Squirrel::Tooling qw(count_items is_stage);
 
     say albums_since(1990, count_items);              # 2
     say is_stage(sub {1}) ? 'a stage' : 'a value';    # a stage
@@ -5113,6 +5112,19 @@ run calls the block once, to its end. From Ekorn::Pipeline::Factories.
 Exported upon request.
 
 See L<generator and yield|Ekorn::Pipeline::Manual::Reference/"generator and yield">.
+
+=head3 is_stage
+
+    use DBIx::Squirrel::Tooling qw(is_stage);
+
+    $is = is_stage($value);
+
+True of a stage: a code reference, a pipeline, or one of
+Ekorn::Pipeline's stage objects, such as a sink; false of a string or
+any other value. From Ekorn::Pipeline, in C<:core>. Exported upon
+request.
+
+See L<Finding the stages at the end of a list|/"Finding the stages at the end of a list">.
 
 =head3 keep
 

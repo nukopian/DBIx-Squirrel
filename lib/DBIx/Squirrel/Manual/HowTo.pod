@@ -2054,9 +2054,9 @@ DBIx::Squirrel that adds it.
 
 =item C<:core>
 
-B<What it gives you:> C<Stop>, C<is_stop> and C<gather>
+B<What it gives you:> C<Stop>, C<is_stop>, C<gather> and C<is_stage>
 
-B<Made in:> DBIx::Squirrel::Stop and ::Gather
+B<Made in:> DBIx::Squirrel::Stop and ::Gather, and Ekorn::Pipeline
 
 =item C<:flow>
 

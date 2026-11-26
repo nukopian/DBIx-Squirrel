@@ -2087,7 +2087,7 @@ DBIx::Squirrel's own `:rows` and `:context` besides:
 
 | Tag | Holds | Made in |
 |---|---|---|
-| `:core` | `Stop`, `is_stop`, `gather` | [Stop](#6-stopping-early), [Gather](#7-gathering-stages-made-for-each-run) |
+| `:core` | `Stop`, `is_stop`, `gather`, `is_stage` | [Stop](#6-stopping-early), [Gather](#7-gathering-stages-made-for-each-run), Ekorn::Pipeline |
 | `:flow` | `take`, `take_first`, `take_last`, `take_single`, `take_if`, `take_while`, `drop`, `drop_if`, `drop_while` | [Stages::Flow](#taking-and-dropping) |
 | `:batch` | `batch`, `collect` | [Stages::Batch](#batching-and-collecting) |
 | `:taps` | `peek`, `count_into`, `dump_to`, `tee` | [Stages::Taps](#canned-stages) |
@@ -2117,7 +2117,7 @@ DBIx::Squirrel's own `:rows` and `:context` besides:
   in either order, gives the same subs. A test fails if that changes.
 - **What's left out.** What's for extending DBIx::Squirrel rather than
   using it, such as `croakf`, from DBIx::Squirrel::Errors, and
-  `is_stage`, from Ekorn::Pipeline; [the
+  `is_sink`, from Ekorn::Pipeline; [the
   Sugar](#9-sugar-a-function-for-each-database-and-statement), whose
   `use` makes functions; and [`|`](#16-operators--and-), which only
   `use Ekorn::Pipeline::Operators` puts in force, in its own scope.
@@ -2651,14 +2651,13 @@ Ekorn's reference has it in full, in
 ### Finding the stages at the end of a list
 
 To find the stages at the end of a list of arguments, test each from
-the end with Ekorn::Pipeline's `is_stage`, which is true of code
-references, pipelines and Ekorn's stage objects, and false of strings
-and other values. A sink given last is a stage too, so a caller can
+the end with `is_stage`, Ekorn::Pipeline's, which Tooling's `:core`
+holds. It's true of code references, pipelines and Ekorn's stage
+objects, and false of strings and other values. A sink given last is a stage too, so a caller can
 end with one:
 
 ```perl
-use DBIx::Squirrel::Tooling qw(count_items);
-use Ekorn::Pipeline qw(is_stage);
+use DBIx::Squirrel::Tooling qw(count_items is_stage);
 
 say albums_since(1990, count_items);              # 2
 say is_stage(sub {1}) ? 'a stage' : 'a value';    # a stage
@@ -4506,6 +4505,22 @@ run calls the block once, to its end. From Ekorn::Pipeline::Factories.
 Exported upon request.
 
 See [generator and yield](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#generator-and-yield).
+
+#### is_stage
+
+<!-- not run -->
+```perl
+use DBIx::Squirrel::Tooling qw(is_stage);
+
+$is = is_stage($value);
+```
+
+True of a stage: a code reference, a pipeline, or one of
+Ekorn::Pipeline's stage objects, such as a sink; false of a string or
+any other value. From Ekorn::Pipeline, in `:core`. Exported upon
+request.
+
+See [Finding the stages at the end of a list](#finding-the-stages-at-the-end-of-a-list).
 
 #### keep
 

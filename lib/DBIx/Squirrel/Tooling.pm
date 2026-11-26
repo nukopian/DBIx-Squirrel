@@ -19,8 +19,9 @@ use Ekorn::Pipeline::Sources qw(from_array from_fh from_file counter);
 use Ekorn::Pipeline::Sinks   qw(
     count_items keep keep_all keep_first keep_last keep_single
     to_fh       to_file);
-use Ekorn::Pipeline::JSON qw(from_json from_jsonl to_json to_jsonl);
-use Ekorn::Pipeline::CSV  qw(from_csv  to_csv);
+use Ekorn::Pipeline::JSON      qw(from_json from_jsonl to_json to_jsonl);
+use Ekorn::Pipeline::CSV       qw(from_csv  to_csv);
+use Ekorn::Pipeline            qw(is_stage);
 use Ekorn::Pipeline::Factories qw(
     pipeline stage source generator yield
     sink_one sink_many);
@@ -36,7 +37,7 @@ use DBIx::Squirrel::Stages::Rows  qw(:all);
 our $VERSION = 'v4.1.1';
 
 our %EXPORT_TAGS = (
-    core => [qw(Stop is_stop gather)],
+    core => [qw(Stop is_stop gather is_stage)],
     flow => [
         qw(take take_first take_last take_single take_if take_while),
         qw(drop drop_if    drop_while),
@@ -119,8 +120,8 @@ Nothing is exported by default: ask for tags, or names, or both. An
 unknown tag or name is reported by Exporter, as it is for any module.
 
 It leaves out what's for extending the package rather than using it,
-such as C<is_stage>, from L<Ekorn::Pipeline>, and C<croakf>, from
-L<DBIx::Squirrel::Errors>: import those from their own modules. And it
+such as C<croakf>, from L<DBIx::Squirrel::Errors>, and C<is_sink>, from
+L<Ekorn::Pipeline>: import those from their own modules. And it
 leaves out what's configured on C<use>: L<DBIx::Squirrel::Sugar>,
 whose import makes functions for your databases and statements, and
 L<Ekorn::Pipeline::Operators>, a pragma, which puts C<|> in force only
@@ -132,8 +133,9 @@ in the scope that uses it, by name.
 
 =item C<:core>
 
-C<Stop>, from L<DBIx::Squirrel::Stop>, and C<gather>, from
-L<DBIx::Squirrel::Gather>.
+C<Stop> and C<is_stop>, from L<DBIx::Squirrel::Stop>; C<gather>, from
+L<DBIx::Squirrel::Gather>; and C<is_stage>, from L<Ekorn::Pipeline>,
+for a function finding the stages at the end of its arguments.
 
 =item C<:flow>
 

@@ -8,7 +8,7 @@ Unreleased
     Ekorn::Pipeline changes nothing a caller imports, and is_stop, from
     DBIx::Squirrel::Stop, tells a stop from any other error.
 
-    It ships roadmap 2026-0052 to 2026-0056, and 2026-0058 to 2026-0060.
+    It ships roadmap 2026-0052 to 2026-0056, and 2026-0058 to 2026-0061.
 
     - Why. Ekorn::Pipeline began as DBIx::Squirrel's pipeline, and
       moved into a distribution of its own in 2026, as it was useful,
@@ -52,6 +52,10 @@ Unreleased
       other error, so a stage that catches errors can pass a stop on
       without naming its class, Ekorn::Pipeline::Stop. The guide's and
       the reference's catch examples use it (roadmap 2026-0060).
+    - DBIx::Squirrel::Tooling's :core holds is_stage, Ekorn::Pipeline's,
+      so a function finding the stages at the end of its arguments
+      imports it from DBIx::Squirrel, as the reference now shows. Tooling
+      had left it out as for extending, not using (roadmap 2026-0061).
 
 v4.1.1 2026-11-26
 

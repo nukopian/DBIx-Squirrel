@@ -45,22 +45,7 @@ Nothing yet.
 
 ## Next
 
-### 2026-0061. is_stage, from DBIx::Squirrel::Tooling
-
-**Size:** XS (1). From 2026-0057's D4. **Decisions:** D1 settled:
-Tooling's `:core`. [Record](docs/changes/2026-0061-is-stage.md).
-
-**What:** DBIx::Squirrel::Tooling imports Ekorn::Pipeline's `is_stage`
-and holds it in `:core`, so a function taking any number of values,
-then stages, finds the stages with a name from DBIx::Squirrel.
-
-**Why:** Part 2 shows `is_stage` imported from Ekorn::Pipeline; from
-Tooling, it names one module fewer of Ekorn's.
-
-**Done when:** `t/28-tooling.t` checks `:core` holds it, Tooling's POD
-no longer lists it as left out, Part 2 of the reference imports it
-from Tooling, with a `Changes` line, and `yath test -L t xt` passes on
-5.36 and 5.44.
+Nothing yet.
 
 ## Later
 

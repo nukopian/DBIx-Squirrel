@@ -34,6 +34,10 @@ my %module = (
     words   => ['Ekorn::Pipeline::Factories'],
 );
 
+# Names a tag of DBIx::Squirrel's modules holds besides, from
+# Ekorn::Pipeline: is_stage, in :core (roadmap 2026-0061).
+my %extra = (core => {'Ekorn::Pipeline' => [qw(is_stage)]});
+
 # The names a module exports, by default or on request, sorted.
 sub exported_by ($module) {
     no strict 'refs';    ## no critic (TestingAndDebugging::ProhibitNoStrict)
@@ -58,7 +62,8 @@ subtest 'each tag holds every name its modules export, if ours' => sub {
                 ":$tag lists only names they export";
         }
         else {
-            is tag($tag), [sort keys %theirs], ":$tag";
+            my @extra = map { @$_ } values %{ $extra{$tag} // {} };
+            is tag($tag), [sort keys(%theirs), @extra], ":$tag";
         }
     }
 };
@@ -73,9 +78,9 @@ subtest ':all is every tag, each name once' => sub {
     is [exported_by($tooling)], [sort keys %every], 'and is what it exports';
 };
 
-subtest 'not for callers: is_stage, is_sink, croakf, the operators' => sub {
+subtest 'not for callers: is_sink, croakf, the operators' => sub {
     my %all = map { $_ => 1 } @{ tag('all') };
-    ok !$all{$_}, "no $_" for qw(is_stage is_sink croakf chain drain);
+    ok !$all{$_}, "no $_" for qw(is_sink croakf chain drain);
 };
 
 subtest 'nothing by default' => sub {
@@ -97,6 +102,12 @@ subtest "each name is its own module's sub, DBIx::Squirrel's first" => sub {
     }
     ref_is $tooling->can('gather'), DBIx::Squirrel::Gather->can('gather'),
         "gather, Factories' word too, is DBIx::Squirrel::Gather's";
+    for my $tag (sort keys %extra) {
+        for my $module (sort keys %{ $extra{$tag} }) {
+            ref_is $tooling->can($_), $module->can($_), "$_, from $module"
+                for @{ $extra{$tag}{$module} };
+        }
+    }
 };
 
 # Only the names both export: a name Ekorn::Pipeline adds to its Tooling
