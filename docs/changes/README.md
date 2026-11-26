@@ -80,6 +80,10 @@ Steps, Done when.
 
 Newest id first.
 
+- [Why Ekorn::Pipeline split from DBIx::Squirrel](2026-0053-why-the-split.md),
+  roadmap 2026-0053: open.
+- [Two parts: DBIx::Squirrel, then Ekorn::Pipeline](2026-0052-two-parts.md),
+  roadmap 2026-0052: open.
 - [Ekorn's names in the index, under Tooling](2026-0051-ekorn-names-in-index.md),
   roadmap 2026-0051: shipped in v4.1.1.
 - [An iterator's all_arrayref](2026-0050-all-arrayref.md),
