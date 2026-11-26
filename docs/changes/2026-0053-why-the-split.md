@@ -60,13 +60,39 @@ v0.1.0-TRIAL, on 2026-11-07, according to MetaCPAN.
 kept close, placeholders made less bothersome, iterators and
 transformations for results, and everything the DBI does still done.
 
-By DBIx::Squirrel 2, its pipeline was Ekorn::Pipeline, a distribution
-of its own, with `DBIx::Squirrel::Pipeline` a facade over it; version 3
+DBIx::Squirrel 2's trials, v2.0.0 to v2.0.4 (2026-11-05 to
+2026-11-08), carried the pipeline as their own. Ekorn-Pipeline's first
+commit, 0b45ac977eac8dba7d59562267e04d4895f1037d on 2026-11-07, took
+it from DBIx-Squirrel at v2.0.2
+(5e30135672d8002b0bb67ba68278e5b1c262df8b), renamed from
+`DBIx::Squirrel::*` to `Ekorn::Pipeline::*` with the code unchanged,
+leaving behind what needs the DBI or DBIx::Squirrel's iterators: the
+run's context, and the stages for rows. Ekorn::Pipeline v0.1.0-TRIAL
+came out the same day. From v2.0.5, 2.x's first full release, on
+2026-11-08, DBIx::Squirrel used Ekorn::Pipeline in place of its own
+copy, with `DBIx::Squirrel::Pipeline` a facade over it; version 3
 dropped the facades and was built on Ekorn::Pipeline as it is
-(2026-0013 to 2026-0019). The documents say little about why the
-pipeline left: the guide's "17. Coming from version 1 or 2" and the
-reference's "Upgrading from 2.x" say what changed for a caller, not
-what led to it.
+(2026-0013 to 2026-0019). An earlier version of this record said 2.x
+used Ekorn::Pipeline throughout, which its trials didn't.
+
+The reasons recorded then are in Ekorn-Pipeline's first commit's
+message:
+
+> So that any function, not only a query, can take stages from its
+> caller, and the pipeline can grow beyond what rows need, with
+> DBIx-Squirrel to depend on it once both are stable.
+
+and its README, under "Where it came from":
+
+> The pipeline began in DBIx::Squirrel, where stages written beside a
+> query shape the rows it returns. None of it needs a database, so
+> it's here on its own, for any function to use, and to grow beyond
+> what rows need.
+
+DBIx::Squirrel's own documents say little about why the pipeline
+left: the guide's "17. Coming from version 1 or 2" and the reference's
+"Upgrading from 2.x" say what changed for a caller, not what led to
+it.
 
 Talking over the documents' two parts (2026-0052) on 2026-11-26, Iain
 judged the why an important part of the story: it's what makes Part 2
@@ -77,9 +103,9 @@ explained after the fact.
 
 - [ ] **D1.** Why did the two split? Iain's reasons, in his words, to
   be shaped into the text. Where the pipeline came from is settled
-  (Background); why it became a distribution of its own is still to
-  come. The history shows what happened and when, but not the reasons,
-  and they shouldn't be inferred from commit messages.
+  (Background), and the reasons recorded at the split are quoted
+  there; whether there's more to them is Iain's to say. Reasons
+  shouldn't be inferred beyond what's recorded.
 - [ ] **D2.** Where is it told, and how often? The recommendation: in
   full once, at the opening of the guide's Part 2 (2026-0055): it was
   one library, it split for these reasons, and here is what you gain by
