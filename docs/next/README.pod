@@ -56,8 +56,8 @@ each value:
     my $marks = join ', ', ('?') x @years;
     my $rows  = $dbh->selectall_arrayref("SELECT title FROM album WHERE year IN ($marks)", undef, @years);
 
-A placeholder written with C<...> before it takes an array reference,
-and the SQL stays one string, the same whatever the list:
+A placeholder prefixed with C<...> takes an array reference, and the
+SQL stays one string, the same whatever the list:
 
     my $rows = $dbh->selectall_arrayref('SELECT title FROM album WHERE year IN (...:years)', years => \@years);
 

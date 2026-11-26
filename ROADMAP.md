@@ -41,13 +41,7 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-### 2026-0054. The README in two parts
-
-**Size:** S (2). [Record](docs/changes/2026-0054-readme-two-parts.md).
-
-`docs/next/README.pod`, with 2026-0052's D5 test, `xt/part-one.t`.
-The first draft is written and its tests pass; it waits on Iain's
-review with GitHub Copilot (2026-0052's D7).
+Nothing yet.
 
 ## Next
 

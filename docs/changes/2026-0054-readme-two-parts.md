@@ -1,6 +1,6 @@
 # 2026-0054. The README in two parts
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** None: they're 2026-0052's, and 2026-0053's D2.
 
@@ -9,6 +9,8 @@
 **Depends on:** 2026-0052, 2026-0053
 
 **Started:** 2026-11-26
+
+**Finished:** 2026-11-26
 
 ## Background
 
@@ -84,10 +86,10 @@ pass on `docs/next/README.pod`, `yath test -L t xt` passes on 5.36 and
 
 ## What happened
 
-- **So far:** `xt/part-one.t` and the first draft of
-  `docs/next/README.pod`, for Iain's review with GitHub Copilot
-  (2026-0052's D7). `xt/part-one.t`, `xt/examples.t` and
-  `xt/spelling.t` pass on it, and `yath test -L t xt` on 5.36 and 5.44,
+- **Outcome:** done. `docs/next/README.pod` is written, approved by
+  Iain's sceptical review with GitHub Copilot (2026-0052's D7), and
+  `xt/part-one.t` keeps its Part 1 to DBIx::Squirrel's own names.
+  `xt/part-one.t`, `xt/examples.t` and `xt/spelling.t` pass on it, and `yath test -L t xt` on 5.36 and 5.44,
   against Ekorn-Pipeline's working copy at
   446058f8873907be8d53f2befd49bbaa70e6f101.
 - **The test,** tried on samples, not committed: `keep_all` in Part
@@ -116,3 +118,13 @@ pass on `docs/next/README.pod`, `yath test -L t xt` passes on 5.36 and
   named statements called conveniences in "Where you can stop", and
   step 6 begun "If you like", where it suggested marking it optional,
   as every step is; and "The DBI is the foundation", less defensive.
+- **The second review,** on 2026-11-26: "Approved". The opening now
+  shows SQL, named placeholders, the iterator and a stage in a few
+  lines; every pair is about preventing a bug or saying what's meant
+  more plainly; and Part 2 reads as something related that solves a
+  different problem, not an apology for Ekorn::Pipeline. Its one
+  tweak, made: "A placeholder prefixed with `...`". It advised
+  stopping here and carrying the same principles into the guide.
+- **What's left:** the guide (2026-0055) and the reference (2026-0056)
+  by the same principles; the link to the guide's Part 2, and the
+  README's place, at the swap (2026-0058).
