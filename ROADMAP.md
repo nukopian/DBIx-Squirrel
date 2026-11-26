@@ -50,7 +50,8 @@ Nothing yet.
 **Size:** S (2). **Decisions:** D1 settled: Part 1 is DBIx::Squirrel,
 complete; Part 2 is Ekorn::Pipeline, by choice. D2 settled: Ekorn's
 names are those imported from its modules, and Tooling goes to Part 2
-whole. D3 settled: a divider heading for each part, "Part 1:
+whole; amended with a positive test, that what fits 1.6.5's
+DESCRIPTION, or extends something it names, belongs in Part 1. D3 settled: a divider heading for each part, "Part 1:
 DBIx::Squirrel" and "Part 2: With Ekorn::Pipeline"; the chapters keep
 theirs, numbered on through both. D4 settled: Part 1 names what it
 asks a reader to learn, and ends where they may stop. D5 settled: an
