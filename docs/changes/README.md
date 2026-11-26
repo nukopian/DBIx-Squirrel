@@ -81,7 +81,7 @@ Steps, Done when.
 Newest id first.
 
 - [dump_to's setting, without naming Ekorn](2026-0062-dump-to-setting.md),
-  roadmap 2026-0062: open.
+  roadmap 2026-0062: shipped, unreleased.
 - [is_stage, from DBIx::Squirrel::Tooling](2026-0061-is-stage.md),
   roadmap 2026-0061: shipped, unreleased.
 - [is_stop, from DBIx::Squirrel::Stop](2026-0060-is-stop.md),

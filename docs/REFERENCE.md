@@ -1182,10 +1182,10 @@ it writes each secret that module's rules find as `*REDACTED*`, in the
 text it writes only: the value passed on is as it came. The rules find
 a long, random password, token or key, such as the password in a DSN,
 but not a short or ordinary password, so a dump can still hold
-secrets. Without the module, it writes each value in full, and Part
-2's [Settings of the pipeline](#settings-of-the-pipeline) says how to
-have that with it; with the module there but broken, it croaks rather
-than write a dump. It doesn't escape control characters in strings, so
+secrets. Without the module, or while
+`local $DBIx::Squirrel::Stages::Taps::DumpSecrets = 1` is set, it
+writes each value in full; with the module there but broken, it
+croaks rather than write a dump. It doesn't escape control characters in strings, so
 a value from outside can send escape sequences to a terminal.
 
 ```perl
@@ -2701,9 +2701,12 @@ say "@safe";    # ABBA BLUR
 
 ### Settings of the pipeline
 
-While `local $Ekorn::Pipeline::Stages::Taps::DumpSecrets = 1` is set,
-`dump_to` writes each value in full, Text::Redact::Secrets installed
-or not.
+`$DBIx::Squirrel::Stages::Taps::DumpSecrets`, which has `dump_to`
+write each value in full, is Ekorn::Pipeline's
+`$Ekorn::Pipeline::Stages::Taps::DumpSecrets` under DBIx::Squirrel's
+name, tied to it, so setting either, with `local` or without, sets
+both. Ekorn's message, when Text::Redact::Secrets is installed but
+can't be used, names Ekorn's.
 
 ### Messages of the pipeline
 
@@ -4217,7 +4220,7 @@ text it writes only: the value passed on is as it came. The rules find
 a long, random password, token or key, such as the password in a DSN,
 but not a short or ordinary password, so a dump can still hold
 secrets. Without the module, or while
-`local $Ekorn::Pipeline::Stages::Taps::DumpSecrets = 1` is set, it
+`local $DBIx::Squirrel::Stages::Taps::DumpSecrets = 1` is set, it
 writes each value in full; with the module there but broken, it
 croaks rather than write a dump. It doesn't escape control characters
 in strings, so a value from outside can send escape sequences to a
