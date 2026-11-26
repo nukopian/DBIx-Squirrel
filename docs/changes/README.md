@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [Ekorn's names in the index, under Tooling](2026-0051-ekorn-names-in-index.md),
+  roadmap 2026-0051: open.
 - [An iterator's all_arrayref](2026-0050-all-arrayref.md),
   roadmap 2026-0050: shipped in v4.1.0.
 - [A quality release](2026-0049-quality-release.md),
