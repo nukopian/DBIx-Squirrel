@@ -1478,8 +1478,8 @@ C<DBIx::Squirrel::Stop::Stop()>.
 A stop is an exception, an object, which the run catches. So a stage
 that catches errors itself, with C<eval> or C<try>, should throw a stop
 on again. C<is_stop>, exported on request, is true of every stop,
-including those the canned stages throw, such as C<take>'s, and false
-of any other error. Part 2's L<What a stop is|/"What a stop is"> gives
+whether thrown with C<Stop>, with C<throw>, or as a subclass of your
+own, and false of any other error. Part 2's L<What a stop is|/"What a stop is"> gives
 its class:
 
     use DBIx::Squirrel::Stop qw(Stop is_stop);
@@ -3213,8 +3213,8 @@ L<gather|Ekorn::Pipeline::Manual::Reference/"gather">.
 To find the stages at the end of a list of arguments, test each from
 the end with C<is_stage>, Ekorn::Pipeline's, which Tooling's C<:core>
 holds. It's true of code references, pipelines and Ekorn's stage
-objects, and false of strings and other values. A sink given last is a stage too, so a caller can
-end with one:
+objects, and false of strings and other values. A sink given last is
+a stage too, so a caller can end with one:
 
     use DBIx::Squirrel::Tooling qw(count_items is_stage);
 
@@ -3233,9 +3233,7 @@ reference says what a stop holds, in L<The stop
 object|Ekorn::Pipeline::Manual::Reference/"The stop object">.
 A stage made with C<gather> is an C<Ekorn::Pipeline::Gather>.
 
-A stop is an C<Ekorn::Pipeline::Stop>, so C<is_stop> is the same test as
-this one, which names the class. Every stop is one, including those
-the canned stages throw, such as C<take>'s:
+So C<is_stop> is the same test as this one, which names the class:
 
     use experimental qw(try);
     use DBIx::Squirrel::Tooling qw(Stop);
@@ -3595,7 +3593,8 @@ B<How to move:> read it in list context, C<< my($name) = $dbh->pipe(...) >>, or 
 
 =back
 
-Everything else works as it did.
+Everything else works as it did. Version 4.2 takes Ekorn::Pipeline
+v0.4.3, whose iterator has C<next>.
 
 =head1 Upgrading from 2.x
 

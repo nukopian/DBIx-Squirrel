@@ -1264,8 +1264,8 @@ has a name:
 A stop works by throwing an exception that the run catches. So a
 stage that catches errors itself must pass a stop on, or the run won't
 stop. C<is_stop>, from DBIx::Squirrel::Stop on request, tells a stop from
-any other error, whether thrown with C<Stop> or by a stage such as
-C<take>:
+any other error, whether thrown with C<Stop>, with C<throw>, or as a
+subclass of your own:
 
     use DBIx::Squirrel::Stop qw(Stop is_stop);
     use experimental qw(try);
@@ -2504,8 +2504,9 @@ by its C<iterator>. Given a source, such as C<from_csv>'s, C<iterator>
 gives an iterator over what comes out of the pipeline's stages, much
 as C<iterate> does for a query: C<next>, C<all>, C<first> and C<single>
 work as they do on a query's, but there's no C<reset>: an iterator from
-a pipeline is one run, so make another with C<iterator>. Here the stage that writes each
-batch gives how many it wrote, so C<all> gives one count a batch.
+a pipeline is one run, so make another with C<iterator>. Here the stage
+that writes each batch gives how many it wrote, so C<all> gives one
+count a batch.
 
 =head1 17. Building pipelines from pipelines
 
@@ -2960,10 +2961,9 @@ C<use> any of DBIx::Squirrel belongs with DBIx::Squirrel.
 =head2 Tell a stop from other errors by its class
 
 L<Chapter 6|/"Catch errors in a stage, but let a stop through"> tells a
-stop with C<is_stop>. A stop is an Ekorn::Pipeline::Stop, whether it was
-thrown with C<Stop>, or by a stage such as C<take>, so C<is_stop> is the
-same as testing for that class, which code that knows Ekorn::Pipeline
-may do:
+stop with C<is_stop>. A stop is an Ekorn::Pipeline::Stop, however it
+was thrown, so C<is_stop> is the same as testing for that class, which
+code that knows Ekorn::Pipeline may do:
 
     use DBIx::Squirrel::Tooling qw(Stop);
     use experimental qw(try);

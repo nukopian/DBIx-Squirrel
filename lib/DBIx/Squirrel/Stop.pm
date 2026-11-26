@@ -100,7 +100,7 @@ ask for C<:all>:
 
 A stage that catches errors itself, with C<eval> or C<try>, should
 throw a stop on again. C<is_stop> tells one, whether thrown with
-C<Stop>, with C<throw>, or by a canned stage such as C<take>:
+C<Stop>, with C<throw>, or as a subclass of your own:
 
     sub ($row) {
         try { ... }

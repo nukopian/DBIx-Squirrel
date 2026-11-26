@@ -33,7 +33,8 @@ our $DumpSecrets;    ## no critic (Variables::ProhibitPackageVars)
 tie $DumpSecrets, 'DBIx::Squirrel::Stages::Taps::DumpSecretsTie';
 
 # The tie: each read and write goes to Ekorn::Pipeline's variable.
-package DBIx::Squirrel::Stages::Taps::DumpSecretsTie {    ## no critic (Modules::ProhibitMultiplePackages)
+package              ## no critic (Modules::ProhibitMultiplePackages) its name on the next line, hidden from PAUSE
+    DBIx::Squirrel::Stages::Taps::DumpSecretsTie {
 
 
     sub TIESCALAR ($class) {

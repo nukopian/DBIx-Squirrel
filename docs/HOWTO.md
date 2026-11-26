@@ -1197,8 +1197,8 @@ say "@newest";    # the-great-escape
 A stop works by throwing an exception that the run catches. So a
 stage that catches errors itself must pass a stop on, or the run won't
 stop. `is_stop`, from DBIx::Squirrel::Stop on request, tells a stop from
-any other error, whether thrown with `Stop` or by a stage such as
-`take`:
+any other error, whether thrown with `Stop`, with `throw`, or as a
+subclass of your own:
 
 ```perl
 use DBIx::Squirrel::Stop qw(Stop is_stop);
@@ -2360,8 +2360,9 @@ by its `iterator`. Given a source, such as `from_csv`'s, `iterator`
 gives an iterator over what comes out of the pipeline's stages, much
 as `iterate` does for a query: `next`, `all`, `first` and `single`
 work as they do on a query's, but there's no `reset`: an iterator from
-a pipeline is one run, so make another with `iterator`. Here the stage that writes each
-batch gives how many it wrote, so `all` gives one count a batch.
+a pipeline is one run, so make another with `iterator`. Here the stage
+that writes each batch gives how many it wrote, so `all` gives one
+count a batch.
 
 ## 17. Building pipelines from pipelines
 
@@ -2806,10 +2807,9 @@ Ekorn::Pipeline can't depend on DBIx::Squirrel, so a stage that would
 ### Tell a stop from other errors by its class
 
 [Chapter 6](#catch-errors-in-a-stage-but-let-a-stop-through) tells a
-stop with `is_stop`. A stop is an Ekorn::Pipeline::Stop, whether it was
-thrown with `Stop`, or by a stage such as `take`, so `is_stop` is the
-same as testing for that class, which code that knows Ekorn::Pipeline
-may do:
+stop with `is_stop`. A stop is an Ekorn::Pipeline::Stop, however it
+was thrown, so `is_stop` is the same as testing for that class, which
+code that knows Ekorn::Pipeline may do:
 
 ```perl
 use DBIx::Squirrel::Tooling qw(Stop);

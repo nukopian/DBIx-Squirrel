@@ -1267,8 +1267,8 @@ say "@upto";    # Disraeli Gears Arrival Parklife
 A stop is an exception, an object, which the run catches. So a stage
 that catches errors itself, with `eval` or `try`, should throw a stop
 on again. `is_stop`, exported on request, is true of every stop,
-including those the canned stages throw, such as `take`'s, and false
-of any other error. Part 2's [What a stop is](#what-a-stop-is) gives
+whether thrown with `Stop`, with `throw`, or as a subclass of your
+own, and false of any other error. Part 2's [What a stop is](#what-a-stop-is) gives
 its class:
 
 ```perl
@@ -2653,8 +2653,8 @@ Ekorn's reference has it in full, in
 To find the stages at the end of a list of arguments, test each from
 the end with `is_stage`, Ekorn::Pipeline's, which Tooling's `:core`
 holds. It's true of code references, pipelines and Ekorn's stage
-objects, and false of strings and other values. A sink given last is a stage too, so a caller can
-end with one:
+objects, and false of strings and other values. A sink given last is
+a stage too, so a caller can end with one:
 
 ```perl
 use DBIx::Squirrel::Tooling qw(count_items is_stage);
@@ -2675,9 +2675,7 @@ reference says what a stop holds, in [The stop
 object](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#the-stop-object).
 A stage made with `gather` is an `Ekorn::Pipeline::Gather`.
 
-A stop is an `Ekorn::Pipeline::Stop`, so `is_stop` is the same test as
-this one, which names the class. Every stop is one, including those
-the canned stages throw, such as `take`'s:
+So `is_stop` is the same test as this one, which names the class:
 
 ```perl
 use experimental qw(try);
@@ -2964,7 +2962,8 @@ pipeline of the same stages gives. One change meets code written for
 |---|---|---|
 | `my $name = $dbh->pipe(...)`, or `$sth->pipe(...)`, in scalar context, for the first result | how many results came out, or a sink's result if a sink is last | read it in list context, `my($name) = $dbh->pipe(...)`, or give `keep_first` last |
 
-Everything else works as it did.
+Everything else works as it did. Version 4.2 takes Ekorn::Pipeline
+v0.4.3, whose iterator has `next`.
 
 ## Upgrading from 2.x
 

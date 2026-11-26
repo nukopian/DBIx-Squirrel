@@ -5,8 +5,10 @@ Unreleased
     The README, the user guide and the reference each come in two
     parts, DBIx::Squirrel first, then what Ekorn::Pipeline adds.
     DBIx::Squirrel::Tooling's tags hold lists of its own, so a newer
-    Ekorn::Pipeline changes nothing a caller imports, and is_stop, from
-    DBIx::Squirrel::Stop, tells a stop from any other error.
+    Ekorn::Pipeline changes nothing a caller imports. Three names come
+    in: is_stop, which tells a stop from any other error; is_stage, in
+    Tooling's :core; and $DBIx::Squirrel::Stages::Taps::DumpSecrets,
+    dump_to's setting by DBIx::Squirrel's name.
 
     It ships roadmap 2026-0052 to 2026-0056, and 2026-0058 to 2026-0063.
     Requires Ekorn::Pipeline >= v0.4.3, < v0.5.0, which gives a
@@ -56,12 +58,13 @@ Unreleased
       the reference's catch examples use it (roadmap 2026-0060).
     - DBIx::Squirrel::Tooling's :core holds is_stage, Ekorn::Pipeline's,
       so a function finding the stages at the end of its arguments
-      imports it from DBIx::Squirrel, as the reference now shows. Tooling
-      had left it out as for extending, not using (roadmap 2026-0061).
+      imports it from DBIx::Squirrel, as the reference now shows.
+      Tooling had left it out as for extending, not using (roadmap
+      2026-0061).
     - $DBIx::Squirrel::Stages::Taps::DumpSecrets, true, has dump_to
       write each value in full, without redacting secrets. It's
       Ekorn::Pipeline's setting under DBIx::Squirrel's name, tied to
-      it, so local on either sets both, as it does Data::Dumper's
+      it, so local on either sets both, as callers set Data::Dumper's
       (roadmap 2026-0062).
     - Requires Ekorn::Pipeline v0.4.3 or later, below v0.5.0, where it
       was v0.4.0: its iterator has next, as DBIx::Squirrel's has, so the
