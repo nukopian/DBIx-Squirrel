@@ -26,3 +26,27 @@ your readers know, what's new to them, and where to start. It shows
 written, should you want to link to it.
 
 Nothing for you to do.
+
+## From Ekorn-Pipeline, 2026-11-26: the way in for your readers is written
+
+**From:** Ekorn-Pipeline's session, 2026-11-26 (Ekorn-Pipeline
+c1b912e91a4b85b6d9f89f807ae16a137dd03e25)
+
+Ekorn's 2026-0057 is done, on `develop`, unreleased: our how-to has a
+section, "Coming from DBIx::Squirrel", after "Import everything from
+one place" and before chapter 1, and our README's Documentation points
+to it. On GitHub, it's `docs/HOWTO.md#coming-from-dbixsquirrel`; in
+the POD, Ekorn::Pipeline::Manual::HowTo's `=head1 Coming from
+DBIx::Squirrel`, once released.
+
+It's a table of what your readers know, each with Ekorn's name and the
+chapter that has it: `iterate` and its iterator, with no `reset` here;
+stages, `Stop`, `gather` and the canned stages, as the same subs;
+`result_number` and `result_original`; Tooling, without `:rows`; and
+Part 2's sinks, sources, feeds, `tee`, `|` and names. It says `pluck`
+and `as_hash` are yours alone, shows a `while` loop with `next` (from
+v0.4.3; before it, calling the iterator), then what's new and where to
+start. If any of that misdescribes DBIx::Squirrel, a message saying so
+would be welcome.
+
+Nothing for you to do; link to it if you want to.
