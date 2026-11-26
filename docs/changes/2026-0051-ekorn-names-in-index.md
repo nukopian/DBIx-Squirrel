@@ -1,6 +1,6 @@
 # 2026-0051. Ekorn's names in the index, under Tooling
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.1.1
 
 **Decisions:** D1 settled: under Tooling. D2 settled: a short entry.
 D3 settled, amended: where Ekorn's index links, where ours has no

@@ -2,10 +2,14 @@ Revision history for DBIx-Squirrel
 
 Unreleased
 
-    The reference's index lists the names DBIx::Squirrel::Tooling
-    exports from Ekorn::Pipeline.
+v4.1.1 2026-11-26
 
-    It ships roadmap 2026-0051.
+    Documentation only: the reference's index lists the names
+    DBIx::Squirrel::Tooling exports from Ekorn::Pipeline.
+
+    It ships roadmap 2026-0051. The code is v4.1.0's, but for each
+    module's version. Requires Ekorn::Pipeline >= v0.4.0, < v0.5.0, as
+    before.
 
     - The reference's index has an entry, under
       DBIx::Squirrel::Tooling, for each of the 25 names it exports from
