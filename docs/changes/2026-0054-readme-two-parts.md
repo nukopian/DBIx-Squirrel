@@ -106,3 +106,13 @@ pass on `docs/next/README.pod`, `yath test -L t xt` passes on 5.36 and
   you can stop", as it's DBIx::Squirrel's own. The link to the guide's
   Part 2 resolves only once 2026-0055's guide is in place (2026-0058).
   Perlcritic flags `die` in the test, as in the other xt tests.
+- **The first review,** by GitHub Copilot on 2026-11-26, as a
+  sceptical reader: "approve with minor edits"; Part 1 reads as
+  complete, and Part 2 as a different job, not the better half held
+  back. Its edits, made: the weakest pair, a value used twice, folded
+  into the pair on values bound in the wrong place; a stage in the
+  opening example, so D8's last sentence is shown at once; a sentence
+  saying a large result isn't held in memory; rows as objects and
+  named statements called conveniences in "Where you can stop", and
+  step 6 begun "If you like", where it suggested marking it optional,
+  as every step is; and "The DBI is the foundation", less defensive.

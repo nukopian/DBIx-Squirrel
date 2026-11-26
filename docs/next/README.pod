@@ -18,10 +18,14 @@ read, by small functions written beside the query.
     my $albums = $dbh->iterate(
         'SELECT title, year FROM album WHERE artist_id = :artist ORDER BY year',
         artist => 2,
+        sub { "$_->[0] ($_->[1])" },    # each row made a string
     );
     while (my($album) = $albums->next) {
-        say "$album->[0] ($album->[1])";
+        say $album;
     }
+
+The iterator reads rows as you ask for them, so a large result is
+never held in memory unless you ask for all of it.
 
 It isn't an ORM. It never hides the SQL, and never runs a query you
 didn't write. Where it and the DBI do the same thing, they give the
@@ -41,26 +45,8 @@ to use anything here.
 =head2 What it saves you
 
 Each of these is work a DBI user does every week, shown first with the
-DBI, then with DBIx::Squirrel. The DBI is the right foundation, and
-it's low-level on purpose; DBIx::Squirrel does the chores around it.
-
-=head3 A value used twice is given once.
-
-With C<?>, values go in the order the marks appear, so one used twice
-is passed twice:
-
-    my $rows = $dbh->selectall_arrayref(
-        'SELECT title FROM album WHERE title LIKE ? OR artist_id IN (SELECT id FROM artist WHERE name LIKE ?)',
-        undef, $like, $like,
-    );
-
-A named placeholder takes its value once, wherever it appears, and the
-select methods need no C<undef> before the values:
-
-    my $rows = $dbh->selectall_arrayref(
-        'SELECT title FROM album WHERE title LIKE :like OR artist_id IN (SELECT id FROM artist WHERE name LIKE :like)',
-        like => $like,
-    );
+DBI, then with DBIx::Squirrel. The DBI is the foundation;
+DBIx::Squirrel does the chores around it.
 
 =head3 A list goes into C<IN (...)> without building the SQL.
 
@@ -77,13 +63,14 @@ and the SQL stays one string, the same whatever the list:
 
 =head3 Values bound in the wrong place are caught.
 
-With C<?>, two values swapped run without a word, and here update
-nothing:
+With C<?>, values go in the order the marks appear, so two swapped run
+without a word, and here update nothing:
 
     $dbh->do('UPDATE track SET plays = ? WHERE id = ?', undef, $id, $plays);
 
-Named values go in any order. A name the statement doesn't have, or a
-placeholder given no value, croaks before anything runs:
+Named values go in any order, and one used twice in the SQL is given
+once. A name the statement doesn't have, or a placeholder given no
+value, croaks before anything runs:
 
     $dbh->do('UPDATE track SET plays = :plays WHERE id = :id', id => $id, plays => $plays);
     $dbh->do('UPDATE track SET plays = :plays WHERE id = :id', id => $id, play => $plays);
@@ -245,7 +232,7 @@ the rows going by, with no change to the query.
 Each row has a method for each column, and stages can work on the
 objects.
 
-=head3 6. Give your databases and statements names.
+=head3 6. If you like, give your databases and statements names.
 
     use DBIx::Squirrel::Stages::Rows qw(pluck);
     use DBIx::Squirrel::Sugar
@@ -266,8 +253,9 @@ as C<take>, without changing the SQL other code shares.
 =head2 Where you can stop
 
 That's DBIx::Squirrel: placeholders, the iterator and stages, on
-handles that are still the DBI's. If it does what you need, you can
-stop here, and nothing else is needed.
+handles that are still the DBI's. Rows as objects and named statements
+are conveniences built on them. If it does what you need, you can stop
+here, and nothing else is needed.
 
 =head2 Installing
 
