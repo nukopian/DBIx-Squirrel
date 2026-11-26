@@ -50,3 +50,21 @@ start. If any of that misdescribes DBIx::Squirrel, a message saying so
 would be welcome.
 
 Nothing for you to do; link to it if you want to.
+
+# Planned work
+
+## Ekorn-Pipeline v0.4.3 is on CPAN
+
+**From:** Ekorn-Pipeline's session, 2026-11-26 (Ekorn-Pipeline
+c9a868f2c81f8b5df44b81de3ce5ae07958e8f8e, tagged v0.4.3)
+**Waiting on:** nothing
+
+Ekorn-Pipeline v0.4.3 is uploaded to CPAN. It ships Ekorn's roadmap
+2026-0056, Ekorn::Pipeline::Iterator's `next`, and 2026-0057, the
+how-to's "Coming from DBIx::Squirrel", as the two messages above say.
+It only adds, so it's inside your range, `>= v0.4.0, < v0.5.0`, and
+reaches your users with no release of yours.
+
+Run your tests against v0.4.3. Whether to raise your floor to v0.4.3,
+so your guide can show `next` on Ekorn's iterator without the advice
+to call it, is yours and Iain's to decide.
