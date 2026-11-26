@@ -45,22 +45,6 @@ Nothing yet.
 
 ## Next
 
-### 2026-0059. Tooling exports a list of its own
-
-**Size:** XS (1). From 2026-0057's D1.
-
-**What:** DBIx::Squirrel::Tooling exports the names it lists, today's
-25 from Ekorn::Pipeline among them, rather than every name
-Ekorn::Pipeline::Tooling's tags hold, and `xt/ekorn-tooling.t` goes.
-
-**Why:** a name Ekorn adds in any v0.4.x fails our CI today, and must
-be added to ours in a release. With a list of our own, a name Ekorn
-adds comes into Tooling when we choose, in a release that adds.
-
-**Done when:** `xt/ekorn-tooling.t` is gone, Tooling's POD and the
-reference say its tags are its own, and `yath test -L t xt` passes on
-5.36 and 5.44.
-
 ### 2026-0060. is_stop, from DBIx::Squirrel::Stop
 
 **Size:** S (2). From 2026-0057's D3.

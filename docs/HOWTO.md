@@ -1983,8 +1983,10 @@ Part 1 imported each stage from the DBIx::Squirrel module that makes
 it. Part 2 adds Ekorn::Pipeline's sources, sinks and words, from
 modules of their own. You needn't remember which:
 DBIx::Squirrel::Tooling exports them all, DBIx::Squirrel's and
-Ekorn::Pipeline's together, by the same tags as
-Ekorn::Pipeline::Tooling, with two of DBIx::Squirrel's own:
+Ekorn::Pipeline's together, by tags named as Ekorn::Pipeline::Tooling's
+are, with two of DBIx::Squirrel's own. What each holds is the list
+below: a name Ekorn::Pipeline adds comes into it in a release of
+DBIx::Squirrel that adds it.
 
 | Tag | What it gives you | Made in |
 |---|---|---|

@@ -4,18 +4,23 @@ package DBIx::Squirrel::Tooling;
 
 use Exporter qw(import);
 
-# What each module exports, by default or on request, imported here, so
-# Exporter can export it again: from DBIx::Squirrel's own module where
-# it has one, and from Ekorn::Pipeline's only where it has none, so a
-# name both export is DBIx::Squirrel's (roadmap 2026-0025, D6). Each is
-# imported once, by name: gather is Factories' word too, and comes from
-# DBIx::Squirrel::Gather. t/28-tooling.t checks that each tag below
-# holds every name its module exports, and that each name both packages
-# export is one sub.
-use Ekorn::Pipeline::Sources   qw(:all);
-use Ekorn::Pipeline::Sinks     qw(:all);
-use Ekorn::Pipeline::JSON      qw(:all);
-use Ekorn::Pipeline::CSV       qw(:all);
+# The names each tag holds, imported here, so Exporter can export them
+# again: from DBIx::Squirrel's own module where it has one, and from
+# Ekorn::Pipeline's only where it has none, so a name both export is
+# DBIx::Squirrel's (roadmap 2026-0025, D6). Each is imported once, by
+# name: gather is Factories' word too, and comes from
+# DBIx::Squirrel::Gather. The names from Ekorn::Pipeline are a list of
+# our own, not every name its modules export, so a name it adds comes
+# into Tooling only when listed here, in a release that adds it, and one
+# it drops fails as Tooling loads (roadmap 2026-0059). t/28-tooling.t
+# checks that each tag holds every name DBIx::Squirrel's own modules
+# export, and that each name is its module's sub.
+use Ekorn::Pipeline::Sources qw(from_array from_fh from_file counter);
+use Ekorn::Pipeline::Sinks   qw(
+    count_items keep keep_all keep_first keep_last keep_single
+    to_fh       to_file);
+use Ekorn::Pipeline::JSON qw(from_json from_jsonl to_json to_jsonl);
+use Ekorn::Pipeline::CSV  qw(from_csv  to_csv);
 use Ekorn::Pipeline::Factories qw(
     pipeline stage source generator yield
     sink_one sink_many);
@@ -98,9 +103,11 @@ L<Ekorn::Pipeline::CSV>. This module
 exports all of them, by the tags below, so there's one module to
 import from, and nothing to remember about which module makes which.
 
-Its tags are L<Ekorn::Pipeline::Tooling>'s, with DBIx::Squirrel's own
-C<:rows> and C<:context> besides, so a caller moving between the two
-finds the same words. Where both export a name, this module's is
+Its tags are named as L<Ekorn::Pipeline::Tooling>'s are, with
+DBIx::Squirrel's own C<:rows> and C<:context> besides, so a caller
+moving between the two finds the same words. What each holds is this
+module's own list, given below: a name Ekorn::Pipeline adds comes into
+it only in a release of DBIx::Squirrel that adds it. Where both export a name, this module's is
 DBIx::Squirrel's: today, each such name is the same sub in both, so
 importing a name from both does no harm.
 

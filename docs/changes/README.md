@@ -84,6 +84,8 @@ Newest id first.
   roadmap 2026-0062: open.
 - [is_stage, from a module of DBIx::Squirrel's](2026-0061-is-stage.md),
   roadmap 2026-0061: open.
+- [Tooling exports a list of its own](2026-0059-tooling-own-list.md),
+  roadmap 2026-0059: shipped, unreleased.
 - [The new documents in place of the old](2026-0058-new-documents.md),
   roadmap 2026-0058: shipped, unreleased.
 - [What Part 1 still takes from Ekorn::Pipeline's code](2026-0057-part-one-coupling.md),

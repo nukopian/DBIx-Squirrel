@@ -2509,8 +2509,8 @@ operators, and the protocols between them.
 
 What a caller uses to do work is made in several modules, each
 described below. DBIx::Squirrel::Tooling exports all of it, from one
-place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
-C<:rows> and C<:context> besides:
+place, by tags named as Ekorn::Pipeline::Tooling's are, with
+DBIx::Squirrel's own C<:rows> and C<:context> besides:
 
 =over 4
 
@@ -2634,6 +2634,14 @@ from only one of them, or calls the other's by its full name.
 
 B<Text::CSV.> C<:csv>'s names need it, but load it only when one
 is first called, so C<:csv> and C<:all> import without it.
+
+=item *
+
+B<Its own lists.> What each tag holds is the list here, not
+whatever Ekorn::Pipeline::Tooling's tag of the same name holds. A
+name Ekorn::Pipeline adds comes into a tag only in a release of
+DBIx::Squirrel that adds it, so a newer Ekorn::Pipeline changes
+nothing a caller imports.
 
 =item *
 

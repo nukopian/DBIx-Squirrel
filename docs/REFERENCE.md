@@ -2082,8 +2082,8 @@ use DBIx::Squirrel::Tooling qw(pluck keep_all);     # or some names
 
 What a caller uses to do work is made in several modules, each
 described below. DBIx::Squirrel::Tooling exports all of it, from one
-place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
-`:rows` and `:context` besides:
+place, by tags named as Ekorn::Pipeline::Tooling's are, with
+DBIx::Squirrel's own `:rows` and `:context` besides:
 
 | Tag | Holds | Made in |
 |---|---|---|
@@ -2126,6 +2126,11 @@ place, by Ekorn::Pipeline::Tooling's tags, with DBIx::Squirrel's own
   from only one of them, or calls the other's by its full name.
 - **Text::CSV.** `:csv`'s names need it, but load it only when one
   is first called, so `:csv` and `:all` import without it.
+- **Its own lists.** What each tag holds is the list here, not
+  whatever Ekorn::Pipeline::Tooling's tag of the same name holds. A
+  name Ekorn::Pipeline adds comes into a tag only in a release of
+  DBIx::Squirrel that adds it, so a newer Ekorn::Pipeline changes
+  nothing a caller imports.
 - **What a tag holds is public.** A name may be added to one in a
   release that only adds, but is dropped or renamed only in a major
   release.
