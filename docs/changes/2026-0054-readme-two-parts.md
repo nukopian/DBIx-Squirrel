@@ -89,7 +89,8 @@ pass on `docs/next/README.pod`, `yath test -L t xt` passes on 5.36 and
 - **Outcome:** done. `docs/next/README.pod` is written, approved by
   Iain's sceptical review with GitHub Copilot (2026-0052's D7), and
   `xt/part-one.t` keeps its Part 1 to DBIx::Squirrel's own names.
-  `xt/part-one.t`, `xt/examples.t` and `xt/spelling.t` pass on it, and `yath test -L t xt` on 5.36 and 5.44,
+  `xt/part-one.t`, `xt/examples.t` and `xt/spelling.t` pass on it,
+  and `yath test -L t xt` on 5.36 and 5.44,
   against Ekorn-Pipeline's working copy at
   446058f8873907be8d53f2befd49bbaa70e6f101.
 - **The test,** tried on samples, not committed: `keep_all` in Part

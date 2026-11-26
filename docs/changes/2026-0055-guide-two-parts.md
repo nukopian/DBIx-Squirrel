@@ -73,7 +73,8 @@ approves it.
 
 - **Outcome:** done. `docs/next/HOWTO.md` is written, and approved by
   Iain's sceptical review with GitHub Copilot (below). Its 102
-  examples run and print what their comments say; `xt/part-one.t` and `xt/spelling.t` pass on it;
+  examples run and print what their comments say; `xt/part-one.t`
+  and `xt/spelling.t` pass on it;
   and `yath test -L t xt` passes on 5.36 and 5.44, against
   Ekorn-Pipeline's working copy at
   446058f8873907be8d53f2befd49bbaa70e6f101. Part 1 has `keep_all`
