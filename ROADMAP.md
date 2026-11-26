@@ -41,7 +41,13 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing yet.
+### 2026-0054. The README in two parts
+
+**Size:** S (2). [Record](docs/changes/2026-0054-readme-two-parts.md).
+
+`docs/next/README.pod`, with 2026-0052's D5 test, `xt/part-one.t`.
+The first draft is written and its tests pass; it waits on Iain's
+review with GitHub Copilot (2026-0052's D7).
 
 ## Next
 
@@ -64,19 +70,6 @@ say what changed for a caller at each version, but not why.
 **Done when:** the text is written, ready for 2026-0055 to place.
 
 ## Later
-
-### 2026-0054. The README in two parts
-
-**Size:** S (2). **Depends on:** 2026-0052, 2026-0053.
-
-`docs/next/README.pod`, by 2026-0052. Part 1 opens with 2026-0052's
-D8, then shows DBIx::Squirrel with its own iterator, its gains in
-pairs, plain DBI beside DBIx::Squirrel, for work a DBI user does every
-week, and closes the gaps 2026-0052's baseline found. Part 2 is a
-paragraph on Ekorn::Pipeline, a sentence on why the two split, and
-links on. The first document written, so the test from 2026-0052's D5
-comes with it, failing where a document's Part 1 names one of Ekorn's
-names. Done when that test and `xt/examples.t` pass on it.
 
 ### 2026-0055. The guide in two parts
 
@@ -101,8 +94,9 @@ together: sinks, files, JSON and CSV, `feed` for loading in batches,
 `docs/next/REFERENCE.md`, by 2026-0052, from `docs/REFERENCE.md`, its
 index too: Tooling and the 25 names it exports from Ekorn::Pipeline
 (2026-0051) go to Part 2, where the reason they're there is said, with
-a sentence on the split and a link to the guide's telling of it. Done when the 2026-0052 test,
-`xt/examples.t` and `xt/reference-index.t` pass on it.
+a sentence on the split and a link to the guide's telling of it. Done
+when the 2026-0052 test, `xt/examples.t` and `xt/reference-index.t`
+pass on it.
 
 ### 2026-0058. The new documents in place of the old
 

@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [The README in two parts](2026-0054-readme-two-parts.md),
+  roadmap 2026-0054: in progress.
 - [Why Ekorn::Pipeline split from DBIx::Squirrel](2026-0053-why-the-split.md),
   roadmap 2026-0053: open.
 - [Two parts: DBIx::Squirrel, then Ekorn::Pipeline](2026-0052-two-parts.md),
