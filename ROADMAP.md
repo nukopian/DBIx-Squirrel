@@ -41,24 +41,21 @@ dropped is deleted, and the commit that drops it names its id.
 
 ## Now
 
-Nothing yet.
+### 2026-0056. The reference in two parts
+
+**Size:** L (5).
+[Record](docs/changes/2026-0056-reference-two-parts.md).
+
+`docs/next/REFERENCE.md`, from `docs/REFERENCE.md`, its index too:
+Part 1 is DBIx::Squirrel, Part 2 what Ekorn::Pipeline adds, with the
+protocols between them. The first draft is written and its tests
+pass; it waits on Iain's review with GitHub Copilot.
 
 ## Next
 
 Nothing yet.
 
 ## Later
-
-### 2026-0056. The reference in two parts
-
-**Size:** L (5). **Depends on:** 2026-0052, 2026-0053.
-
-`docs/next/REFERENCE.md`, by 2026-0052, from `docs/REFERENCE.md`, its
-index too: Tooling and the 25 names it exports from Ekorn::Pipeline
-(2026-0051) go to Part 2, where the reason they're there is said, with
-a sentence on the split and a link to the guide's telling of it. Done
-when the 2026-0052 test, `xt/examples.t` and `xt/reference-index.t`
-pass on it.
 
 ### 2026-0058. The new documents in place of the old
 

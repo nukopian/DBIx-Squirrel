@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [The reference in two parts](2026-0056-reference-two-parts.md),
+  roadmap 2026-0056: in progress.
 - [The guide in two parts](2026-0055-guide-two-parts.md),
   roadmap 2026-0055: shipped, unreleased.
 - [The README in two parts](2026-0054-readme-two-parts.md),

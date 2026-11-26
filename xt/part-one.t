@@ -96,24 +96,33 @@ sub named ($code, $text, $names) {
     push @named, 'Ekorn' if $text =~ m( \b Ekorn \b )x;
     push @named, 'DBIx::Squirrel::Tooling'
         if $text =~ m( DBIx::Squirrel::Tooling )x;
-    my @code;
     if ($code) {
-        @code = map { s( (?: \A | \s ) \# \s .* \z )()xr } split m( \n )x, $text;
+        my @code = map { s( (?: \A | \s ) \# \s .* \z )()xr } split m( \n )x, $text;
+        for my $name (@$names) {
+            push @named, $name
+                if grep { m( (?<! [\$\@\%\w>:-] ) \b \Q$name\E \b (?! \s* => ) )x } @code;
+        }
+        return @named;
     }
-    else {
-        @code = (
-            $text =~ m( C <{2,} \s+ (.*?) \s+ >{2,} )xgs,
-            $text =~ m( C < ([^<>]*) > )xg,
-            $text =~ m( ` ([^`]+) ` )xg,
-        );
 
-        # A name with an underscore, such as count_items, is never a
-        # plain word, so it counts wherever it appears.
-        push @code, join ' ', grep { m( _ )x } split m( [^\w:] )x, $text;
-    }
+    # In the text, a name with an underscore, such as count_items, is never
+    # a plain word, so it counts wherever it appears. One that is a plain
+    # word, such as stage or keep, counts only as code of its own, alone or
+    # called, as `keep(3)`, not as a word in a message quoted as code.
+    my @spans = (
+        $text =~ m( C <{2,} \s+ (.*?) \s+ >{2,} )xgs,
+        $text =~ m( C < ([^<>]*) > )xg,
+        $text =~ m( ` ([^`]+) ` )xg,
+    );
+    my %words = map { $_ => 1 } split m( [^\w:] )x, $text;
     for my $name (@$names) {
-        push @named, $name
-            if grep { m( (?<! [\$\@\%\w>:-] ) \b \Q$name\E \b (?! \s* => ) )x } @code;
+        if ($name =~ m( _ )x) {
+            push @named, $name if $words{$name};
+        }
+        else {
+            push @named, $name
+                if grep { m( \A \s* \Q$name\E \b (?: \s* [\(\{] .* )? \s* \z )xs } @spans;
+        }
     }
     return @named;
 }

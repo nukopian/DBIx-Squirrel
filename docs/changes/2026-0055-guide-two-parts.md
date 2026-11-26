@@ -142,3 +142,10 @@ approves it.
   neither running the examples, where one example's import reaches
   every one after it, nor compiling them could show it. It found 48
   examples in the guide that didn't, and none in the README.
+- **Copilot on the imports,** on 2026-11-26: they change the guide's
+  contract with its reader, from "everything is imported in the
+  examples' database; remember that while reading" to each example
+  showing where its names come from, which reads better in isolation,
+  from a link into the middle, and when copied. It revised its earlier
+  advice: a short README should keep its imports few, but a long guide,
+  read piecemeal and copied from, is better with them.
