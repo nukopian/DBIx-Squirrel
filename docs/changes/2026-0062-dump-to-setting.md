@@ -2,7 +2,8 @@
 
 **Status:** open
 
-**Decisions:** D1 open: how it's set.
+**Decisions:** D1 settled: `$DBIx::Squirrel::Stages::Taps::DumpSecrets`,
+an alias of Ekorn's variable.
 
 **Origin:** roadmap, added 2026-11-26, from 2026-0057's D5
 
@@ -19,7 +20,10 @@ variable, and that stays Ekorn's.
 
 ## Decisions
 
-- [ ] **D1.** How is it set? The options:
+- [x] **D1.** How is it set?
+  `$DBIx::Squirrel::Stages::Taps::DumpSecrets`, an alias of Ekorn's
+  variable, as Iain decided on 2026-11-26, as recommended. The options
+  were:
   - `$DBIx::Squirrel::Stages::Taps::DumpSecrets`, an alias of Ekorn's
     variable, so `local` on either sets both, as callers set
     Data::Dumper's;
@@ -27,5 +31,5 @@ variable, and that stays Ekorn's.
     to take first, so a message to Ekorn-Pipeline;
   - a function of DBIx::Squirrel's that sets it.
 
-  The recommendation: the alias. It needs nothing of Ekorn's, works as
-  the setting does today, and keeps `local`, which a function can't.
+  The alias needs nothing of Ekorn's, works as the setting does today,
+  and keeps `local`, which a function can't.

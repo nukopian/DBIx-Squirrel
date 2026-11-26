@@ -45,19 +45,27 @@ Nothing yet.
 
 ## Next
 
-Nothing yet.
+### 2026-0062. dump_to's setting, without naming Ekorn
+
+**Size:** S (2). From 2026-0057's D5. **Decisions:** D1 settled: an
+alias of Ekorn's variable.
+[Record](docs/changes/2026-0062-dump-to-setting.md).
+
+**What:** `$DBIx::Squirrel::Stages::Taps::DumpSecrets`, an alias of
+`$Ekorn::Pipeline::Stages::Taps::DumpSecrets`, so `local` on either
+sets both.
+
+**Why:** `dump_to` writes each value in full while Ekorn's variable is
+set, and Part 1 of the documents can't name it.
+
+**Done when:** the alias is tested, `local` on it included, in
+DBIx::Squirrel::Stages::Taps' POD and the reference's Part 1, which
+names it in place of Part 2's "Settings of the pipeline", with a
+`Changes` line, and `yath test -L t xt` passes on 5.36 and 5.44.
 
 ## Later
 
-### 2026-0062. dump_to's setting, without naming Ekorn
-
-**Size:** S (2). From 2026-0057's D5. **Decisions:** D1 open: how it's
-set. [Record](docs/changes/2026-0062-dump-to-setting.md).
-
-`dump_to` writes each value in full while
-`$Ekorn::Pipeline::Stages::Taps::DumpSecrets` is set, Ekorn's
-variable. DBIx::Squirrel gives a way to set it of its own, so Part 1
-can say how.
+Nothing yet.
 
 ## Ideas
 
