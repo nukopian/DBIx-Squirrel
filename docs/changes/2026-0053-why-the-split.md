@@ -2,9 +2,10 @@
 
 **Status:** open
 
-**Decisions:** D1 open: the reasons, from Iain; where the pipeline
-came from is settled, 1.x's transformations. D2 open: told in full
-once, at the opening of the guide's Part 2.
+**Decisions:** D1 settled: a separation of concerns, the pipeline
+useful beyond databases; principle, not pain; the text is in D1. D2
+settled: told in full once, at the opening of the guide's Part 2; "only
+now completed" goes in 2026-0058's `Changes` entry.
 
 **Origin:** roadmap, added 2026-11-26
 
@@ -101,14 +102,30 @@ explained after the fact.
 
 ## Decisions
 
-- [ ] **D1.** Why did the two split? Iain's reasons, in his words, to
-  be shaped into the text. Where the pipeline came from is settled
-  (Background), and the reasons recorded at the split are quoted
-  there; whether there's more to them is Iain's to say. Reasons
-  shouldn't be inferred beyond what's recorded.
-- [ ] **D2.** Where is it told, and how often? The recommendation: in
-  full once, at the opening of the guide's Part 2 (2026-0055): it was
-  one library, it split for these reasons, and here is what you gain by
-  putting them back together. The README and the reference give a
-  sentence and a link to it (2026-0054, 2026-0056). The same story told
-  in three places would drift.
+- [x] **D1.** Why did the two split? A separation of concerns, on
+  2026-11-26. In Iain's words, nothing hurt: many of the pipeline's
+  ideas were useful, and usable, outside the database, which made them
+  a separate set of concerns, to be kept separately. What ceased to
+  belong in DBIx::Squirrel was the pipeline itself, and nothing got
+  simpler yet, as the two still felt tightly coupled, which is why
+  2026-0052 exists. So the story is told as principle, not pain, and
+  claims no gain that hasn't arrived. A sceptical review agreed: don't
+  sell the principle, let Part 2's code persuade. The text, for
+  2026-0055 to place:
+
+  > Stages began in DBIx::Squirrel, in 2024, as a way to change query
+  > results as they're fetched. The pipeline behind them was useful,
+  > and usable, well beyond database rows, so in 2026 it moved into a
+  > distribution of its own, Ekorn::Pipeline, and DBIx::Squirrel kept
+  > what needs a database. Everything in Part 1 is DBIx::Squirrel's
+  > own. What follows shows what the two give you together: query
+  > results written to files, JSON and CSV, loaded from them in
+  > batches, or sent to several places in one run.
+
+- [x] **D2.** Where is it told, and how often? In full once, at the
+  opening of the guide's Part 2 (2026-0055), with a sentence and a link
+  to it in the README and the reference (2026-0054, 2026-0056), on
+  2026-11-26: the same story told in three places would drift. That the
+  separation is only now being completed is news for a release, not
+  the guide, so it goes in 2026-0058's `Changes` entry, as the
+  sceptical review suggested.

@@ -47,9 +47,10 @@ Nothing yet.
 
 ### 2026-0053. Why Ekorn::Pipeline split from DBIx::Squirrel
 
-**Size:** S (2). **Decisions:** D1 open: the reasons, from Iain; where
-the pipeline came from is settled, 1.x's transformations. D2 open:
-told in full once, at the opening of the guide's Part 2.
+**Size:** S (2). **Decisions:** D1 settled: a separation of concerns,
+the pipeline useful beyond databases; principle, not pain; the text is
+in D1. D2 settled: told in full once, at the opening of the guide's
+Part 2; "only now completed" goes in 2026-0058's `Changes` entry.
 [Record](docs/changes/2026-0053-why-the-split.md).
 
 **What:** the story of the split: why the pipeline left DBIx::Squirrel
@@ -111,9 +112,10 @@ One commit moves `docs/next/`'s README, guide and reference over
 today's, which git's history then keeps, and runs `scripts/manuals`;
 the tests read `docs/` alone again. Its `Changes` entry is the one
 readers see for 2026-0052 to 2026-0056, and says why, as 2026-0052's
-record asks: the coupling the documents showed, and the synergy the
-two parts aim for. Done when `yath test -L t xt` passes on 5.36 and
-5.44, and `docs/next/` is gone.
+record asks: the coupling the documents showed, the synergy the two
+parts aim for, and that the split's separation is only now being
+completed (2026-0053's D2). Done when `yath test -L t xt` passes on
+5.36 and 5.44, and `docs/next/` is gone.
 
 ### 2026-0057. What Part 1 still takes from Ekorn::Pipeline's code
 
