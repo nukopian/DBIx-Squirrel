@@ -87,8 +87,9 @@ baseline is in the record, and D8 is settled.
 
 ### 2026-0053. Why Ekorn::Pipeline split from DBIx::Squirrel
 
-**Size:** S (2). **Decisions:** D1 open: the reasons, from Iain. D2
-open: told in full once, at the opening of the guide's Part 2.
+**Size:** S (2). **Decisions:** D1 open: the reasons, from Iain; where
+the pipeline came from is settled, 1.x's transformations. D2 open:
+told in full once, at the opening of the guide's Part 2.
 [Record](docs/changes/2026-0053-why-the-split.md).
 
 **What:** the story of the split: why the pipeline left DBIx::Squirrel

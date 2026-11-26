@@ -2,12 +2,25 @@
 
 **Status:** open
 
-**Decisions:** D1 open: the reasons, from Iain. D2 open: told in full
+**Decisions:** D1 open: the reasons, from Iain; where the pipeline
+came from is settled, 1.x's transformations. D2 open: told in full
 once, at the opening of the guide's Part 2.
 
 **Origin:** roadmap, added 2026-11-26
 
 ## Background
+
+The pipeline began in DBIx::Squirrel 1.x, as transformations:
+`$dbh->iterate($sql, [@bind_values, @transforms])` ran each row
+through functions that could change it, drop it or turn it into
+several, before Ekorn::Pipeline existed. Stages are those
+transformations by a new name ("Transformations, now stages", in the
+reference's "Upgrading from 1.x"), and Ekorn::Pipeline grew from the
+same idea, made general, for values from anywhere, not only rows. So
+transforming rows beside the query is DBIx::Squirrel's own idea, as
+Iain confirmed on 2026-11-26. It answers a question from the first
+sceptical review of 2026-0052's plan, whether DBIx::Squirrel has
+stages only because Ekorn::Pipeline does.
 
 By DBIx::Squirrel 2, its pipeline was Ekorn::Pipeline, a distribution
 of its own, with `DBIx::Squirrel::Pipeline` a facade over it; version 3
@@ -25,9 +38,10 @@ explained after the fact.
 ## Decisions
 
 - [ ] **D1.** Why did the two split? Iain's reasons, in his words, to
-  be shaped into the text. The history shows what happened and when,
-  but not the reasons, and they shouldn't be inferred from commit
-  messages.
+  be shaped into the text. Where the pipeline came from is settled
+  (Background); why it became a distribution of its own is still to
+  come. The history shows what happened and when, but not the reasons,
+  and they shouldn't be inferred from commit messages.
 - [ ] **D2.** Where is it told, and how often? The recommendation: in
   full once, at the opening of the guide's Part 2 (2026-0055): it was
   one library, it split for these reasons, and here is what you gain by
