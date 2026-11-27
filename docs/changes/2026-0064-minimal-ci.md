@@ -1,6 +1,6 @@
 # 2026-0064. CI runs the tests with only the required modules
 
-**Status:** in progress
+**Status:** shipped, unreleased
 
 **Decisions:** D1 settled: a `minimal` job, uncached. D2 settled: the
 other jobs keep their caches, and the comments say what a restored
@@ -11,6 +11,8 @@ cache may hold.
 v0.4.5)
 
 **Started:** 2026-11-26
+
+**Finished:** 2026-11-27
 
 ## Background
 
@@ -84,6 +86,16 @@ CPAN.
 
 ## What happened
 
+- **Outcome:** done. The `minimal` job passes on CI, and its check
+  fails when a recommended module is installed. `yath test -L t xt`
+  passes on 5.36 and 5.44 against Ekorn-Pipeline v0.4.5 installed from
+  CPAN's tarball, which `TODO.md`'s task asked for; the task goes with
+  the file.
+- **CI rerun on 2026-11-27** passed on every job, but installed
+  v0.4.4: cpanmetadb's package lookup had v0.4.5, but its history,
+  which cpanm reads for the cpanfile's range, didn't yet, as
+  MAINTAINING.md's "CI's caches" warns. So the run against v0.4.5 was
+  made locally, from the tarball by its path, rather than waiting.
 - The check of recommended modules was run locally both ways: with
   them installed it fails, naming both; hidden, it passes.
 - CI passed on every job at b5883208feff5fccb205d13401edb0d8a670b7aa,
