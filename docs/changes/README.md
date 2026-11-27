@@ -25,6 +25,13 @@ Small fixes don't need one.
   says. A **Decisions:** line under the status sums them up, each
   settled or open in a few words, so the record's state shows at a
   glance; it changes in the commit that settles one.
+- **A promise is tested against what it doesn't mention.** A
+  decision that promises something of every value or every run
+  names, when it's settled, the test that tries to break it with
+  stages the decision doesn't mention: one that holds values back,
+  splits, stops, dies or runs nested. The item doesn't ship until
+  that test passes. (Roadmap 2026-0066's D3, in the same words as
+  Ekorn-Pipeline's 2026-0062.)
 - **The plan is written when work starts, and isn't edited after.**
   What changed goes under What happened, so the record shows how the
   plan held up.
@@ -81,7 +88,7 @@ Steps, Done when.
 Newest id first.
 
 - [Tests that try to break each promise](2026-0066-promises-tested.md),
-  roadmap 2026-0066: open.
+  roadmap 2026-0066: shipped, unreleased.
 - [Ekorn::Pipeline v0.5.0: where a value came from](2026-0065-ekorn-v0.5.0.md),
   from a task of Ekorn-Pipeline's: shipped in v4.3.0.
 - [CI runs the tests with only the required modules](2026-0064-minimal-ci.md),

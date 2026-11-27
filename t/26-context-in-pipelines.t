@@ -209,4 +209,19 @@ subtest 'result_original, after stages that hold values back' => sub {
         [1, 2, 3], 'the same, through |';
 };
 
+# Promises of every run, tried with stages that hold values back, which
+# they don't mention (roadmap 2026-0066's D4): iterator in the
+# iterator's own stages (2026-0032's D3), and first, after them; the
+# rest are tried by xt/agreement.t.
+subtest 'iterator and first, after stages that hold values back' => sub {
+    my $it = $dbh->iterate($sql, batch(2), sub { iterator });
+    is [$it->all], [exact_ref($it), exact_ref($it)],
+        "iterator, in values from batch's step and flush";
+    is $dbh->iterate($sql, take_last)->first, [3, 'Cream'],
+        'first, after take_last';
+    my $none = $dbh->iterate($sql) | batch(2) | sub { iterator }
+        | keep_all;
+    is $none, [undef, undef], 'and none through |, as before';
+};
+
 done_testing;

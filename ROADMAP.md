@@ -45,23 +45,7 @@ Nothing yet.
 
 ## Next
 
-### 2026-0066. Tests that try to break each promise
-
-**Size:** M (3). **Depends on:** Ekorn-Pipeline's generator, from its
-2026-0062. **Decisions:** all settled; see the
-[change record](docs/changes/2026-0066-promises-tested.md).
-
-**What:** an agreement test over a statement, read every way, with
-stages that hold values back, split, stop, die and nest, built on
-Ekorn's shared generator; the rule that a promise is tested against
-what it doesn't mention, in `docs/changes/README.md` and as a check
-before each release; and a test for each promise already made.
-
-**Why:** Ekorn's 2026-0060 fault passed every review in both
-projects, as every test used maps.
-
-**Done when:** the test passes in CI, the rule is in both places, and
-each listed promise has its test.
+Nothing yet.
 
 ## Later
 

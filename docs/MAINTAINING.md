@@ -352,6 +352,12 @@ unsigned tag, and pushes both. `minil prepare` sets the version, and
    If `TODO.md` is there, its tasks come first. Do them, or move them
    where CLAUDE.md says. Delete the file before going on.
 
+   Then try each promise the release makes of every value or every
+   run against stages it doesn't mention: one that holds values back,
+   splits, stops, dies or runs nested. `xt/agreement.t` does this for
+   reading a statement every way; a promise it doesn't reach gets a
+   test of its own first (roadmap 2026-0066's D5).
+
 2. **Set the version.** `minil prepare` writes it into the main module.
    It also regenerates `META.json`, `Build.PL` and `README.md`. Set the
    version on the first line:
