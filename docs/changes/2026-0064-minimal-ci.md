@@ -1,6 +1,6 @@
 # 2026-0064. CI runs the tests with only the required modules
 
-**Status:** shipped, unreleased
+**Status:** shipped in v4.3.0
 
 **Decisions:** D1 settled: a `minimal` job, uncached. D2 settled: the
 other jobs keep their caches, and the comments say what a restored

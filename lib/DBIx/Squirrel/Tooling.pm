@@ -36,7 +36,7 @@ use DBIx::Squirrel::Stages::Batch qw(:all);
 use DBIx::Squirrel::Stages::Taps  qw(:all);
 use DBIx::Squirrel::Stages::Rows  qw(:all);
 
-our $VERSION = 'v4.2.0';
+our $VERSION = 'v4.3.0';
 
 our %EXPORT_TAGS = (
     core => [qw(Stop is_stop gather is_stage)],
