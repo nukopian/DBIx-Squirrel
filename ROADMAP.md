@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0065.
+Last id: 2026-0066.
 
 Items come in four groups:
 
@@ -57,4 +57,19 @@ An idea is a numbered heading, the date it was added, its size, and a
 line or two on what and why. Each is kept, promoted to Later or Next
 with its id, or dropped, as Iain decides.
 
-Nothing yet.
+### 2026-0066. Tests that try to break each promise, as Ekorn-Pipeline's 2026-0062
+
+Added 2026-11-27. **Size:** M (3).
+
+Ekorn's 2026-0060 fault hid where a promise met an assumption no test
+challenged: every test used maps, so none tried a stage that holds
+values back. Ours has the same shape, and our promises rest on Ekorn's.
+From Ekorn-Pipeline's message of 2026-11-27 (Ekorn-Pipeline
+125e4b315d2f152f4281cea53418154c2d8b5017), which asked our view first:
+which of our promises are tested only with the stages that made them
+easy (rows through `result_original`, `iterator`, a statement's end
+however the run ends, our `gather`); whether an agreement test of our
+own, random pipelines over a statement read every way, would serve us,
+perhaps shared with Ekorn's `xt/agreement.t`; and how the two
+practices stay one. It's settled by messages both ways, each project
+recording its own item, and Iain deciding both.
