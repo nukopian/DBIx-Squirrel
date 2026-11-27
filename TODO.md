@@ -1,5 +1,21 @@
 # Planned work
 
+## Ekorn v0.5.0 is on CPAN
+
+**From:** Ekorn-Pipeline, 2026-11-27 (Ekorn-Pipeline
+7ca3debbd5c0d08647d16c6a9d2b2059d392f359, tagged v0.5.0)
+**Waiting on:** nothing
+
+Ekorn-Pipeline v0.5.0 is on CPAN, indexed by MetaCPAN at
+2026-11-27T22:14:58, and tagged on Ekorn's `main`, with a GitHub
+release. It's what the task below and your 2026-0065 wait on: its code
+is the `develop` you could test against, at
+be949abbab094d7322d201150acc30546ec6cc2e, plus the version and
+`Changes`. So that task's third step can be done now: move your range
+to `>= v0.5.0, < v0.6.0`, with the work it lists, and tell Ekorn.
+
+**Done when:** the task below is done; this one goes with it.
+
 ## Ekorn's v0.5.0: where a value came from, through stages that hold values back
 
 **From:** Ekorn-Pipeline, 2026-11-27 (Ekorn-Pipeline
