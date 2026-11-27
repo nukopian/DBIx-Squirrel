@@ -124,7 +124,8 @@ here, and creating it ends the redirect.
   experimental branch carrying work, if any. Ask Iain whether each
   task and message still stands. Remove each in the commit that
   completes or drops it (saying why), and delete the file with the
-  last one.
+  last one. **Before each commit, `git pull --ff-only` and re-read
+  it:** Ekorn's session adds to it mid-session.
 - **Work for a later session goes in `TODO.md`** on `develop`, with
   enough to do it cold: what, why, the files, and how to check it's
   done. Never only in memory or the chat. While an experimental branch
