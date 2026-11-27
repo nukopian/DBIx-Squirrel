@@ -2003,7 +2003,7 @@ DBIx::Squirrel that adds it.
 | `:taps` | `peek`, `count_into`, `dump_to` and `tee` | DBIx::Squirrel::Stages::Taps |
 | `:rows` | `pluck` and `as_hash` | DBIx::Squirrel::Stages::Rows |
 | `:stages` | `:flow`, `:batch`, `:taps` and `:rows` | |
-| `:context` | `iterator`, `result_number` and `result_original` | DBIx::Squirrel::Context |
+| `:context` | `iterator`, `kept_origin`, `result_number` and `result_original` | DBIx::Squirrel::Context |
 | `:sources` | `from_array`, `from_file`, `from_fh` and `counter` | Ekorn::Pipeline::Sources |
 | `:sinks` | `count_items`, `keep_all`, `keep_first`, `to_file` and the rest | Ekorn::Pipeline::Sinks |
 | `:json` | `from_json`, `from_jsonl`, `to_json` and `to_jsonl` | Ekorn::Pipeline::JSON |

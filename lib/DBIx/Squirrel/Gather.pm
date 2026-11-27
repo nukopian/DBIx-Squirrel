@@ -66,7 +66,11 @@ Inside a flush, and the stages it sends values to,
 L<DBIx::Squirrel::Context/result_number> is the number of the result
 being made, as in any stage.
 L<DBIx::Squirrel::Context/result_original> is C<undef>, as what a
-flush gives comes from many rows, not one.
+flush gives comes from many rows, not one, unless the stage holds
+values back and says so: given by name, C<holds> set true, it says
+which row each value it gives came from, as
+L<Ekorn::Pipeline::Manual::Reference> describes under "Stages that
+hold values back".
 
 To keep C<gather> out of your namespace:
 

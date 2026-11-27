@@ -1444,7 +1444,11 @@ fresh each time. The block returns:
 The parts can be given as a list, in that order, with `undef` for a
 flush left out before an end. Or they can be given by name, in one
 hash reference with the keys `step`, `flush` and `end`, giving only
-those the stage has.
+those the stage has. By name, a stage that holds values back can say
+so with `holds` set true, and say which row each value it gives came
+from, for [result_original](#result_original), as
+[kept_origin](#kept_origin) says. One that doesn't say so is taken
+for a map.
 
 ```perl
 use DBIx::Squirrel::Stages::Rows qw(pluck);
@@ -2093,7 +2097,7 @@ DBIx::Squirrel's own `:rows` and `:context` besides:
 | `:taps` | `peek`, `count_into`, `dump_to`, `tee` | [Stages::Taps](#canned-stages) |
 | `:rows` | `pluck`, `as_hash` | [Stages::Rows](#canned-stages) |
 | `:stages` | `:flow`, `:batch`, `:taps` and `:rows` | |
-| `:context` | `iterator`, `result_number`, `result_original` | [Context](#context) |
+| `:context` | `iterator`, `kept_origin`, `result_number`, `result_original` | [Context](#context) |
 | `:sources` | `from_array`, `from_fh`, `from_file`, `counter` | Ekorn::Pipeline::Sources |
 | `:sinks` | `count_items`, `keep`, `keep_all`, `keep_first`, `keep_last`, `keep_single`, `to_fh`, `to_file` | [Sinks](#14-sinks) |
 | `:json` | `from_json`, `from_jsonl`, `to_json`, `to_jsonl` | Ekorn::Pipeline::JSON |
@@ -2604,9 +2608,10 @@ reading a statement; any other run, such as a pipeline called with
 values, has some other context, or none. `pluck` and `as_hash` read
 it, and so can a stage of yours; `result_original` gives the same
 row, which the source also gives Ekorn as its original. While a flush
-gives its values, which come from every row, not one,
-`Ekorn::Pipeline::ending()` is true, and the row is no value's;
-`result_original` gives `undef` then.
+gives its values, `Ekorn::Pipeline::ending()` is true, and the row is
+no value's: `result_original` gives `undef` for a value made from
+many rows, and a value's own row when a stage that holds values back
+says where it came from, as `take_last` does.
 
 ```perl
 my $columns = sub ($row) {
@@ -3191,6 +3196,25 @@ request.
 
 See [Context](#context).
 
+#### kept_origin
+
+<!-- not run -->
+```perl
+use DBIx::Squirrel::Tooling qw(kept_origin);
+
+$origin = kept_origin();
+```
+
+In the step of a stage that holds values back, returns the origin of
+the value it's keeping, which it gives back with what it makes of the
+value, so the stages after it get that value's row from
+[result_original](#result_original). It's Ekorn::Pipeline::Context's
+own; Ekorn::Pipeline's
+[Stages that hold values back](https://github.com/nukopian/Ekorn-Pipeline/blob/main/docs/REFERENCE.md#stages-that-hold-values-back)
+says how such a stage is written. Exported upon request.
+
+See [Context](#context).
+
 #### result_number
 
 <!-- not run -->
@@ -3221,9 +3245,11 @@ $row = result_original();
 ```
 
 Returns the row the result is being made from, as it was fetched,
-before any stage changed it; for a result set, the row object. In a
-flush of a stage made with [gather](#gather), and the stages after it,
-it's `undef`, as what a flush gives comes from every row, not one. In
+before any stage changed it; for a result set, the row object. For a
+value made from many rows, such as a batch, or given by a flush of a
+stage made with [gather](#gather), it's `undef`, unless a stage that
+holds values back says which row the value came from, as `take_last`
+does. In
 a run reading no statement, it's the value the run's source gave, or
 that was pushed. It's Ekorn::Pipeline::Context's own, with an empty
 prototype. Exported upon request.
