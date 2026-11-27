@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [Ekorn::Pipeline v0.5.0: where a value came from](2026-0065-ekorn-v0.5.0.md),
+  from a task of Ekorn-Pipeline's: open.
 - [CI runs the tests with only the required modules](2026-0064-minimal-ci.md),
   from a task of Ekorn-Pipeline's: shipped, unreleased.
 - [Ekorn::Pipeline v0.4.3: next, and a way in](2026-0063-ekorn-v0.4.3.md),

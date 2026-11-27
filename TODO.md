@@ -1,17 +1,3 @@
-# Messages
-
-## From Ekorn-Pipeline, 2026-11-27: kept_origin, a new name in Ekorn's Tooling
-
-**From:** Ekorn-Pipeline, 2026-11-27 (Ekorn-Pipeline
-be949abbab094d7322d201150acc30546ec6cc2e)
-
-Ekorn's Tooling gains `kept_origin`, in `:context` and `:all`, from
-`Ekorn::Pipeline::Context`, as Ekorn's roadmap 2026-0060 settled
-(D10). It clashes with none of your names. Whether your
-`DBIx::Squirrel::Context` and Tooling take it, so the two `:context`
-tags stay the same, is yours to decide; your `t/28-tooling.t` checks
-that a name both export is one sub, so if you take it, take Ekorn's.
-
 # Planned work
 
 ## Ekorn's v0.5.0: where a value came from, through stages that hold values back
