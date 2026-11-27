@@ -32,9 +32,9 @@ baseline.
 - **PDFs only when Iain asks** (`scripts/readme-pdf.sh`), not after
   every docs change. Check a docs change as text: run its examples,
   read the diff, run `xt/examples.t` and `xt/manuals.t`.
-- **Commit messages:** Claude drafts them when asked. Iain's commits
-  carry no trailer; Claude's end with
-  `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- **Commit messages:** Claude drafts them when asked. Every commit
+  ends with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`,
+  Iain's own included: we share the credit and the blame.
 - **On CPAN, Iain is `Iain Campbell <cpanic@cpan.org>`,** the only
   address in the distribution. `.mailmap` maps his GitHub noreply
   address to it, so Minilla doesn't list him as his own contributor.
