@@ -80,6 +80,8 @@ Steps, Done when.
 
 Newest id first.
 
+- [Tests that try to break each promise](2026-0066-promises-tested.md),
+  roadmap 2026-0066: open.
 - [Ekorn::Pipeline v0.5.0: where a value came from](2026-0065-ekorn-v0.5.0.md),
   from a task of Ekorn-Pipeline's: shipped in v4.3.0.
 - [CI runs the tests with only the required modules](2026-0064-minimal-ci.md),

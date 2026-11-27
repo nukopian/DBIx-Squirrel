@@ -45,7 +45,23 @@ Nothing yet.
 
 ## Next
 
-Nothing yet.
+### 2026-0066. Tests that try to break each promise
+
+**Size:** M (3). **Depends on:** Ekorn-Pipeline's generator, from its
+2026-0062. **Decisions:** all settled; see the
+[change record](docs/changes/2026-0066-promises-tested.md).
+
+**What:** an agreement test over a statement, read every way, with
+stages that hold values back, split, stop, die and nest, built on
+Ekorn's shared generator; the rule that a promise is tested against
+what it doesn't mention, in `docs/changes/README.md` and as a check
+before each release; and a test for each promise already made.
+
+**Why:** Ekorn's 2026-0060 fault passed every review in both
+projects, as every test used maps.
+
+**Done when:** the test passes in CI, the rule is in both places, and
+each listed promise has its test.
 
 ## Later
 
@@ -57,19 +73,4 @@ An idea is a numbered heading, the date it was added, its size, and a
 line or two on what and why. Each is kept, promoted to Later or Next
 with its id, or dropped, as Iain decides.
 
-### 2026-0066. Tests that try to break each promise, as Ekorn-Pipeline's 2026-0062
-
-Added 2026-11-27. **Size:** M (3).
-
-Ekorn's 2026-0060 fault hid where a promise met an assumption no test
-challenged: every test used maps, so none tried a stage that holds
-values back. Ours has the same shape, and our promises rest on Ekorn's.
-From Ekorn-Pipeline's message of 2026-11-27 (Ekorn-Pipeline
-125e4b315d2f152f4281cea53418154c2d8b5017), which asked our view first:
-which of our promises are tested only with the stages that made them
-easy (rows through `result_original`, `iterator`, a statement's end
-however the run ends, our `gather`); whether an agreement test of our
-own, random pipelines over a statement read every way, would serve us,
-perhaps shared with Ekorn's `xt/agreement.t`; and how the two
-practices stay one. It's settled by messages both ways, each project
-recording its own item, and Iain deciding both.
+Nothing yet.
