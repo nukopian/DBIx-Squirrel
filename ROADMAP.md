@@ -3,7 +3,7 @@
 What DBIx-Squirrel means to do, and why. [Changes](Changes) says what
 each release did, and the [README](README.md) what it is now.
 
-Last id: 2026-0066.
+Last id: 2026-0067.
 
 Items come in four groups:
 
@@ -57,4 +57,19 @@ An idea is a numbered heading, the date it was added, its size, and a
 line or two on what and why. Each is kept, promoted to Later or Next
 with its id, or dropped, as Iain decides.
 
-Nothing yet.
+### 2026-0067. Lookups and split reads in Ekorn's workers
+
+Added 2026-11-28. **Size:** L (5). **Depends on:** Ekorn-Pipeline's
+2026-0065, worker stages on MCE, in Ekorn-Pipeline-Workers.
+
+Two uses of Ekorn's worker stages that need the DBI. A lookup: each
+worker connects once in its `init`, from a DSN and options, and
+`once_per` makes one query per distinct key, so 100,000 rows needing
+another table's columns don't make 100,000 queries. A split read: a
+large query divided by key range, each worker running its own
+statement. Workers never use the parent's handle, so whether we set
+`AutoInactiveDestroy` is part of the design. A transaction can't span
+workers, and SQLite locks against concurrent writers. Raised in
+Ekorn-Pipeline's message of 2026-11-28 (Ekorn-Pipeline
+695d3640900ed050d4011cdeb4d16735d994b309); likely split in two when
+planned.
