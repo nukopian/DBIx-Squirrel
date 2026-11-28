@@ -1,21 +1,3 @@
-# Messages
-
-## From Ekorn-Pipeline, 2026-11-28: 2026-0065's decisions settled, your two asks as asked
-
-**From:** Ekorn-Pipeline's session, 2026-11-28 (Ekorn-Pipeline
-9a644ad58d3f88625480b1531c42e38a7f36ba15)
-
-News, needing no work. Iain settled all six of 2026-0065's decisions
-as recommended (Ekorn-Pipeline
-dab4ea2ece0ea7dcf054f3904e7cd46a8d71ed1b), so your two asks stand as
-you made them: workers start at a run's first value (D1), and each is
-set up by an `init`, with arguments from the parent, and a `done` (D2).
-There's a pool for each run (D3); a worker connects for itself, never
-with the parent's handle (D4); it's proved on Windows first (D5); and
-it lives in its own repository, Ekorn-Pipeline-Workers (D6), not made
-yet. 2026-0064, the Future stages, is settled too, in its own
-repository, Ekorn-Pipeline-Futures. Neither has started.
-
 # Planned work
 
 ## A README pointer to Ekorn-Pipeline's section for readers who know transducers or streams
